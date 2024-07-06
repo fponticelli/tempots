@@ -1,42 +1,39 @@
 {
-  "name": "tempots-packages",
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "lib/std",
-    "lib/dom",
-    "lib/eon",
-    "lib/ui",
-    "demo/ui",
-    "demo/hnpwa",
-    "demo/readme",
-    "demo/rpg",
-    "demo/todomvc"
-  ],
+  "name": "@tempots/dom",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "compile": "npm run compile --workspaces --if-present",
-    "build": "npm run build --workspaces",
-    "lint": "npm run lint --workspaces",
-    "format": "npm run format --workspaces",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "watch": "npm run watch --workspaces --if-present",
-    "deploy:hnpwa": "npm run build && gh-pages -d demo/hnpwa/dist"
+    "watch": "tsc --watch",
+    "build": "tsc && cp package.lib.json dist/package.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "coverage": "jest --coverage",
+    "npm:prep": "yarn build && cp README.md dist",
+    "npm:publish": "yarn npm:prep && (cd dist && yarn publish --access public)"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.8.1",
-    "@typescript-eslint/parser": "^5.8.1",
-    "@vitejs/plugin-react": "^3.1.0",
-    "@vitest/ui": "^0.28.5",
-    "@testing-library/react": "^14.0.0",
-    "gh-pages": "^3.2.3",
-    "prettier": "^2.5.1",
-    "typescript": "^4.8.2",
-    "eslint": "^8.36.0",
+    "@happy-dom/jest-environment": "^9.1.7",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "eslint": "^8.0.1",
     "eslint-config-standard-with-typescript": "^34.0.1",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^15.6.1",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react": "^7.32.2"
-  }
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "happy-dom": "^9.1.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots-dom.git"
+  },
+  "author": "Franco Ponticelli",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots-dom/issues"
+  },
+  "homepage": "https://github.com/fponticelli/tempots-dom#readme"
 }

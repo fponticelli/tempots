@@ -1,0 +1,16 @@
+{
+  "name": "@tempots/dom",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "version": "9.0.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots-dom.git"
+  },
+  "author": "Franco Ponticelli",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots-dom/issues"
+  },
+  "homepage": "https://github.com/fponticelli/tempots-dom#readme"
+}

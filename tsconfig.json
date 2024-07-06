@@ -1,16 +1,21 @@
 {
-  "files": [],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@tempots/dom/*": ["./lib/dom/src/*"]
-    },
+    "rootDir": "src",
+    "outDir": "dist",
+    "target": "ESNext",
+    "declaration": true,
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "Node",
+    "strict": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "./src",
   },
-  "references": [
-    {
-      "path": "./lib/dom/tsconfig.ref.json"
-    }, {
-      "path": "./demo/readme/tsconfig.ref.json"
-    }
-  ]
+  "include": ["src/**/*"]
 }
