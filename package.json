@@ -1,7 +1,7 @@
 {
   "name": "tempo",
   "version": "1.0.0",
-  "repository": "https://github.com/fponticelli/signals.git",
+  "repository": "https://github.com/fponticelli/tempots.git",
   "author": "Franco Ponticelli <franco.ponticelli@gmail.com>",
   "license": "Apache-2.0",
   "private": true,
