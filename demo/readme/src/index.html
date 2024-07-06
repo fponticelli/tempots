@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-framework="javascript">
+	<head>
+		<meta charset="utf-8">
+		<title>Tempo • Readme</title>
+		<meta name="description" content="Basic example of a Tempo Web App">
+		<style>
+html {
+	height: 100%;
+	background-color: #ddeeff;
+}
+
+body {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+}
+
+.app {
+	font-family: fantasy;
+	font-size: 120pt;
+	line-height: 1em;
+}
+
+.count-small {
+	font-size: 32pt;
+	line-height: 1.2em;
+}
+
+.count {
+	width: 380px;
+	text-align: center;
+	text-shadow: 2px 2px 2px #fff, -2px -2px 2px #fff, 0px 0px 20px rgba(0,0,0, 0.2);
+}
+
+.buttons {
+	display: flex;
+	justify-content: space-around;
+}
+
+button {
+	box-shadow: 0px 4px 20px 1px rgba(0, 0, 0, 0.2);
+	background:linear-gradient(to bottom, #6677aa 5%, #6070a0 100%);
+	background-color:#599bb3;
+	border-radius:8px;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:56px;
+	font-weight:bold;
+	padding:6px 60px;
+	text-decoration:none;
+	text-shadow:0px 1px 4px rgba(0, 0, 0, 0.6);
+	outline: none;
+}
+
+button[disabled] {
+	opacity: 0.3;
+}
+
+button[disabled]:hover {
+	background:linear-gradient(to bottom, #6677aa 5%, #6070a0 100%);
+	background-color:#599bb3;
+}
+
+button:hover {
+	background:linear-gradient(to bottom, #408c99 5%, #599bb3 100%);
+	background-color:#408c99;
+}
+
+button:active {
+	position:relative;
+	top:1px;
+}
+		</style>
+	</head>
+	<body>
+	</body>
+	<script src="main.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-589893-23"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'UA-589893-23');
+	</script>
+</html>

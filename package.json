@@ -1,43 +1,42 @@
 {
-  "name": "tempo-root",
-  "version": "2.0.0",
-  "description": "Web framework alternative to React/Angular fully typed.",
+  "name": "tempots-packages",
   "private": true,
-  "keywords": [
-    "tempo",
-    "typescript",
-    "ui",
-    "framework",
-    "dom",
-    "react-alternative",
-    "angular-alternative"
+  "type": "module",
+  "workspaces": [
+    "lib/std",
+    "lib/dom",
+    "lib/eon",
+    "lib/ui",
+    "demo/ui",
+    "demo/hnpwa",
+    "demo/readme",
+    "demo/rpg",
+    "demo/todomvc"
   ],
   "scripts": {
-    "npm:publish": "rush publish -a -b master -p -r https://registry.npmjs.org/ --include-all",
-    "npm:publish-no-include": "rush publish -a -b master -p -r https://registry.npmjs.org/",
-    "build": "echo \"nothing to build at root\"",
-    "test:all": "(cd std && npm run test) && (cd core && npm run test) && (cd store && npm run test) && (cd dom && npm run test)",
-    "docs:generate": "(cd tools/docs && npm run docs:maketoc)",
-    "docs:publish": "gh-pages -d docs",
-    "docs:all": "npm run docs:generate && npm run docs:publish"
+    "compile": "npm run compile --workspaces --if-present",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "format": "npm run format --workspaces",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "watch": "npm run watch --workspaces --if-present",
+    "deploy:hnpwa": "npm run build && gh-pages -d demo/hnpwa/dist"
   },
-  "license": "Apache-2.0",
-  "homepage": "https://github.com/fponticelli/tempo",
-  "bugs": {
-    "url": "https://github.com/fponticelli/tempo/issues"
-  },
-  "author": {
-    "name": "Franco Ponticelli",
-    "email": "franco.ponticelli@gmail.com",
-    "url": "https://github.com/fponticelli"
-  },
-  "dependencies": {
-    "@microsoft/rush": "^5.50.0",
-    "@types/jest": "^26.0.24",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
+    "@vitejs/plugin-react": "^3.1.0",
+    "@vitest/ui": "^0.28.5",
+    "@testing-library/react": "^14.0.0",
     "gh-pages": "^3.2.3",
-    "jest": "^27.0.6",
-    "jsdom": "^16.6.0",
-    "ts-jest": "^27.0.3",
-    "typescript": "^4.3.5"
+    "prettier": "^2.5.1",
+    "typescript": "^4.8.2",
+    "eslint": "^8.36.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.32.2"
   }
 }

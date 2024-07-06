@@ -1,35 +1,16 @@
 {
+  "files": [],
   "compilerOptions": {
-    "module": "commonjs",
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "lib": ["es6", "es7"],
-    "sourceMap": true,
-    "declaration": true,
-    "target": "es5",
-    "moduleResolution": "node",
     "baseUrl": ".",
-
-    "strict": true,
-
-    "forceConsistentCasingInFileNames": true,
-    "noErrorTruncation": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": false,
-    "skipLibCheck": true,
-    "removeComments": false,
-    "preserveConstEnums": true
+    "paths": {
+      "@tempots/dom/*": ["./lib/dom/src/*"]
+    },
   },
-  "exclude": [
-    "node_modules",
-    "!node_modules/@types",
-    "web/webpack.config.ts",
-    "**/*.spec.ts",
-    "**/build",
-    "**/lib",
-    "**/test"
+  "references": [
+    {
+      "path": "./lib/dom/tsconfig.ref.json"
+    }, {
+      "path": "./demo/readme/tsconfig.ref.json"
+    }
   ]
 }
