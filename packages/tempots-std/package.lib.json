@@ -1,0 +1,132 @@
+{
+  "name": "@tempots/std",
+  "version": "0.10.7",
+  "type": "module",
+  "exports": {
+    "./array": {
+      "import": "./array.js",
+      "require": "./array.cjs"
+    },
+    "./async-result": {
+      "import": "./async-result.js",
+      "require": "./async-result.cjs"
+    },
+    "./bigint": {
+      "import": "./bigint.js",
+      "require": "./bigint.cjs"
+    },
+    "./boolean": {
+      "import": "./boolean.js",
+      "require": "./boolean.cjs"
+    },
+    "./domain": {
+      "import": "./domain.js",
+      "require": "./domain.cjs"
+    },
+    "./equal": {
+      "import": "./equal.js",
+      "require": "./equal.cjs"
+    },
+    "./function": {
+      "import": "./function.js",
+      "require": "./function.cjs"
+    },
+    "./index": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./json": {
+      "import": "./json.js",
+      "require": "./json.cjs"
+    },
+    "./maybe": {
+      "import": "./maybe.js",
+      "require": "./maybe.cjs"
+    },
+    "./number": {
+      "import": "./number.js",
+      "require": "./number.cjs"
+    },
+    "./object": {
+      "import": "./object.js",
+      "require": "./object.cjs"
+    },
+    "./regexp": {
+      "import": "./regexp.js",
+      "require": "./regexp.cjs"
+    },
+    "./result": {
+      "import": "./result.js",
+      "require": "./result.cjs"
+    },
+    "./string": {
+      "import": "./string.js",
+      "require": "./string.cjs"
+    },
+    "./validation": {
+      "import": "./validation.js",
+      "require": "./validation.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "homepage": "https://github.com/fponticelli/tempots#readme",
+  "typesVersions": {
+    "*": {
+      "array": [
+        "./array.d.ts"
+      ],
+      "async-result": [
+        "./async-result.d.ts"
+      ],
+      "bigint": [
+        "./bigint.d.ts"
+      ],
+      "boolean": [
+        "./boolean.d.ts"
+      ],
+      "domain": [
+        "./domain.d.ts"
+      ],
+      "equal": [
+        "./equal.d.ts"
+      ],
+      "function": [
+        "./function.d.ts"
+      ],
+      "index": [
+        "./index.d.ts"
+      ],
+      "json": [
+        "./json.d.ts"
+      ],
+      "maybe": [
+        "./maybe.d.ts"
+      ],
+      "number": [
+        "./number.d.ts"
+      ],
+      "object": [
+        "./object.d.ts"
+      ],
+      "regexp": [
+        "./regexp.d.ts"
+      ],
+      "result": [
+        "./result.d.ts"
+      ],
+      "string": [
+        "./string.d.ts"
+      ],
+      "validation": [
+        "./validation.d.ts"
+      ]
+    }
+  }
+}

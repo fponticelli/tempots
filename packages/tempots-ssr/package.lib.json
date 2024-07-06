@@ -1,0 +1,27 @@
+{
+  "name": "@tempots/ssr",
+  "version": "0.0.25",
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "dependencies": {
+    "@tempots/dom": "10.0.28",
+    "happy-dom": "^14.12.3"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "homepage": "https://github.com/fponticelli/tempots#readme"
+}

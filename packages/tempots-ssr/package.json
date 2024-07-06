@@ -1,0 +1,59 @@
+{
+  "name": "@tempots/ssr",
+  "private": false,
+  "version": "0.0.25",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "vite build && cp package.lib.json dist/package.json",
+    "build:watch": "vite build --watch",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
+    "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
+    "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",
+    "npm:prep": "yarn build && cp README.md dist",
+    "npm:prep:patch": "yarn package:patch && yarn npm:prep",
+    "npm:prep:minor": "yarn package:minor && yarn npm:prep",
+    "npm:prep:major": "yarn package:major && yarn npm:prep",
+    "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
+    "npm:publish": "yarn npm:prep:patch && yarn npm:publish:impl",
+    "npm:publish:minor": "yarn npm:prep:minor && yarn npm:publish:impl",
+    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
+  },
+  "dependencies": {
+    "happy-dom": "^14.12.3",
+    "@tempots/dom": "*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.1.1",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@vitest/coverage-v8": "^1.5.0",
+    "eslint": "^9.1.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "glob": "^10.3.12",
+    "globals": "^15.0.0",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.7.1",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^3.8.1",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.5.0"
+  }
+}

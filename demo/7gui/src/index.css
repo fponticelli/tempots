@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --icon-color: currentColor;
+  --icon-size: 24px;
+  --icon-stroke: 2;
+}

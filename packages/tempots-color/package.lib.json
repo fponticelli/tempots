@@ -1,0 +1,118 @@
+{
+  "name": "@tempots/color",
+  "version": "0.1.1",
+  "type": "module",
+  "exports": {
+    "./cmyk": {
+      "import": "./cmyk.js",
+      "require": "./cmyk.cjs"
+    },
+    "./convert": {
+      "import": "./convert.js",
+      "require": "./convert.cjs"
+    },
+    "./hsl": {
+      "import": "./hsl.js",
+      "require": "./hsl.cjs"
+    },
+    "./hsla": {
+      "import": "./hsla.js",
+      "require": "./hsla.cjs"
+    },
+    "./hsluv": {
+      "import": "./hsluv.js",
+      "require": "./hsluv.cjs"
+    },
+    "./hsv": {
+      "import": "./hsv.js",
+      "require": "./hsv.cjs"
+    },
+    "./lab": {
+      "import": "./lab.js",
+      "require": "./lab.cjs"
+    },
+    "./lch": {
+      "import": "./lch.js",
+      "require": "./lch.cjs"
+    },
+    "./luv": {
+      "import": "./luv.js",
+      "require": "./luv.cjs"
+    },
+    "./math": {
+      "import": "./math.js",
+      "require": "./math.cjs"
+    },
+    "./rgb": {
+      "import": "./rgb.js",
+      "require": "./rgb.cjs"
+    },
+    "./rgba": {
+      "import": "./rgba.js",
+      "require": "./rgba.cjs"
+    },
+    "./srgb": {
+      "import": "./srgb.js",
+      "require": "./srgb.cjs"
+    },
+    "./xyz": {
+      "import": "./xyz.js",
+      "require": "./xyz.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "homepage": "https://github.com/fponticelli/tempots#readme",
+  "typesVersions": {
+    "*": {
+      "cmyk": [
+        "./cmyk.d.ts"
+      ],
+      "convert": [
+        "./convert.d.ts"
+      ],
+      "hsl": [
+        "./hsl.d.ts"
+      ],
+      "hsla": [
+        "./hsla.d.ts"
+      ],
+      "hsluv": [
+        "./hsluv.d.ts"
+      ],
+      "hsv": [
+        "./hsv.d.ts"
+      ],
+      "lab": [
+        "./lab.d.ts"
+      ],
+      "lch": [
+        "./lch.d.ts"
+      ],
+      "luv": [
+        "./luv.d.ts"
+      ],
+      "math": [
+        "./math.d.ts"
+      ],
+      "rgb": [
+        "./rgb.d.ts"
+      ],
+      "rgba": [
+        "./rgba.d.ts"
+      ],
+      "srgb": [
+        "./srgb.d.ts"
+      ],
+      "xyz": [
+        "./xyz.d.ts"
+      ]
+    }
+  }
+}

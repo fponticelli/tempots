@@ -1,39 +1,24 @@
 {
-  "name": "@tempots/dom",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "scripts": {
-    "watch": "tsc --watch",
-    "build": "tsc && cp package.lib.json dist/package.json",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "coverage": "jest --coverage",
-    "npm:prep": "yarn build && cp README.md dist",
-    "npm:publish": "yarn npm:prep && (cd dist && yarn publish --access public)"
-  },
-  "devDependencies": {
-    "@happy-dom/jest-environment": "^9.1.7",
-    "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.11",
-    "@typescript-eslint/eslint-plugin": "^5.43.0",
-    "eslint": "^8.0.1",
-    "eslint-config-standard-with-typescript": "^34.0.1",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "happy-dom": "^9.1.0",
-    "jest": "^29.5.0",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.0.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fponticelli/tempots-dom.git"
-  },
-  "author": "Franco Ponticelli",
+  "name": "tempo",
+  "version": "1.0.0",
+  "repository": "https://github.com/fponticelli/signals.git",
+  "author": "Franco Ponticelli <franco.ponticelli@gmail.com>",
   "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/fponticelli/tempots-dom/issues"
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage",
+    "npm:publish": "turbo npm:publish"
   },
-  "homepage": "https://github.com/fponticelli/tempots-dom#readme"
+  "workspaces": [
+    "packages/*",
+    "demo/*"
+  ],
+  "devDependencies": {
+    "turbo": "^2.0.6"
+  },
+  "packageManager": "yarn@1.22.19"
 }

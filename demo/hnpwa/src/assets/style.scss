@@ -1,0 +1,291 @@
+$w1:    #f7f7f7;
+$w2:    #e7e7e7;
+$w3:    #CCC;
+$g1:    #666;
+$g2:    #444;
+$b1:    #111;
+$b2:    #333;
+$green: #3cdb91;
+$yellow:#f7dc64;
+
+
+html {
+    font-size: 87.5%;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+p {
+    margin: .5rem 0;
+    line-height: 1.4rem;
+    max-width: 50rem;
+}
+
+a {
+    text-decoration: none;
+    color: $b1;
+    font-weight: 500;
+
+    &:hover {
+        text-decoration: underline;
+        color: $b1;
+    }
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-left: 1rem;
+}
+
+h2 {
+    padding: 0;
+    margin: 0 0.5rem 0 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    height: 3.5rem;
+    font-weight: 600;
+    position: relative;
+    background-color: $w1;
+
+    @media (min-width: 768px) {
+        font-size: 1.1rem;
+    }
+
+    nav {
+        margin-left: 4.5rem;
+
+        a, span {
+            margin-right: .5rem;
+            padding-bottom: 0.25rem;
+
+            &:hover {
+                text-decoration: none;
+                border-bottom: 3px solid $w3;
+            }
+
+            @media (min-width: 768px) {
+                margin-right: 1.5rem;
+            }
+        }
+
+        span {
+            border-bottom: 3px solid $w3;
+        }
+
+        @media (min-width: 768px) {
+            margin-left: 5.5rem;
+        }
+    }
+}
+
+.logo {
+    position: absolute;
+    top: 0;
+    height: 3.5rem;
+    width: 3.5rem;
+    background: #1293D8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    &:hover {
+        svg {
+            animation: fly .75s cubic-bezier(0.165, 0.84, 0.44, 1);
+            animation-fill-mode: forwards;
+            animation-delay: .2s;
+        }
+    }
+}
+
+#content {
+    max-width: 768px;
+    margin: 1rem auto;
+}
+
+.list-view {
+    li {
+        padding: .5rem 1rem;
+        display: flex;
+        margin-bottom: 4px;
+
+        @media (min-width: 768px) {
+            padding: .5rem 1.5rem;
+        }
+    }
+
+    .domain {
+        margin-left: .5rem;
+        color: $g1;
+    }
+
+    footer {
+        margin-top: .25rem;
+        font-size: .875rem;
+        color: $g1;
+    }
+}
+
+.pagination {
+    margin: 1.5rem 1.5rem 3rem;
+    display: flex;
+    justify-content: center;
+
+    a {
+        text-align: center;
+        display: inline-block;
+        padding: .5rem;
+    }
+
+    span {
+        text-align: center;
+        display: inline-block;
+        background-color: $yellow;
+        border-radius: 2px;
+        padding: .5rem .75rem;
+    }
+
+    .inactive {
+        background-color: transparent;
+        color: $g1;
+    }
+
+    nav {
+        display: none;
+
+        @media (min-width: 768px) {
+            display: block;
+        }
+    }
+
+    .mobile span {
+        background-color: transparent;
+        padding: .5rem .25rem;
+
+        @media (min-width: 768px) {
+            display: none;
+        }
+    }
+}
+
+.domain {
+    color: $g2;
+    font-size: .75rem;
+}
+
+aside {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+    min-width: 1rem;
+    font-weight: 500;
+    color: $b1;
+}
+
+article {
+    padding: 0 1rem 1rem;
+
+    footer {
+        margin-top: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+        padding: 1.5rem;
+    }
+
+    ul {
+        margin-top: 1rem;
+        padding-left: 1rem;
+        border-left: 1px solid $w2;
+
+        @media (min-width: 768px) {
+            padding-left: 1.5rem;
+        }
+    }
+}
+
+.comments-view {
+    margin-left: -1rem;
+    border: 0;
+
+    ul:first-child {
+        border: 0;
+    }
+
+    a {
+        word-break: break-all;
+    }
+
+    @media (min-width: 768px) {
+        margin-left: -1.5rem;
+    }
+
+    pre, code {
+        word-wrap: break-word;
+    }
+}
+
+.comment-meta {
+    padding: .5rem 0;
+    border-bottom: 1px solid $w2;
+}
+
+.user-view {
+    padding: 1rem 1.5rem;
+}
+
+.notification {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.githublink {
+    position: absolute;
+    -webkit-font-smoothing: antialiased;
+    right: 1rem;
+
+    @media (min-width: 768px) {
+        right: 2rem;
+    }
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgb(243, 243, 243);
+    border-radius: 50%;
+    border-top-color: $g1;
+    animation: spin .5s linear infinite;
+    margin: 6px;
+    display: inline-block;
+}
+
+@keyframes spin {
+    to {transform: rotate(360deg);}
+}
+
+@keyframes fly {
+    0% {transform: translateX(0);}
+    50% {transform: translateX(3rem);}
+    50.1% {transform: translateX(-3rem);}
+    100% {transform: translateX(0);}
+}

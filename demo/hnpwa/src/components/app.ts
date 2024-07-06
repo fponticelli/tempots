@@ -1,0 +1,94 @@
+import {
+  aria,
+  Fragment,
+  html,
+  oneof,
+  signal,
+  Signal,
+  svg,
+  svgAttr,
+  When,
+} from '@tempots/dom'
+import { Feed, Route, toTitle } from '../route'
+import { LinkRoute } from './link-route'
+import { Page } from '../types'
+import { PageFeedView } from './page-feed'
+import { ProfileView } from './profile'
+import { NotFound } from './not-found'
+import { Loading } from './loading'
+import { ErrorView } from './error'
+import { Article } from './article'
+
+const Logo = () =>
+  svg.svg(
+    svgAttr.width(32),
+    svgAttr.height(32),
+    svgAttr.viewBox('0 0 32 32'),
+    svg.g(
+      svgAttr.fill('#ffffff'),
+      svg.rect(svgAttr.x(0), svgAttr.y(0), svgAttr.width(8), svgAttr.height(8)),
+      svg.rect(
+        svgAttr.x(11),
+        svgAttr.y(0),
+        svgAttr.width(8),
+        svgAttr.height(8)
+      ),
+      svg.rect(
+        svgAttr.x(22),
+        svgAttr.y(0),
+        svgAttr.width(8),
+        svgAttr.height(8)
+      ),
+      svg.rect(
+        svgAttr.x(11),
+        svgAttr.y(11),
+        svgAttr.width(8),
+        svgAttr.height(8)
+      ),
+      svg.rect(
+        svgAttr.x(11),
+        svgAttr.y(22),
+        svgAttr.width(8),
+        svgAttr.height(8)
+      )
+    )
+  )
+
+function HeaderLink({ route, feed }: { route: Signal<Route>; feed: Feed }) {
+  const condition = route.map(r => r.type === 'FeedsRoute' && r.feed === feed)
+  const whenTrue = html.span(
+    aria.current('page'),
+    toTitle(Route.feeds(feed, 1))
+  )
+  const whenFalse = LinkRoute({ route: signal(Route.feeds(feed, 1)) })
+  return When(condition, whenTrue, whenFalse)
+}
+
+export function App(route: Signal<Route>, page: Signal<Page>) {
+  return html.main(
+    html.header(
+      LinkRoute({
+        route: signal(Route.root),
+        className: 'logo',
+        children: Fragment(aria.label('Homepage'), Logo()),
+      }),
+      html.nav(
+        HeaderLink({ feed: Feed.top, route }),
+        HeaderLink({ feed: Feed.new, route }),
+        HeaderLink({ feed: Feed.ask, route }),
+        HeaderLink({ feed: Feed.show, route }),
+        HeaderLink({ feed: Feed.jobs, route })
+      )
+    ),
+    html.section(
+      oneof.type(page, {
+        Article: p => Article(p.at('item')),
+        PageFeed: PageFeedView,
+        Profile: e => ProfileView({ user: e.at('user') }),
+        NotFound: NotFound,
+        Error: ErrorView,
+        Loading: Loading,
+      })
+    )
+  )
+}
