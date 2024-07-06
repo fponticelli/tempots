@@ -1,35 +1,111 @@
-/*
-Copyright 2019 Google LLC
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+import {
+  el,
+  on,
+  trigger,
+  text,
+  style,
+  attr,
+  prop,
+  mapState,
+  iterator,
+  renderSimple,
+  oneOf2,
+  innerHTML
+} from 'tempo-dom/lib/core'
+import {
+  Choice2
+} from 'tempo-dom/lib/choice'
 
-import { Tempo } from 'tempo-dom/lib/tempo'
-import { SimpleComponent } from 'tempo-dom/lib/html'
+const range = (len: number): number[] =>
+  len < 0 ? [] : Array.from(Array(len).keys()).map(s => s + 1)
 
-const component = SimpleComponent<number, unknown>($ =>
-  $.DIV($ =>
-    $.class('app').DIV($ =>
-      $.DIV($ => $.class(['count', 'count-small']).text('count'))
-        .DIV($ => $.class('count').text(String))
-        .DIV($ =>
-          $.class('buttons')
-            .BUTTON($ =>
-              $.onClick(count => count - 1)
-                .disabled(count => count <= 0)
-                .text('-')
-            )
-            .BUTTON($ => $.onClick(count => count + 1).text('+'))
+const template = el<number, number, unknown>(
+  'div',
+  el(
+    'div',
+    el(
+      'button',
+      trigger('click', ({ state }) => state - 10),
+      text('- 10')
+    ),
+    el(
+      'button',
+      trigger('click', ({ state }) => state - 1),
+      text('-')
+    ),
+    el(
+      'button',
+      trigger('click', ({ state }) => state + 1),
+      text('+')
+    ),
+    el(
+      'button',
+      trigger('click', ({ state }) => state + 10),
+      text('+ 10')
+    )
+  ),
+  el(
+    'div',
+    style('font-size', '24px'),
+    mapState<number, string, number, unknown>(
+      (s): string => `number is ${s}`,
+      text(s => s)
+    )
+  ),
+  el(
+    'div',
+    el(
+      'input',
+      attr('type', 'number'),
+      prop('valueAsNumber', s => s),
+      on<number, number, HTMLInputElement, Event>(
+        'input',
+        ({ element, dispatch }) =>
+          dispatch(isFinite(element.valueAsNumber) ? element.valueAsNumber : 0)
+      )
+    )
+  ),
+  el("div", innerHTML((s: number) => `<b><u>${s}</u></b>`)),
+  oneOf2(
+    (s: number): Choice2<number[], number[]> =>
+      s % 2 === 0
+        ? Choice2.one(range(s).filter(s => s % 2 === 0))
+        : Choice2.two(range(s).filter(s => s % 2 !== 0)),
+    el(
+      'ul',
+      iterator(
+        s => s,
+        el(
+          'li',
+          text(s => `even ${s}`)
         )
+      )
+    ),
+    oneOf2(
+      (s: number[]): Choice2<number[], number[]> =>
+        s[s.length - 1] === 7 ? Choice2.one(s.map(s => s * 7)) : Choice2.two(s),
+      el(
+        'ul',
+        iterator(
+          s => s,
+          el(
+            'li',
+            text(s => `sevens ${s}`)
+          )
+        )
+      ),
+      el(
+        'ul',
+        iterator(
+          s => s,
+          el(
+            'li',
+            text(s => `odd ${s}`)
+          )
+        )
+      )
     )
   )
 )
 
-Tempo.renderSimple({ component, state: 0 })
+renderSimple({ template, state: 10 })

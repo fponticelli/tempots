@@ -1,14 +1,14 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.24.3",
-  "pnpmVersion": "4.14.4",
+  "rushVersion": "5.50.0",
+  "pnpmVersion": "6.10.3",
   "pnpmOptions": {
     "strictPeerDependencies": true
   },
   "projectFolderMaxDepth": 3,
   "gitPolicy": {},
   "repository": {
-    "url": "git@github.com:fponticelli/tempo.git"
+    "url": "git@github.com:fponticelli/tempo2.git"
   },
   "eventHooks": {
     "preRushInstall": [],
@@ -19,63 +19,13 @@
   "variants": [],
   "projects": [
     {
-      "packageName": "tempo-root",
-      "projectFolder": ".",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "tempo-std",
-      "projectFolder": "./std",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "tempo-core",
-      "projectFolder": "./core",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "tempo-store",
-      "projectFolder": "./store",
-      "shouldPublish": true
-    },
-    {
       "packageName": "tempo-dom",
       "projectFolder": "./dom",
       "shouldPublish": true
     },
     {
-      "packageName": "tempo-demo.todomvc",
-      "projectFolder": "./demo/todomvc",
-      "shouldPublish": false
-    },
-    {
       "packageName": "tempo-demo.readme",
       "projectFolder": "./demo/readme",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "tempo-demo.benchmark",
-      "projectFolder": "./demo/benchmark",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "tempo-demo.hnpwa",
-      "projectFolder": "./demo/hnpwa",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "tempo-tools.docs",
-      "projectFolder": "./tools/docs",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "tempo-colors",
-      "projectFolder": "./colors",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "tempo-template-dom",
-      "projectFolder": "./template/dom",
       "shouldPublish": false
     }
   ],

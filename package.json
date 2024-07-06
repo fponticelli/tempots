@@ -1,6 +1,6 @@
 {
   "name": "tempo-root",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Web framework alternative to React/Angular fully typed.",
   "private": true,
   "keywords": [
@@ -32,12 +32,12 @@
     "url": "https://github.com/fponticelli"
   },
   "dependencies": {
-    "@types/jest": "^25.2.3",
-    "gh-pages": "^2.2.0",
-    "jest": "^26.0.1",
-    "jsdom": "^16.2.2",
-    "ts-jest": "^26.4.1",
-    "typescript": "^4.0.3",
-    "canvas": "^2.6.1"
+    "@microsoft/rush": "^5.50.0",
+    "@types/jest": "^26.0.24",
+    "gh-pages": "^3.2.3",
+    "jest": "^27.0.6",
+    "jsdom": "^16.6.0",
+    "ts-jest": "^27.0.3",
+    "typescript": "^4.3.5"
   }
 }

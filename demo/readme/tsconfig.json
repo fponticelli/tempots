@@ -1,12 +1,17 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "es2015"],
+    "lib": [
+      "dom",
+      "es2015"
+    ],
     "rootDir": "./src",
     "sourceMap": false,
     "target": "es5",
     "module": "commonjs",
     "removeComments": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "tempo-dom/lib",
     "outDir": "build"
   }
 }
