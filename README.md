@@ -5,7 +5,7 @@
 
 [Project Homepage](https://tempots.com/)
 
-** Note that the documentation site is still referring to an older version of TempoTS. Hold one while it gets updated. **
+**Note that the documentation site is still referring to an older version of TempoTS. Hold one while it gets updated.**
 
 Tempo is a framework to build dynamic frontend applications.
 
