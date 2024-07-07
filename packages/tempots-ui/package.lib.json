@@ -1,0 +1,23 @@
+{
+  "name": "@tempots/ui",
+  "version": "0.3.0",
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "homepage": "https://github.com/fponticelli/tempots#readme"
+}
