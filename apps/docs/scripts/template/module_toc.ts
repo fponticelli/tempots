@@ -37,22 +37,3 @@ export const moduleToc = (state: Signal<State>) =>
         )
     )
   )
-// NAV<State, unknown, unknown>($ =>
-//   $.MapState(mapModuleToToc, $ =>
-//     $.When(
-//       s => s.length > 5,
-//       $ =>
-//         $.P($ => $.class('title is-6').text('Table of Contents')).UL($ =>
-//           $.class('module-toc-list').ForEach($ =>
-//             $.LI($ =>
-//               $.A($ =>
-//                 $.href(s => s.path)
-//                   .class('is-family-monospace')
-//                   .text(s => s.name)
-//               )
-//             )
-//           )
-//         )
-//     )
-//   )
-// )

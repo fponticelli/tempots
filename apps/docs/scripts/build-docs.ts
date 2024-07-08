@@ -228,8 +228,8 @@ async function main() {
 
   const demos = await getDemos(demoFolderSrc)
 
-  await prepDir(docsFolder)
-  await prepDir(demoFolderDst)
+  await prepDir(pubFolder)
+  // await prepDir(demoFolderDst)
 
   // copy benchmark history
   // const dirs = (await fs.readdir(banchmarkHistoryFolderSrc))
@@ -278,8 +278,8 @@ async function main() {
   // await createChangeLogs(projects, rootFolder, changelogFolderDst)
 
   // api
-  // await prepDir(apiFolderDst)
-  // const apis = await generateDocs(projects, rootFolder, apiFolderDst)
+  await prepDir(apiFolderDst)
+  const apis = await generateDocs(projects, rootFolder, apiFolderDst)
 
   // projects
   // const projectsData = await collectProjects(projects, rootFolder)

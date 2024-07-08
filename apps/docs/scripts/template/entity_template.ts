@@ -1,5 +1,5 @@
 import { description, todos, examples, tags } from './base_doc'
-import { title } from './title'
+import { Title } from './title'
 import { signature } from './signature'
 import { DocEntity } from '../parse/doc_entity'
 import { highlight } from '../utils/highlight'
@@ -72,7 +72,7 @@ export const entityTemplate = (
   doc: Signal<Merge<DocEntity, { project: string; module: string }>>
 ) =>
   Fragment(
-    title(doc as unknown as Signal<{ name: string; kind: DocEntity['kind'] }>),
+    Title(doc as unknown as Signal<{ name: string; kind: string }>),
     tags(doc as unknown as Signal<BaseDoc>),
     description(doc as unknown as Signal<BaseDoc>),
     todos(doc as unknown as Signal<BaseDoc>),

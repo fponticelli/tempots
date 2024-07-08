@@ -37,22 +37,3 @@ export const module = (state: Signal<State>) =>
       entityTemplate
     )
   )
-// Fragment<State, unknown, unknown>($ =>
-//   $.DIV($ =>
-//     $.class('top-right').A($ =>
-//       $.href(s => getUrl(s.project, s.module.path)).text('✏️ edit me')
-//     )
-//   )
-//     .H1($ => $.text(m => `module '${m.module.title}'`))
-//     .MapField('module', $ => $.Append(baseDoc))
-//     .Append(moduleToc)
-//     .MapState(
-//       s =>
-//         s.module.docEntities.map(e => ({
-//           module: s.module.path,
-//           project: s.project,
-//           ...e,
-//         })),
-//       $ => $.ForEach($ => $.Append(entityTemplate))
-//     )
-// )

@@ -9,7 +9,7 @@ import { ApiRef } from '../src/toc'
 import { renderSSR } from '@tempots/ssr'
 import { signal } from '@tempots/dom'
 
-const getModules = (basePath: string, name: string) => {
+const getModules = async (basePath: string, name: string) => {
   const projectPath = path.join(basePath, name)
   const srcPath = path.join(projectPath, 'src')
   const tsConfigFilePath = path.join(projectPath, 'tsconfig.json')
@@ -21,7 +21,7 @@ const getModules = (basePath: string, name: string) => {
   const dir = project.addDirectoryAtPath(srcPath)
 
   const sources = project.getSourceFiles()
-  return sources.map(s => moduleFromSourceFile(dir, s))
+  return Promise.all(sources.map(s => moduleFromSourceFile(dir, s)))
 }
 
 const moduleToHtmlPath = (mod: string) => {
