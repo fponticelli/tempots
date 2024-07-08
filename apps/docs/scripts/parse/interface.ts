@@ -1,8 +1,8 @@
 import { InterfaceDeclaration } from 'ts-morph'
 import { docOfJsDoc as docOfJsDocs } from './jsdoc'
 import { adjustSignature } from './signature'
-import { DocEntity } from './doc_entity'
-import { getLineNumber } from './line_number'
+import { DocEntity } from './doc-entity'
+import { getLineNumber } from './line-number'
 
 export const interfaceOfDeclaration = async (
   interf: InterfaceDeclaration

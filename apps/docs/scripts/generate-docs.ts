@@ -3,6 +3,7 @@ import { moduleFromSourceFile } from './parse/module'
 import * as path from 'path'
 import { Module } from './template/module'
 import * as fse from 'fs-extra'
+import * as fs from 'fs'
 import { formatHtml } from './template/html'
 import { State } from './template/state'
 import { ApiRef } from '../src/toc'
@@ -14,8 +15,9 @@ const getModules = async (basePath: string, name: string) => {
   const srcPath = path.join(projectPath, 'src')
   const tsConfigFilePath = path.join(projectPath, 'tsconfig.json')
   const project = new Project({
-    // addFilesFromTsConfig: true,
+    skipAddingFilesFromTsConfig: false,
     tsConfigFilePath,
+    skipFileDependencyResolution: true,
   })
 
   const dir = project.addDirectoryAtPath(srcPath)
@@ -36,15 +38,21 @@ const processProject =
   ) =>
   async (name: string) => {
     const modules = await getModules(basePath, name)
+    console.log(`${name} has ${modules.length} modules`)
     modules.forEach(async module => {
       const state = {
         module,
         project: name,
       }
+      console.log(`> ${state.module.path}`)
       const html = await renderModule(state)
+      // if (state.module.path === 'index.ts') {
+      //   console.log(state)
+      //   console.log(html)
+      // }
       const destFile = path.join(destPath, name, moduleToHtmlPath(module.path))
       fse.ensureDirSync(path.dirname(destFile))
-      fse.writeFileSync(destFile, html, 'utf8')
+      fs.writeFileSync(destFile, html, 'utf8')
     })
 
     return modules.map(m => {
@@ -76,13 +84,11 @@ export const generateDocs = async (
   basePath: string,
   destPath: string
 ): Promise<Record<string, ApiRef[]>> => {
-  const renderModule = (state: State) => {
-    return makeHtml(state)
-  }
   await fse.emptyDir(destPath)
-  const process = processProject(destPath, basePath, renderModule)
-  return projects.reduce((acc, project) => {
-    const modules = process(project)
+  const process = processProject(destPath, basePath, makeHtml)
+  return projects.reduce(async (acc, project) => {
+    console.log('Processing', project)
+    const modules = await process(project)
     return {
       ...acc,
       [project]: modules,

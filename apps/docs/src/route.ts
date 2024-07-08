@@ -24,7 +24,7 @@ export const toHref = (route: Route) =>
     Project: o => `#/project/${o.name}`,
     Api: o => `#/api/${o.name}/${o.path}`,
     NotFound: o => o.path,
-    Changelog: o => `#/changelog/${o.name}`
+    Changelog: o => `#/changelog/${o.name}`,
   })
 
 export const toUrlForAnalytics = (r: Route) => {
@@ -42,7 +42,7 @@ export const toContentUrl = (route: Route) =>
     Page: o => some(`pages/${o.path}`),
     Project: _ => none,
     NotFound: _ => none,
-    Changelog: o => some(`changelog/${o.name}.html`)
+    Changelog: o => some(`changelog/${o.name}.html`),
   })
 
 export const Route = {
@@ -55,7 +55,7 @@ export const Route = {
   },
   project: (name: string): Route => ({ kind: 'Project', name }),
   changelog: (name: string): Route => ({ kind: 'Changelog', name }),
-  notFound: (path: string): Route => ({ kind: 'NotFound', path })
+  notFound: (path: string): Route => ({ kind: 'NotFound', path }),
 }
 
 export type Link = {

@@ -43,6 +43,11 @@ function shouldNotApplyCallback(
   return false
 }
 
+export type HandleAnchorClickOptions = {
+  checkExtension?: boolean
+  checkExternalUrl?: boolean
+}
+
 /**
  * Handles anchor click events, optionally checking for external URLs and file extensions.
  *
@@ -55,7 +60,7 @@ function shouldNotApplyCallback(
 export const handleAnchorClick =
   (
     callback: () => boolean,
-    options: { checkExtension?: boolean; checkExternalUrl?: boolean } = {
+    options: HandleAnchorClickOptions = {
       checkExtension: true,
       checkExternalUrl: true,
     }

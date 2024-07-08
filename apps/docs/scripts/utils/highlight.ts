@@ -1,4 +1,5 @@
 import Prism from 'prismjs'
+import 'prismjs/components/prism-typescript'
 
 // import ts from 'prismjs/components/prism-typescript'
 

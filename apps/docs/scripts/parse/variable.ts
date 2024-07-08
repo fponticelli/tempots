@@ -1,8 +1,8 @@
 import { VariableDeclaration } from 'ts-morph'
 import { docOfJsDoc } from './jsdoc'
-import { stripImportTypes } from '../utils/strip_imports'
-import { DocEntity } from './doc_entity'
-import { getLineNumber } from './line_number'
+import { stripImportTypes } from '../utils/strip-imports'
+import { DocEntity } from './doc-entity'
+import { getLineNumber } from './line-number'
 import { adjustSignature } from './signature'
 
 async function getConstantVariableDeclarationSignature(

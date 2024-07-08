@@ -1,7 +1,7 @@
 import { Description, ToDos, Examples, Tags } from './base-doc-view'
 import { Title } from './title'
 import { Signature } from './signature'
-import { DocEntity } from '../parse/doc_entity'
+import { DocEntity } from '../parse/doc-entity'
 import { highlight } from '../utils/highlight'
 import { attr, ForEach, Fragment, html, Signal } from '@tempots/dom'
 import { Merge } from '@tempots/std/domain'

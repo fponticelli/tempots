@@ -1,19 +1,22 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import { format } from 'prettier'
-import YAML from 'yaml'
+import * as path from "path";
+import * as fs from "fs";
+import { format } from "prettier";
+import YAML from "yaml";
 
-console.log(process.cwd())
-
-const config = YAML.parse(
-  fs.readFileSync(path.join(process.cwd(), './.prettierrc.yaml'), { encoding: 'utf8' })
-)
+const config = {
+  ...YAML.parse(
+    fs.readFileSync(path.join(process.cwd(), "./.prettierrc.yaml"), {
+      encoding: "utf8"
+    })
+  ),
+  parser: "typescript"
+};
 
 export async function makePretty(code: string) {
   try {
-    return format(code, config)
+    return format(code, config);
   } catch (_) {
-    console.log(code)
-    return code
+    console.log(code);
+    return code;
   }
 }

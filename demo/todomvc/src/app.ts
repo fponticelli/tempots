@@ -97,7 +97,7 @@ export const App = () => {
                 const isEditing = computed(
                   (): boolean =>
                     editing.value != null && editing.value.id === item.value.id,
-                  [editing, item]
+                  [editing as Signal<unknown>, item]
                 )
                 return html.li(
                   attr.class(

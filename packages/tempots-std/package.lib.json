@@ -31,10 +31,6 @@
       "import": "./function.js",
       "require": "./function.cjs"
     },
-    "./index": {
-      "import": "./index.js",
-      "require": "./index.cjs"
-    },
     "./json": {
       "import": "./json.js",
       "require": "./json.cjs"
@@ -99,9 +95,6 @@
       ],
       "function": [
         "./function.d.ts"
-      ],
-      "index": [
-        "./index.d.ts"
       ],
       "json": [
         "./json.d.ts"

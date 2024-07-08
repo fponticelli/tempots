@@ -5,14 +5,14 @@ import { flatMap, flatten } from '@tempots/std/array'
 import { compareCaseInsensitive } from '@tempots/std/string'
 import { interfaceOfDeclaration } from './interface'
 import { enumOfDeclaration } from './enum'
-import { typeAliasOfDeclaration } from './type_alias'
+import { typeAliasOfDeclaration } from './type-alias'
 import { classOfDeclaration } from './class'
 import { exportOfDeclaration } from './export'
 import { variableOfDeclaration } from './variable'
 import {
   Directory
 } from 'ts-morph'
-import { DocEntity } from './doc_entity'
+import { DocEntity } from './doc-entity'
 
 export interface Module extends BaseDoc {
   kind: 'module'

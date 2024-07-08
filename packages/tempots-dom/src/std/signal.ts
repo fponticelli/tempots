@@ -4,6 +4,9 @@ const $isSignal = Symbol('isSignal')
 const $isProp = Symbol('isProp')
 const $isComputed = Symbol('isComputed')
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnySignal<T = any> = Signal<T> | Prop<T> | Computed<T>
+
 export class Signal<T> {
   static ofPromise<T>(
     promise: Promise<T>,
@@ -358,8 +361,8 @@ export class Prop<T> extends Signal<T> {
 
 export function computed<T>(
   fn: () => T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signals: Array<Signal<any>>,
+
+  signals: Array<AnySignal>,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Computed<T> {
   const computed = new Computed(fn, equals)
@@ -367,8 +370,7 @@ export function computed<T>(
   return computed
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function effect(fn: () => void, signals: Array<Signal<any>>) {
+export function effect(fn: () => void, signals: Array<AnySignal>) {
   return computed(fn, signals).dispose
 }
 
@@ -479,8 +481,7 @@ function raf(fn: FrameRequestCallback) {
 export function animate<T>(
   initialValue: T,
   fn: () => T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  signals: Array<Signal<any>>,
+  signals: Array<AnySignal>,
   options?: {
     interpolate?: (start: T, end: T, delta: number) => T
     duration?: Value<number>

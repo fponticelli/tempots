@@ -10,8 +10,8 @@ import { docOfJsDoc } from './jsdoc'
 import { adjustSignature } from './signature'
 import { flatten } from '@tempots/std/array'
 import { replace } from '@tempots/std/string'
-import { DocEntity } from './doc_entity'
-import { getLineNumber } from './line_number'
+import { DocEntity } from './doc-entity'
+import { getLineNumber } from './line-number'
 
 function getMethodDeclarationSignature(fun: MethodDeclaration): string {
   let text = fun.getText()

@@ -25,7 +25,8 @@ const assetsFolderSrc = path.join(docsFolder, 'assets')
 const assetsFolderDst = path.join(pubFolder, 'assets')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
-const projects = ['core', 'dom', 'std', 'store']
+const projectsFolderSrc = path.join(rootFolder, 'packages')
+const projects = ['tempots-dom', 'tempots-ssr', 'tempots-std', 'tempots-color', 'tempots-ui']
 const changelogFolderDst = path.join(pubFolder, 'changelog')
 const apiFolderDst = path.join(pubFolder, 'api')
 
@@ -173,7 +174,7 @@ async function createPages(src: string, dst: string) {
 async function createChangeLogs(projects: string[], root: string, dst: string) {
   const changelogs = await Promise.all(
     projects.map(async project => {
-      const p = path.join(root, project, 'CHANGELOG.md')
+      const p = path.join(projectsFolderSrc, project, 'CHANGELOG.md')
       const content = await fsp.readFile(p, 'utf8')
       const html = markdown(content, s => s)
       return { project, html }
@@ -195,7 +196,7 @@ async function collectProject(
   const pack = JSON.parse(packageJson)
   const projectPath = path.join(src, project, 'PROJECT.md')
   const content = markdown(
-    fse.existsSync(projectPath) ? await fsp.readFile(projectPath, 'utf8') : '',
+    fs.existsSync(projectPath) ? await fsp.readFile(projectPath, 'utf8') : '',
     s => s
   )
   return {
@@ -258,7 +259,7 @@ async function main() {
     })
   )
 
-  console.log(assetsFolderSrc, assetsFolderDst)
+  // console.log(assetsFolderSrc, assetsFolderDst)
   // copy assets
   // await prepDir(assetsFolderDst)
   // await fse.copy(assetsFolderSrc, assetsFolderDst)
@@ -279,22 +280,22 @@ async function main() {
 
   // api
   await prepDir(apiFolderDst)
-  const apis = await generateDocs(projects, rootFolder, apiFolderDst)
+  const apis = await generateDocs(projects, projectsFolderSrc, apiFolderDst)
 
   // projects
-  // const projectsData = await collectProjects(projects, rootFolder)
+  const projectsData = await collectProjects(projects, projectsFolderSrc)
 
-  // const outputContent: Toc = {
-  //   projects: projectsData,
-  //   demos,
-  //   ...sections,
-  //   apis,
-  // }
+  const outputContent: Toc = {
+    projects: projectsData,
+    demos,
+    ...sections,
+    apis,
+  }
 
-  // await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
+  await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
 
   // CNAME
-  // await fsp.writeFile(cnameFile, 'tempots.com')
+  await fsp.writeFile(cnameFile, 'tempots.com')
 
   console.timeEnd('main')
 }

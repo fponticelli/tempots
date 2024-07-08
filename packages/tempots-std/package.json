@@ -35,10 +35,6 @@
       "import": "./dist/function.js",
       "require": "./dist/function.cjs"
     },
-    "./index": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
     "./json": {
       "import": "./dist/json.js",
       "require": "./dist/json.cjs"
@@ -134,9 +130,6 @@
       ],
       "function": [
         "./dist/function.d.ts"
-      ],
-      "index": [
-        "./dist/index.d.ts"
       ],
       "json": [
         "./dist/json.d.ts"

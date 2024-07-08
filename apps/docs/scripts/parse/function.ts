@@ -1,8 +1,8 @@
 import { FunctionDeclaration } from 'ts-morph'
 import { docOfJsDoc } from './jsdoc'
 import { adjustSignature } from './signature'
-import { DocEntity } from './doc_entity'
-import { getLineNumber } from './line_number'
+import { DocEntity } from './doc-entity'
+import { getLineNumber } from './line-number'
 
 export function getFunctionDeclarationSignature(
   fun: FunctionDeclaration
