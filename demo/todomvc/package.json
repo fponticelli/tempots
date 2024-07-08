@@ -1,5 +1,7 @@
 {
   "name": "todomvc",
+  "title": "TodoMVC",
+  "description": "TodoMVC example using TempoTS",
   "private": true,
   "version": "0.0.0",
   "type": "module",

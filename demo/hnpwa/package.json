@@ -1,5 +1,7 @@
 {
   "name": "hnpwa",
+  "title": "HNPWA",
+  "description": "Hacker News Progressive Web App",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -8,29 +8,30 @@ import { markdown, markdownWithFM } from './utils/markdown'
 import { generateDocs } from './generate-docs'
 
 const rootFolder = '../..'
-const docsFolder = path.join(rootFolder, 'apps/docs/pub')
+const docsFolder = path.join(rootFolder, 'apps/docs')
+const pubFolder = path.join(docsFolder, 'pub')
 const binFolderSrc = './dist'
-const binFolderDst = docsFolder
+const binFolderDst = pubFolder
 const demoFolderSrc = path.join(rootFolder, 'demo')
-const demoFolderDst = path.join(docsFolder, 'demo')
+const demoFolderDst = path.join(pubFolder, 'demo')
 // const banchmarkHistoryFolderSrc = path.join(
 //   rootFolder,
 //   'demo',
 //   'benchmark',
 //   'history'
 // )
-// const banchmarkHistoryFolderDst = path.join(docsFolder, 'demo', 'benchmark')
-const assetsFolderSrc = path.join(docsFolder, 'assets/pages')
-const assetsFolderDst = path.join(docsFolder, 'assets')
-const pagesFolderSrc = path.join(rootFolder, 'pages')
-const pagesFolderDst = path.join(docsFolder, 'pages')
+// const banchmarkHistoryFolderDst = path.join(pubFolder, 'demo', 'benchmark')
+const assetsFolderSrc = path.join(docsFolder, 'assets')
+const assetsFolderDst = path.join(pubFolder, 'assets')
+const pagesFolderSrc = path.join(docsFolder, 'pages')
+const pagesFolderDst = path.join(pubFolder, 'pages')
 const projects = ['core', 'dom', 'std', 'store']
-const changelogFolderDst = path.join(docsFolder, 'changelog')
-const apiFolderDst = path.join(docsFolder, 'api')
+const changelogFolderDst = path.join(pubFolder, 'changelog')
+const apiFolderDst = path.join(pubFolder, 'api')
 
-const tocFile = path.join(docsFolder, 'toc.json')
-const cnameFile = path.join(docsFolder, 'CNAME')
-const nojekyll = path.join(docsFolder, '.nojekyll')
+const tocFile = path.join(pubFolder, 'toc.json')
+const cnameFile = path.join(pubFolder, 'CNAME')
+const nojekyll = path.join(pubFolder, '.nojekyll')
 
 const renameHtml = (path: string) => {
   const hasLeadingHash = path.startsWith('#')
@@ -226,11 +227,9 @@ async function main() {
   console.time('main')
 
   const demos = await getDemos(demoFolderSrc)
-  console.log(demos)
 
-  // await prepDir(docsFolder)
-
-  // await prepDir(demoFolderDst)
+  await prepDir(docsFolder)
+  await prepDir(demoFolderDst)
 
   // copy benchmark history
   // const dirs = (await fs.readdir(banchmarkHistoryFolderSrc))
@@ -250,15 +249,16 @@ async function main() {
   // )
 
   // copy demos
-  // await Promise.all(
-  //   demos.map(demo => {
-  //     let src = path.join(demoFolderSrc, demo.path, 'dist')
-  //     if (!fs.existsSync(src))
-  //       src = path.join(demoFolderSrc, demo.path, 'build')
-  //     fse.copy(src, path.join(demoFolderDst, demo.path))
-  //   })
-  // )
+  await Promise.all(
+    demos.map(demo => {
+      let src = path.join(demoFolderSrc, demo.path, 'dist')
+      if (!fs.existsSync(src))
+        src = path.join(demoFolderSrc, demo.path, 'build')
+      fse.copy(src, path.join(demoFolderDst, demo.path))
+    })
+  )
 
+  console.log(assetsFolderSrc, assetsFolderDst)
   // copy assets
   // await prepDir(assetsFolderDst)
   // await fse.copy(assetsFolderSrc, assetsFolderDst)
@@ -270,8 +270,8 @@ async function main() {
   // await fse.createFile(nojekyll)
 
   // pages
-  // await prepDir(pagesFolderDst)
-  // const sections = await createPages(pagesFolderSrc, pagesFolderDst)
+  await prepDir(pagesFolderDst)
+  const sections = await createPages(pagesFolderSrc, pagesFolderDst)
 
   // changelog
   // await prepDir(changelogFolderDst)
