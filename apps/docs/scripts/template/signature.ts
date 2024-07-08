@@ -1,7 +1,7 @@
 import { attr, html, Signal } from '@tempots/dom'
 import Prism from 'prismjs'
 
-export const signature = (text: Signal<string>) =>
+export const Signature = (text: Signal<string>) =>
   html.pre(
     attr.class('ts language-ts signature'),
     attr.innerHTML(

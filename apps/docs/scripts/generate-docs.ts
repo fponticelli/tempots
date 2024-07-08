@@ -1,7 +1,7 @@
 import { Project } from 'ts-morph'
 import { moduleFromSourceFile } from './parse/module'
 import * as path from 'path'
-import { module } from './template/module'
+import { Module } from './template/module'
 import * as fse from 'fs-extra'
 import { formatHtml } from './template/html'
 import { State } from './template/state'
@@ -62,7 +62,7 @@ const makeHtml = async (state: State) => {
   const html = await renderSSR({
     html: '<html><body></body></html>',
     url: 'https://tempots.com',
-    makeApp: () => module(signal(state)),
+    makeApp: () => Module(signal(state)),
     selector: 'body',
   })
   // const dom = new JSDOM()

@@ -12,7 +12,7 @@ const mapModuleToToc = (state: State) => {
   }))
 }
 
-export const moduleToc = (state: Signal<State>) =>
+export const ModuleToc = (state: Signal<State>) =>
   html.nav(
     Ensure(
       state.map(s => {

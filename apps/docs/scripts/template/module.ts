@@ -1,6 +1,6 @@
-import { entityTemplate } from './entity_template'
-import { baseDoc } from './base_doc'
-import { moduleToc } from './module_toc'
+import { EntityView } from './entity-view'
+import { BaseDocView } from './base-doc-view'
+import { ModuleToc } from './module-toc'
 import { State } from './state'
 import { attr, computed, ForEach, Fragment, html, Signal } from '@tempots/dom'
 import { BaseDoc } from '../parse/jsdoc'
@@ -9,7 +9,7 @@ const getUrl = (project: string, module: string) => {
   return `https://github.com/fponticelli/tempo/edit/master/${project}/src/${module}`
 }
 
-export const module = (state: Signal<State>) =>
+export const Module = (state: Signal<State>) =>
   Fragment(
     html.div(
       attr.class('top-right'),
@@ -24,8 +24,8 @@ export const module = (state: Signal<State>) =>
       )
     ),
     html.h1(state.map(s => `module '${s.module.title}'`)),
-    baseDoc(state.$.module as unknown as Signal<BaseDoc>),
-    moduleToc(state),
+    BaseDocView(state.$.module as unknown as Signal<BaseDoc>),
+    ModuleToc(state),
     ForEach(
       state.map(s =>
         s.module.docEntities.map(e => ({
@@ -34,6 +34,6 @@ export const module = (state: Signal<State>) =>
           ...e,
         }))
       ),
-      entityTemplate
+      EntityView
     )
   )

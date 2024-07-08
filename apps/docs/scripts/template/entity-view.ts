@@ -1,6 +1,6 @@
-import { description, todos, examples, tags } from './base_doc'
+import { Description, ToDos, Examples, Tags } from './base-doc-view'
 import { Title } from './title'
-import { signature } from './signature'
+import { Signature } from './signature'
 import { DocEntity } from '../parse/doc_entity'
 import { highlight } from '../utils/highlight'
 import { attr, ForEach, Fragment, html, Signal } from '@tempots/dom'
@@ -19,12 +19,12 @@ const getImport = (name: string, project: string, module: string) => {
   return `import { ${name} } from 'tempo-${project}/lib/${module}'`
 }
 
-export const signatures = (
+export const Signatures = (
   doc: Signal<DocEntity & { project: string; module: string }>
 ) => {
   const signatures = doc.$.signatures
   return Fragment(
-    ForEach(signatures, signature),
+    ForEach(signatures, Signature),
     Fragment(
       html.p(
         attr.class('defined-in'),
@@ -45,42 +45,15 @@ export const signatures = (
     )
   )
 }
-// Fragment<
-//   DocEntity & { project: string; module: string },
-//   unknown,
-//   unknown
-// >($ =>
-//   $.MapField('signatures', $ => $.ForEach($ => $.Append(signature)))
-//     .P($ =>
-//       $.class('defined-in')
-//         .text('defined in ')
-//         .A($ =>
-//           $.href(s => getUrl(s.project, s.module, s.line))
-//             .text(s => getModule(s.project, s.module))
-//             .text(' at line ')
-//             .text(s => String(s.line))
-//         )
-//     )
-//     .PRE($ =>
-//       $.class('import-code ts language-ts').Lifecycle(
-//         unsafeHtml(s => highlight(getImport(s.name, s.project, s.module)))
-//       )
-//     )
-// )
 
-export const entityTemplate = (
+export const EntityView = (
   doc: Signal<Merge<DocEntity, { project: string; module: string }>>
 ) =>
   Fragment(
     Title(doc as unknown as Signal<{ name: string; kind: string }>),
-    tags(doc as unknown as Signal<BaseDoc>),
-    description(doc as unknown as Signal<BaseDoc>),
-    todos(doc as unknown as Signal<BaseDoc>),
-    examples(doc as unknown as Signal<BaseDoc>),
-    signatures(doc)
+    Tags(doc as unknown as Signal<BaseDoc>),
+    Description(doc as unknown as Signal<BaseDoc>),
+    ToDos(doc as unknown as Signal<BaseDoc>),
+    Examples(doc as unknown as Signal<BaseDoc>),
+    Signatures(doc)
   )
-// Fragment<
-//   DocEntity & { project: string; module: string },
-//   unknown,
-//   unknown
-// >($ => $.AppendMany(title, tags, description, todos, signatures, examples))
