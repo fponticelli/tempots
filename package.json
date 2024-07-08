@@ -14,8 +14,9 @@
     "npm:publish": "turbo npm:publish"
   },
   "workspaces": [
-    "packages/*",
-    "demo/*"
+    "apps/*",
+    "demo/*",
+    "packages/*"
   ],
   "devDependencies": {
     "turbo": "^2.0.6"

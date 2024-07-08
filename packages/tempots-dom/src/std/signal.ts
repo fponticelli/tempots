@@ -148,6 +148,10 @@ export class Signal<T> {
   readonly at = <K extends keyof T>(key: K): Signal<T[K]> =>
     this.map(value => value[key])
 
+  readonly $ = new Proxy(this, {
+    get: (_, key) => this.at(key as keyof T),
+  }) as { [K in keyof T]: Signal<T[K]> }
+
   readonly filter = (fn: (value: T) => boolean, startValue?: T) => {
     let latestValue = startValue ?? this.get()
     const computed = new Computed(() => {

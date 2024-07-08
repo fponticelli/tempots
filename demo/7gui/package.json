@@ -1,5 +1,7 @@
 {
   "name": "7gui",
+  "title": "7GUI",
+  "description": "7GUI implementation using TempoTS",
   "private": true,
   "version": "0.0.0",
   "type": "module",
