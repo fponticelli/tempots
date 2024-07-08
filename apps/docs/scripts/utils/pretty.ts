@@ -1,9 +1,12 @@
+import * as path from 'path'
 import * as fs from 'fs'
 import { format } from 'prettier'
 import YAML from 'yaml'
 
+console.log(process.cwd())
+
 const config = YAML.parse(
-  fs.readFileSync('./.prettierrc.yaml', { encoding: 'utf8' })
+  fs.readFileSync(path.join(process.cwd(), './.prettierrc.yaml'), { encoding: 'utf8' })
 )
 
 export async function makePretty(code: string) {

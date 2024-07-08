@@ -35,7 +35,7 @@ const processProject =
     renderModule: (module: State) => Promise<string>
   ) =>
   async (name: string) => {
-    const modules = await Promise.all(getModules(basePath, name))
+    const modules = await getModules(basePath, name)
     modules.forEach(async module => {
       const state = {
         module,
