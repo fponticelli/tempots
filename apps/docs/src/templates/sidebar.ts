@@ -9,7 +9,7 @@ import {
   projectChangelogMatchesRoute,
   apiMatchesRoute,
   isApiProjectRoute,
-  sameRoute
+  sameRoute,
 } from '../route'
 import { some, none } from 'tempo-std/lib/option'
 import { keys } from 'tempo-std/lib/objects'
@@ -39,7 +39,7 @@ section = Lazy(() =>
                     route: ([page, [_1, _2, route]]) =>
                       pageMatchesRoute(page, route)
                         ? none
-                        : some(pageToRoute(page))
+                        : some(pageToRoute(page)),
                   })
                 )
               )
@@ -52,7 +52,7 @@ section = Lazy(() =>
                     keys(section.sections).map(sub => [
                       sub,
                       section.sections[sub],
-                      route
+                      route,
                     ]),
                   $ =>
                     $.MapState(
@@ -78,7 +78,7 @@ const api = Fragment<
       route: ([r, p]) =>
         apiMatchesRoute(p.project.name, r.path, p.route)
           ? none
-          : some(Route.api(p.project.name, r.path))
+          : some(Route.api(p.project.name, r.path)),
     })
   )
 )
@@ -92,7 +92,7 @@ const project = DIV<[ProjectRef, Sidebar, number], Action, unknown>($ =>
           projectChangelogMatchesRoute(p, s.route)
             ? none
             : some(Route.changelog(p.name)),
-        class: 'is-pulled-right is-size-7'
+        class: 'is-pulled-right is-size-7',
       })
     ).Append(
       maybeLink({
@@ -101,7 +101,7 @@ const project = DIV<[ProjectRef, Sidebar, number], Action, unknown>($ =>
           sameRoute(Route.project(p.name), s.route)
             ? none
             : some(Route.project(p.name)),
-        class: 'is-uppercase has-text-weight-bold'
+        class: 'is-uppercase has-text-weight-bold',
       })
     )
   ).DIV($ =>
@@ -117,14 +117,14 @@ const project = DIV<[ProjectRef, Sidebar, number], Action, unknown>($ =>
               ([project, sidebar]) => ({
                 apis: sidebar.toc.apis[project.name],
                 project,
-                route: sidebar.route
+                route: sidebar.route,
               }),
               $ =>
                 $.MapState(
                   state => ({
                     apis: state.apis,
                     project: state.project,
-                    route: state.route
+                    route: state.route,
                   }),
                   $ =>
                     $.When(
@@ -151,7 +151,7 @@ export const sidebar = ASIDE<Sidebar, Action, unknown>($ =>
         ['', sidebar.toc as SectionRef, sidebar.route] as [
           string,
           SectionRef,
-          Route
+          Route,
         ],
       $ => $.Append(section)
     )

@@ -43,7 +43,7 @@ export const projectContent = ARTICLE<ProjectRef, Action, unknown>($ =>
           $.Append(
             link({
               label: 'change log',
-              route: p => Route.changelog(p.name)
+              route: p => Route.changelog(p.name),
             })
           )
         )

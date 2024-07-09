@@ -1,22 +1,17 @@
-import { unsafeHtml } from 'tempo-dom/lib/lifecycle/unsafe_html'
-import { Action } from '../action'
-import { Fragment } from 'tempo-dom/lib/html'
+import { attr, Ensure, Fragment, html, Signal } from '@tempots/dom'
 
-export const htmlContent = Fragment<
-  { title: string | undefined; html: string; path: string | undefined },
-  Action,
-  unknown
->($ =>
-  $.When(
-    s => typeof s.path === 'string',
-    $ =>
-      $.DIV($ =>
-        $.class('top-right').A($ => $.href(s => s.path).text('✏️ edit me'))
-      )
+export type HtmlContentProps = { title?: string; html: string; path?: string }
+
+export const htmlContent = (data: Signal<HtmlContentProps>) =>
+  Fragment(
+    Ensure(
+      data.map(s => (typeof s.path === 'string' ? s.path : null)),
+      path =>
+        html.div(attr.class('top-right'), html.a(attr.href(path), '✏️ edit me'))
+    ),
+    Ensure(
+      data.map(s => (typeof s.title === 'string' ? s.title : null)),
+      title => title
+    ),
+    html.article(attr.class('content'), attr.innerHTML(data.map(s => s.html)))
   )
-    .When(
-      s => typeof s.title === 'string',
-      $ => $.text(s => s.title)
-    )
-    .ARTICLE($ => $.class('content').Lifecycle(unsafeHtml(s => s.html)))
-)

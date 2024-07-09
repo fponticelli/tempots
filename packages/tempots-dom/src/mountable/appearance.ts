@@ -8,7 +8,6 @@ import { makeProviderMark, WithProvider } from './providers'
 /**
  * Defines the possible appearance types for the application.
  * @type AppearanceType
- * @export
  */
 export type AppearanceType = 'light' | 'dark'
 

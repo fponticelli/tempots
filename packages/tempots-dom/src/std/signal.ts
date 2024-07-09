@@ -7,6 +7,9 @@ const $isComputed = Symbol('isComputed')
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnySignal<T = any> = Signal<T> | Prop<T> | Computed<T>
 
+/**
+ * @category Signal Implementation
+ */
 export class Signal<T> {
   static ofPromise<T>(
     promise: Promise<T>,
@@ -270,6 +273,9 @@ const queue =
     ? queueMicrotask
     : (fn: () => void) => Promise.resolve().then(fn)
 
+/**
+ * @category Signal Implementation
+ */
 export class Computed<T> extends Signal<T> {
   static is<T = unknown>(value: unknown): value is Computed<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -319,6 +325,9 @@ export class Computed<T> extends Signal<T> {
   }
 }
 
+/**
+ * @category Signal Implementation
+ */
 export class Prop<T> extends Signal<T> {
   static is<T = unknown>(value: unknown): value is Prop<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

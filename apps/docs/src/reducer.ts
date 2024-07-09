@@ -20,23 +20,23 @@ export const reducer = reduceOnKind<State, Action>({
     return {
       ...state,
       route: action.route,
-      content
+      content,
     }
   },
   LoadedToc: (state, action) => ({
     ...state,
-    toc: action.toc
+    toc: action.toc,
   }),
   RequestToc: state => ({
     ...state,
-    toc: loading(null)
+    toc: loading(null),
   }),
   LoadedContent: (state, action) => ({
     ...state,
-    content: action.content
+    content: action.content,
   }),
   RequestPageContent: state => ({
     ...state,
-    content: loading(null)
-  })
+    content: loading(null),
+  }),
 })

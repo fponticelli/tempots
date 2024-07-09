@@ -7,7 +7,7 @@ import { interfaceOfDeclaration } from './interface'
 import { enumOfDeclaration } from './enum'
 import { typeAliasOfDeclaration } from './type-alias'
 import { classOfDeclaration } from './class'
-import { exportOfDeclaration } from './export'
+import { exportOfDeclaration, exportOfSymbol } from './export'
 import { variableOfDeclaration } from './variable'
 import {
   Directory
@@ -61,11 +61,15 @@ const classesOfSource = (source: SourceFile) => {
     .map(classOfDeclaration))
 }
 
-const exportOfSource = async (source: SourceFile) => {
+const exportDeclarationOfSource = async (source: SourceFile) => {
   return flatten(
             await Promise.all(source.getExportDeclarations()
               .map(exportOfDeclaration))
           )
+}
+
+const exportSymbolsOfSource = (source: SourceFile) => {
+  return Promise.all(source.getExportSymbols().map(exportOfSymbol))
 }
 
 const variablesOfSource = (source: SourceFile) => {
@@ -84,7 +88,8 @@ export const moduleFromSourceFile = async (dir: Directory, source: SourceFile): 
   const functions = await functionsOfSource(source)
   const typeAliases = await typeAliasesOfSource(source)
   const classes = await classesOfSource(source)
-  const exports = await exportOfSource(source)
+  const exportDeclarations = await exportDeclarationOfSource(source)
+  const exportSymbols = await exportSymbolsOfSource(source)
   const variables = await variablesOfSource(source)
   const docEntities = flatten([
     enums,
@@ -92,7 +97,8 @@ export const moduleFromSourceFile = async (dir: Directory, source: SourceFile): 
     functions,
     typeAliases,
     classes,
-    exports,
+    exportDeclarations,
+    exportSymbols,
     variables
   ]).sort((a, b) => compareCaseInsensitive(a.name, b.name))
 

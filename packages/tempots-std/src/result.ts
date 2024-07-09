@@ -1,11 +1,11 @@
 import { type AsyncResult } from './async-result'
 
 export interface Success<V> {
-  type: 'success'
+  type: 'Success'
   value: V
 }
 export interface Failure<E> {
-  type: 'failure'
+  type: 'Failure'
   error: E
 }
 
@@ -16,23 +16,23 @@ export type PromiseResult<V, E> = PromiseLike<Result<V, E>>
 export const Result = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   success<V>(value: V): Result<V, any> {
-    return { type: 'success', value }
+    return { type: 'Success', value }
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   failure<E>(error: E): Result<any, E> {
-    return { type: 'failure', error }
+    return { type: 'Failure', error }
   },
   cmap:
     <V1, V2, E>(f: (value: V1) => V2) =>
     (r: Result<V1, E>): Result<V2, E> => {
-      if (r.type === 'success') {
+      if (r.type === 'Success') {
         return Result.success(f(r.value))
       } else {
         return r
       }
     },
   map: <V1, V2, E>(r: Result<V1, E>, f: (value: V1) => V2): Result<V2, E> => {
-    if (r.type === 'success') {
+    if (r.type === 'Success') {
       return Result.success(f(r.value))
     } else {
       return r
@@ -41,7 +41,7 @@ export const Result = {
   cflatMap:
     <V1, V2, E>(f: (value: V1) => Result<V2, E>) =>
     (r: Result<V1, E>): Result<V2, E> => {
-      if (r.type === 'success') {
+      if (r.type === 'Success') {
         return f(r.value)
       } else {
         return r
@@ -51,7 +51,7 @@ export const Result = {
     r: Result<V1, E>,
     f: (value: V1) => Result<V2, E>
   ): Result<V2, E> => {
-    if (r.type === 'success') {
+    if (r.type === 'Success') {
       return f(r.value)
     } else {
       return r
@@ -61,10 +61,10 @@ export const Result = {
     return r
   },
   isSuccess<V, E>(r: Result<V, E>): r is Success<V> {
-    return r.type === 'success'
+    return r.type === 'Success'
   },
   isFailure<V, E>(r: Result<V, E>): r is Failure<E> {
-    return r.type === 'failure'
+    return r.type === 'Failure'
   },
   getOrElse<V, E>(r: Result<V, E>, alt: V): V {
     return Result.isSuccess(r) ? r.value : alt

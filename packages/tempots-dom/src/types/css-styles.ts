@@ -1,4 +1,4 @@
-type ExcludeFromStyle =
+export type ExcludeFromStyle =
   | 'getPropertyPriority'
   | 'getPropertyValue'
   | 'item'

@@ -1,15 +1,24 @@
 import { Toc, DemoRef, ProjectRef } from './toc'
-import { AsyncResult, notAsked } from 'tempo-std/lib/async_result'
+import { AsyncResult } from '@tempots/std/async-result'
 import { HttpError } from './request'
 import { Route } from './route'
 
 export type Content =
-  | { kind: 'HtmlPage', title: string | undefined, html: string, path: string | undefined }
-  | { kind: 'Demos', demos: DemoRef[] }
-  | { kind: 'Project', project: ProjectRef }
+  | {
+      kind: 'HtmlPage'
+      title: string | undefined
+      html: string
+      path: string | undefined
+    }
+  | { kind: 'Demos'; demos: DemoRef[] }
+  | { kind: 'Project'; project: ProjectRef }
 
 export const Content = {
-  htmlPage(title: string | undefined, html: string, path: string | undefined): Content {
+  htmlPage(
+    title: string | undefined,
+    html: string,
+    path: string | undefined
+  ): Content {
     return { kind: 'HtmlPage', title, html, path }
   },
   demos(demos: DemoRef[]): Content {
@@ -17,17 +26,17 @@ export const Content = {
   },
   project(project: ProjectRef): Content {
     return { kind: 'Project', project }
-  }
+  },
 }
 
 export interface State {
-  toc: AsyncResult<Toc, HttpError, unknown>
-  content: AsyncResult<Content, HttpError, unknown>
+  toc: AsyncResult<Toc, HttpError>
+  content: AsyncResult<Content, HttpError>
   route: Route
 }
 
 export const makeState = (route: Route): State => ({
-  toc: notAsked,
-  content: notAsked,
-  route
+  toc: AsyncResult.notAsked,
+  content: AsyncResult.notAsked,
+  route,
 })

@@ -44,12 +44,8 @@ const processProject =
         module,
         project: name,
       }
-      console.log(`> ${state.module.path}`)
+      // console.log(`> ${state.module.path}`)
       const html = await renderModule(state)
-      // if (state.module.path === 'index.ts') {
-      //   console.log(state)
-      //   console.log(html)
-      // }
       const destFile = path.join(destPath, name, moduleToHtmlPath(module.path))
       fse.ensureDirSync(path.dirname(destFile))
       fs.writeFileSync(destFile, html, 'utf8')

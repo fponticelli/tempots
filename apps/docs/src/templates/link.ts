@@ -5,7 +5,7 @@ import { getUnsafe, Option, toBoolean } from 'tempo-std/lib/option'
 import {
   Attribute,
   mapAttribute,
-  attributeToHandler
+  attributeToHandler,
 } from 'tempo-dom/lib/value'
 import { DOMChild } from 'tempo-dom/lib/template'
 import { IBuilder } from 'tempo-dom/lib/impl/dom_builder'
@@ -29,8 +29,8 @@ export const maybeLink = <State>(attrs: {
       true: link({
         label: attrs.label,
         route: mapAttribute(attrs.route, getUnsafe),
-        class: attrs.class
-      })
+        class: attrs.class,
+      }),
     })
   )
 
@@ -45,15 +45,12 @@ export const link = <State>(attrs: {
         mapAttribute<State, Route, string>(attrs.route, route => toHref(route))
       )
       .onClick(
-        attributeToHandler(
-          attrs.route,
-          (route: Route, e: Event): Action => {
-            e.preventDefault()
-            const url = toHref(route)
-            history.pushState(null, '', url || './')
-            return Action.goTo(route)
-          }
-        )
+        attributeToHandler(attrs.route, (route: Route, e: Event): Action => {
+          e.preventDefault()
+          const url = toHref(route)
+          history.pushState(null, '', url || './')
+          return Action.goTo(route)
+        })
       )
       .Append(attrs.label)
   )

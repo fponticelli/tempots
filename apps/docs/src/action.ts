@@ -17,9 +17,9 @@ export type Action =
 export const Action = {
   requestToc: { kind: 'RequestToc' } as Action,
   loadedToc: (toc: AsyncResult<Toc, HttpError, unknown>) =>
-    ({ kind: 'LoadedToc', toc } as Action),
+    ({ kind: 'LoadedToc', toc }) as Action,
   requestPageContent: { kind: 'RequestPageContent' } as Action,
   loadedContent: (content: AsyncResult<Content, HttpError, unknown>) =>
-    ({ kind: 'LoadedContent', content } as Action),
-  goTo: (route: Route) => ({ kind: 'GoTo', route } as Action)
+    ({ kind: 'LoadedContent', content }) as Action,
+  goTo: (route: Route) => ({ kind: 'GoTo', route }) as Action,
 }

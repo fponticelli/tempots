@@ -3,7 +3,7 @@ import {
   IMG,
   MatchAsyncResult,
   Iterate,
-  MapField
+  MapField,
 } from 'tempo-dom/lib/html'
 import { State, Content } from '../state'
 import { Action } from '../action'
@@ -70,7 +70,7 @@ export const mainTemplate = DIV<State, Action, unknown>($ =>
                         .ariaHidden(true)
                     ),
                     route: Route.home,
-                    class: 'navbar-item'
+                    class: 'navbar-item',
                   })
                 )
             )
@@ -81,7 +81,7 @@ export const mainTemplate = DIV<State, Action, unknown>($ =>
                     link({
                       label: 'Tempo',
                       route: Route.home,
-                      class: 'navbar-item'
+                      class: 'navbar-item',
                     })
                   )
                 )
@@ -103,7 +103,7 @@ export const mainTemplate = DIV<State, Action, unknown>($ =>
                           sameRoute(Route.demos, s.route)
                             ? none
                             : some(Route.demos),
-                        class: 'navbar-item'
+                        class: 'navbar-item',
                       })
                     )
                     .DIV($ =>
@@ -129,10 +129,10 @@ export const mainTemplate = DIV<State, Action, unknown>($ =>
                                       link({
                                         label: ([s]) => s.title,
                                         route: ([s]) => Route.project(s.name),
-                                        class: 'navbar-item'
+                                        class: 'navbar-item',
                                       })
                                     )
-                                )
+                                ),
                               })
                             )
                           )
@@ -161,7 +161,7 @@ export const mainTemplate = DIV<State, Action, unknown>($ =>
                 return {
                   route: state.route,
                   content: state.content,
-                  toc
+                  toc,
                 }
               },
               $ =>
@@ -182,7 +182,7 @@ export const mainTemplate = DIV<State, Action, unknown>($ =>
                   )
                 )
             ),
-            Failure: DIV($ => $.text(e => e.message))
+            Failure: DIV($ => $.text(e => e.message)),
           })
         )
       )

@@ -1,4 +1,4 @@
-import { ExportDeclaration, ExportSpecifier } from 'ts-morph'
+import { ExportDeclaration, ExportSpecifier, Symbol } from 'ts-morph'
 import { docOfContent } from './jsdoc'
 import { adjustSignature } from './signature'
 import { DocEntity } from './doc-entity'
@@ -20,6 +20,25 @@ const exportOfSpecifier = async (e: ExportSpecifier): Promise<DocEntity> => {
     kind: 'export',
     name,
     line: getLineNumber(e),
+    signatures,
+  }
+}
+
+export const exportOfSymbol = async (
+  e: Symbol
+): Promise<DocEntity> => {
+  // TODO
+  const signatures = [e.getName()]
+  const name = e.getName()
+  return {
+    description: undefined,
+    isDeprecated: false,
+    examples: [],
+    since: undefined,
+    todos: [],
+    kind: 'export',
+    name,
+    line: 0,
     signatures,
   }
 }
