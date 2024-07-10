@@ -1,13 +1,18 @@
 const path = require('path')
 const {
-  updateExports,
   updateLibVersion,
-  publishToNpm
+  publishToNpm,
+  updateDependencies
 } = require('../../../scripts/version')
 
 function update(mode) {
   const cwd = process.cwd()
-  return updateLibVersion(cwd, mode)
+  const newVersion = updateLibVersion(cwd, mode)
+  const dependencies = ['tempots-ui'].map(name => path.join(cwd, `../${name}`))
+  for(const dep of dependencies) {
+    updateDependencies(newVersion, '@tempots/dom', dep)
+  }
+  return newVersion
 }
 
 function publish() {

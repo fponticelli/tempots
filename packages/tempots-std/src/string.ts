@@ -486,10 +486,28 @@ export function reverse(s: string): string {
 /**
  * Converts a string in a quoted string.
  */
-export function quote(s: string): string {
-  if (!s.includes('"')) return '"' + s + '"'
-  else if (!s.includes("'")) return "'" + s + "'"
-  else return '"' + replace(s, '"', '\\"') + '"'
+export function smartQuote(s: string, prefer = "'"): string {
+  if (prefer === "'") {
+    if (!s.includes("'")) return "'" + s + "'"
+    else if (!s.includes('"')) return '"' + s + '"'
+    else return "'" + replace(s, "'", "\\'") + "'"
+  } else {
+    if (!s.includes('"')) return '"' + s + '"'
+    else if (!s.includes("'")) return "'" + s + "'"
+    else return '"' + replace(s, '"', '\\"') + '"'
+  }
+}
+
+export function quote(s: string, quoteChar = "'"): string {
+  return quoteChar + replace(s, quoteChar, '\\' + quoteChar) + quoteChar
+}
+
+export function jsQuote(s: string, prefer = "'"): string {
+  if (s.indexOf('\n') >= 0) {
+    return quote(s, '`')
+  } else {
+    return smartQuote(s, prefer)
+  }
 }
 
 /**

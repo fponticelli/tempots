@@ -1,6 +1,6 @@
 export type Maybe<T> = Just<T> | Nothing
 
-export type Nothing = undefined | null
+export type Nothing = undefined
 export type Just<T> = NonNullable<T>
 
 export const Maybe = {

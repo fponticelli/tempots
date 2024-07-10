@@ -38,7 +38,8 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.7",
-    "@tempots/dom": "10.0.28"
+    "@tempots/dom": "*",
+    "@tempots/std": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
