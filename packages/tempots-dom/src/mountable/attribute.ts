@@ -2,7 +2,7 @@ import type { HTMLAttributes } from '../types/html-attributes'
 import type { MathMLTags } from '../types/mathml-tags'
 import type { Mountable } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
-import { Signal, type NValue } from '../std/signal'
+import { Signal, Value, type NValue } from '../std/signal'
 import { makeGetter, makeSetter } from '../dom/attr'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
@@ -113,6 +113,26 @@ export const attr = new Proxy(
               value as HTMLAttributes[typeof name]
             )
           }
+        }
+      }
+    },
+  }
+)
+
+export const dataAttr = new Proxy(
+  {} as {
+    [A in string]: (value: Value<string>) => Mountable
+  },
+  {
+    get: (_, name: string) => {
+      return (value: Value<string>) => {
+        if (Signal.is(value)) {
+          return signalAttributeMountable(
+            `data-${name}`,
+            value as Signal<string>
+          )
+        } else {
+          return staticAttributeMountable(`data-${name}`, value as string)
         }
       }
     },

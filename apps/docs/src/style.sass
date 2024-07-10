@@ -1,26 +1,26 @@
 @charset 'utf-8'
 
+@forward 'bulma/sass/base'
+@forward 'bulma/sass/elements/box'
+// @forward 'bulma/sass/elements/container'
+@forward 'bulma/sass/elements/content'
+@forward 'bulma/sass/elements/table'
+@forward 'bulma/sass/elements/tag'
+@forward 'bulma/sass/elements/title'
+@forward 'bulma/sass/components/menu'
+@forward 'bulma/sass/components/navbar'
+@forward 'bulma/sass/grid/tiles'
+@forward 'bulma/sass/grid/columns'
+
+@forward 'prismjs/themes/prism.css'
+@forward 'prism-themes/themes/prism-vs.css'
+
 @import url('https://fonts.googleapis.com/css?family=Nunito:400,700')
 
 $code: #201912
 $family-sans-serif: "Nunito", sans-serif
 $navbar-breakpoint: 0
 $link: #1d2a90
-
-@import '../node_modules/bulma/sass/utilities/_all'
-@import '../node_modules/bulma/sass/base/_all'
-@import '../node_modules/bulma/sass/elements/box'
-@import '../node_modules/bulma/sass/elements/container'
-@import '../node_modules/bulma/sass/elements/content'
-@import '../node_modules/bulma/sass/elements/table'
-@import '../node_modules/bulma/sass/elements/tag'
-@import '../node_modules/bulma/sass/elements/title'
-@import '../node_modules/bulma/sass/components/menu'
-@import '../node_modules/bulma/sass/components/navbar'
-@import '../node_modules/bulma/sass/grid/tiles'
-@import '../node_modules/bulma/sass/grid/columns'
-
-@import '../node_modules/prismjs/themes/prism.css', '../node_modules/prism-themes/themes/prism-vs.css'
 
 html, body, .app
   height: 100%
@@ -158,7 +158,7 @@ article.content
   justify-content: center
 
   .loading
-    max-width 300px
+    max-width: 300px
 
 .kind
   margin-left: 0.5em

@@ -77,6 +77,7 @@ export type HTMLAttributes = {
   rel: string
   required: string
   reversed: string
+  role: string
   rows: number
   rowspan: number
   sandbox: string

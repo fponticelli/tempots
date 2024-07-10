@@ -1,21 +1,19 @@
 import { State, Content } from './state'
 import { Action } from './action'
 import { loadJson, loadText } from './request'
-import { outcome, toAsyncResult } from 'tempo-std/lib/async'
-import { forEach, isSuccess } from 'tempo-std/lib/async_result'
 import { Toc } from './toc'
 import { HttpError } from './request'
-import { Result, map } from 'tempo-std/lib/result'
 import {
   toContentUrl,
   contentFromRoute,
   sameRoute,
   toUrlForAnalytics,
 } from './route'
-import { each } from 'tempo-std/lib/option'
-import { splitOnLast } from 'tempo-std/lib/strings'
-import { Middleware } from 'tempo-dom/lib/tempo'
+import { splitOnLast } from '@tempots/std/string'
+import { AsyncResult } from '@tempots/std/async-result'
+import { Result } from '@tempots/std/result'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const ga: any
 
 export const scrollTo = () => {
@@ -42,58 +40,66 @@ const urlToGitHubContent = (url: string) => {
   }
 }
 
-export const middleware: Middleware<State, Action> =
-  (dispatch: (action: Action) => void) =>
-  (state: State, action: Action, prev: State) => {
-    // console.log(state, action)
-    switch (action.kind) {
-      case 'LoadedToc':
-        if (isSuccess(action.toc)) {
-          contentFromRoute(dispatch, action.toc.value, state.route)
-        }
-        break
-      case 'RequestToc':
-        loadJson('toc.json').then(json => {
-          const toc = map(json as Result<Toc, HttpError>, t => ({
-            ...t,
-            pages: t.pages.filter(p => p.path !== 'index.html'),
-          }))
-          dispatch(Action.loadedToc(toAsyncResult(outcome(toc))))
-        }) // TODO parse Toc
-        break
-      case 'RequestPageContent':
-        each((url: string) => {
-          loadText(url).then((htmlResult: Result<string, HttpError>) =>
-            dispatch(
-              Action.loadedContent(
-                toAsyncResult(
-                  outcome(
-                    map(htmlResult, h =>
-                      Content.htmlPage(undefined, h, urlToGitHubContent(url))
-                    )
-                  )
+export const middleware = ({
+  dispatch,
+  state,
+  action,
+  previousState,
+}: {
+  dispatch: (action: Action) => void
+  state: State
+  action: Action
+  previousState: State
+}) => {
+  // console.log(state, action)
+  switch (action.kind) {
+    case 'LoadedToc':
+      if (AsyncResult.isSuccess(action.toc)) {
+        contentFromRoute(dispatch, action.toc.value, state.route)
+      }
+      break
+    case 'RequestToc':
+      loadJson('toc.json').then(json => {
+        const toc = Result.map(json as Result<Toc, HttpError>, t => ({
+          ...t,
+          pages: t.pages.filter(p => p.path !== 'index.html'),
+        }))
+        dispatch(Action.loadedToc(Result.toAsync(toc)))
+      }) // TODO parse Toc
+      break
+    case 'RequestPageContent': {
+      const url = toContentUrl(state.route)
+      if (url != null) {
+        loadText(url).then((htmlResult: Result<string, HttpError>) =>
+          dispatch(
+            Action.loadedContent(
+              Result.toAsync(
+                Result.map(htmlResult, h =>
+                  Content.htmlPage(undefined, h, urlToGitHubContent(url))
                 )
               )
             )
           )
-        }, toContentUrl(state.route))
-        break
-      case 'LoadedContent':
-        scrollTo()
-        break
-      case 'GoTo':
-        if (!sameRoute(action.route, prev.route)) {
-          const path = toUrlForAnalytics(action.route)
-          if (ga) {
-            ga('set', 'page', path)
-            ga('send', 'pageview')
-          }
-          forEach(state.toc, toc =>
-            contentFromRoute(dispatch, toc, action.route)
-          )
-        } else {
-          scrollTo()
-        }
-        break
+        )
+      }
+      break
     }
+    case 'LoadedContent':
+      scrollTo()
+      break
+    case 'GoTo':
+      if (!sameRoute(action.route, previousState.route)) {
+        const path = toUrlForAnalytics(action.route)
+        if (ga) {
+          ga('set', 'page', path)
+          ga('send', 'pageview')
+        }
+        if (state.toc.type === 'Success') {
+          contentFromRoute(dispatch, state.toc.value, action.route)
+        }
+      } else {
+        scrollTo()
+      }
+      break
   }
+}

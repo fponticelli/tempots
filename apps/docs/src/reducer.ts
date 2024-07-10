@@ -1,42 +1,46 @@
 import { State, Content } from './state'
 import { Action } from './action'
-import { loading, success } from 'tempo-std/lib/async_result'
-import { reduceOnKind } from 'tempo-core/lib/reducer'
-import { HttpError } from './request'
+import { AsyncResult } from '@tempots/std/async-result'
+import { Toc } from './toc'
 
-export const reducer = reduceOnKind<State, Action>({
-  GoTo: (state, action) => {
-    let content = state.content
+export const reducer = (state: State, action: Action): State => {
+  switch (action.kind) {
+    case 'GoTo': {
+      let content = state.content
 
-    if (state.toc.kind === 'Success') {
-      if (action.route.kind === 'Demos') {
-        content = success<Content, HttpError>(
-          Content.demos(state.toc.value.demos)
-        )
-      } else if (action.route.kind === 'Api') {
+      if (state.toc.type === 'Success') {
+        if (action.route.kind === 'Demos') {
+          content = AsyncResult.success<Content>(
+            Content.demos(state.toc.value.demos)
+          )
+        }
+      }
+
+      return {
+        ...state,
+        route: action.route,
+        content,
       }
     }
-
-    return {
-      ...state,
-      route: action.route,
-      content,
-    }
-  },
-  LoadedToc: (state, action) => ({
-    ...state,
-    toc: action.toc,
-  }),
-  RequestToc: state => ({
-    ...state,
-    toc: loading(null),
-  }),
-  LoadedContent: (state, action) => ({
-    ...state,
-    content: action.content,
-  }),
-  RequestPageContent: state => ({
-    ...state,
-    content: loading(null),
-  }),
-})
+    case 'LoadedToc':
+      return {
+        ...state,
+        toc: action.toc,
+      }
+    case 'RequestToc':
+      return {
+        ...state,
+        toc: AsyncResult.loading<Toc>(undefined),
+      }
+    case 'LoadedContent':
+      return {
+        ...state,
+        content: action.content,
+      }
+    case 'RequestPageContent':
+      return {
+        ...state,
+        content: AsyncResult.loading<Content>(undefined),
+      }
+  }
+}

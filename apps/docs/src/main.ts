@@ -1,29 +1,29 @@
-import './style.sass'
+// import './style.sass'
 
-import { Tempo } from 'tempo-dom/lib/tempo'
-import { makeState } from './state'
+import { DispatchProvider, makeState, StateProvider } from './state'
 import { reducer } from './reducer'
-import { mainTemplate } from './templates/main'
+import { App } from './templates/app'
 import { middleware } from './middleware'
 import { parseLocation } from './route'
 import { Action } from './action'
+import { prop, render } from '@tempots/dom'
 
 const route = parseLocation()
-const state = makeState(route)
+const state = prop(makeState(route))
 
-const view = Tempo.render({
-  state,
-  reducer,
-  template: mainTemplate,
-  middleware,
-})
+const dispatch = state.reducer(reducer, middleware)
 
-window.addEventListener('popstate', e => {
+render(
+  StateProvider(state, DispatchProvider(dispatch, App(state))),
+  document.body
+)
+
+window.addEventListener('popstate', () => {
   const route = parseLocation()
-  view.dispatch(Action.goTo(route))
+  dispatch(Action.goTo(route))
 })
 
-view.dispatch(Action.requestToc)
+dispatch(Action.requestToc)
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

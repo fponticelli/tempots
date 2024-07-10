@@ -1,6 +1,10 @@
 import { attr, Ensure, Fragment, html, Signal } from '@tempots/dom'
 
-export type HtmlContentProps = { title?: string; html: string; path?: string }
+export type HtmlContentProps = {
+  title?: string
+  html: string
+  path?: string
+}
 
 export const htmlContent = (data: Signal<HtmlContentProps>) =>
   Fragment(

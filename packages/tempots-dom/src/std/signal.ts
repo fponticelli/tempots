@@ -325,6 +325,13 @@ export class Computed<T> extends Signal<T> {
   }
 }
 
+export type ReducerEffect<S, A> = (data: {
+  previousState: S
+  state: S
+  action: A
+  dispatch: (action: A) => void
+}) => void
+
 /**
  * @category Signal Implementation
  */
@@ -341,8 +348,25 @@ export class Prop<T> extends Signal<T> {
   readonly update = (fn: (value: T) => T) => {
     this._setAndNotify(fn(this.get()), false)
   }
-  readonly reducer = <U>(fn: (acc: T, value: U) => T) => {
-    return (action: U) => this.update(value => fn(value, action))
+  readonly reducer = <A>(
+    fn: (acc: T, value: A) => T,
+    ...effects: ReducerEffect<T, A>[]
+  ) => {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const signal = this
+    return function dispatch(action: A) {
+      const value = signal.value
+      signal.update(value => fn(value, action))
+      if (signal.equals(value, signal.value)) return
+      effects.forEach(effect =>
+        effect({
+          previousState: value,
+          state: signal.value,
+          action,
+          dispatch,
+        })
+      )
+    }
   }
   readonly iso = <U>(
     to: (value: T) => U,

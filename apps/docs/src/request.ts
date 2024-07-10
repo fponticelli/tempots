@@ -1,5 +1,5 @@
-import { Result, success, failure } from 'tempo-std/lib/result'
-import { JSONValue } from 'tempo-std/lib/json'
+import { JSONValue } from '@tempots/std/json'
+import { Result } from '@tempots/std/result'
 
 export type HttpError = { kind: 'HttpError'; message: string }
 
@@ -12,9 +12,12 @@ export const loadText = (path: string): Promise<Result<string, HttpError>> => {
 
   const promise = fetch(path)
     .then(r => r.text())
-    .then(v => success<string, HttpError>(v))
+    .then(v => Result.success<string>(v))
     .catch(e =>
-      failure<string, HttpError>({ kind: 'HttpError', message: String(e) })
+      Result.failure<HttpError>({
+        kind: 'HttpError',
+        message: String(e),
+      })
     )
 
   cache.set(path, promise)
@@ -27,8 +30,8 @@ export const loadJson = async (
 ): Promise<Result<JSONValue, HttpError>> => {
   try {
     const response = await fetch(path)
-    return success(await response.json())
+    return Result.success(await response.json())
   } catch (e) {
-    return failure({ kind: 'HttpError', message: String(e) })
+    return Result.failure({ kind: 'HttpError', message: String(e) })
   }
 }
