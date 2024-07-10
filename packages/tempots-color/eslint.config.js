@@ -14,7 +14,7 @@ export default tseslint.config(
       'test/**/*.ts',
       '*.config.js',
       '**/*.config.js',
-      'demo/7gui/dist/',
+      'demo/*/dist/',
       'dist/',
       'scripts/',
     ],
