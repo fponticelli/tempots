@@ -22,7 +22,7 @@ export function HtmlToTempo() {
       attr.class('h-full overflow-hidden p-2 flex flex-col gap-2'),
       html.h1(attr.class(Styles.smallHeading), 'HTML'),
       html.div(
-        attr.class('h-[calc(100%_-_4rem)]'),
+        attr.class('h-[calc(100%_-_7rem)]'),
         html.textarea(
           AutoSelect(),
           SelectOnFocus(),
@@ -38,7 +38,7 @@ export function HtmlToTempo() {
       attr.class('h-full overflow-hidden p-2 flex flex-col gap-2'),
       html.h1(attr.class(Styles.smallHeading), 'TypeScript'),
       html.div(
-        attr.class('h-[calc(100%_-_4rem)]'),
+        attr.class('h-[calc(100%_-_7rem)]'),
         html.textarea(
           attr.class(Styles.block.code),
           attr.class(Styles.input.focus),
