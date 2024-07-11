@@ -101,7 +101,7 @@ export type HTMLAttributes = {
   target: string
   title: string
   translate: string
-  type: InputTypes
+  type: string
   usemap: string
   value: string
   valueAsNumber: number

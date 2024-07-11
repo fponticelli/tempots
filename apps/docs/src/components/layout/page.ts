@@ -105,10 +105,7 @@ export function PageLayout() {
       ),
       html.main(
         attr.class('h-full overflow-hidden'),
-        html.div(
-          attr.class('px-4 sm:px-6 lg:px-8 h-full overflow-hidden'),
-          HtmlToTempo()
-        )
+        html.div(attr.class('px-3 h-full overflow-hidden'), HtmlToTempo())
       )
     )
   )
