@@ -15,7 +15,8 @@
     "@tempots/dom": "*",
     "@tempots/std": "*",
     "@tempots/ui": "*",
-    "happy-dom": "^14.12.3"
+    "happy-dom": "^14.12.3",
+    "monaco-editor": "^0.50.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

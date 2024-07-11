@@ -41,7 +41,7 @@ export function domToTempo(node: Node, indent = 0): string[] {
     return [
       indentContainer +
         jsQuote(
-          trimChars(content, '\n').split('\n').join(`\n${indentContainer}`)
+          trimChars(content, '\n ').split('\n').join(`\n${indentContainer}`)
         ) +
         ',',
     ]
@@ -49,10 +49,13 @@ export function domToTempo(node: Node, indent = 0): string[] {
     const el = node as Element
     const tagName = el.tagName.toLowerCase()
     const attributes = Array.from(el.attributes)
+    const children = flatten(
+      Array.from(node.childNodes).map(v => domToTempo(v, indent + 1))
+    )
     const isSVG = el.namespaceURI === 'http://www.w3.org/2000/svg'
-    const children = [`${indentContainer}${isSVG ? 'svg' : 'html'}.${tagName}(`]
+    const buffer = [`${indentContainer}${isSVG ? 'svg' : 'html'}.${tagName}(`]
     const indentAttrs = makeIndent(indent + 1)
-    children.push(
+    buffer.push(
       ...attributes.map(attr => {
         if (attr.name.startsWith('aria-')) {
           return `${indentAttrs}aria${fieldAccess(attr.name.slice(5))}(${quoteValue(attr.value)}),`
@@ -67,13 +70,13 @@ export function domToTempo(node: Node, indent = 0): string[] {
         }
       })
     )
-    children.push(
-      ...flatten(
-        Array.from(node.childNodes).map(v => domToTempo(v, indent + 1))
-      )
-    )
-    children.push(`${indentContainer}),`)
-    return children
+    buffer.push(...children)
+    if (children.length + attributes.length > 0) {
+      buffer.push(`${indentContainer}),`)
+    } else {
+      buffer[buffer.length - 1] = buffer[buffer.length - 1] + `),`
+    }
+    return buffer
   } else {
     return []
   }

@@ -1,10 +1,12 @@
-import { attr, AutoSelect, emit, html, on, OnDispose, prop } from '@tempots/dom'
+import { attr, html, OnDispose, prop } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
-import { SelectOnFocus } from '@tempots/ui'
+import { MonacoEditor } from '../element/monaco-editor'
 
 export function HtmlToTempo() {
-  const content = prop('')
+  const content = prop(
+    '<div class="message">\n  Hello World!\n  <br/>\n  How are <b>you</b>?\n</div>'
+  )
   const tempo = prop('')
   return html.div(
     attr.class('grid grid-cols-2 gap-2 h-full overflow-hidden'),
@@ -14,7 +16,7 @@ export function HtmlToTempo() {
           const tempoStr = htmlToTempo(html)
           tempo.set(tempoStr)
         } catch (e) {
-          console.error('Failed to parse HTML', e)
+          console.warn('Failed to parse HTML', e)
         }
       })
     ),
@@ -23,15 +25,13 @@ export function HtmlToTempo() {
       html.h1(attr.class(Styles.smallHeading), 'HTML'),
       html.div(
         attr.class('h-[calc(100%_-_7rem)]'),
-        html.textarea(
-          AutoSelect(),
-          SelectOnFocus(),
-          attr.class(Styles.block.code),
-          attr.class(Styles.input.focus),
-          attr.placeholder('Enter HTML here'),
-          on.input(emit.value(content.set)),
-          content
-        )
+        MonacoEditor({
+          autoFocus: true,
+          autoSelect: true,
+          content,
+          language: 'html',
+          onChange: content.set,
+        })
       )
     ),
     html.div(
@@ -39,12 +39,12 @@ export function HtmlToTempo() {
       html.h1(attr.class(Styles.smallHeading), 'TypeScript'),
       html.div(
         attr.class('h-[calc(100%_-_7rem)]'),
-        html.textarea(
-          attr.class(Styles.block.code),
-          attr.class(Styles.input.focus),
-          SelectOnFocus(),
-          tempo
-        )
+        MonacoEditor({
+          autoSelect: true,
+          content: tempo,
+          language: 'html',
+          onChange: content.set,
+        })
       )
     )
   )
