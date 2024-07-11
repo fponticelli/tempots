@@ -1,8 +1,6 @@
 /** @type {import('vite').UserConfig} */
-export default {
-  resolve: {
-    alias: {
+import { defineConfig } from 'vite'
 
-    },
-  },
-}
+export default defineConfig({
+  base: '',
+})

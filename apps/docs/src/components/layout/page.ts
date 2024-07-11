@@ -1,6 +1,7 @@
 import {
   aria,
   attr,
+  Child,
   Fragment,
   html,
   on,
@@ -8,7 +9,6 @@ import {
   svg,
   svgAttr,
 } from '@tempots/dom'
-import { HtmlToTempo } from '../html-to-tempo'
 import { SideBar } from './sidebar'
 import { TopBar } from './top-bar'
 
@@ -56,7 +56,7 @@ export function OpenButton(onClick: () => void) {
   )
 }
 
-export function PageLayout() {
+export function PageLayout({ main }: { main: Child }) {
   const sidebarOpen = prop(true)
   return Fragment(
     html.div(
@@ -105,7 +105,7 @@ export function PageLayout() {
       ),
       html.main(
         attr.class('h-full overflow-hidden'),
-        html.div(attr.class('px-3 h-full overflow-hidden'), HtmlToTempo())
+        html.div(attr.class('px-3 h-full overflow-hidden'), main)
       )
     )
   )

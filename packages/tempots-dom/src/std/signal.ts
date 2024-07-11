@@ -1,8 +1,9 @@
 import { guessInterpolate } from './interpolate'
 
-const $isSignal = Symbol('isSignal')
-const $isProp = Symbol('isProp')
-const $isComputed = Symbol('isComputed')
+// Using string instead of symbol to avoid issues with multiple versions of tempots
+const $isSignal = '$__signal__'
+const $isProp = '$__prop__'
+const $isComputed = '$__computed__'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnySignal<T = any> = Signal<T> | Prop<T> | Computed<T>

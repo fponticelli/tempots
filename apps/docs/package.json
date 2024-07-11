@@ -46,5 +46,10 @@
     "vite": "^5.2.0",
     "vite-plugin-monaco-editor": "^1.1.0",
     "yaml": "^2.4.5"
+  },
+  "resolutions": {
+    "@tempots/dom": "*",
+    "@tempots/std": "*",
+    "@tempots/ui": "*"
   }
 }

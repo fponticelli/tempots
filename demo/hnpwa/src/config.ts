@@ -6,6 +6,8 @@ export const getCurrentPath = () => {
     const base = location.hash
     if (!base || base === '#') return '/'
     else return base.substring(1)
+  } else if (location.pathname.endsWith('/index.html')) {
+    return '/'
   } else {
     return location.pathname
   }

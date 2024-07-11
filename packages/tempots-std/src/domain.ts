@@ -32,3 +32,26 @@ export type Fun6<A, B, C, D, E, F, R> = (
 ) => R
 
 export type FirstArgument<F> = F extends Fun1<infer A, unknown> ? A : never
+
+export type FilterTuple<T extends unknown[], N> = T extends []
+  ? []
+  : T extends [infer H, ...infer R]
+    ? N extends H
+      ? FilterTuple<R, N>
+      : [H, ...FilterTuple<R, N>]
+    : T
+
+export type SplitLiteral<
+  T extends string,
+  SplitBy extends string,
+> = FilterTuple<
+  T extends `${infer A}${SplitBy}${infer B}`
+    ? [...SplitLiteral<A, SplitBy>, ...SplitLiteral<B, SplitBy>]
+    : [T],
+  ''
+>
+
+export type SplitLiteralToUnion<
+  T extends string,
+  SplitBy extends string,
+> = TupleToUnion<SplitLiteral<T, SplitBy>>

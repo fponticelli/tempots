@@ -23,6 +23,6 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.7",
     "@tempots/dom": "10.0.28",
-    "@tempots/std": "10.0.28"
+    "@tempots/std": "0.10.7"
   }
 }

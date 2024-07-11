@@ -9,7 +9,7 @@ import { generateDocs } from './generate-docs'
 
 const rootFolder = '../..'
 const docsFolder = path.join(rootFolder, 'apps/docs')
-const pubFolder = path.join(docsFolder, 'pub')
+const pubFolder = path.join(docsFolder, 'public')
 const binFolderSrc = './dist'
 const binFolderDst = pubFolder
 const demoFolderSrc = path.join(rootFolder, 'demo')

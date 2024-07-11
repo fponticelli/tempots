@@ -38,7 +38,6 @@ const processProject =
   ) =>
   async (name: string) => {
     const modules = await getModules(basePath, name)
-    console.log(`${name} has ${modules.length} modules`)
     modules.forEach(async module => {
       const state = {
         module,

@@ -184,7 +184,7 @@ export function SideBar() {
             attr.class('-mx-2 mt-2 space-y-1'),
             html.li(
               SectionLink({
-                href: '/libraries/tempo-dom',
+                href: '/library/tempo-dom',
                 label: '@tempo/dom',
                 icon: 'D',
                 active,
@@ -192,7 +192,7 @@ export function SideBar() {
             ),
             html.li(
               SectionLink({
-                href: '/libraries/tempo-std',
+                href: '/library/tempo-std',
                 label: '@tempo/std',
                 icon: 'S',
                 active,
@@ -200,7 +200,7 @@ export function SideBar() {
             ),
             html.li(
               SectionLink({
-                href: '/libraries/tempo-color',
+                href: '/library/tempo-color',
                 label: '@tempo/color',
                 icon: 'C',
                 active,
@@ -208,7 +208,7 @@ export function SideBar() {
             ),
             html.li(
               SectionLink({
-                href: '/libraries/tempo-ui',
+                href: '/library/tempo-ui',
                 label: '@tempo/ui',
                 icon: 'UI',
                 active,
@@ -237,7 +237,7 @@ export function SideBar() {
         html.li(
           html.div(
             attr.class('text-xs font-semibold leading-6 text-gray-400'),
-            'Demo'
+            'Demos'
           ),
           html.ul(
             attr.role('list'),
