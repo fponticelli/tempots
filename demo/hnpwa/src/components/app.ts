@@ -21,11 +21,19 @@ import { Article } from './article'
 
 const Logo = () =>
   svg.svg(
-    svgAttr.width(32),
-    svgAttr.height(32),
-    svgAttr.viewBox('0 0 32 32'),
-    svg.g(
+    svgAttr.width(50),
+    svgAttr.height(50),
+    svgAttr.viewBox('0 0 50 50'),
+    svg.rect(
       svgAttr.fill('#ffffff'),
+      svgAttr.x(0),
+      svgAttr.y(0),
+      svgAttr.width(50),
+      svgAttr.height(50)
+    ),
+    svg.g(
+      svgAttr.transform('translate(9 9)'),
+      svgAttr.fill('#1293D8'),
       svg.rect(svgAttr.x(0), svgAttr.y(0), svgAttr.width(8), svgAttr.height(8)),
       svg.rect(
         svgAttr.x(11),

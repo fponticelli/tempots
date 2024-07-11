@@ -11,12 +11,33 @@ $yellow:#f7dc64;
 
 html {
     font-size: 87.5%;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 body {
     padding: 0;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+#app {
+    height: 100%;
+    overflow: hidden;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+main > section {
+    height: 100%;
+    overflow: auto;
 }
 
 p {
@@ -98,9 +119,9 @@ header {
 .logo {
     position: absolute;
     top: 0;
-    height: 3.5rem;
-    width: 3.5rem;
-    background: #1293D8;
+    background-color: #fff;
+    // height: 3.5rem;
+    // width: 3.5rem;
     display: flex;
     justify-content: center;
     align-items: center;

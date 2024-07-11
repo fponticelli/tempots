@@ -11,6 +11,7 @@ import {
   When,
 } from '@tempots/dom'
 import { Logo } from '../element/logo'
+import { Styles } from '../styles'
 
 const homeIcon = svg.svg(
   attr.class('h-6 w-6 shrink-0 text-blue-600'),
@@ -60,7 +61,7 @@ export function MenuLink({
     isActive,
     html.span(
       attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-blue-600'
+        'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600'
       ),
       icon,
       label
@@ -68,7 +69,7 @@ export function MenuLink({
     html.a(
       attr.href(href),
       attr.class(
-        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
+        'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
       icon,
       label
@@ -77,12 +78,7 @@ export function MenuLink({
 }
 
 export function FakeIcon(child: Child) {
-  return html.span(
-    attr.class(
-      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-blue-600 group-hover:text-blue-600'
-    ),
-    child
-  )
+  return html.span(attr.class(Styles.icon.bordered), child)
 }
 
 export function SectionLink({
@@ -101,7 +97,7 @@ export function SectionLink({
     isActive,
     html.span(
       attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
+        'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
       ),
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
@@ -109,7 +105,7 @@ export function SectionLink({
     html.a(
       attr.href(href),
       attr.class(
-        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
+        'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
@@ -143,11 +139,11 @@ export function SideBar() {
       attr.class('flex flex-1 flex-col'),
       html.ul(
         attr.role('list'),
-        attr.class('flex flex-1 flex-col gap-y-7'),
+        attr.class('flex flex-1 flex-col gap-y-4'),
         html.li(
           html.ul(
             attr.role('list'),
-            attr.class('-mx-2 space-y-1'),
+            attr.class('-mx-2'),
             html.li(
               MenuLink({
                 href: 'home',
@@ -175,13 +171,10 @@ export function SideBar() {
           )
         ),
         html.li(
-          html.div(
-            attr.class('text-xs font-semibold leading-6 text-gray-400'),
-            'Libraries'
-          ),
+          html.div(attr.class(Styles.sidebar.heading), 'Libraries'),
           html.ul(
             attr.role('list'),
-            attr.class('-mx-2 mt-2 space-y-1'),
+            attr.class('-mx-2 mt-2'),
             html.li(
               SectionLink({
                 href: '/library/tempo-dom',
@@ -217,16 +210,13 @@ export function SideBar() {
           )
         ),
         html.li(
-          html.div(
-            attr.class('text-xs font-semibold leading-6 text-gray-400'),
-            'Tools'
-          ),
+          html.div(attr.class(Styles.sidebar.heading), 'Tools'),
           html.ul(
             attr.role('list'),
-            attr.class('-mx-2 mt-2 space-y-1'),
+            attr.class('-mx-2 mt-2'),
             html.li(
               SectionLink({
-                href: '/tools/html-to-tempo',
+                href: '/tool/html-to-tempo',
                 label: 'HTML to Tempo',
                 icon: 'HT',
                 active,
@@ -235,13 +225,10 @@ export function SideBar() {
           )
         ),
         html.li(
-          html.div(
-            attr.class('text-xs font-semibold leading-6 text-gray-400'),
-            'Demos'
-          ),
+          html.div(attr.class(Styles.sidebar.heading), 'Demos'),
           html.ul(
             attr.role('list'),
-            attr.class('-mx-2 mt-2 space-y-1'),
+            attr.class('-mx-2 mt-2'),
             html.li(
               SectionLink({
                 href: '/demo/hnpwa',
