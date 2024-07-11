@@ -1,4 +1,5 @@
 import { attr, Fragment, html } from '@tempots/dom'
+import { Icon } from '../element/Icon'
 
 export function TopBar() {
   return Fragment(
@@ -24,8 +25,9 @@ export function TopBar() {
         attr.class('relative w-9'),
         html.a(
           attr.class('navbar-item'),
+          attr.target('_blank'),
           attr.href('https://github.com/fponticelli/tempots'),
-          html.img(attr.src('assets/github-mark-64px.png'), 'Github Project')
+          Icon('github', attr.class('size-9'))
         )
       )
     )

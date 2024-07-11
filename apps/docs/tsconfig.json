@@ -20,6 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vitest/globals"]
   },
-  "include": ["src"],
+  "include": ["src", "node_modules/@tabler/icons/icons.json"],
   "exclude": ["scripts"]
 }

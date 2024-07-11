@@ -12,30 +12,8 @@ import {
 } from '@tempots/dom'
 import { Logo } from '../element/logo'
 
-/*
-Pages
-- page
- - subpage
-
-Libraries
-- @tempots/dom
-- @tempots/std
-- @tempots/colors
-- @tempots/ui
-
-Tools
-- html-to-tempo
-
-Demos
-- hnpwa
-- todo
-- counter
-- 7gui
-
-*/
-
 const homeIcon = svg.svg(
-  attr.class('h-6 w-6 shrink-0 text-indigo-600'),
+  attr.class('h-6 w-6 shrink-0 text-blue-600'),
   svgAttr.fill('none'),
   svgAttr.viewBox('0 0 24 24'),
   svgAttr.strokeWidth(1.5),
@@ -51,7 +29,7 @@ const homeIcon = svg.svg(
 )
 
 const teamIcon = svg.svg(
-  attr.class('h-6 w-6 shrink-0 text-gray-400 group-hover:text-indigo-600'),
+  attr.class('h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600'),
   svgAttr.fill('none'),
   svgAttr.viewBox('0 0 24 24'),
   svgAttr.strokeWidth(1.5),
@@ -82,7 +60,7 @@ export function MenuLink({
     isActive,
     html.span(
       attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-indigo-600'
+        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-blue-600'
       ),
       icon,
       label
@@ -90,7 +68,7 @@ export function MenuLink({
     html.a(
       attr.href(href),
       attr.class(
-        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-blue-600'
       ),
       icon,
       label
@@ -101,7 +79,7 @@ export function MenuLink({
 export function FakeIcon(child: Child) {
   return html.span(
     attr.class(
-      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600'
+      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-blue-600 group-hover:text-blue-600'
     ),
     child
   )
@@ -123,7 +101,7 @@ export function SectionLink({
     isActive,
     html.span(
       attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-indigo-600 hover:bg-gray-50 hover:text-indigo-600'
+        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-blue-600 hover:bg-gray-50 hover:text-blue-600'
       ),
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
@@ -131,7 +109,7 @@ export function SectionLink({
     html.a(
       attr.href(href),
       attr.class(
-        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-blue-600'
       ),
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)

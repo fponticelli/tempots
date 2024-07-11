@@ -89,7 +89,9 @@ export function MonacoEditor({
   onChange?: (value: string) => void
 }) {
   return html.div(
-    attr.class('w-full h-full rounded-xl overflow-hidden'),
+    attr.class(
+      'w-full h-full rounded-xl overflow-hidden bg-gray-800 py-2 px-2'
+    ),
     Task(
       () => loadAssetsInOrder(SCRIPTS),
       () =>
