@@ -9,7 +9,7 @@ export function HtmlToTempo() {
   )
   const tempo = prop('')
   return html.div(
-    attr.class('grid grid-cols-2 gap-2 h-full overflow-hidden'),
+    attr.class('grid grid-cols-2 h-full overflow-hidden'),
     OnDispose(
       content.on(html => {
         try {
@@ -21,8 +21,9 @@ export function HtmlToTempo() {
       })
     ),
     html.div(
-      attr.class('h-full overflow-hidden p-2 flex flex-col gap-2'),
-      html.h1(attr.class(Styles.smallHeading), 'HTML'),
+      attr.class('h-full overflow-hidden p-2 flex flex-col'),
+      html.div(attr.class(Styles.smallHeading), 'HTML'),
+      html.div(attr.class(Styles.subSmallHeading), 'Paste your HTML code here'),
       html.div(
         attr.class('h-[calc(100%_-_7rem)]'),
         MonacoEditor({
@@ -35,8 +36,9 @@ export function HtmlToTempo() {
       )
     ),
     html.div(
-      attr.class('h-full overflow-hidden p-2 flex flex-col gap-2'),
-      html.h1(attr.class(Styles.smallHeading), 'TypeScript'),
+      attr.class('h-full overflow-hidden p-2 flex flex-col'),
+      html.div(attr.class(Styles.smallHeading), 'TypeScript'),
+      html.div(attr.class(Styles.subSmallHeading), 'Copy the Tempo code here'),
       html.div(
         attr.class('h-[calc(100%_-_7rem)]'),
         MonacoEditor({

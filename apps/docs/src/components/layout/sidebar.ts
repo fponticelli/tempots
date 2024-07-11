@@ -68,7 +68,7 @@ export function MenuLink({
     html.a(
       attr.href(href),
       attr.class(
-        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
       icon,
       label
@@ -101,7 +101,7 @@ export function SectionLink({
     isActive,
     html.span(
       attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-blue-600 hover:bg-gray-50 hover:text-blue-600'
+        'group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
       ),
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
@@ -109,7 +109,7 @@ export function SectionLink({
     html.a(
       attr.href(href),
       attr.class(
-        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+        'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
@@ -121,11 +121,12 @@ export function SideBar() {
   const active = prop('/')
   return html.div(
     attr.class(
-      'flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 border-r'
+      'flex grow flex-col gap-y-5 overflow-y-auto bg-gray-100 px-6 pb-4 border-r'
     ),
     html.div(
       attr.class('flex h-20 shrink-0 items-center justify-center'),
-      html.div(
+      html.a(
+        attr.href('/'),
         attr.class('flex flex-row gap-2'),
         Logo(),
         html.div(
