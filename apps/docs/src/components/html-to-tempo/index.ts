@@ -38,7 +38,7 @@ export function HtmlToTempo() {
     html.div(
       attr.class('h-full overflow-hidden p-2 flex flex-col'),
       html.div(attr.class(Styles.smallHeading), 'TypeScript'),
-      html.div(attr.class(Styles.subSmallHeading), 'Copy the Tempo code here'),
+      html.div(attr.class(Styles.subSmallHeading), 'Copy the Tempo code'),
       html.div(
         attr.class('h-[calc(100%_-_7rem)]'),
         MonacoEditor({

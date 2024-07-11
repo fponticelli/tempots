@@ -9,7 +9,6 @@ import {
   svg,
   svgAttr,
 } from '@tempots/dom'
-import { SideBar } from './sidebar'
 import { TopBar } from './top-bar'
 
 export function CloseButton(onClick: () => void) {
@@ -56,7 +55,7 @@ export function OpenButton(onClick: () => void) {
   )
 }
 
-export function PageLayout({ main }: { main: Child }) {
+export function PageLayout({ main, sidebar }: { main: Child; sidebar: Child }) {
   const sidebarOpen = prop(true)
   return Fragment(
     html.div(
@@ -69,7 +68,7 @@ export function PageLayout({ main }: { main: Child }) {
       html.div(attr.class('fixed inset-0 bg-gray-900/80'), aria.hidden(true)),
       html.div(
         attr.class('fixed inset-0 flex'),
-        SideBar(),
+        sidebar,
         html.div(
           attr.class('relative mr-16 flex w-full max-w-xs flex-1'),
           html.div(
@@ -85,7 +84,7 @@ export function PageLayout({ main }: { main: Child }) {
       attr.class(
         'hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col'
       ),
-      SideBar()
+      sidebar
     ),
     html.div(
       attr.class('lg:pl-72 h-full overflow-hidden'),

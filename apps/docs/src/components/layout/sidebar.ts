@@ -2,7 +2,6 @@ import {
   aria,
   attr,
   Child,
-  Empty,
   html,
   prop,
   Signal,
@@ -12,6 +11,7 @@ import {
 } from '@tempots/dom'
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
+import { Toc } from '../../services/toc-service'
 
 const homeIcon = svg.svg(
   attr.class('h-6 w-6 shrink-0 text-blue-600'),
@@ -29,21 +29,13 @@ const homeIcon = svg.svg(
   )
 )
 
-const teamIcon = svg.svg(
-  attr.class('h-6 w-6 shrink-0 text-gray-400 group-hover:text-blue-600'),
-  svgAttr.fill('none'),
-  svgAttr.viewBox('0 0 24 24'),
-  svgAttr.strokeWidth(1.5),
-  svgAttr.stroke('currentColor'),
-  aria.hidden(true),
-  svg.path(
-    svgAttr.strokeLinecap('round'),
-    svgAttr.strokeLinejoin('round'),
-    svgAttr.d(
-      'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'
-    )
-  )
-)
+function titleToInitial(title: string) {
+  let initial = title
+  if (initial.length > 3) {
+    initial = initial.substring(0, 1)
+  }
+  return initial.toUpperCase()
+}
 
 export function MenuLink({
   label,
@@ -113,7 +105,7 @@ export function SectionLink({
   )
 }
 
-export function SideBar() {
+export function SideBar({ projects, demos, pages }: Toc) {
   const active = prop('/')
   return html.div(
     attr.class(
@@ -144,29 +136,15 @@ export function SideBar() {
           html.ul(
             attr.role('list'),
             attr.class('-mx-2'),
-            html.li(
-              MenuLink({
-                href: 'home',
-                label: 'Dashboard',
-                icon: homeIcon,
-                active,
-              })
-            ),
-            html.li(
-              MenuLink({
-                href: 'home',
-                label: 'Team',
-                icon: teamIcon,
-                active,
-              })
-            ),
-            html.li(
-              MenuLink({
-                href: 'home',
-                label: 'Team',
-                icon: Empty,
-                active,
-              })
+            pages.map(({ title, path }) =>
+              html.li(
+                MenuLink({
+                  href: `/page/${path}`,
+                  label: title,
+                  icon: homeIcon,
+                  active,
+                })
+              )
             )
           )
         ),
@@ -175,38 +153,17 @@ export function SideBar() {
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
-            html.li(
-              SectionLink({
-                href: '/library/tempo-dom',
-                label: '@tempo/dom',
-                icon: 'D',
-                active,
-              })
-            ),
-            html.li(
-              SectionLink({
-                href: '/library/tempo-std',
-                label: '@tempo/std',
-                icon: 'S',
-                active,
-              })
-            ),
-            html.li(
-              SectionLink({
-                href: '/library/tempo-color',
-                label: '@tempo/color',
-                icon: 'C',
-                active,
-              })
-            ),
-            html.li(
-              SectionLink({
-                href: '/library/tempo-ui',
-                label: '@tempo/ui',
-                icon: 'UI',
-                active,
-              })
-            )
+            projects.map(({ title, name }) => {
+              const initial = titleToInitial(title.split('/').pop()!)
+              return html.li(
+                SectionLink({
+                  href: `/library/${name}`,
+                  label: title,
+                  icon: initial,
+                  active,
+                })
+              )
+            })
           )
         ),
         html.li(
@@ -229,38 +186,17 @@ export function SideBar() {
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
-            html.li(
-              SectionLink({
-                href: '/demo/hnpwa',
-                label: 'HNPWA',
-                icon: 'H',
-                active,
-              })
-            ),
-            html.li(
-              SectionLink({
-                href: '/demo/counter',
-                label: 'Counter',
-                icon: 'C',
-                active,
-              })
-            ),
-            html.li(
-              SectionLink({
-                href: '/demo/todomvc',
-                label: 'TodoMVC',
-                icon: 'T',
-                active,
-              })
-            ),
-            html.li(
-              SectionLink({
-                href: '/demo/7guis',
-                label: '7GUIs',
-                icon: '7',
-                active,
-              })
-            )
+            demos.map(({ title, path }) => {
+              const initial = titleToInitial(title)
+              return html.li(
+                SectionLink({
+                  href: `/demo/${path}`,
+                  label: title,
+                  icon: initial,
+                  active,
+                })
+              )
+            })
           )
         ),
         html.li(
