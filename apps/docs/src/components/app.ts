@@ -10,11 +10,12 @@ import { PageView } from './element/page-view'
 import { ToolsView } from './element/tools-view'
 import { LibrariesView } from './element/libraries-view'
 import { DemosView } from './element/demos-view'
+import { HomeView } from './element/home-view'
 
 export const AppRouter = (toc: Toc) => {
   const map = tocAsMap(toc)
   return Router({
-    '/': () => 'Home Page',
+    '/': () => HomeView(),
     '/tools': () => ToolsView(),
     '/tool/html-to-tempo': () => HtmlToTempo(),
     '/page/:id': info =>

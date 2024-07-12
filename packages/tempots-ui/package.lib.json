@@ -5,6 +5,32 @@
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",
+  "description": "Provides a higher level of components to help fast development with Tempo.",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "tempo",
+    "tempots",
+    "ui",
+    "framework",
+    "typescript",
+    "dom",
+    "components"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
   "exports": {
     ".": {
       "import": "./index.js",
@@ -12,14 +38,6 @@
     }
   },
   "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fponticelli/tempots.git"
-  },
-  "bugs": {
-    "url": "https://github.com/fponticelli/tempots/issues"
-  },
-  "homepage": "https://github.com/fponticelli/tempots#readme",
   "dependencies": {
     "@floating-ui/dom": "^1.6.7",
     "@tempots/dom": "10.0.28",

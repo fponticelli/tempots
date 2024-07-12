@@ -1,0 +1,35 @@
+name: Publish Docs
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Yarn Install
+        run: yarn
+      - name: Generate Docs for each project
+        run: yarn docs
+      - name: Assemble Docs
+        working-directory: apps/docs
+        run: yarn docs:maketoc
+      - name: Build Docs
+        working-directory: apps/docs
+        run: yarn build
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'apps/docs/dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
