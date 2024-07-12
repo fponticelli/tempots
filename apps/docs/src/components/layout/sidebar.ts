@@ -114,8 +114,8 @@ export function SideBar({ libraries, demos, pages }: Toc) {
     ),
     html.div(
       attr.class('flex h-20 shrink-0 items-center justify-center'),
-      html.a(
-        attr.href('/'),
+      Anchor(
+        '/',
         attr.class('flex flex-row gap-2'),
         Logo(),
         html.div(

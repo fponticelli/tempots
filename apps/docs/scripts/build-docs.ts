@@ -10,6 +10,7 @@ const rootFolder = '../..'
 const docsFolder = path.join(rootFolder, 'apps/docs')
 const pubFolder = path.join(docsFolder, 'public')
 const assetsFolderSrc = path.join(docsFolder, 'assets')
+const assetsFolderDst = path.join(pubFolder, 'assets')
 const demoFolderSrc = path.join(rootFolder, 'demo')
 const demoFolderDst = path.join(pubFolder, 'demo')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
@@ -212,7 +213,7 @@ async function main() {
   )
 
   // copy assets
-  await fse.copy(assetsFolderSrc, pubFolder)
+  await fse.copy(assetsFolderSrc, assetsFolderDst)
 
   // copy binaries
   // await fse.copy(binFolderSrc, binFolderDst)
