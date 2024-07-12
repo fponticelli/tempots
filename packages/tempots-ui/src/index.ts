@@ -1,3 +1,4 @@
+export * from './components/anchor'
 export * from './components/async-result-view'
 export * from './components/pop-over'
 export * from './components/result-view'

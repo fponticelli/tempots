@@ -4,6 +4,7 @@ export const Styles = {
   },
   heading: {
     small: 'font-bold text-lg',
+    large: 'font-bold text-2xl text-center py-2',
     subSmall: 'font-semibold text-sm text-gray-600',
   },
   block: {

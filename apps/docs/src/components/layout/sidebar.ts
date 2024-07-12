@@ -12,6 +12,7 @@ import {
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
 import { Toc } from '../../model/domain'
+import { Anchor } from '@tempots/ui'
 
 const homeIcon = svg.svg(
   attr.class('h-6 w-6 shrink-0 text-blue-600'),
@@ -58,8 +59,8 @@ export function MenuLink({
       icon,
       label
     ),
-    html.a(
-      attr.href(href),
+    Anchor(
+      href,
       attr.class(
         'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
@@ -94,8 +95,8 @@ export function SectionLink({
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
     ),
-    html.a(
-      attr.href(href),
+    Anchor(
+      href,
       attr.class(
         'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
@@ -149,7 +150,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          html.div(attr.class(Styles.sidebar.heading), 'Libraries'),
+          Anchor('/libraries', attr.class(Styles.sidebar.heading), 'Libraries'),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
@@ -167,7 +168,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          html.div(attr.class(Styles.sidebar.heading), 'Tools'),
+          Anchor('/tools', attr.class(Styles.sidebar.heading), 'Tools'),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
@@ -182,7 +183,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          html.div(attr.class(Styles.sidebar.heading), 'Demos'),
+          Anchor('/demos', attr.class(Styles.sidebar.heading), 'Demos'),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
