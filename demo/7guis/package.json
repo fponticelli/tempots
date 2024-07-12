@@ -2,6 +2,7 @@
   "name": "7guis",
   "title": "7GUIs",
   "description": "7GUIs implementation using TempoTS",
+  "priority": 4,
   "private": true,
   "version": "0.0.0",
   "type": "module",

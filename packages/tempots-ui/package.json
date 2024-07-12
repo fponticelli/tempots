@@ -3,7 +3,7 @@
   "private": false,
   "version": "0.3.1",
   "type": "module",
-  "priority": 9,
+  "priority": 8,
   "description": "Provides a higher level of components to help fast development with Tempo.",
   "files": [
     "dist"

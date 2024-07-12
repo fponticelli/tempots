@@ -2,6 +2,7 @@
   "name": "@tempots/ssr",
   "private": false,
   "version": "0.0.25",
+  "priority": 6,
   "keywords": [
     "tempo",
     "tempots",

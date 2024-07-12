@@ -3,6 +3,7 @@
   "title": "HNPWA",
   "description": "Hacker News Progressive Web App",
   "private": true,
+  "priority": 2,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
