@@ -1,16 +1,16 @@
 import { attr, html, Signal } from '@tempots/dom'
 import { Styles } from '../styles'
-import { Demo } from '../../services/toc-service'
+import { Demo } from '../../model/domain'
 
 export function DemoView(demo: Signal<Demo & { id: string }>) {
   return html.div(
     attr.class('w-full h-full flex flex-col'),
     html.h1(
-      attr.class(Styles.smallHeading),
+      attr.class(Styles.heading.small),
       html.span(attr.class('text-gray-600 font-normal'), 'Demo: '),
       demo.$.title
     ),
-    html.h2(attr.class(Styles.subSmallHeading), demo.$.description),
+    html.h2(attr.class(Styles.heading.subSmall), demo.$.description),
     html.iframe(
       attr.class('w-full h-[calc(100%-7.5rem)] border rounded-md'),
       attr.src(demo.map(({ id }) => `/demo/${id}/index.html`))

@@ -65,7 +65,7 @@ export function App(): Mountable {
     flex.col(
       attr.class('p-4 gap-8 items-center'),
       flex.row(
-        attr.class('gap-4 justify-center'),
+        attr.class('gap-4 justify-center flex-wrap'),
         ...demos.map(demo => demoButton(demo, $demo))
       ),
       oneof.value($demo, {

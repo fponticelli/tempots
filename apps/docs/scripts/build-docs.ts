@@ -1,33 +1,20 @@
-import { Toc, DemoRef, PageRef, ProjectRef, SectionRef } from '../src/toc'
 import { promises as fsp } from 'fs'
 import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
 import { trimChars } from '@tempots/std/string'
 import { markdown, markdownWithFM } from './utils/markdown'
-import { generateDocs } from './generate-docs'
+import { Demo, Page, Library, Toc } from '../src/model/domain'
 
 const rootFolder = '../..'
 const docsFolder = path.join(rootFolder, 'apps/docs')
 const pubFolder = path.join(docsFolder, 'public')
-const binFolderSrc = './dist'
-const binFolderDst = pubFolder
 const demoFolderSrc = path.join(rootFolder, 'demo')
 const demoFolderDst = path.join(pubFolder, 'demo')
-// const banchmarkHistoryFolderSrc = path.join(
-//   rootFolder,
-//   'demo',
-//   'benchmark',
-//   'history'
-// )
-// const banchmarkHistoryFolderDst = path.join(pubFolder, 'demo', 'benchmark')
-const assetsFolderSrc = path.join(docsFolder, 'assets')
-const assetsFolderDst = path.join(pubFolder, 'assets')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
-const projectsFolderSrc = path.join(rootFolder, 'packages')
-const projects = ['tempots-dom', 'tempots-ssr', 'tempots-std', 'tempots-color', 'tempots-ui']
-const changelogFolderDst = path.join(pubFolder, 'changelog')
+const librariesFolderSrc = path.join(rootFolder, 'packages')
+const libraries = ['tempots-dom', 'tempots-ssr', 'tempots-std', 'tempots-color', 'tempots-ui']
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')
@@ -50,7 +37,7 @@ const renameHtml = (path: string) => {
     .join('#')
 }
 
-async function getDemos(folder: string): Promise<DemoRef[]> {
+async function getDemos(folder: string): Promise<Demo[]> {
   const dirs = filterDirectories(await fsp.readdir(folder))
   const data = dirs.map(dir => ({
     dir: path.join(folder, dir),
@@ -142,7 +129,7 @@ async function createPages(src: string, dst: string) {
     })
   )
   const section = {
-    pages: [] as PageRef[],
+    pages: [] as Page[],
     sections: {} as Record<string, SectionRef>,
   }
   data
@@ -171,39 +158,23 @@ async function createPages(src: string, dst: string) {
   return section
 }
 
-async function createChangeLogs(projects: string[], root: string, dst: string) {
-  const changelogs = await Promise.all(
-    projects.map(async project => {
-      const p = path.join(projectsFolderSrc, project, 'CHANGELOG.md')
-      const content = await fsp.readFile(p, 'utf8')
-      const html = markdown(content, s => s)
-      return { project, html }
-    })
-  )
-  await Promise.all(
-    changelogs.map(async cl => {
-      await fsp.writeFile(path.join(dst, `${cl.project}.html`), cl.html)
-    })
-  )
-}
-
-async function collectProject(
-  project: string,
+async function collectLibrary(
+  library: string,
   src: string
-): Promise<{ priority: number; data: ProjectRef }> {
-  const p = path.join(src, project, 'package.json')
+): Promise<{ priority: number; data: Library }> {
+  const p = path.join(src, library, 'package.json')
   const packageJson = await fsp.readFile(p, 'utf8')
   const pack = JSON.parse(packageJson)
-  const projectPath = path.join(src, project, 'PROJECT.md')
+  const libraryPath = path.join(src, library, 'PROJECT.md')
   const content = markdown(
-    fs.existsSync(projectPath) ? await fsp.readFile(projectPath, 'utf8') : '',
+    fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : '',
     s => s
   )
   return {
     priority: pack.priority ?? 0,
     data: {
-      name: project,
-      title: pack.title ?? pack.name ?? project,
+      name: library,
+      title: pack.title ?? pack.name ?? library,
       description: pack.description,
       version: pack.version,
       keywords: pack.keywords ?? [],
@@ -212,11 +183,11 @@ async function collectProject(
   }
 }
 
-async function collectProjects(projects: string[], src: string) {
+async function collectLibraries(libraries: string[], src: string) {
   const list = await Promise.all(
-    projects.map(async project => ({
-      project,
-      data: await collectProject(project, src),
+    libraries.map(async library => ({
+      library,
+      data: await collectLibrary(library, src),
     }))
   )
   return list
@@ -259,7 +230,6 @@ async function main() {
     })
   )
 
-  // console.log(assetsFolderSrc, assetsFolderDst)
   // copy assets
   // await prepDir(assetsFolderDst)
   // await fse.copy(assetsFolderSrc, assetsFolderDst)
@@ -268,28 +238,22 @@ async function main() {
   // await fse.copy(binFolderSrc, binFolderDst)
 
   // ensure no jekyll
-  // await fse.createFile(nojekyll)
+  await fse.createFile(nojekyll)
 
   // pages
   await prepDir(pagesFolderDst)
   const sections = await createPages(pagesFolderSrc, pagesFolderDst)
 
-  // changelog
-  // await prepDir(changelogFolderDst)
-  // await createChangeLogs(projects, rootFolder, changelogFolderDst)
-
   // api
   await prepDir(apiFolderDst)
-  const apis = await generateDocs(projects, projectsFolderSrc, apiFolderDst)
 
-  // projects
-  const projectsData = await collectProjects(projects, projectsFolderSrc)
+  // libraries
+  const librariesData = await collectLibraries(libraries, librariesFolderSrc)
 
   const outputContent: Toc = {
-    projects: projectsData,
+    libraries: librariesData,
     demos,
-    ...sections,
-    apis,
+    ...sections
   }
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))

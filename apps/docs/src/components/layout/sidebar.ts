@@ -11,7 +11,7 @@ import {
 } from '@tempots/dom'
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
-import { Toc } from '../../services/toc-service'
+import { Toc } from '../../model/domain'
 
 const homeIcon = svg.svg(
   attr.class('h-6 w-6 shrink-0 text-blue-600'),
@@ -105,7 +105,7 @@ export function SectionLink({
   )
 }
 
-export function SideBar({ projects, demos, pages }: Toc) {
+export function SideBar({ libraries, demos, pages }: Toc) {
   const active = prop('/')
   return html.div(
     attr.class(
@@ -153,7 +153,7 @@ export function SideBar({ projects, demos, pages }: Toc) {
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
-            projects.map(({ title, name }) => {
+            libraries.map(({ title, name }) => {
               const initial = titleToInitial(title.split('/').pop()!)
               return html.li(
                 SectionLink({
@@ -201,9 +201,12 @@ export function SideBar({ projects, demos, pages }: Toc) {
         ),
         html.li(
           attr.class('mt-auto'),
-          html.div(
-            attr.href('#'),
-            attr.class('flex p-2 text-sm text-gray-600 justify-center'),
+          html.a(
+            attr.target('_blank'),
+            attr.href('https://github.com/fponticelli'),
+            attr.class(
+              'flex p-2 text-sm text-gray-600 justify-center hover:underline'
+            ),
             `© 2018-${new Date().getFullYear()} Franco Ponticelli`
           )
         )
