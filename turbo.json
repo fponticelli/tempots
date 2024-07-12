@@ -5,6 +5,10 @@
       "dependsOn": ["^build", "^lint", "^test"],
       "outputs": ["dist/**"]
     },
+    "docs": {
+      "dependsOn": ["^docs", "^build"],
+      "outputs": ["docs/**"]
+    },
     "lint": {},
     "lint:fix": {},
     "test": {},

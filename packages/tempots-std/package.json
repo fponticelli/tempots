@@ -72,6 +72,7 @@
   "scripts": {
     "build": "vite build && cp package.lib.json dist/package.json",
     "build:watch": "vite build --watch",
+    "docs": "typedoc && typedoc-json-parser",
     "test": "vitest --run",
     "test:watch": "vitest --watch --coverage",
     "test:coverage": "vitest --coverage",

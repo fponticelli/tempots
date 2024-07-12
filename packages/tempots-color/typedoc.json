@@ -1,0 +1,21 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/cmyk.ts",
+    "src/convert.ts",
+    "src/hsl.ts",
+    "src/hsla.ts",
+    "src/hsluv.ts",
+    "src/hsv.ts",
+    "src/lab.ts",
+    "src/lch.ts",
+    "src/luv.ts",
+    "src/math.ts",
+    "src/rgb.ts",
+    "src/rgba.ts",
+    "src/srgb.ts",
+    "src/xyz.ts"
+  ],
+  "json": "docs/api.json",
+  "tsconfig": "./tsconfig.json"
+}

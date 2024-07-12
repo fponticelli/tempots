@@ -19,6 +19,7 @@
   "scripts": {
     "build": "vite build && cp package.lib.json dist/package.json",
     "build:watch": "vite build --watch",
+    "docs": "typedoc && typedoc-json-parser",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
