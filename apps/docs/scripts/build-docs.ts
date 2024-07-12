@@ -206,8 +206,6 @@ async function main() {
   await Promise.all(
     demos.map(demo => {
       let src = path.join(demoFolderSrc, demo.path, 'dist')
-      if (!fs.existsSync(src))
-        src = path.join(demoFolderSrc, demo.path, 'build')
       fse.copy(src, path.join(demoFolderDst, demo.path))
     })
   )

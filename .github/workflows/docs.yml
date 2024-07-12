@@ -21,6 +21,8 @@ jobs:
         run: yarn
       - name: Generate Docs for each project
         run: yarn docs
+      - name: Build Demos
+        run: yarn build:demos
       - name: Assemble Docs
         working-directory: apps/docs
         run: yarn docs:maketoc
