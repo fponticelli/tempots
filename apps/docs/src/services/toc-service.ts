@@ -1,7 +1,7 @@
 import { Demo, Page, Library, Toc } from '../model/domain'
 
 export async function fetchToc(): Promise<Toc> {
-  const response = await fetch('/toc.json')
+  const response = await fetch('./toc.json')
   return response.json()
 }
 
