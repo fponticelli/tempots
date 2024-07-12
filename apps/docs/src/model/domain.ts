@@ -23,4 +23,10 @@ export type Toc = {
   libraries: Library[]
   demos: Demo[]
   pages: Page[]
+  sections: Record<string, Section>
+}
+
+export type Section = {
+  pages: Page[]
+  sections: Record<string, Section>
 }

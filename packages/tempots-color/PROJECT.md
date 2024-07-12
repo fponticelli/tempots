@@ -1,0 +1,1 @@
+Colors library for TypeScript.

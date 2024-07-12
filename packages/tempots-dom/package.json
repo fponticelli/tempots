@@ -2,6 +2,31 @@
   "name": "@tempots/dom",
   "private": false,
   "version": "10.0.28",
+  "priority": 1,
+  "description": "Fully-typed frontend framework alternative to React and Angular",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "ui",
+    "framework",
+    "typescript",
+    "dom",
+    "angular-alternative",
+    "react-alternative"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
   "type": "module",
   "files": [
     "dist"
@@ -50,10 +75,8 @@
     "happy-dom": "^14.12.3",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.26.3",
+    "typedoc": "^0.26.4",
     "typedoc-json-parser": "^10.1.5",
-    "typedoc-plugin-markdown": "^4.1.2",
-    "typedoc-plugin-mdn-links": "^3.2.3",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.7.1",
     "vite": "^5.2.0",

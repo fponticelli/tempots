@@ -1,7 +1,38 @@
 {
   "name": "@tempots/color",
   "private": false,
+  "priority": 10,
   "version": "0.1.1",
+  "description": "Colors library for TypeScript.",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "colors",
+    "library",
+    "typescript",
+    "cmyk",
+    "hsl",
+    "hsla",
+    "hsluv",
+    "hsv",
+    "lab",
+    "lch",
+    "luv",
+    "math",
+    "rgb",
+    "rgba",
+    "srgb",
+    "xyz"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
   "type": "module",
   "files": [
     "dist"
@@ -98,6 +129,8 @@
     "globals": "^15.0.0",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.26.4",
+    "typedoc-json-parser": "^10.1.5",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.7.1",
     "vite": "^5.2.0",

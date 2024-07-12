@@ -1,6 +1,24 @@
 {
   "name": "@tempots/std",
   "version": "0.10.7",
+  "priority": 8,
+  "description": "Std library for TypeScript. Natural complement to the Tempo libraries.",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "framework",
+    "std",
+    "library"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
   "type": "module",
   "exports": {
     "./array": {
@@ -69,10 +87,6 @@
     "type": "git",
     "url": "git+https://github.com/fponticelli/tempots.git"
   },
-  "bugs": {
-    "url": "https://github.com/fponticelli/tempots/issues"
-  },
-  "homepage": "https://github.com/fponticelli/tempots#readme",
   "typesVersions": {
     "*": {
       "array": [

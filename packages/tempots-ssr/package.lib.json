@@ -5,6 +5,31 @@
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "ui",
+    "framework",
+    "typescript",
+    "dom",
+    "angular-alternative",
+    "react-alternative",
+    "ssr",
+    "server-side-rendering"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
   "exports": {
     ".": {
       "import": "./index.js",
@@ -15,13 +40,5 @@
     "@tempots/dom": "10.0.28",
     "happy-dom": "^14.12.3"
   },
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fponticelli/tempots.git"
-  },
-  "bugs": {
-    "url": "https://github.com/fponticelli/tempots/issues"
-  },
-  "homepage": "https://github.com/fponticelli/tempots#readme"
+  "license": "Apache-2.0"
 }

@@ -12,12 +12,28 @@
     }
   },
   "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fponticelli/tempots.git"
-  },
+  "description": "Fully-typed frontend framework alternative to React and Angular",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "ui",
+    "framework",
+    "typescript",
+    "dom",
+    "angular-alternative",
+    "react-alternative"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
   "bugs": {
     "url": "https://github.com/fponticelli/tempots/issues"
   },
-  "homepage": "https://github.com/fponticelli/tempots#readme"
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  }
 }

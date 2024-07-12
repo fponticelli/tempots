@@ -4,7 +4,7 @@ import * as fse from 'fs-extra'
 import * as path from 'path'
 import { trimChars } from '@tempots/std/string'
 import { markdown, markdownWithFM } from './utils/markdown'
-import { Demo, Page, Library, Toc } from '../src/model/domain'
+import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
 
 const rootFolder = '../..'
 const docsFolder = path.join(rootFolder, 'apps/docs')
@@ -130,7 +130,7 @@ async function createPages(src: string, dst: string) {
   )
   const section = {
     pages: [] as Page[],
-    sections: {} as Record<string, SectionRef>,
+    sections: {} as Record<string, Section>,
   }
   data
     .sort((a, b) => a.data.order - b.data.order)
@@ -201,24 +201,6 @@ async function main() {
   const demos = await getDemos(demoFolderSrc)
 
   await prepDir(pubFolder)
-  // await prepDir(demoFolderDst)
-
-  // copy benchmark history
-  // const dirs = (await fs.readdir(banchmarkHistoryFolderSrc))
-  //   .filter(dir => dir !== '.' && dir !== '..')
-  //   .filter(
-  //     async dir =>
-  //       await (
-  //         await fs.stat(path.join(banchmarkHistoryFolderSrc, dir))
-  //       ).isDirectory()
-  //   )
-  // await Promise.all(
-  //   dirs.map(dir => {
-  //     const src = path.join(banchmarkHistoryFolderSrc, dir)
-  //     const dst = path.join(banchmarkHistoryFolderDst, dir)
-  //     return fse.copy(src, dst, { overwrite: false })
-  //   })
-  // )
 
   // copy demos
   await Promise.all(
@@ -244,9 +226,6 @@ async function main() {
   await prepDir(pagesFolderDst)
   const sections = await createPages(pagesFolderSrc, pagesFolderDst)
 
-  // api
-  await prepDir(apiFolderDst)
-
   // libraries
   const librariesData = await collectLibraries(libraries, librariesFolderSrc)
 
@@ -254,6 +233,13 @@ async function main() {
     libraries: librariesData,
     demos,
     ...sections
+  }
+
+  // api
+  await prepDir(apiFolderDst)
+  for (const library of librariesData) {
+    const apiFile = path.join(librariesFolderSrc, `${library.name}/docs/api.json`)
+    fs.copyFileSync(apiFile, path.join(apiFolderDst, `${library.name}.json`))
   }
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))

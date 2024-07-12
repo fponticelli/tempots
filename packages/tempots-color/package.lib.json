@@ -2,6 +2,36 @@
   "name": "@tempots/color",
   "version": "0.1.1",
   "type": "module",
+  "description": "Colors library for TypeScript.",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "colors",
+    "library",
+    "typescript",
+    "cmyk",
+    "hsl",
+    "hsla",
+    "hsluv",
+    "hsv",
+    "lab",
+    "lch",
+    "luv",
+    "math",
+    "rgb",
+    "rgba",
+    "srgb",
+    "xyz"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
   "exports": {
     "./cmyk": {
       "import": "./cmyk.js",
@@ -65,10 +95,6 @@
     "type": "git",
     "url": "git+https://github.com/fponticelli/tempots.git"
   },
-  "bugs": {
-    "url": "https://github.com/fponticelli/tempots/issues"
-  },
-  "homepage": "https://github.com/fponticelli/tempots#readme",
   "typesVersions": {
     "*": {
       "cmyk": [
