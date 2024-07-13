@@ -152,6 +152,7 @@ async function createPages(src: string, dst: string) {
         }
         sect = sect.sections[sub]
       }
+      console.log(d)
       sect.pages.push({
         path: d.dest,
         title: d.data.title,

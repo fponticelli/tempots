@@ -2,7 +2,11 @@ import { Demo, Page, Library, Toc } from '../model/domain'
 
 export async function fetchToc(): Promise<Toc> {
   const response = await fetch('/toc.json')
-  return response.json()
+  const json: Toc = await response.json()
+  return {
+    ...json,
+    pages: json.pages.filter(({ path }) => path !== 'index.html'),
+  }
 }
 
 export function tocAsMap(toc: Toc): {
