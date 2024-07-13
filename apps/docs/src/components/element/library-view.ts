@@ -29,25 +29,20 @@ export function LibraryInfo(library: Value<Library>) {
 
 export function LibraryView(data: Signal<Library>) {
   return html.div(
-    attr.class('w-full h-full flex flex-col'),
+    attr.class('w-full h-full flex flex-col gap-2'),
     html.h1(
       attr.class(Styles.heading.large),
       html.span(attr.class('text-gray-600 font-normal'), 'Library: '),
       data.$.title
     ),
     LibraryInfo(data),
-    (data.$.description &&
-      Ensure(data.$.description, des =>
-        html.h2(attr.class(Styles.heading.subSmall), des)
-      )) ||
-      Empty,
     Ensure(
       data.map(v => (v.content === '' ? null : v.content)),
       content =>
         html.div(
-          attr.class('mt-4'),
-          html.h2(attr.class(Styles.heading.subSmall), 'Content'),
-          html.div(attr.class('p-2 border rounded-md'), attr.innerHTML(content))
+          attr.class('p-4 border rounded-md'),
+          attr.class(Styles.prose),
+          attr.innerHTML(content)
         )
     )
   )

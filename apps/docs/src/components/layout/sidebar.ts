@@ -1,34 +1,8 @@
-import {
-  aria,
-  attr,
-  TNode,
-  html,
-  prop,
-  Signal,
-  svg,
-  svgAttr,
-  When,
-} from '@tempots/dom'
+import { attr, TNode, html, prop, Signal, When } from '@tempots/dom'
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
 import { Toc } from '../../model/domain'
 import { Anchor } from '@tempots/ui'
-
-const homeIcon = svg.svg(
-  attr.class('h-6 w-6 shrink-0 text-blue-600'),
-  svgAttr.fill('none'),
-  svgAttr.viewBox('0 0 24 24'),
-  svgAttr.strokeWidth(1.5),
-  svgAttr.stroke('currentColor'),
-  aria.hidden(true),
-  svg.path(
-    svgAttr.strokeLinecap('round'),
-    svgAttr.strokeLinejoin('round'),
-    svgAttr.d(
-      'M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25'
-    )
-  )
-)
 
 function titleToInitial(title: string) {
   let initial = title
@@ -45,7 +19,7 @@ export function MenuLink({
   active,
 }: {
   label: TNode
-  icon: TNode
+  icon?: TNode
   href: string
   active: Signal<string>
 }) {
@@ -142,7 +116,6 @@ export function SideBar({ libraries, demos, pages }: Toc) {
                 MenuLink({
                   href: `/page/${path}`,
                   label: title,
-                  icon: homeIcon,
                   active,
                 })
               )
