@@ -1,6 +1,5 @@
 import showdown from 'showdown'
 import fm from 'front-matter'
-import { trimChars } from '@tempots/std/string'
 import { highlight } from './highlight'
 import { Browser, IOptionalBrowserSettings } from 'happy-dom'
 
@@ -18,7 +17,7 @@ const renameHtml = (path: string) => {
   function processPart(part: string) {
     return part
       .split('.')
-      .map(p => trimChars(p, '_'))
+      .map(p => p.replace(/^_+|_+$/g, ''))
       .join('.')
   }
   const res = parts[0].split('/').map(processPart).join('/')

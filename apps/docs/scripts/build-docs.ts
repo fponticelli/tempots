@@ -29,7 +29,7 @@ const renameHtml = (path: string) => {
   function processPart(part: string) {
     return part
       .split('.')
-      .map(p => p.replace(/_/g, ''))
+      .map(p => p.replace(/^_+|_+$/g, ''))
       .join('.')
   }
   const res = parts[0].split('/').map(processPart).join('/')
