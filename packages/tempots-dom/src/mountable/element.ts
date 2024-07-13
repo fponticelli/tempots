@@ -13,11 +13,11 @@ import { InputTypes } from '../types/html-attributes'
 import { ssr } from '../dom/ssr'
 import { addNodeTracker } from '../dom/ssr'
 
-export function childToRenderable(child: TNode): Renderable {
+export function renderableOfTNode(child: TNode): Renderable {
   if (child == null) {
     return Empty
   } else if (Array.isArray(child)) {
-    return Fragment(...child.map(childToRenderable))
+    return Fragment(...child.map(renderableOfTNode))
   } else if (typeof child === 'string') {
     return staticText(child)
   } else if (Signal.is(child)) {
@@ -36,7 +36,7 @@ export function El(tagName: string, ...children: TNode[]): Renderable {
     ctx.appendOrInsert(element)
 
     ctx = ctx.withElement(element)
-    const clears = children.map(fn => childToRenderable(fn)(ctx))
+    const clears = children.map(fn => renderableOfTNode(fn)(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       if (removeTree) {
@@ -58,7 +58,7 @@ export function ElNS(
     }
     ctx.appendOrInsert(element)
     ctx = ctx.withElement(element)
-    const clears = children.map(fn => childToRenderable(fn)(ctx))
+    const clears = children.map(fn => renderableOfTNode(fn)(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       if (removeTree) {
@@ -75,7 +75,7 @@ export const html = new Proxy(
   {
     get: (_, tagName: keyof HTMLTags) => {
       return (...children: TNode[]) => {
-        return El(tagName, children.flatMap(childToRenderable))
+        return El(tagName, children.flatMap(renderableOfTNode))
       }
     },
   }
@@ -103,7 +103,7 @@ export const svg = new Proxy(
   {
     get: (_, tagName: keyof SVGTags) => {
       return (...children: TNode[]) => {
-        return ElNS(tagName, NS_SVG, children.flatMap(childToRenderable))
+        return ElNS(tagName, NS_SVG, children.flatMap(renderableOfTNode))
       }
     },
   }
@@ -118,7 +118,7 @@ export const math = new Proxy(
   {
     get: (_, tagName: keyof MathMLTags) => {
       return (...children: TNode[]) => {
-        return ElNS(tagName, NS_MATH, children.flatMap(childToRenderable))
+        return ElNS(tagName, NS_MATH, children.flatMap(renderableOfTNode))
       }
     },
   }

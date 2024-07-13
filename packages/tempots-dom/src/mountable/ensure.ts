@@ -2,7 +2,7 @@ import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, prop } from '../std/signal'
 import { removeDOMNode } from '../dom/dom-utils'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
 // TODO, rename to Show?
@@ -23,13 +23,13 @@ export const Ensure =
     const clearSignal = signal.on(value => {
       if (value == null) {
         clear?.(true)
-        clear = childToRenderable(otherwise?.() ?? Empty)(ctx)
+        clear = renderableOfTNode(otherwise?.() ?? Empty)(ctx)
         hadValue = false
       } else {
         feed.value = value
         if (!hadValue) {
           clear?.(true)
-          clear = childToRenderable(then(feed as Signal<NonNullable<T>>))(ctx)
+          clear = renderableOfTNode(then(feed as Signal<NonNullable<T>>))(ctx)
           hadValue = true
         }
       }

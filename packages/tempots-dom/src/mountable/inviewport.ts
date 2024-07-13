@@ -1,7 +1,7 @@
 import { ssr } from '../dom/ssr'
 import { Prop, Signal, prop } from '../std/signal'
 import { TNode, Renderable } from '../types/domain'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
 import { OnDispose } from './ondispose'
@@ -69,7 +69,7 @@ export function InViewport(
       }
     }),
     OnDispose(signal.dispose),
-    childToRenderable(fn(signal))
+    renderableOfTNode(fn(signal))
   )
 }
 

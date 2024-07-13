@@ -1,6 +1,6 @@
 import type { TNode, Renderable, ProviderMark } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 
 export type ToArrayOfMarks<T extends unknown[]> = T extends []
   ? []
@@ -34,7 +34,7 @@ const consumersRenderable =
       ;(providers as any)[mark] = provider
       return providers
     }, {} as ToProviders<T>)
-    return childToRenderable(fn(providers))(ctx)
+    return renderableOfTNode(fn(providers))(ctx)
   }
 
 export const Use = <C extends Record<string, Consumer<unknown>>>(
@@ -69,10 +69,10 @@ export const Use = <C extends Record<string, Consumer<unknown>>>(
 export const UseProvider = <T>(
   mark: ProviderMark<T>,
   fn: (value: T) => TNode
-) => consumersRenderable<[T]>([mark], o => childToRenderable(fn(o[mark]!)))
+) => consumersRenderable<[T]>([mark], o => renderableOfTNode(fn(o[mark]!)))
 
 export const UseProviders = <T extends unknown[]>(
   marks: ToArrayOfMarks<T>,
   fn: (providers: ToProviders<T>) => TNode
 ) =>
-  consumersRenderable<T>(marks, providers => childToRenderable(fn(providers)))
+  consumersRenderable<T>(marks, providers => renderableOfTNode(fn(providers)))

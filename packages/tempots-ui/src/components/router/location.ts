@@ -1,6 +1,6 @@
 import {
   TNode,
-  childToRenderable,
+  renderableOfTNode,
   DOMContext,
   Fragment,
   makeProviderMark,
@@ -104,7 +104,7 @@ export function UseLocation(fn: (location: Prop<Location>) => TNode) {
       const derived = prop(location.value, location.equals)
       location.feedProp(derived)
       derived.on(location.set)
-      const clear = childToRenderable(fn(derived))(ctx)
+      const clear = renderableOfTNode(fn(derived))(ctx)
       return (removeTree: boolean) => {
         derived.dispose()
         clear(removeTree)

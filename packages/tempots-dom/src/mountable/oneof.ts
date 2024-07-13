@@ -2,7 +2,7 @@ import { DOMContext } from '../dom/dom-context'
 import { removeDOMNode } from '../dom/dom-utils'
 import { Computed, Signal } from '../std/signal'
 import { Renderable, Clear, TNode } from '../types/domain'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 
 const oneOfRenderable =
   <T extends Record<string, unknown>>(
@@ -24,7 +24,7 @@ const oneOfRenderable =
         matched = match.map(value => value[newKey])
 
         const child = cases[newKey](matched)
-        clearRenderable = childToRenderable(child)(ctx)
+        clearRenderable = renderableOfTNode(child)(ctx)
         currentKey = newKey
       }
     })

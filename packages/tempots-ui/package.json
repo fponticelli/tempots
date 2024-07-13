@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of components to help fast development with Tempo.",
@@ -70,6 +70,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
+    "@tempots/dom": "*",
+    "@tempots/std": "*",
     "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@vitest/coverage-v8": "^1.5.0",

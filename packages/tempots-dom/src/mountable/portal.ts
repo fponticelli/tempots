@@ -1,6 +1,6 @@
 import { DOMContext } from '../dom/dom-context'
 import { TNode } from '../types/domain'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 import { renderWithContext } from './render'
 
 export const Portal = (selector: string, node: TNode) => (ctx: DOMContext) => {
@@ -9,7 +9,7 @@ export const Portal = (selector: string, node: TNode) => (ctx: DOMContext) => {
     throw new Error(`Cannot find element by selector for portal: ${selector}`)
   }
   return renderWithContext(
-    childToRenderable(node),
+    renderableOfTNode(node),
     ctx.withElement(element).withFirstLevel()
   )
 }

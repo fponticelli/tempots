@@ -1,7 +1,7 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { removeDOMNode } from '../dom/dom-utils'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
 export const Task = <T>(
@@ -18,27 +18,27 @@ export const Task = <T>(
     return Task(task, { then: options })
   }
   const pending =
-    options.pending != null ? childToRenderable(options.pending) : Empty
+    options.pending != null ? renderableOfTNode(options.pending) : Empty
   const then = options.then
   const error =
     options.error != null
-      ? (e: unknown) => childToRenderable(options.error!(e))
+      ? (e: unknown) => renderableOfTNode(options.error!(e))
       : () => Empty
   return (ctx: DOMContext) => {
     let active = true
     const promise = task()
     ctx = ctx.makeRef()
-    let clear = childToRenderable(pending)(ctx)
+    let clear = renderableOfTNode(pending)(ctx)
     promise.then(
       value => {
         if (!active) return
         clear(true)
-        clear = childToRenderable(then(value))(ctx)
+        clear = renderableOfTNode(then(value))(ctx)
       },
       e => {
         if (!active) return
         clear(true)
-        clear = childToRenderable(error(e))(ctx)
+        clear = renderableOfTNode(error(e))(ctx)
       }
     )
     return (removeTree: boolean) => {

@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ssr",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "priority": 6,
   "keywords": [
     "tempo",
@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
+    "@tempots/dom": "*",
     "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@vitest/coverage-v8": "^1.5.0",

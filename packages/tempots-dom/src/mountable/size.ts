@@ -1,13 +1,13 @@
 import { DOMContext } from '../dom/dom-context'
 import { Signal, prop } from '../std/signal'
 import { TNode, Size } from '../types/domain'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 
 const elementSizeMonitor =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
     const el = ctx.element
     const size = prop({ width: el.clientWidth, height: el.clientHeight })
-    const clear = childToRenderable(fn(size))(ctx)
+    const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
       size.set({ width: el.clientWidth, height: el.clientHeight })
     }
@@ -28,7 +28,7 @@ const windowSizeMonitor =
       width: window?.innerWidth ?? 0,
       height: window?.innerHeight ?? 0,
     })
-    const clear = childToRenderable(fn(size))(ctx)
+    const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
       size.set({
         width: window?.innerWidth ?? 0,

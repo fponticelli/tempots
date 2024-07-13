@@ -4,7 +4,7 @@ import { Signal, computed } from '../std/signal'
 import { Position } from '../std/position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 import { oneof } from './oneof'
 import { Empty } from './empty'
 import { OnDispose } from './ondispose'
@@ -19,7 +19,7 @@ export const ForEach = <T>(
       const last = p.map(v => (v.isLast ? 'last' : 'other'))
       return Fragment([
         OnDispose(() => last.dispose()),
-        childToRenderable(item(v, p)),
+        renderableOfTNode(item(v, p)),
         oneof.value(last, {
           last: () => Empty,
           other: () => separator(p),
@@ -36,7 +36,7 @@ export const ForEach = <T>(
         )
         return Fragment(
           OnDispose(() => value.dispose()),
-          childToRenderable(item(value, pos))
+          renderableOfTNode(item(value, pos))
         )
       })(ctx)
     }

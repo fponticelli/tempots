@@ -1,4 +1,4 @@
-import { childToRenderable } from '../mountable/element'
+import { renderableOfTNode } from '../mountable/element'
 import { TNode, Renderable } from '../types/domain'
 import { DOMContext } from './dom-context'
 import { removeDOMNode } from './dom-utils'
@@ -152,7 +152,7 @@ export const startSSR = (timeoutSeconds = 30): Promise<void> => {
 export const ssr = {
   useDone: (child: (done: () => void) => TNode): Renderable => {
     incrementCounter()
-    return childToRenderable(child(decrementCounter))
+    return renderableOfTNode(child(decrementCounter))
   },
   isSSR,
 }

@@ -3,7 +3,7 @@ import { removeDOMNode } from '../dom/dom-utils'
 import { Position } from '../std/position'
 import { Prop, Signal, prop } from '../std/signal'
 import { TNode, Clear, Renderable } from '../types/domain'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
 import { OnDispose } from './ondispose'
@@ -19,7 +19,7 @@ export const Repeat = (
       const last = p.map(v => (v.isLast ? 'last' : 'other'))
       return Fragment(
         OnDispose(() => last.dispose()),
-        childToRenderable(element(p)),
+        renderableOfTNode(element(p)),
         oneof.value(last, {
           last: () => Empty,
           other: () => separator(p),
@@ -45,7 +45,7 @@ export const Repeat = (
         for (let i = 0; i < newLength; i++) {
           if (existings[i] == null) {
             existings[i] = prop(elements[i])
-            const node = childToRenderable(element(existings[i]))
+            const node = renderableOfTNode(element(existings[i]))
             clears[i] = node(ctx)
           } else {
             existings[i].value = elements[i]

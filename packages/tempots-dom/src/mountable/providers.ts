@@ -1,6 +1,6 @@
 import type { TNode, Renderable, ProviderMark } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { childToRenderable } from './element'
+import { renderableOfTNode } from './element'
 
 export type Provider = (node: TNode) => Renderable
 
@@ -18,22 +18,22 @@ export function makeProviderMark<T>(identifier: string): ProviderMark<T> {
 const providersRenderable =
   (providers: { [K in ProviderMark<unknown>]: unknown }, node: TNode) =>
   (ctx: DOMContext) => {
-    return childToRenderable(node)(ctx.withProviders(providers))
+    return renderableOfTNode(node)(ctx.withProviders(providers))
   }
 
 export const Provide = <T extends Provider[]>(...providerFns: T) => {
   return providerFns.length > 0
     ? providerFns.reduceRight((acc, fn) => c => acc(fn(c)))
-    : childToRenderable
+    : renderableOfTNode
 }
 
 export const WithProvider = <T>(
   mark: ProviderMark<T>,
   value: T,
   child: TNode
-) => providersRenderable({ [mark]: value }, childToRenderable(child))
+) => providersRenderable({ [mark]: value }, renderableOfTNode(child))
 
 export const WithProviders = <T extends unknown[]>(
   providers: { [K in ProviderMark<T[number]>]: T[number] },
   child: TNode
-) => providersRenderable(providers, childToRenderable(child))
+) => providersRenderable(providers, renderableOfTNode(child))

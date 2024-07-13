@@ -56,8 +56,8 @@ function canParseNumber(s: string): boolean {
 }
 
 function evalBinary(left: string, right: string, operator: string): string {
-  const leftNumber = canParseNumber(left) ? Number(left) : left ?? '_'
-  const rightNumber = canParseNumber(left) ? Number(right) : right ?? '_'
+  const leftNumber = canParseNumber(left) ? Number(left) : (left ?? '_')
+  const rightNumber = canParseNumber(left) ? Number(right) : (right ?? '_')
   if (typeof leftNumber === 'number' && typeof rightNumber === 'number') {
     switch (operator) {
       case '+':
