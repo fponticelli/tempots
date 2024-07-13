@@ -4,16 +4,16 @@ order: 0
 ---
 # Tempo
 
-> Just another UI Framework for the web
+> A new UI Framework for the web
 
-## Why?
+## Why Choose Tempo?
 
-- plain typescript functions
-- no hidden/unpredictable rerendering
-- no dependencies
-- no magic
-- no virtual DOM
-- low level control when needed
-- small footprint
-- updates are applied directly to the DOM
+- Simple TypeScript functions
+- Predictable rendering without surprises
+- Zero dependencies
+- No hidden complexities
+- Direct DOM updates (no virtual DOM)
+- Fine-grained control when required
+- Lightweight and efficient
+- Directly updates the DOM
 
