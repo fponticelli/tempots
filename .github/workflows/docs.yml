@@ -23,9 +23,9 @@ jobs:
         with:
           node-version: '20'
       - name: Yarn Install
-        run: yarn
-      - name: Generate Docs for each project
-        run: yarn docs
+        run: yarn install
+      # - name: Generate Docs for each project
+      #   run: yarn docs
       - name: Build Demos
         run: yarn build:demos
       - name: Assemble Docs

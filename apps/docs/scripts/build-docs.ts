@@ -233,11 +233,11 @@ async function main() {
   }
 
   // api
-  await prepDir(apiFolderDst)
-  for (const library of librariesData) {
-    const apiFile = path.join(librariesFolderSrc, `${library.name}/docs/api.json`)
-    fs.copyFileSync(apiFile, path.join(apiFolderDst, `${library.name}.json`))
-  }
+  // await prepDir(apiFolderDst)
+  // for (const library of librariesData) {
+  //   const apiFile = path.join(librariesFolderSrc, `${library.name}/docs/api.json`)
+  //   fs.copyFileSync(apiFile, path.join(apiFolderDst, `${library.name}.json`))
+  // }
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
 
