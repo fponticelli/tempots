@@ -1,19 +1,19 @@
-import { attr, Child, Ensure, html, Mountable, on, Signal } from '@tempots/dom'
+import { attr, TNode, Ensure, html, Renderable, on, Signal } from '@tempots/dom'
 import { Action } from '../action'
 import { toHref, Route } from '../route'
 import { Maybe } from '@tempots/std/maybe'
 
 export const maybeLink = (
   route: Signal<Maybe<Route>>,
-  ...children: Child[]
-): Mountable =>
+  ...children: TNode[]
+): Renderable =>
   Ensure(
     route,
     route => link(route, ...children),
     () => html.span(attr.class('is-active'), ...children)
   )
 
-export const link = (route: Signal<Route>, ...children: Child[]): Mountable =>
+export const link = (route: Signal<Route>, ...children: TNode[]): Renderable =>
   html.a(
     attr.href(route.map(toHref)),
     on.click(e => {

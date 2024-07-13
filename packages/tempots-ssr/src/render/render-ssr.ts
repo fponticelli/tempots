@@ -4,7 +4,7 @@ import {
   IOptionalBrowserSettings,
   PropertySymbol,
 } from 'happy-dom'
-import { Mountable, startSSR, render } from '@tempots/dom'
+import { Renderable, startSSR, render } from '@tempots/dom'
 
 const transfer = [
   'setTimeout',
@@ -55,7 +55,7 @@ export async function renderSSR({
   html: string
   url: string
   selector: string
-  makeApp: () => Mountable
+  makeApp: () => Renderable
 }) {
   const browser = new Browser({ settings: browserSettings })
   const page = browser.newPage()

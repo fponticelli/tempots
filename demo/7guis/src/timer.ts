@@ -3,7 +3,7 @@ import {
   attr,
   emit,
   on,
-  type Mountable,
+  type Renderable,
   prop,
   computed,
   OnDispose,
@@ -25,7 +25,7 @@ const MAX = 30000
 const START = 10000
 const INTERVAL = 1000 / 60
 
-export function Timer(): Mountable {
+export function Timer(): Renderable {
   const $elapsed = prop(0)
   const $duration = prop(START)
   let timerId: ReturnType<typeof setInterval> | undefined

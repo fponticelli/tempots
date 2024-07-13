@@ -1,9 +1,9 @@
 import { DOMContext } from '../dom/dom-context'
 import { type Value } from '../std/signal'
 
-export type Mountable = (ctx: DOMContext) => Clear
+export type Renderable = (ctx: DOMContext) => Clear
 
-export type Child = Mountable | Value<string> | undefined | null | Mountable[]
+export type TNode = Renderable | Value<string> | undefined | null | Renderable[]
 export type Clear = (removeTree: boolean) => void
 
 export type ProviderMark<T> = symbol & { readonly __type: T }

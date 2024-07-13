@@ -1,7 +1,7 @@
 import {
   aria,
   attr,
-  Child,
+  TNode,
   Fragment,
   html,
   on,
@@ -55,7 +55,7 @@ export function OpenButton(onClick: () => void) {
   )
 }
 
-export function PageLayout({ main, sidebar }: { main: Child; sidebar: Child }) {
+export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
   const sidebarOpen = prop(true)
   return Fragment(
     html.div(

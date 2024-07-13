@@ -1,4 +1,4 @@
-import type { Mountable } from '../types/domain'
+import type { Renderable } from '../types/domain'
 import type { CSSStyles } from '../types/css-styles'
 import { DOMContext } from '../dom/dom-context'
 import { NValue, Signal } from '../std/signal'
@@ -29,7 +29,7 @@ const signalStyle =
 
 export const style = new Proxy(
   {} as {
-    [AN in keyof CSSStyles]: (value: NValue<string>) => Mountable
+    [AN in keyof CSSStyles]: (value: NValue<string>) => Renderable
   },
   {
     get: (_, name: keyof CSSStyles) => {

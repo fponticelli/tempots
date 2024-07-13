@@ -3,7 +3,7 @@ import { AsyncResult } from '@tempots/std/async-result'
 import { HttpError } from './request'
 import { Route } from './route'
 import {
-  Child,
+  TNode,
   makeProviderMark,
   Signal,
   UseProvider,
@@ -51,10 +51,10 @@ export const makeState = (route: Route): State => ({
 
 const stateProviderMark = makeProviderMark<Signal<State>>('State')
 
-export const StateProvider = (state: Signal<State>, child: Child) =>
+export const StateProvider = (state: Signal<State>, child: TNode) =>
   WithProvider(stateProviderMark, state, child)
 
-export const UseState = (fn: (state: Signal<State>) => Child) =>
+export const UseState = (fn: (state: Signal<State>) => TNode) =>
   UseProvider(stateProviderMark, fn)
 
 const dispatchProviderMark =
@@ -62,9 +62,9 @@ const dispatchProviderMark =
 
 export const DispatchProvider = (
   dispatch: (action: Action) => void,
-  child: Child
+  child: TNode
 ) => WithProvider(dispatchProviderMark, dispatch, child)
 
 export const UseDispatch = (
-  fn: (dispatch: (action: Action) => void) => Child
+  fn: (dispatch: (action: Action) => void) => TNode
 ) => UseProvider(dispatchProviderMark, fn)

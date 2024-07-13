@@ -1,11 +1,11 @@
-import { Child, Signal } from '..'
+import { TNode, Signal } from '..'
 import { Ensure } from './ensure'
 
 // TODO, rename to If?
 export const When = (
   condition: Signal<boolean>,
-  then: Child,
-  otherwise?: Child
+  then: TNode,
+  otherwise?: TNode
 ) => {
   return Ensure(
     condition.map(v => (v ? true : null)) as Signal<true | null>,
@@ -16,8 +16,8 @@ export const When = (
 
 export const Unless = (
   condition: Signal<boolean>,
-  then: Child,
-  otherwise?: Child
+  then: TNode,
+  otherwise?: TNode
 ) => {
   return When(
     condition.map(v => !v),

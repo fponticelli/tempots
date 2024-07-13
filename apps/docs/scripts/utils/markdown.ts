@@ -91,8 +91,8 @@ export const markdown = (
 
   const el = document.body
   // while (el.childNodes.length === 1) {
-  //   if (!el.firstElementChild) break
-  //   el = el.firstElementChild as HTMLElement
+  //   if (!el.firstElementTNode) break
+  //   el = el.firstElementTNode as HTMLElement
   // }
   // console.log(el.nodeName)
   return el.innerHTML

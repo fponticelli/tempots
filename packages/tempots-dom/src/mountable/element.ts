@@ -1,4 +1,4 @@
-import type { Child, Mountable } from '../types/domain'
+import type { TNode, Renderable } from '../types/domain'
 import type { HTMLTags } from '../types/html-tags'
 import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
@@ -13,21 +13,21 @@ import { InputTypes } from '../types/html-attributes'
 import { ssr } from '../dom/ssr'
 import { addNodeTracker } from '../dom/ssr'
 
-export function childToMountable(child: Child): Mountable {
+export function childToRenderable(child: TNode): Renderable {
   if (child == null) {
     return Empty
   } else if (Array.isArray(child)) {
-    return Fragment(...child.map(childToMountable))
+    return Fragment(...child.map(childToRenderable))
   } else if (typeof child === 'string') {
     return staticText(child)
   } else if (Signal.is(child)) {
     return signalText(child as Signal<string>)
   } else {
-    return child as Mountable
+    return child as Renderable
   }
 }
 
-export function El(tagName: string, ...children: Child[]): Mountable {
+export function El(tagName: string, ...children: TNode[]): Renderable {
   return (ctx: DOMContext) => {
     const element = ctx.createElement(tagName, undefined)
     if (ctx.isFirstLevel && ssr.isSSR()) {
@@ -36,7 +36,7 @@ export function El(tagName: string, ...children: Child[]): Mountable {
     ctx.appendOrInsert(element)
 
     ctx = ctx.withElement(element)
-    const clears = children.map(fn => childToMountable(fn)(ctx))
+    const clears = children.map(fn => childToRenderable(fn)(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       if (removeTree) {
@@ -49,8 +49,8 @@ export function El(tagName: string, ...children: Child[]): Mountable {
 export function ElNS(
   tagName: string,
   namespace: string,
-  ...children: Child[]
-): Mountable {
+  ...children: TNode[]
+): Renderable {
   return (ctx: DOMContext) => {
     const element = ctx.createElement(tagName, namespace)
     if (ctx.isFirstLevel && ssr.isSSR()) {
@@ -58,7 +58,7 @@ export function ElNS(
     }
     ctx.appendOrInsert(element)
     ctx = ctx.withElement(element)
-    const clears = children.map(fn => childToMountable(fn)(ctx))
+    const clears = children.map(fn => childToRenderable(fn)(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       if (removeTree) {
@@ -70,12 +70,12 @@ export function ElNS(
 
 export const html = new Proxy(
   {} as {
-    [H in keyof HTMLTags]: (...children: Child[]) => Mountable
+    [H in keyof HTMLTags]: (...children: TNode[]) => Renderable
   },
   {
     get: (_, tagName: keyof HTMLTags) => {
-      return (...children: Child[]) => {
-        return El(tagName, children.flatMap(childToMountable))
+      return (...children: TNode[]) => {
+        return El(tagName, children.flatMap(childToRenderable))
       }
     },
   }
@@ -83,11 +83,11 @@ export const html = new Proxy(
 
 export const input = new Proxy(
   {} as {
-    [T in InputTypes]: (...children: Child[]) => Mountable
+    [T in InputTypes]: (...children: TNode[]) => Renderable
   },
   {
     get: (_, type: InputTypes) => {
-      return (...children: Child[]) => {
+      return (...children: TNode[]) => {
         return El('input', attr.type(type), ...children)
       }
     },
@@ -98,12 +98,12 @@ const NS_SVG = 'http://www.w3.org/2000/svg'
 
 export const svg = new Proxy(
   {} as {
-    [S in keyof SVGTags]: (...children: Child[]) => Mountable
+    [S in keyof SVGTags]: (...children: TNode[]) => Renderable
   },
   {
     get: (_, tagName: keyof SVGTags) => {
-      return (...children: Child[]) => {
-        return ElNS(tagName, NS_SVG, children.flatMap(childToMountable))
+      return (...children: TNode[]) => {
+        return ElNS(tagName, NS_SVG, children.flatMap(childToRenderable))
       }
     },
   }
@@ -113,12 +113,12 @@ const NS_MATH = 'http://www.w3.org/1998/Math/MathML'
 
 export const math = new Proxy(
   {} as {
-    [M in keyof MathMLTags]: (...children: Child[]) => Mountable
+    [M in keyof MathMLTags]: (...children: TNode[]) => Renderable
   },
   {
     get: (_, tagName: keyof MathMLTags) => {
-      return (...children: Child[]) => {
-        return ElNS(tagName, NS_MATH, children.flatMap(childToMountable))
+      return (...children: TNode[]) => {
+        return ElNS(tagName, NS_MATH, children.flatMap(childToRenderable))
       }
     },
   }

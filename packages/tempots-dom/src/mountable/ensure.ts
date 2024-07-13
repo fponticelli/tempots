@@ -1,8 +1,8 @@
-import type { Child, Clear, Mountable } from '../types/domain'
+import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, prop } from '../std/signal'
 import { removeDOMNode } from '../dom/dom-utils'
-import { childToMountable } from './element'
+import { childToRenderable } from './element'
 import { Empty } from './empty'
 
 // TODO, rename to Show?
@@ -12,9 +12,9 @@ export const Ensure =
       | Signal<T | null>
       | Signal<T | undefined>
       | Signal<T | null | undefined>,
-    then: (value: Signal<NonNullable<T>>) => Child,
-    otherwise?: () => Child
-  ): Mountable =>
+    then: (value: Signal<NonNullable<T>>) => TNode,
+    otherwise?: () => TNode
+  ): Renderable =>
   (ctx: DOMContext) => {
     ctx = ctx.makeRef()
     let clear = null as Clear | null
@@ -23,13 +23,13 @@ export const Ensure =
     const clearSignal = signal.on(value => {
       if (value == null) {
         clear?.(true)
-        clear = childToMountable(otherwise?.() ?? Empty)(ctx)
+        clear = childToRenderable(otherwise?.() ?? Empty)(ctx)
         hadValue = false
       } else {
         feed.value = value
         if (!hadValue) {
           clear?.(true)
-          clear = childToMountable(then(feed as Signal<NonNullable<T>>))(ctx)
+          clear = childToRenderable(then(feed as Signal<NonNullable<T>>))(ctx)
           hadValue = true
         }
       }

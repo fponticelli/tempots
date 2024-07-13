@@ -1,13 +1,13 @@
-import { Child } from '..'
+import { TNode } from '..'
 import { Task } from './task'
 
 export const Async = <T>(
   promise: Promise<T>,
   options:
     | {
-        pending?: Child
-        then: (value: T) => Child
-        error?: (error: unknown) => Child
+        pending?: TNode
+        then: (value: T) => TNode
+        error?: (error: unknown) => TNode
       }
-    | ((value: T) => Child)
+    | ((value: T) => TNode)
 ) => Task(() => promise, options)

@@ -1,8 +1,8 @@
-import { Child, attr, html } from '@tempots/dom'
+import { TNode, attr, html } from '@tempots/dom'
 
 export const flex = {
-  row: (...children: Child[]) =>
+  row: (...children: TNode[]) =>
     html.div(attr.class('flex flex-row'), ...children),
-  col: (...children: Child[]) =>
+  col: (...children: TNode[]) =>
     html.div(attr.class('flex flex-col'), ...children),
 }

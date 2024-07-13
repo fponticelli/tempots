@@ -1,8 +1,8 @@
 import { DOMContext } from '../dom/dom-context'
-import type { Mountable } from '../types/domain'
+import type { Renderable } from '../types/domain'
 
 export const AutoFocus =
-  (delay: number = 10): Mountable =>
+  (delay: number = 10): Renderable =>
   (ctx: DOMContext) => {
     const timeout = setTimeout(() => {
       ;(ctx.element as HTMLElement)?.focus()

@@ -1,4 +1,4 @@
-import { attr, Child, html, Value } from '@tempots/dom'
+import { attr, TNode, html, Value } from '@tempots/dom'
 import { Anchor } from '@tempots/ui'
 
 export function Card({
@@ -6,8 +6,8 @@ export function Card({
   description,
   href,
 }: {
-  title: Child
-  description: Child
+  title: TNode
+  description: TNode
   href: Value<string>
 }) {
   return Anchor(

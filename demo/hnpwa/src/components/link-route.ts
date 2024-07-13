@@ -1,9 +1,9 @@
 import {
   attr,
-  Child,
+  TNode,
   handleAnchorClick,
   html,
-  Mountable,
+  Renderable,
   on,
   Signal,
 } from '@tempots/dom'
@@ -14,7 +14,7 @@ import { setGlobalRoute } from '../main'
 export interface LinkRouteProps {
   route: Signal<Route>
   className?: string
-  children?: Child
+  children?: TNode
 }
 
 function toTarget(route: Route): string | undefined {
@@ -29,7 +29,7 @@ export function LinkRoute({
   route,
   className,
   children,
-}: LinkRouteProps): Mountable {
+}: LinkRouteProps): Renderable {
   if (children == null || (Array.isArray(children) && children.length === 0)) {
     children = toTitle(route.get())
   }

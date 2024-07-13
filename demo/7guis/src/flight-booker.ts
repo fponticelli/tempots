@@ -1,8 +1,8 @@
-import { attr, html, on, type Mountable, emit, prop, bind } from '@tempots/dom'
+import { attr, html, on, type Renderable, emit, prop, bind } from '@tempots/dom'
 import { Button, InputDate, Select } from './ui'
 import { flex } from './components/flex'
 
-export function FlightBooker(): Mountable {
+export function FlightBooker(): Renderable {
   const $oneWay = prop(true)
   const $departure = prop(new Date())
   const $return = prop(new Date())

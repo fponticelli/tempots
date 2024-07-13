@@ -3,7 +3,7 @@ import './index.css'
 import {
   type Prop,
   attr,
-  type Mountable,
+  type Renderable,
   on,
   oneof,
   prop,
@@ -45,7 +45,7 @@ const demos: Demo[] = [
   'For Each',
 ]
 
-function demoButton(demo: Demo, $demo: Prop<Demo>): Mountable {
+function demoButton(demo: Demo, $demo: Prop<Demo>): Renderable {
   return Button(
     attr.disabled($demo.map(v => v === demo)),
     on.click(() => $demo.set(demo)),
@@ -53,7 +53,7 @@ function demoButton(demo: Demo, $demo: Prop<Demo>): Mountable {
   )
 }
 
-export function App(): Mountable {
+export function App(): Renderable {
   const $demo = prop<Demo>('Temperature')
   return Fragment(
     Portal(

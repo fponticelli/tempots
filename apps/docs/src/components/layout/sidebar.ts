@@ -1,7 +1,7 @@
 import {
   aria,
   attr,
-  Child,
+  TNode,
   html,
   prop,
   Signal,
@@ -44,8 +44,8 @@ export function MenuLink({
   href,
   active,
 }: {
-  label: Child
-  icon: Child
+  label: TNode
+  icon: TNode
   href: string
   active: Signal<string>
 }) {
@@ -70,7 +70,7 @@ export function MenuLink({
   )
 }
 
-export function FakeIcon(child: Child) {
+export function FakeIcon(child: TNode) {
   return html.span(attr.class(Styles.icon.bordered), child)
 }
 
@@ -80,8 +80,8 @@ export function SectionLink({
   href,
   active,
 }: {
-  label: Child
-  icon: Child
+  label: TNode
+  icon: TNode
   href: string
   active: Signal<string>
 }) {

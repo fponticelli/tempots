@@ -1,5 +1,5 @@
-import { childToMountable } from '../mountable/element'
-import { Child, Mountable } from '../types/domain'
+import { childToRenderable } from '../mountable/element'
+import { TNode, Renderable } from '../types/domain'
 import { DOMContext } from './dom-context'
 import { removeDOMNode } from './dom-utils'
 
@@ -150,9 +150,9 @@ export const startSSR = (timeoutSeconds = 30): Promise<void> => {
 }
 
 export const ssr = {
-  useDone: (child: (done: () => void) => Child): Mountable => {
+  useDone: (child: (done: () => void) => TNode): Renderable => {
     incrementCounter()
-    return childToMountable(child(decrementCounter))
+    return childToRenderable(child(decrementCounter))
   },
   isSSR,
 }

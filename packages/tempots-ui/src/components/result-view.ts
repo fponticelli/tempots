@@ -1,14 +1,14 @@
-import { Child, Fragment, OnDispose, oneof, Signal, Value } from '@tempots/dom'
+import { TNode, Fragment, OnDispose, oneof, Signal, Value } from '@tempots/dom'
 import { Result } from '@tempots/std/result'
 
 export function ResultView<T, E>(
   result: Value<Result<T, E>>,
   options:
     | {
-        success: (value: Signal<T>) => Child
-        failure?: (error: Signal<E>) => Child
+        success: (value: Signal<T>) => TNode
+        failure?: (error: Signal<E>) => TNode
       }
-    | ((value: Signal<T>) => Child)
+    | ((value: Signal<T>) => TNode)
 ) {
   if (typeof options === 'function') {
     return ResultView(result, { success: options })

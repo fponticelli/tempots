@@ -1,12 +1,12 @@
 import { Empty } from './empty'
 import { Signal } from '../std/signal'
-import { Child } from '../types/domain'
+import { TNode } from '../types/domain'
 import { Position } from '../std/position'
 import { oneof } from './oneof'
 
 export const Conjunction = (
-  separator: Child,
-  options?: { lastSeparator?: Child; firstSeparator?: Child }
+  separator: TNode,
+  options?: { lastSeparator?: TNode; firstSeparator?: TNode }
 ) => {
   return (pos: Signal<Position>) => {
     const firstSeparator = options?.firstSeparator ?? Empty

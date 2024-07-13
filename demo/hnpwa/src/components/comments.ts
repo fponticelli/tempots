@@ -4,7 +4,7 @@ import {
   Ensure,
   html,
   attr,
-  Mountable,
+  Renderable,
   NotEmpty,
 } from '@tempots/dom'
 import { Route } from '../route'
@@ -15,7 +15,7 @@ export interface CommentsProps {
   items: Signal<Item[]>
 }
 
-export function Comments({ items }: CommentsProps): Mountable {
+export function Comments({ items }: CommentsProps): Renderable {
   return NotEmpty(
     items,
     html.ul(

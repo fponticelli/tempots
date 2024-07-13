@@ -1,4 +1,4 @@
-import { attr, Child, html, Task } from '@tempots/dom'
+import { attr, TNode, html, Task } from '@tempots/dom'
 
 function fix(html: string) {
   return html
@@ -15,7 +15,7 @@ const Icons = {
     ),
 }
 
-export function Icon(name: keyof typeof Icons, ...children: Child[]) {
+export function Icon(name: keyof typeof Icons, ...children: TNode[]) {
   return html.span(
     attr.class('flex shrink-0 items-center justify-center'),
     Task(Icons[name], v => attr.innerHTML(v)),

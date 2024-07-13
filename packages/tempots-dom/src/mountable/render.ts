@@ -1,15 +1,15 @@
-import type { Mountable } from '../types/domain'
+import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { getSelfOrParentElement, isElement } from '../dom/dom-utils'
 import { clearSSR } from '../dom/ssr'
 
-export function renderWithContext(node: Mountable, ctx: DOMContext) {
+export function renderWithContext(node: Renderable, ctx: DOMContext) {
   const clear = node(ctx)
   return () => clear(true)
 }
 
 export function render(
-  node: Mountable,
+  node: Renderable,
   parent: Node | string,
   { doc, clear }: { doc?: Document; clear?: boolean } = {}
 ) {

@@ -1,11 +1,11 @@
-import type { Mountable } from '../types/domain'
+import type { Renderable } from '../types/domain'
 import { removeDOMNode } from '../dom/dom-utils'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, Value } from '../std/signal'
 import { maybeAddTextTracker } from '../dom/ssr'
 
 export const staticText =
-  (text: string): Mountable =>
+  (text: string): Renderable =>
   (ctx: DOMContext) => {
     maybeAddTextTracker(ctx)
     const node = ctx.createText(text)
@@ -18,7 +18,7 @@ export const staticText =
   }
 
 export const signalText =
-  (signal: Signal<string>): Mountable =>
+  (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
     maybeAddTextTracker(ctx)
     const node = ctx.createText(signal.value)
@@ -32,7 +32,7 @@ export const signalText =
     }
   }
 
-export function Text(value: Value<string>): Mountable {
+export function Text(value: Value<string>): Renderable {
   if (Signal.is(value)) {
     return signalText(value as Signal<string>)
   } else {

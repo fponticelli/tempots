@@ -1,11 +1,11 @@
 import { Toc } from '../toc'
 import { Route } from '../route'
 import { SectionRef, ProjectRef } from '../toc'
-import { attr, computed, ForEach, html, Mountable, Signal } from '@tempots/dom'
+import { attr, computed, ForEach, html, Renderable, Signal } from '@tempots/dom'
 
 type Sidebar = { toc: Toc; route: Route }
 
-const section = (data: Signal<[string, SectionRef, Route]>): Mountable =>
+const section = (data: Signal<[string, SectionRef, Route]>): Renderable =>
   html.div(
     'section: ',
     data.map(([title]) => title)
@@ -73,7 +73,7 @@ const section = (data: Signal<[string, SectionRef, Route]>): Mountable =>
 //     data.map(([r]) => r.title)
 //   )
 
-const project = (data: Signal<[ProjectRef, Sidebar]>): Mountable =>
+const project = (data: Signal<[ProjectRef, Sidebar]>): Renderable =>
   html.div(
     'project: ',
     data.map(([p]) => p.title)

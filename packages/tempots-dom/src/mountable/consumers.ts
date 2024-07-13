@@ -1,6 +1,6 @@
-import type { Child, Mountable, ProviderMark } from '../types/domain'
+import type { TNode, Renderable, ProviderMark } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { childToMountable } from './element'
+import { childToRenderable } from './element'
 
 export type ToArrayOfMarks<T extends unknown[]> = T extends []
   ? []
@@ -17,13 +17,13 @@ export type ToProviders<T extends unknown[]> = T extends []
       ? { [_ in ProviderMark<K>]: K } & ToProviders<R>
       : never
 
-export type Consumer<T> = (fn: (value: T) => Child) => Mountable
+export type Consumer<T> = (fn: (value: T) => TNode) => Renderable
 
-const consumersMountable =
+const consumersRenderable =
   <T extends unknown[]>(
     marks: ToArrayOfMarks<T>,
-    fn: (providers: ToProviders<T>) => Child
-  ): Mountable =>
+    fn: (providers: ToProviders<T>) => TNode
+  ): Renderable =>
   (ctx: DOMContext) => {
     const providers = Object.values(marks).reduce((providers, mark) => {
       const provider = ctx.getProvider(mark)
@@ -34,15 +34,15 @@ const consumersMountable =
       ;(providers as any)[mark] = provider
       return providers
     }, {} as ToProviders<T>)
-    return childToMountable(fn(providers))(ctx)
+    return childToRenderable(fn(providers))(ctx)
   }
 
 export const Use = <C extends Record<string, Consumer<unknown>>>(
   consumers: C,
   fn: (data: {
     [K in keyof C]: C[K] extends Consumer<infer V> ? V : never
-  }) => Mountable
-): Mountable => {
+  }) => Renderable
+): Renderable => {
   return (ctx: DOMContext) => {
     const clears = [] as ((removeTree: boolean) => void)[]
     const data = Object.entries(consumers).reduce(
@@ -68,10 +68,11 @@ export const Use = <C extends Record<string, Consumer<unknown>>>(
 
 export const UseProvider = <T>(
   mark: ProviderMark<T>,
-  fn: (value: T) => Child
-) => consumersMountable<[T]>([mark], o => childToMountable(fn(o[mark]!)))
+  fn: (value: T) => TNode
+) => consumersRenderable<[T]>([mark], o => childToRenderable(fn(o[mark]!)))
 
 export const UseProviders = <T extends unknown[]>(
   marks: ToArrayOfMarks<T>,
-  fn: (providers: ToProviders<T>) => Child
-) => consumersMountable<T>(marks, providers => childToMountable(fn(providers)))
+  fn: (providers: ToProviders<T>) => TNode
+) =>
+  consumersRenderable<T>(marks, providers => childToRenderable(fn(providers)))

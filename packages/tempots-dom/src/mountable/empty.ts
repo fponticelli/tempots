@@ -1,3 +1,3 @@
-import { Mountable } from '../types/domain'
+import { Renderable } from '../types/domain'
 
-export const Empty: Mountable = () => () => {}
+export const Empty: Renderable = () => () => {}

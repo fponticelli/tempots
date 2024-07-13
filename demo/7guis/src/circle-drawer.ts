@@ -4,7 +4,7 @@ import {
   attr,
   svgAttr,
   on,
-  type Mountable,
+  type Renderable,
   emit,
   prop,
   Signal,
@@ -40,7 +40,7 @@ type Action = AddCircle | ChangeRadius
 
 const DEFAULT_RADIUS = 10
 
-export function CircleDrawer(): Mountable {
+export function CircleDrawer(): Renderable {
   const $circles = prop<Circle[]>([])
   const $undoHistory = prop<Action[]>([])
   const $redoHistory = prop<Action[]>([])

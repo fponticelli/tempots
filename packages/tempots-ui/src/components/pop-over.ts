@@ -1,5 +1,5 @@
 import {
-  Child,
+  TNode,
   DOMContext,
   OnMount,
   Signal,
@@ -32,7 +32,7 @@ export type Placement =
 
 export interface PopOverProps {
   open: Value<boolean>
-  content: () => Child
+  content: () => TNode
   placement?: Placement
   offset?: {
     mainAxis?: number

@@ -2,14 +2,14 @@ import { Txt } from './components/txt'
 import {
   html,
   attr,
-  type Mountable,
+  type Renderable,
   on,
   AutoSelect,
   emit,
   Signal,
   prop,
   Prop,
-  Child,
+  TNode,
   When,
   signal,
   computed,
@@ -22,14 +22,14 @@ const data = bmiData // change to sampleData if desired
 const NUM_COLUMNS = 26
 const NUM_ROWS = 100
 
-function Cell(...children: Child[]) {
+function Cell(...children: TNode[]) {
   return Fragment(
     attr.class('border border-gray-300 dark:border-gray-500 min-h-8'),
     ...children
   )
 }
 
-function Header(...children: Child[]): Mountable {
+function Header(...children: TNode[]): Renderable {
   return Fragment(
     attr.class(
       'border border-gray-400 dark:border-gray-600 min-w-10 min-h-8 bg-gray-200 dark:bg-gray-800'
@@ -159,7 +159,7 @@ class CellValue {
   }
 }
 
-export function Cells(): Mountable {
+export function Cells(): Renderable {
   const columns = Array.from({ length: NUM_COLUMNS }, (_, i) =>
     String.fromCharCode(65 + i)
   )

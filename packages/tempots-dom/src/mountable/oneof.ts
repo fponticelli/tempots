@@ -1,17 +1,17 @@
 import { DOMContext } from '../dom/dom-context'
 import { removeDOMNode } from '../dom/dom-utils'
 import { Computed, Signal } from '../std/signal'
-import { Mountable, Clear, Child } from '../types/domain'
-import { childToMountable } from './element'
+import { Renderable, Clear, TNode } from '../types/domain'
+import { childToRenderable } from './element'
 
-const oneOfMountable =
+const oneOfRenderable =
   <T extends Record<string, unknown>>(
     match: Signal<T>,
-    cases: { [KK in keyof T]: (value: Signal<T[KK]>) => Child }
-  ): Mountable =>
+    cases: { [KK in keyof T]: (value: Signal<T[KK]>) => TNode }
+  ): Renderable =>
   (ctx: DOMContext) => {
     ctx = ctx.makeRef()
-    let clearMountable: Clear | undefined
+    let clearRenderable: Clear | undefined
     let matched: Computed<T[keyof T]> | undefined
     const keySignal = match.map(value => {
       return Object.keys(value)[0] as keyof T // the object only has one field
@@ -20,11 +20,11 @@ const oneOfMountable =
     const clearSignal = keySignal.on(newKey => {
       if (newKey !== currentKey) {
         matched?.dispose()
-        clearMountable?.(true)
+        clearRenderable?.(true)
         matched = match.map(value => value[newKey])
 
         const child = cases[newKey](matched)
-        clearMountable = childToMountable(child)(ctx)
+        clearRenderable = childToRenderable(child)(ctx)
         currentKey = newKey
       }
     })
@@ -33,16 +33,16 @@ const oneOfMountable =
       if (removeTree && ctx.reference != null) {
         removeDOMNode(ctx.reference)
       }
-      clearMountable?.(true)
+      clearRenderable?.(true)
     }
   }
 
 export const oneof = {
   bool: (
     match: Signal<boolean>,
-    cases: { true: () => Child; false: () => Child }
+    cases: { true: () => TNode; false: () => TNode }
   ) =>
-    oneOfMountable(
+    oneOfRenderable(
       match.map(v => (v ? { true: true } : { false: true })),
       cases
     ),
@@ -52,10 +52,10 @@ export const oneof = {
     cases: {
       [KK in T[K]]: (
         value: Signal<T extends { [_ in K]: KK } ? T : never>
-      ) => Child
+      ) => TNode
     }
   ) =>
-    oneOfMountable(
+    oneOfRenderable(
       match.map(v => ({ [v[field]]: v })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cases as any
@@ -65,31 +65,31 @@ export const oneof = {
     cases: {
       [KK in T['kind']]: (
         value: Signal<T extends { kind: KK } ? T : never>
-      ) => Child
+      ) => TNode
     }
   ) => oneof.field(match, 'kind', cases),
   tuple: <T extends string, V>(
     match: Signal<[T, V]>,
     cases: {
-      [KK in T]: (value: Signal<V>) => Child
+      [KK in T]: (value: Signal<V>) => TNode
     }
   ) => {
     const matchRecord = match.map(([key, value]) => ({ [key]: value }))
-    return oneOfMountable(matchRecord, cases)
+    return oneOfRenderable(matchRecord, cases)
   },
   type: <T extends { type: string }>(
     match: Signal<T>,
     cases: {
       [KK in T['type']]: (
         value: Signal<T extends { type: KK } ? T : never>
-      ) => Child
+      ) => TNode
     }
   ) => oneof.field(match, 'type', cases),
   value: <T extends symbol | number | string>(
     match: Signal<T>,
-    cases: { [KK in T]: () => Child }
+    cases: { [KK in T]: () => TNode }
   ) =>
-    oneOfMountable(
+    oneOfRenderable(
       match.map(v => ({ [v]: true })),
       cases
     ),

@@ -1,7 +1,7 @@
 import { ssr } from '../dom/ssr'
 import { Prop, Signal, prop } from '../std/signal'
-import { Child, Mountable } from '../types/domain'
-import { childToMountable } from './element'
+import { TNode, Renderable } from '../types/domain'
+import { childToRenderable } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
 import { OnDispose } from './ondispose'
@@ -47,8 +47,8 @@ function ensureObserver(mode: InViewportMode): IntersectionObserver {
 
 export function InViewport(
   mode: InViewportMode,
-  fn: (value: Signal<boolean>) => Child
-): Mountable {
+  fn: (value: Signal<boolean>) => TNode
+): Renderable {
   const signal = prop(ssr.isSSR())
   return Fragment(
     OnMount((el: HTMLElement) => {
@@ -69,12 +69,12 @@ export function InViewport(
       }
     }),
     OnDispose(signal.dispose),
-    childToMountable(fn(signal))
+    childToRenderable(fn(signal))
   )
 }
 
 export const WhenInViewport = (
   mode: InViewportMode,
-  then: Child,
-  otherwise?: Child
+  then: TNode,
+  otherwise?: TNode
 ) => InViewport(mode, inView => When(inView, then, otherwise ?? Empty))

@@ -1,9 +1,9 @@
-import type { Mountable } from '../types/domain'
+import type { Renderable } from '../types/domain'
 import type { HTMLEvents } from '../types/html-events'
 import { DOMContext } from '../dom/dom-context'
 
 const handler =
-  <T extends Event>(name: string, handler: (event: T) => void): Mountable =>
+  <T extends Event>(name: string, handler: (event: T) => void): Renderable =>
   (ctx: DOMContext) => {
     ctx.element.addEventListener(name, handler as (e: Event) => void)
     return (removeTree: boolean) => {
@@ -29,7 +29,7 @@ export const on = new Proxy(
   {} as {
     [EN in keyof HTMLEvents]: (
       handler: (event: HTMLEvents[EN]) => void
-    ) => Mountable
+    ) => Renderable
   },
   {
     get: (_, name: keyof HTMLEvents) => {

@@ -1,25 +1,25 @@
-import type { Child, Mountable } from '../types/domain'
+import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, computed } from '../std/signal'
 import { Position } from '../std/position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
-import { childToMountable } from './element'
+import { childToRenderable } from './element'
 import { oneof } from './oneof'
 import { Empty } from './empty'
 import { OnDispose } from './ondispose'
 
 export const ForEach = <T>(
   signal: Signal<T[]>,
-  item: (value: Signal<T>, position: Signal<Position>) => Child,
-  separator?: (pos: Signal<Position>) => Child
-): Mountable => {
+  item: (value: Signal<T>, position: Signal<Position>) => TNode,
+  separator?: (pos: Signal<Position>) => TNode
+): Renderable => {
   if (separator != null) {
     return ForEach(signal, (v, p) => {
       const last = p.map(v => (v.isLast ? 'last' : 'other'))
       return Fragment([
         OnDispose(() => last.dispose()),
-        childToMountable(item(v, p)),
+        childToRenderable(item(v, p)),
         oneof.value(last, {
           last: () => Empty,
           other: () => separator(p),
@@ -36,7 +36,7 @@ export const ForEach = <T>(
         )
         return Fragment(
           OnDispose(() => value.dispose()),
-          childToMountable(item(value, pos))
+          childToRenderable(item(value, pos))
         )
       })(ctx)
     }

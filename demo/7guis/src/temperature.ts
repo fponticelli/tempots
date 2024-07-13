@@ -6,7 +6,7 @@ import {
   emit,
   on,
   prop,
-  type Mountable,
+  type Renderable,
 } from '@tempots/dom'
 import { InputText } from './ui'
 import { flex } from './components/flex'
@@ -22,7 +22,7 @@ function round(value: number, decimals: number = 2) {
   )
 }
 
-export function Temperature(): Mountable {
+export function Temperature(): Renderable {
   const $celsius = prop<string | number>('22')
   const $fahrenheit = prop<string | number>('71.6')
   const $tchange = prop<TempChange>({ unit: 'c', value: '' })

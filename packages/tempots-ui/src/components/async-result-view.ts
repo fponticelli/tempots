@@ -1,5 +1,5 @@
 import {
-  Child,
+  TNode,
   Empty,
   Fragment,
   OnDispose,
@@ -14,12 +14,12 @@ export function AsyncResultView<T, E>(
   result: Value<AsyncResult<T, E>>,
   options:
     | {
-        success: (value: Signal<T>) => Child
-        failure?: (error: Signal<E>) => Child
-        notAsked?: () => Child
-        loading?: (previousValue: Signal<T | undefined>) => Child
+        success: (value: Signal<T>) => TNode
+        failure?: (error: Signal<E>) => TNode
+        notAsked?: () => TNode
+        loading?: (previousValue: Signal<T | undefined>) => TNode
       }
-    | ((value: Signal<T>) => Child)
+    | ((value: Signal<T>) => TNode)
 ) {
   if (typeof options === 'function') {
     return AsyncResultView(result, { success: options })

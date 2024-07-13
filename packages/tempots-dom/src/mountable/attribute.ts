@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from '../types/html-attributes'
 import type { MathMLTags } from '../types/mathml-tags'
-import type { Mountable } from '../types/domain'
+import type { Renderable } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal, Value, type NValue } from '../std/signal'
 import { makeGetter, makeSetter } from '../dom/attr'
@@ -9,7 +9,7 @@ import { SVGAttributes } from '../types/svg-attributes'
 import { maybeAddAttributeTracker, maybeAddClassTracker } from '../dom/ssr'
 
 const staticClassName =
-  (value: string[]): Mountable =>
+  (value: string[]): Renderable =>
   (ctx: DOMContext) => {
     maybeAddClassTracker(ctx)
     ctx.element.classList.add(...value)
@@ -21,7 +21,7 @@ const staticClassName =
   }
 
 const signalClassName =
-  (signal: Signal<string>): Mountable =>
+  (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
     maybeAddClassTracker(ctx)
     const element = ctx.element
@@ -40,7 +40,7 @@ const signalClassName =
     }
   }
 
-const staticAttributeMountable = <T>(name: string, value: T) => {
+const staticAttributeRenderable = <T>(name: string, value: T) => {
   const setter = makeSetter(name)
   const getter = makeGetter(name)
   return (ctx: DOMContext) => {
@@ -55,7 +55,7 @@ const staticAttributeMountable = <T>(name: string, value: T) => {
   }
 }
 
-const signalAttributeMountable = <T>(name: string, signal: Signal<T>) => {
+const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
   const setter = makeSetter(name)
   const getter = makeGetter(name)
   return (ctx: DOMContext) => {
@@ -86,7 +86,9 @@ const signalAttributeMountable = <T>(name: string, signal: Signal<T>) => {
  */
 export const attr = new Proxy(
   {} as {
-    [A in keyof HTMLAttributes]: (value: NValue<HTMLAttributes[A]>) => Mountable
+    [A in keyof HTMLAttributes]: (
+      value: NValue<HTMLAttributes[A]>
+    ) => Renderable
   },
   {
     get: (_, name: keyof HTMLAttributes) => {
@@ -103,12 +105,12 @@ export const attr = new Proxy(
       } else {
         return (value: NValue<HTMLAttributes[typeof name]>) => {
           if (Signal.is(value)) {
-            return signalAttributeMountable(
+            return signalAttributeRenderable(
               name,
               value as Signal<HTMLAttributes[typeof name]>
             )
           } else {
-            return staticAttributeMountable(
+            return staticAttributeRenderable(
               name,
               value as HTMLAttributes[typeof name]
             )
@@ -121,18 +123,18 @@ export const attr = new Proxy(
 
 export const dataAttr = new Proxy(
   {} as {
-    [A in string]: (value: Value<string>) => Mountable
+    [A in string]: (value: Value<string>) => Renderable
   },
   {
     get: (_, name: string) => {
       return (value: Value<string>) => {
         if (Signal.is(value)) {
-          return signalAttributeMountable(
+          return signalAttributeRenderable(
             `data-${name}`,
             value as Signal<string>
           )
         } else {
-          return staticAttributeMountable(`data-${name}`, value as string)
+          return staticAttributeRenderable(`data-${name}`, value as string)
         }
       }
     },
@@ -153,18 +155,20 @@ export const dataAttr = new Proxy(
  */
 export const aria = new Proxy(
   {} as {
-    [A in keyof AriaAttributes]: (value: NValue<AriaAttributes[A]>) => Mountable
+    [A in keyof AriaAttributes]: (
+      value: NValue<AriaAttributes[A]>
+    ) => Renderable
   },
   {
     get: (_, name: keyof AriaAttributes) => {
       return (value: NValue<AriaAttributes[typeof name]>) => {
         if (Signal.is(value)) {
-          return signalAttributeMountable(
+          return signalAttributeRenderable(
             `aria-${name}`,
             value as Signal<AriaAttributes[typeof name]>
           )
         } else {
-          return staticAttributeMountable(
+          return staticAttributeRenderable(
             `aria-${name}`,
             value as AriaAttributes[typeof name]
           )
@@ -188,18 +192,18 @@ export const aria = new Proxy(
  */
 export const svgAttr = new Proxy(
   {} as {
-    [S in keyof SVGAttributes]: (value: NValue<SVGAttributes[S]>) => Mountable
+    [S in keyof SVGAttributes]: (value: NValue<SVGAttributes[S]>) => Renderable
   },
   {
     get: (_, name: keyof SVGAttributes) => {
       return (value: NValue<SVGAttributes[typeof name]>) => {
         if (Signal.is(value)) {
-          return signalAttributeMountable(
+          return signalAttributeRenderable(
             name,
             value as Signal<SVGAttributes[typeof name]>
           )
         } else {
-          return staticAttributeMountable(
+          return staticAttributeRenderable(
             name,
             value as SVGAttributes[typeof name]
           )
@@ -222,18 +226,18 @@ export const svgAttr = new Proxy(
  */
 export const mathAttr = new Proxy(
   {} as {
-    [M in keyof MathMLTags]: (value: NValue<MathMLTags[M]>) => Mountable
+    [M in keyof MathMLTags]: (value: NValue<MathMLTags[M]>) => Renderable
   },
   {
     get: (_, name: keyof MathMLTags) => {
       return (value: NValue<MathMLTags[typeof name]>) => {
         if (Signal.is(value)) {
-          return signalAttributeMountable(
+          return signalAttributeRenderable(
             name,
             value as Signal<MathMLTags[typeof name]>
           )
         } else {
-          return staticAttributeMountable(
+          return staticAttributeRenderable(
             name,
             value as MathMLTags[typeof name]
           )

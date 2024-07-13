@@ -1,11 +1,11 @@
-import type { Child, Mountable } from '../types/domain'
+import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { childToMountable } from './element'
+import { childToRenderable } from './element'
 
 export const Fragment =
-  (...children: Child[]): Mountable =>
+  (...children: TNode[]): Renderable =>
   (ctx: DOMContext) => {
-    const clears = children.map(child => childToMountable(child)(ctx))
+    const clears = children.map(child => childToRenderable(child)(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(removeTree))
     }

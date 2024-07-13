@@ -1,8 +1,8 @@
-import type { Child, Mountable, ProviderMark } from '../types/domain'
+import type { TNode, Renderable, ProviderMark } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { childToMountable } from './element'
+import { childToRenderable } from './element'
 
-export type Provider = (node: Child) => Mountable
+export type Provider = (node: TNode) => Renderable
 
 /**
  * Creates a unique symbol that can be used as a provider mark for a specific type `T`.
@@ -15,25 +15,25 @@ export function makeProviderMark<T>(identifier: string): ProviderMark<T> {
   return Symbol(identifier) as ProviderMark<T>
 }
 
-const providersMountable =
-  (providers: { [K in ProviderMark<unknown>]: unknown }, node: Child) =>
+const providersRenderable =
+  (providers: { [K in ProviderMark<unknown>]: unknown }, node: TNode) =>
   (ctx: DOMContext) => {
-    return childToMountable(node)(ctx.withProviders(providers))
+    return childToRenderable(node)(ctx.withProviders(providers))
   }
 
 export const Provide = <T extends Provider[]>(...providerFns: T) => {
   return providerFns.length > 0
     ? providerFns.reduceRight((acc, fn) => c => acc(fn(c)))
-    : childToMountable
+    : childToRenderable
 }
 
 export const WithProvider = <T>(
   mark: ProviderMark<T>,
   value: T,
-  child: Child
-) => providersMountable({ [mark]: value }, childToMountable(child))
+  child: TNode
+) => providersRenderable({ [mark]: value }, childToRenderable(child))
 
 export const WithProviders = <T extends unknown[]>(
   providers: { [K in ProviderMark<T[number]>]: T[number] },
-  child: Child
-) => providersMountable(providers, childToMountable(child))
+  child: TNode
+) => providersRenderable(providers, childToRenderable(child))

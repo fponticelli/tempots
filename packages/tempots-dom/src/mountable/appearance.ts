@@ -1,5 +1,5 @@
 import { Signal, prop } from '../std/signal'
-import { Child } from '../types/domain'
+import { TNode } from '../types/domain'
 import { UseProvider } from './consumers'
 import { Fragment } from './fragment'
 import { OnDispose } from './ondispose'
@@ -32,7 +32,7 @@ export const appearance = {
    * @param child - The child component to be provided with the appearance context.
    * @returns The child component with the appearance context.
    */
-  provide: (child: Child): Child => {
+  provide: (child: TNode): TNode => {
     const isDark =
       window.matchMedia != null &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -54,9 +54,9 @@ export const appearance = {
    * Makes the AppearanceType available to the child component by consuming the signal provided by the parent.
    * The result of the function is returned as the final output.
    *
-   * @param fn - A function that accepts the `AppearanceType` signal and returns a `Child` element.
-   * @returns The `Child` element returned by the provided function.
+   * @param fn - A function that accepts the `AppearanceType` signal and returns a `TNode` element.
+   * @returns The `TNode` element returned by the provided function.
    */
-  consume: (fn: (appearance: Signal<AppearanceType>) => Child): Child =>
+  consume: (fn: (appearance: Signal<AppearanceType>) => TNode): TNode =>
     UseProvider(appearanceMarker, fn),
 }

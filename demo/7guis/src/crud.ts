@@ -2,7 +2,7 @@ import { Txt } from './components/txt'
 import {
   html,
   attr,
-  type Mountable,
+  type Renderable,
   on,
   emit,
   prop,
@@ -17,7 +17,7 @@ interface Person {
   surname: string
 }
 
-export function Crud(): Mountable {
+export function Crud(): Renderable {
   let counter = 0
   const makeId = () => String(counter++)
   const $currentId = prop<string | null>(null)

@@ -1,4 +1,4 @@
-import { DOMContext, Mountable } from '..'
+import { DOMContext, Renderable } from '..'
 
-export const Ctx = (fn: (ctx: DOMContext) => Mountable) => (ctx: DOMContext) =>
+export const Ctx = (fn: (ctx: DOMContext) => Renderable) => (ctx: DOMContext) =>
   fn(ctx)(ctx)

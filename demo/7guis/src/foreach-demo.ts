@@ -1,7 +1,7 @@
 import { Txt } from './components/txt'
 import {
   attr,
-  type Mountable,
+  type Renderable,
   on,
   animate,
   prop,
@@ -50,7 +50,7 @@ function easeOutCubic(p: number) {
   return 1 - Math.pow(1 - p, 3)
 }
 
-export function ForEachDemo(): Mountable {
+export function ForEachDemo(): Renderable {
   const $accounts = prop(makeAccounts(10))
   const $count = $accounts.map(v => v.length)
   const $deleteDisabled = $count.map(c => c === 0)

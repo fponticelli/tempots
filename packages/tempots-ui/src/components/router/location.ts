@@ -1,6 +1,6 @@
 import {
-  Child,
-  childToMountable,
+  TNode,
+  childToRenderable,
   DOMContext,
   Fragment,
   makeProviderMark,
@@ -88,7 +88,7 @@ export function makeLocationProp(): Prop<Location> {
   return location
 }
 
-export function ProvideLocation(child: Child) {
+export function ProvideLocation(child: TNode) {
   const location = makeLocationProp()
 
   return Fragment(
@@ -97,14 +97,14 @@ export function ProvideLocation(child: Child) {
   )
 }
 
-export function UseLocation(fn: (location: Prop<Location>) => Child) {
+export function UseLocation(fn: (location: Prop<Location>) => TNode) {
   return UseProvider(LocationProviderMarker, (location: Prop<Location>) => {
     // prevents accidentally disposing of the source location prop
     return (ctx: DOMContext) => {
       const derived = prop(location.value, location.equals)
       location.feedProp(derived)
       derived.on(location.set)
-      const clear = childToMountable(fn(derived))(ctx)
+      const clear = childToRenderable(fn(derived))(ctx)
       return (removeTree: boolean) => {
         derived.dispose()
         clear(removeTree)

@@ -1,6 +1,6 @@
 import {
   attr,
-  Child,
+  TNode,
   handleAnchorClick,
   html,
   on,
@@ -9,7 +9,7 @@ import {
 } from '@tempots/dom'
 import { setLocationFromUrl, UseLocation } from './router/location'
 
-export function Anchor(href: Value<string>, ...children: Child[]) {
+export function Anchor(href: Value<string>, ...children: TNode[]) {
   return UseLocation(location => {
     return html.a(
       on.click(

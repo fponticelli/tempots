@@ -1,4 +1,4 @@
-import { Child, Mountable, oneof, Signal } from '@tempots/dom'
+import { TNode, Renderable, oneof, Signal } from '@tempots/dom'
 import { ExtractParams, MakeParams, RouteInfo } from './route-info'
 import { UseLocation } from './location'
 import { makeRouteMatcher } from './match'
@@ -9,9 +9,9 @@ export function Router<
       info: K extends string
         ? Signal<RouteInfo<MakeParams<ExtractParams<K>>, K>>
         : never
-    ) => Child
+    ) => TNode
   },
->(routes: T): Mountable {
+>(routes: T): Renderable {
   const matchRoute = makeRouteMatcher(Object.keys(routes))
   return UseLocation(location => {
     const route = location.map(location => {

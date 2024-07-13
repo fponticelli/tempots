@@ -1,7 +1,7 @@
 import { Txt } from './components/txt'
 import {
   attr,
-  type Mountable,
+  type Renderable,
   on,
   prop,
   html,
@@ -13,7 +13,7 @@ import {
 import { Button } from './ui'
 import { flex } from './components/flex'
 
-export function RepeatDemo(): Mountable {
+export function RepeatDemo(): Renderable {
   const $count = prop(5)
   const $deleteDisabled = $count.map(count => count === 0)
   return flex.col(
