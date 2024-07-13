@@ -2,7 +2,6 @@ import { promises as fsp } from 'fs'
 import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
-import { trimChars } from '@tempots/std/string'
 import { markdown, markdownWithFM } from './utils/markdown'
 import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
 
@@ -30,7 +29,7 @@ const renameHtml = (path: string) => {
   function processPart(part: string) {
     return part
       .split('.')
-      .map(p => trimChars(p, '_'))
+      .map(p => p.replace(/_/g, ''))
       .join('.')
   }
   const res = parts[0].split('/').map(processPart).join('/')
