@@ -215,9 +215,6 @@ async function main() {
   // copy assets
   await fse.copy(assetsFolderSrc, assetsFolderDst)
 
-  // copy binaries
-  // await fse.copy(binFolderSrc, binFolderDst)
-
   // ensure no jekyll
   await fse.createFile(nojekyll)
 
