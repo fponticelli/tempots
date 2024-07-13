@@ -32,8 +32,7 @@ jobs:
         working-directory: apps/docs
         run: yarn docs:maketoc
       - name: Build Docs
-        working-directory: apps/docs
-        run: yarn build
+        run: yarn build --filter=@tempos/docs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
