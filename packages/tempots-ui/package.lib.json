@@ -39,7 +39,9 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@floating-ui/dom": "^1.6.7",
+    "@floating-ui/dom": "^1.6.7"
+  },
+  "peerDependencies": {
     "@tempots/dom": "10.0.28",
     "@tempots/std": "0.10.7"
   }

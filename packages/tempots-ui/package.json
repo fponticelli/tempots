@@ -62,7 +62,9 @@
     "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.6.7",
+    "@floating-ui/dom": "^1.6.7"
+  },
+  "peerDependencies": {
     "@tempots/dom": "*",
     "@tempots/std": "*"
   },

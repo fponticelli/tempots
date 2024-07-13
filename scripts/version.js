@@ -36,9 +36,9 @@ function updateLibVersion(packageDir, type) {
 function updateDependencies(newVersion, libName, packageDir) {
   const packagePath = path.join(packageDir, 'package.lib.json')
   let json = require(packagePath)
-  for (const key in json.dependencies) {
+  for (const key in json.peerDependencies) {
     if (key === libName) {
-      json.dependencies[key] = newVersion
+      json.peerDependencies[key] = newVersion
     }
   }
   require('fs').writeFileSync(packagePath, JSON.stringify(json, null, 2))

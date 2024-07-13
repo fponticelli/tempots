@@ -61,8 +61,10 @@
     "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
   },
   "dependencies": {
-    "@tempots/dom": "*",
     "happy-dom": "^14.12.3"
+  },
+  "peerDependencies": {
+    "@tempots/dom": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

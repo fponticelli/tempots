@@ -24,7 +24,7 @@ export function makeLocation(): Location {
   const hash =
     window?.location.hash === ''
       ? undefined
-      : window?.location.hash.substring(1) ?? undefined
+      : (window?.location.hash.substring(1) ?? undefined)
   return {
     pathname: window?.location.pathname ?? '',
     search: Object.fromEntries(
