@@ -1,6 +1,6 @@
 {
   "name": "@tempots/std",
-  "version": "0.10.7",
+  "version": "0.11.0",
   "priority": 8,
   "description": "Std library for TypeScript. Natural complement to the Tempo libraries.",
   "keywords": [

@@ -105,7 +105,7 @@ async function makeHtml(
   return markdownWithFM(content, anchorMangler)
 }
 
-function renameMdToHtml(file: string) {
+function renameMd(file: string) {
   return file.substring(0, file.length - 3) + '.html'
 }
 
@@ -118,7 +118,7 @@ async function createPages(src: string, dst: string) {
   const mdFiles = await listAllMDFiles(src)
   const data = await Promise.all(
     mdFiles.map(async file => ({
-      dest: renameHtml(renameMdToHtml(file)),
+      dest: renameHtml(renameMd(file)),
       ...(await makeHtml(path.join(src, file), manglePageHref)),
     }))
   )
@@ -152,9 +152,9 @@ async function createPages(src: string, dst: string) {
         }
         sect = sect.sections[sub]
       }
-      console.log(d)
+      // console.log(d)
       sect.pages.push({
-        path: d.dest,
+        path: d.dest.substring(0, d.dest.length - 5), // remove .html
         title: d.data.title,
       })
     })

@@ -59,7 +59,8 @@ export const markdown = (
   const codes = document.querySelectorAll('.language-ts')
   for (let i = 0; i < codes.length; i++) {
     const code = codes[i]
-    code.parentElement?.classList.add('language-ts')
+    // code.parentElement?.classList.add('language-ts')
+    code.setAttribute('data-prismjs-copy', 'Copy code')
     code.innerHTML = highlight(code.textContent || '')
   }
 

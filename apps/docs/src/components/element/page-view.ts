@@ -5,7 +5,7 @@ import { Styles } from '../styles'
 
 export function PageView(page: Signal<Page>) {
   return html.div(
-    attr.class('w-full h-full overflow-auto p-4 px-4'),
+    attr.class('h-full overflow-auto p-4 px-4'),
     attr.class(Styles.prose),
     html.div(attr.innerHTML(page.$.path.mapAsync(fetchPage, 'loading...')))
   )

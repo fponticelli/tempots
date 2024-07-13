@@ -5,7 +5,7 @@ export async function fetchToc(): Promise<Toc> {
   const json: Toc = await response.json()
   return {
     ...json,
-    pages: json.pages.filter(({ path }) => path !== 'index.html'),
+    pages: json.pages.filter(({ path }) => path !== 'index'),
   }
 }
 
