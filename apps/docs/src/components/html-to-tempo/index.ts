@@ -1,7 +1,20 @@
-import { attr, html, OnDispose, prop } from '@tempots/dom'
+import { attr, html, OnDispose, prop, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
+
+export function EditorContainer(
+  title: Value<string>,
+  subTitle: Value<string>,
+  ...children: TNode[]
+) {
+  return html.div(
+    attr.class('overflow-hidden flex flex-col h-full flex-stretch'),
+    html.div(attr.class(Styles.heading.small), title),
+    html.div(attr.class(Styles.heading.subSmall), subTitle),
+    html.div(attr.class('flex-auto overflow-hidden rounded-lg'), ...children)
+  )
+}
 
 export function HtmlToTempo() {
   const content = prop(
@@ -9,7 +22,9 @@ export function HtmlToTempo() {
   )
   const tempo = prop('')
   return html.div(
-    attr.class('grid grid-cols-2 h-full overflow-hidden'),
+    attr.class(
+      'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-[calc(100%_-_4rem)] overflow-hidden gap-2 py-2'
+    ),
     OnDispose(
       content.on(html => {
         try {
@@ -20,37 +35,26 @@ export function HtmlToTempo() {
         }
       })
     ),
-    html.div(
-      attr.class('h-full overflow-hidden p-2 flex flex-col'),
-      html.div(attr.class(Styles.heading.small), 'HTML'),
-      html.div(
-        attr.class(Styles.heading.subSmall),
-        'Paste your HTML code here'
-      ),
-      html.div(
-        attr.class('h-[calc(100%_-_7rem)]'),
-        MonacoEditor({
-          autoFocus: true,
-          autoSelect: true,
-          content,
-          language: 'html',
-          onChange: content.set,
-        })
-      )
+    EditorContainer(
+      'HTML',
+      'Paste your HTML code here',
+      MonacoEditor({
+        autoFocus: true,
+        autoSelect: true,
+        content,
+        language: 'html',
+        onChange: content.set,
+      })
     ),
-    html.div(
-      attr.class('h-full overflow-hidden p-2 flex flex-col'),
-      html.div(attr.class(Styles.heading.small), 'TypeScript'),
-      html.div(attr.class(Styles.heading.subSmall), 'Copy the Tempo code'),
-      html.div(
-        attr.class('h-[calc(100%_-_7rem)]'),
-        MonacoEditor({
-          autoSelect: true,
-          content: tempo,
-          language: 'html',
-          onChange: content.set,
-        })
-      )
+    EditorContainer(
+      'TypeScript',
+      'Copy the Tempo code',
+      MonacoEditor({
+        autoSelect: true,
+        content: tempo,
+        language: 'html',
+        onChange: content.set,
+      })
     )
   )
 }
