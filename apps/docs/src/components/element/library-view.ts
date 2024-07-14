@@ -1,23 +1,24 @@
 import { attr, Ensure, ForEach, html, Signal, Value } from '@tempots/dom'
 import { Library } from '../../model/domain'
 import { Styles } from '../styles'
-import { APILink } from './api-link'
 import { NPMShield } from './npm-shield'
 import { Tag } from './tag'
 
 export function LibraryInfo(library: Value<Library>) {
   return html.div(
-    attr.class('flex flex-col gap-2'),
+    attr.class('flex flex-col gap-4'),
     html.div(
-      attr.class('flex justify-between'),
-      APILink('#'),
-      NPMShield(Signal.map(library, ({ title }) => title))
-    ),
-    html.div(
-      attr.class('flex flex-wrap gap-2'),
-      ForEach(
-        Signal.wrap(library).map(({ keywords }) => keywords),
-        Tag
+      attr.class('flex items-start justify-between gap-4'),
+      html.div(
+        attr.class('flex flex-wrap gap-2'),
+        ForEach(
+          Signal.wrap(library).map(({ keywords }) => keywords),
+          Tag
+        )
+      ),
+      html.div(
+        attr.class('min-w-40 text-right'),
+        NPMShield(Signal.map(library, ({ title }) => title))
       )
     ),
     html.div(
