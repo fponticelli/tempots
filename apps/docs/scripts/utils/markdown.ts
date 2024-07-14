@@ -1,6 +1,6 @@
 import showdown from 'showdown'
 import fm from 'front-matter'
-import { highlight } from './highlight'
+import { highlightShell, highlightTS } from './highlight'
 import { Browser, IOptionalBrowserSettings } from 'happy-dom'
 
 const converter = new showdown.Converter({
@@ -10,21 +10,21 @@ const converter = new showdown.Converter({
   tasklists: true,
 })
 
-const renameHtml = (path: string) => {
-  const hasLeadingHash = path.startsWith('#')
-  const parts = path.split('#').filter(a => !!a)
-  if (!parts[0].endsWith('.html')) return path
-  function processPart(part: string) {
-    return part
-      .split('.')
-      .map(p => p.replace(/^_+|_+$/g, ''))
-      .join('.')
-  }
-  const res = parts[0].split('/').map(processPart).join('/')
-  return (hasLeadingHash ? [''] : [])
-    .concat([res].concat(parts.slice(1)))
-    .join('#')
-}
+// const renameHtml = (path: string) => {
+//   const hasLeadingHash = path.startsWith('#')
+//   const parts = path.split('#').filter(a => !!a)
+//   if (!parts[0].endsWith('.html')) return path
+//   function processPart(part: string) {
+//     return part
+//       .split('.')
+//       .map(p => p.replace(/^_+|_+$/g, ''))
+//       .join('.')
+//   }
+//   const res = parts[0].split('/').map(processPart).join('/')
+//   return (hasLeadingHash ? [''] : [])
+//     .concat([res].concat(parts.slice(1)))
+//     .join('#')
+// }
 
 function getComments(el: Element) {
   const arr = [] as Node[]
@@ -46,21 +46,24 @@ const browserSettings: IOptionalBrowserSettings = {
   disableJavaScriptFileLoading: true,
 }
 
-export const markdown = (
+export const markdownToHTML = (
   content: string,
-  anchorMangler: (s: string) => string
+  anchorMangler?: (s: string) => string
 ) => {
   const rawHtml = converter.makeHtml(content)
   const browser = new Browser({ settings: browserSettings })
   const page = browser.newPage()
   page.content = rawHtml
   const document = page.mainFrame.document
-  const codes = document.querySelectorAll('.language-ts')
+  let codes = document.querySelectorAll('.language-ts,.language-typescript')
   for (let i = 0; i < codes.length; i++) {
     const code = codes[i]
-    // code.parentElement?.classList.add('language-ts')
-    code.setAttribute('data-prismjs-copy', 'Copy code')
-    code.innerHTML = highlight(code.textContent || '')
+    code.innerHTML = highlightTS(code.textContent || '')
+  }
+  codes = document.querySelectorAll('.language-sh,.language-bash,.language-shell')
+  for (let i = 0; i < codes.length; i++) {
+    const code = codes[i]
+    code.innerHTML = highlightShell(code.textContent || '')
   }
 
   const anchors = document.querySelectorAll('a')
@@ -68,7 +71,9 @@ export const markdown = (
     const a = anchors[i]
     const href = a.href
     if (href.startsWith('http:') || href.startsWith('https:')) continue
-    a.href = renameHtml(anchorMangler(href))
+    // console.log(anchorMangler.toString())
+    a.href = anchorMangler?.(href) ?? href
+    console.log(a.href)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +108,7 @@ export const markdownWithFM = (
   anchorMangler: (s: string) => string
 ) => {
   const parsed = fm(content)
-  const html = markdown(parsed.body, anchorMangler)
+  const html = markdownToHTML(parsed.body, anchorMangler)
   return {
     html,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

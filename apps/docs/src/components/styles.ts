@@ -19,6 +19,6 @@ export const Styles = {
       'flex h-6 w-8 shrink-0 items-center justify-center rounded border border-gray-400 bg-white text-[0.625rem] font-medium text-gray-600 group-hover:border-blue-600 group-hover:text-blue-600',
   },
   prose:
-    'prose prose-stone prose-md prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-h5:text-lg prose-h6:text-lg prose-code:bg-gray-200 prose-code:rounded prose-code:before:content-[""] prose-code:after:content-[""] prose-code:px-1 prose-code:py-0.5 prose-code:font-medium',
+    'prose prose-stone prose-md prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-h5:text-lg prose-h6:text-lg prose-code:bg-gray-800 prose-code:text-gray-100 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-code:px-1 prose-code:py-0.5 prose-code:font-medium',
   //  dark:prose-invert
 }

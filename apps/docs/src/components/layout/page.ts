@@ -59,15 +59,18 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
   const sidebarOpen = prop(true)
   return Fragment(
     html.div(
-      attr.class('relative z-50 lg:hidden'),
+      attr.class('relative z-50 lg:hidden print:hidden'),
       attr.class(
         sidebarOpen.map((open): string => (open ? 'block' : 'hidden'))
       ),
       attr.role('dialog'),
       aria.modal(true),
-      html.div(attr.class('fixed inset-0 bg-gray-900/80'), aria.hidden(true)),
       html.div(
-        attr.class('fixed inset-0 flex'),
+        attr.class('fixed inset-0 bg-gray-900/80 print:hidden'),
+        aria.hidden(true)
+      ),
+      html.div(
+        attr.class('fixed inset-0 flex print:hidden'),
         sidebar,
         html.div(
           attr.class('relative mr-16 flex w-full max-w-xs flex-1'),
@@ -82,15 +85,17 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
     ),
     html.div(
       attr.class(
-        'hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col'
+        'hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col print:hidden'
       ),
       sidebar
     ),
     html.div(
-      attr.class('lg:pl-72 h-full overflow-hidden'),
+      attr.class(
+        'lg:pl-72 h-full print:overflow-visible overflow-hidden print:pl-0'
+      ),
       html.div(
         attr.class(
-          'sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8'
+          'sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 print:hidden'
         ),
         OpenButton(() => sidebarOpen.set(true)),
         html.div(
@@ -103,8 +108,10 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
         )
       ),
       html.main(
-        attr.class('h-full overflow-hidden'),
-        html.div(attr.class('px-3 h-full overflow-hidden'), main)
+        attr.class(
+          'h-[calc(100dvh_-_4rem)] print:h-none print:overflow-visible overflow-hidden print:overflow-visible'
+        ),
+        main
       )
     )
   )

@@ -1,8 +1,8 @@
 ---
-title: Components
+title: Renderables
 order: 40
 ---
-# Components
+# Renderables
 
 - HTML and Attributes
 - Events

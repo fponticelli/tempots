@@ -29,7 +29,9 @@ export function LibraryInfo(library: Value<Library>) {
 
 export function LibraryView(data: Signal<Library>) {
   return html.div(
-    attr.class('w-full h-full flex flex-col gap-2'),
+    attr.class(
+      'w-full h-full print:overflow-visible overflow-auto p-2 flex flex-col gap-2'
+    ),
     html.h1(
       attr.class(Styles.heading.large),
       html.span(attr.class('text-gray-600 font-normal'), 'Library: '),

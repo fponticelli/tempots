@@ -4,7 +4,7 @@
   "version": "0.5.0",
   "type": "module",
   "priority": 8,
-  "description": "Provides a higher level of components to help fast development with Tempo.",
+  "description": "Provides a higher level of renderables to help fast development with Tempo.",
   "files": [
     "dist"
   ],
@@ -15,7 +15,8 @@
     "framework",
     "typescript",
     "dom",
-    "components"
+    "components",
+    "renderables"
   ],
   "homepage": "https://github.com/fponticelli/tempots",
   "bugs": {

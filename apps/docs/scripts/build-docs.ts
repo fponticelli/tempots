@@ -2,7 +2,7 @@ import { promises as fsp } from 'fs'
 import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
-import { markdown, markdownWithFM } from './utils/markdown'
+import { markdownToHTML, markdownWithFM } from './utils/markdown'
 import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
 
 const rootFolder = '../..'
@@ -22,21 +22,21 @@ const tocFile = path.join(pubFolder, 'toc.json')
 const cnameFile = path.join(pubFolder, 'CNAME')
 const nojekyll = path.join(pubFolder, '.nojekyll')
 
-const renameHtml = (path: string) => {
-  const hasLeadingHash = path.startsWith('#')
-  const parts = path.split('#').filter(a => !!a)
-  if (!parts[0].endsWith('.html')) return path
-  function processPart(part: string) {
-    return part
-      .split('.')
-      .map(p => p.replace(/^_+|_+$/g, ''))
-      .join('.')
-  }
-  const res = parts[0].split('/').map(processPart).join('/')
-  return (hasLeadingHash ? [''] : [])
-    .concat([res].concat(parts.slice(1)))
-    .join('#')
-}
+// const renameHtml = (path: string) => {
+//   const hasLeadingHash = path.startsWith('#')
+//   const parts = path.split('#').filter(a => !!a)
+//   if (!parts[0].endsWith('.html')) return path
+//   function processPart(part: string) {
+//     return part
+//       .split('.')
+//       .map(p => p.replace(/^_+|_+$/g, ''))
+//       .join('.')
+//   }
+//   const res = parts[0].split('/').map(processPart).join('/')
+//   return (hasLeadingHash ? [''] : [])
+//     .concat([res].concat(parts.slice(1)))
+//     .join('#')
+// }
 
 async function getDemos(folder: string): Promise<Demo[]> {
   const dirs = filterDirectories(await fsp.readdir(folder))
@@ -110,14 +110,15 @@ function renameMd(file: string) {
 
 function manglePageHref(url: string) {
   if (url.startsWith('./')) url = url.substring(2)
-  return url
+    if (url.startsWith('/')) url = url.substring(1)
+  return `/page/${url}`
 }
 
 async function createPages(src: string, dst: string) {
   const mdFiles = await listAllMDFiles(src)
   const data = await Promise.all(
     mdFiles.map(async file => ({
-      dest: renameHtml(renameMd(file)),
+      dest: renameMd(file),
       ...(await makeHtml(path.join(src, file), manglePageHref)),
     }))
   )
@@ -168,9 +169,8 @@ async function collectLibrary(
   const packageJson = await fsp.readFile(p, 'utf8')
   const pack = JSON.parse(packageJson)
   const libraryPath = path.join(src, library, 'PROJECT.md')
-  const content = markdown(
-    fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : '',
-    s => s
+  const content = markdownToHTML(
+    fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : ''
   )
   return {
     priority: pack.priority ?? 0,

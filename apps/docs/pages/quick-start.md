@@ -72,7 +72,5 @@ Note that differently from other frameworks, Tempo does not make a distinction b
 ## Next Steps
 
 - [Installation](/installation)
-- Learn more about [Signals](/signals)
-- Learn more about [Components](/components)
 - Learn more about [how Tempo works](/how-it-works)
 

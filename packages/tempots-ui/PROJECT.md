@@ -1,1 +1,1 @@
-Provides a higher level of components to help fast development with Tempo
+Provides a higher level of renderables to help fast development with Tempo

@@ -1,8 +1,15 @@
-import Prism from 'prismjs'
-import 'prismjs/components/prism-typescript'
+import hljs from 'highlight.js'
 
-// import ts from 'prismjs/components/prism-typescript'
+export const highlightTS = (code: string) => {
+  return hljs.highlight(code, {
+    language: 'typescript',
+    ignoreIllegals: true,
+  }).value
+}
 
-export const highlight = (code: string) => {
-  return Prism.highlight(code, Prism.languages.typescript, 'typescript')
+export const highlightShell = (code: string) => {
+  return hljs.highlight(code, {
+    language: 'sh',
+    ignoreIllegals: true,
+  }).value
 }

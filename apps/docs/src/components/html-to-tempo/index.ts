@@ -23,7 +23,7 @@ export function HtmlToTempo() {
   const tempo = prop('')
   return html.div(
     attr.class(
-      'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-[calc(100%_-_4rem)] overflow-hidden gap-2 py-2'
+      'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-full overflow-hidden gap-2 p-2'
     ),
     OnDispose(
       content.on(html => {
