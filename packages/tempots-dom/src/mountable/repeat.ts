@@ -6,7 +6,7 @@ import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
-import { OnDispose } from './ondispose'
+import { OnUnmount } from './onunmount'
 import { oneof } from './oneof'
 
 export const Repeat = (
@@ -18,7 +18,7 @@ export const Repeat = (
     return Repeat(times, p => {
       const last = p.map(v => (v.isLast ? 'last' : 'other'))
       return Fragment(
-        OnDispose(() => last.dispose()),
+        OnUnmount(() => last.dispose()),
         renderableOfTNode(element(p)),
         oneof.value(last, {
           last: () => Empty,

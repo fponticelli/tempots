@@ -2,7 +2,7 @@ import { Signal, prop } from '../std/signal'
 import { TNode } from '../types/domain'
 import { UseProvider } from './consumers'
 import { Fragment } from './fragment'
-import { OnDispose } from './ondispose'
+import { OnUnmount } from './onunmount'
 import { makeProviderMark, WithProvider } from './providers'
 
 /**
@@ -47,7 +47,7 @@ export const appearance = {
     matcher?.addEventListener('change', onChange)
     return Fragment(
       WithProvider(appearanceMarker, appearance, child),
-      OnDispose(() => matcher?.removeEventListener('change', onChange))
+      OnUnmount(() => matcher?.removeEventListener('change', onChange))
     )
   },
   /**

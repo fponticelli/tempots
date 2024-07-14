@@ -1,4 +1,4 @@
-import { TNode, Fragment, OnDispose, oneof, Signal, Value } from '@tempots/dom'
+import { TNode, Fragment, OnUnmount, oneof, Signal, Value } from '@tempots/dom'
 import { Result } from '@tempots/std/result'
 
 export function ResultView<T, E>(
@@ -17,7 +17,7 @@ export function ResultView<T, E>(
     options.failure ??
     ((error: Signal<E>) =>
       Fragment(
-        OnDispose(error.on(console.error)),
+        OnUnmount(error.on(console.error)),
         error.map(error => `Error: ${error}`)
       ))
   const success = options.success

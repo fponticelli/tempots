@@ -7,7 +7,7 @@ import {
   prop,
   html,
   ForEach,
-  OnDispose,
+  OnUnmount,
 } from '@tempots/dom'
 import { Button } from './ui'
 import { flex } from './components/flex'
@@ -122,7 +122,7 @@ export function ForEachDemo(): Renderable {
             )
           }, duration)
           return flex.row(
-            OnDispose(() => {
+            OnUnmount(() => {
               clearInterval(timer)
             }),
             attr.class('gap-2 justify-between items-center w-96'),

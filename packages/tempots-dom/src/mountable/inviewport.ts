@@ -4,7 +4,7 @@ import { TNode, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
-import { OnDispose } from './ondispose'
+import { OnUnmount } from './onunmount'
 import { OnMount } from './onmount'
 import { When } from './when'
 
@@ -68,7 +68,7 @@ export function InViewport(
         }
       }
     }),
-    OnDispose(signal.dispose),
+    OnUnmount(signal.dispose),
     renderableOfTNode(fn(signal))
   )
 }

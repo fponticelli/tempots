@@ -4,13 +4,65 @@ order: 40
 ---
 # Renderables
 
-- HTML and Attributes
-- Events
-- Conditionals
-  - When, Ensure, Unless, oneof
-- Loops
-- Lifecycle
-- Other
-  - Portal
-  - Fragment
-  - Comment
+## HTML/SVG, text and Attributes
+
+## Events
+
+## Inputs
+
+### AutoFocus
+
+### AutoSelect
+
+### Bind
+
+## Conditionals
+
+### When, Ensure, Unless, NotEmpty, oneof, conjunction
+
+## Loops
+
+### Repeat
+
+### ForEach
+
+## Lifecycle
+
+### OnMount
+
+### OnUnmount
+
+## Other
+
+### Fragment
+
+### Comment
+
+## Providers and Consumers
+
+## Ctx
+
+## DomEl
+
+## Empty
+
+## Task
+
+## Async
+
+## MapSignal
+
+## DOM
+
+### Appearance
+
+### HiddenWhenEmpty
+
+### HtmlTitle
+
+### InViewport
+
+### Portal
+
+### Size
+

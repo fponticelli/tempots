@@ -6,7 +6,7 @@ order: 30
 
 ## Renderable
 
-The core of Tempo is the `Renderable` type. A `Renderable` is just a function with the following signature:
+The core of Tempo is the `Renderable` type. A `Renderable` is a function with the following signature:
 
 ```ts
 type Renderable = (context: DOMContext) =&gt; Clear
@@ -14,9 +14,9 @@ type Renderable = (context: DOMContext) =&gt; Clear
 type Clear = (removeTree: boolean) =&gt; void
 ```
 
-The `Renderable` function is called with a `DOMContext` object that provides access to the DOM and other utilities. The `Renderable` function returns a `Clear` function that can be used to remove the rendered template from the DOM.
+The `Renderable` function takes a `DOMContext` object, which provides access to the DOM and other utilities. The function returns a `Clear` function that removes the rendered template from the DOM.
 
-This simple signature allows for a lot of flexibility and it is quite easy to reason about. Let's take the `Fragment` component as an example. The `Fragment` component is a special component that can have multiple children but dones't contribute anything to the DOM by itself. It is used to group multiple renderables together. Here is the implementation:
+This simple signature offers flexibility and ease of use. For instance, consider the `Fragment` component, which can have multiple children but doesn’t contribute to the DOM itself. It’s used to group multiple renderables together. Here’s its implementation:
 
 ```ts
 export const Fragment =
@@ -29,9 +29,9 @@ export const Fragment =
   }
 ```
 
-In the API you will often find that you need to pass a `TNode` (for `TempoNode`) to existing renderables. A `TNode` is a type that is the union of commonly used types in Tempo. It can be a `Renderable`, a `Signal&lt;string&gt;`, a `Prop&lt;string&gt;`, a `Computed&lt;string&gt;`, a `string`, `undefined`, or `null` or an `Array&lt;Renderable&gt;`. The `renderableOfTNode` function is a helper function that converts a `TNode` to a `Renderable`.
+In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Signal&lt;string&gt;`, `Prop&lt;string&gt;`, `Computed&lt;string&gt;`, `string`, `undefined`, `null`, or an `Array&lt;Renderable&gt;`. The renderableOfTNode function helps convert a TNode to a Renderable.
 
-`TNode` is used to make the API more flexible and to allow for a more declarative syntax.
+Using `TNode` makes the API more flexible and allows for a more declarative syntax.
 
 ```ts
 html.div('Hello World')
@@ -41,16 +41,25 @@ html.div(text('Hello World'))
 
 ### Clear
 
-The `Clear` function is used to remove the rendered template from the DOM. Its single argument `removeTree` is a hint to the implementation that any DOM modification applied by this `Renrable` should be removed. When set to false, the implementation can assume that its parent will be removed from the DOM and only side effects that are not related to the DOM should be removed (for example clearing an interval or a timeout). When set to true, the implementation should remove all DOM modifications.
+The `Clear` function removes the rendered template from the DOM. Its argument, removeTree, indicates whether to remove all DOM modifications and side effects such as clearing an interval or timeout (`true`) or only side effects (`false`).
 
 ### TNode
 
-When a `TNode` is of type `string` or `Value&lt;string&gt;` (an alias for `Signal&lt;string&gt; | string`), it is treated as a text node. `TNode` is a `Renderable`, it is treated as a component. When a `TNode` is `undefined` or `null`, it is ignored.
+A `TNode` is treated differently based on its type:
+
+- string or `Value<string>` (alias for `Signal<string> | string`): Treated as a text node.
+- `undefined` or `null`: Ignored.
+- `Renderable`: Left unmodified.
+- `Renderable[]`: Gets wrapped into a `Fragment`.
 
 ## DOMContext
 
-TODO
+The `DOMContext` object, passed to the Renderable function, provides access to the DOM and other utilities. It has the following properties:
 
-## Signals
+- `element`: The Element instance associated with this context.
+- `reference`: An optional Node instance serving as a reference for this context.
+- `document`: The Document instance associated with this context.
 
-TODO
+The reference node, `TextNode` with an empty string, acts as a placeholder when elements are added or removed between siblings. It’s useful for `Renderables` like `ForEach` or `When`, which need to track element positions in the DOM.
+
+Additionally, `DOMContext` contains a collection of providers for shared state between Renderables, avoiding prop drilling and keeping the API clean. The `isFirstLevel` property, still experimental, marks nodes for server-side rendering and hydration.

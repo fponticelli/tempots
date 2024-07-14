@@ -2,7 +2,7 @@ import {
   TNode,
   Empty,
   Fragment,
-  OnDispose,
+  OnUnmount,
   oneof,
   signal,
   Signal,
@@ -28,7 +28,7 @@ export function AsyncResultView<T, E>(
     options.failure ??
     ((error: Signal<E>) =>
       Fragment(
-        OnDispose(error.on(console.error)),
+        OnUnmount(error.on(console.error)),
         error.map(error => `Error: ${error}`)
       ))
   const success = options.success

@@ -6,7 +6,7 @@ import {
   type Renderable,
   prop,
   computed,
-  OnDispose,
+  OnUnmount,
 } from '@tempots/dom'
 import { Button, Progress, Range } from './ui'
 import { flex } from './components/flex'
@@ -38,7 +38,7 @@ export function Timer(): Renderable {
   }
   startTimer()
   return flex.col(
-    OnDispose(() => {
+    OnUnmount(() => {
       clearInterval(timerId)
     }),
     attr.class('gap-2 items-center'),

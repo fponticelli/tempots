@@ -1,4 +1,4 @@
-import { attr, html, OnDispose, prop, TNode, Value } from '@tempots/dom'
+import { attr, html, OnUnmount, prop, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -25,7 +25,7 @@ export function HtmlToTempo() {
     attr.class(
       'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-full overflow-hidden gap-2 p-2'
     ),
-    OnDispose(
+    OnUnmount(
       content.on(html => {
         try {
           const tempoStr = htmlToTempo(html)

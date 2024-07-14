@@ -7,7 +7,7 @@ import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
 import { oneof } from './oneof'
 import { Empty } from './empty'
-import { OnDispose } from './ondispose'
+import { OnUnmount } from './onunmount'
 
 export const ForEach = <T>(
   signal: Signal<T[]>,
@@ -18,7 +18,7 @@ export const ForEach = <T>(
     return ForEach(signal, (v, p) => {
       const last = p.map(v => (v.isLast ? 'last' : 'other'))
       return Fragment([
-        OnDispose(() => last.dispose()),
+        OnUnmount(() => last.dispose()),
         renderableOfTNode(item(v, p)),
         oneof.value(last, {
           last: () => Empty,
@@ -35,7 +35,7 @@ export const ForEach = <T>(
           [pos, signal]
         )
         return Fragment(
-          OnDispose(() => value.dispose()),
+          OnUnmount(() => value.dispose()),
           renderableOfTNode(item(value, pos))
         )
       })(ctx)
