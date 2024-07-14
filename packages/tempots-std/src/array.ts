@@ -2,8 +2,7 @@
  * Utility functions to manipulate `Array` values.
  */
 
-import { Maybe } from './maybe'
-import type { Compare, Primitive } from './domain'
+import type { Compare, Maybe, Nothing, Primitive } from './domain'
 import { keys } from './object'
 
 export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
@@ -12,7 +11,7 @@ export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
 
 export function mapNotNull<A, B>(
   arr: A[],
-  f: (a: A, index: number) => B | null | undefined
+  f: (a: A, index: number) => B | Nothing
 ): B[] {
   const buff = [] as B[]
   for (let i = 0; i < arr.length; i++) {
@@ -33,7 +32,7 @@ export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
 }
 
 export function head<A>(arr: A[]): Maybe<A> {
-  return arr.length > 0 ? Maybe.just(arr[0]) : Maybe.nothing
+  return arr.length > 0 ? arr[0] : undefined
 }
 
 export function tail<A>(arr: A[]): A[] {
@@ -88,7 +87,7 @@ export function filterMap<A, B>(
   return buff
 }
 
-export function filterNulls<T>(arr: Array<T | null | undefined>): T[] {
+export function filterNulls<T>(arr: Array<T | Nothing>): T[] {
   return filter(arr, v => v != null) as T[]
 }
 

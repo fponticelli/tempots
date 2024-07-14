@@ -12,8 +12,10 @@ order: 0
 - Predictable rendering without surprises
 - Zero dependencies
 - No hidden complexities
-- Direct DOM updates (no virtual DOM)
+- Directly updates the DOM (no virtual DOM)
 - Fine-grained control when required
 - Lightweight and efficient
-- Directly updates the DOM
+
+To get started, see the [Quick Start](/page/quick-start) guide.
+
 

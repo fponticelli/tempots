@@ -9,7 +9,6 @@
     "src/equal.ts",
     "src/function.ts",
     "src/json.ts",
-    "src/maybe.ts",
     "src/number.ts",
     "src/object.ts",
     "src/regexp.ts",

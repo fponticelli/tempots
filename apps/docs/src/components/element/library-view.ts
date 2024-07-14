@@ -3,6 +3,7 @@ import { Library } from '../../model/domain'
 import { Styles } from '../styles'
 import { NPMShield } from './npm-shield'
 import { Tag } from './tag'
+import { EmbedHTML } from './embed-html'
 
 export function LibraryInfo(library: Value<Library>) {
   return html.div(
@@ -38,11 +39,7 @@ export function LibraryView(data: Signal<Library>) {
     Ensure(
       data.map(v => (v.content === '' ? null : v.content)),
       content =>
-        html.div(
-          attr.class('p-4 border rounded-md'),
-          attr.class(Styles.prose),
-          attr.innerHTML(content)
-        )
+        html.div(attr.class('p-4 border rounded-md'), EmbedHTML(content))
     )
   )
 }

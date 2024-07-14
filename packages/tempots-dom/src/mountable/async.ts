@@ -1,4 +1,4 @@
-import { TNode } from '..'
+import { TNode } from '../types/domain'
 import { Task } from './task'
 
 export const Async = <T>(

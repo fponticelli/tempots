@@ -2981,6 +2981,11 @@ typedoc-json-parser@^10.1.5:
     typedoc "^0.26.3"
     typescript "^5.5.3"
 
+typedoc-plugin-markdown@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-4.2.1.tgz#b32fddc246c5bfe7e4879834fc3f8b1486de7286"
+  integrity sha512-7hQt/1WaW/VI4+x3sxwcCGsEylP1E1GvF6OTTELK5sfTEp6AeK+83jkCOgZGp1pI2DiOammMYQMnxxOny9TKsQ==
+
 typedoc@^0.26.3, typedoc@^0.26.4:
   version "0.26.4"
   resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.26.4.tgz#7e83047369a29a710d429dac20996680cae9a314"

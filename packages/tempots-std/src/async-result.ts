@@ -1,3 +1,5 @@
+import { Maybe } from './domain'
+
 export interface NotAsked {
   type: 'NotAsked'
 }
@@ -18,7 +20,7 @@ export type AsyncResult<V, E> = NotAsked | Loading<V> | Success<V> | Failure<E>
 
 export const AsyncResult = {
   notAsked: { type: 'NotAsked' } satisfies AsyncResult<never, never>,
-  loading<V>(previousValue: V | undefined = undefined): AsyncResult<V, never> {
+  loading<V>(previousValue: Maybe<V> = undefined): AsyncResult<V, never> {
     return { type: 'Loading', previousValue }
   },
   success<V>(value: V): AsyncResult<V, never> {
@@ -48,7 +50,7 @@ export const AsyncResult = {
   getOrNull<V, E>(r: AsyncResult<V, E>): V | null {
     return AsyncResult.isSuccess(r) ? r.value : null
   },
-  getOrUndefined<V, E>(r: AsyncResult<V, E>): V | undefined {
+  getOrUndefined<V, E>(r: AsyncResult<V, E>): Maybe<V> {
     return AsyncResult.isSuccess(r) ? r.value : undefined
   },
   cmatch:

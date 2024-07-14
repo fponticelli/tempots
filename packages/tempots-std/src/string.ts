@@ -223,11 +223,14 @@ export function dasherize(s: string): string {
 
 /**
  * Compares strings `a` and `b` and returns the position where they differ.
+ * If the strings are equal, it returns `-1`.
+ *
  * ```ts
  * diffIndex('abcdef', 'abc123') // returns 3
  * ```
  */
 export function diffIndex(a: string, b: string): number {
+  if (a === b) return -1
   const min = Math.min(a.length, b.length)
   for (let i = 0; i < min; i++) {
     if (a.substring(i, i + 1) !== b.substring(i, i + 1)) return i

@@ -1,3 +1,5 @@
+export type Maybe<T> = T | undefined
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IndexKey = keyof any
 
@@ -11,8 +13,6 @@ export type Compare<T> = (a: T, b: T) => number
 export type Id<T> = {} & { [P in keyof T]: T[P] }
 
 export type Merge<A, B> = Id<A & B>
-
-export type Sample = Merge<{ a: number }, { b: string }>
 
 export type TupleToUnion<T extends unknown[]> = T[number]
 

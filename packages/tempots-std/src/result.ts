@@ -1,4 +1,5 @@
 import { type AsyncResult } from './async-result'
+import { Maybe } from './domain'
 
 export interface Success<V> {
   type: 'Success'
@@ -75,7 +76,7 @@ export const Result = {
   getOrNull<V, E>(r: Result<V, E>): V | null {
     return Result.isSuccess(r) ? r.value : null
   },
-  getOrUndefined<V, E>(r: Result<V, E>): V | undefined {
+  getOrUndefined<V, E>(r: Result<V, E>): Maybe<V> {
     return Result.isSuccess(r) ? r.value : undefined
   },
   cmatch:

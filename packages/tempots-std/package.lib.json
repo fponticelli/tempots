@@ -53,10 +53,6 @@
       "import": "./json.js",
       "require": "./json.cjs"
     },
-    "./maybe": {
-      "import": "./maybe.js",
-      "require": "./maybe.cjs"
-    },
     "./number": {
       "import": "./number.js",
       "require": "./number.cjs"
@@ -112,9 +108,6 @@
       ],
       "json": [
         "./json.d.ts"
-      ],
-      "maybe": [
-        "./maybe.d.ts"
       ],
       "number": [
         "./number.d.ts"

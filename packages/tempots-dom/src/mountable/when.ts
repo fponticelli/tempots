@@ -1,4 +1,5 @@
-import { TNode, Signal } from '..'
+import { TNode } from '../types/domain'
+import { Signal } from '../std/signal'
 import { Ensure } from './ensure'
 
 // TODO, rename to If?

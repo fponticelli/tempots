@@ -1,4 +1,6 @@
-export type JSONPrimitive = string | boolean | number | null | undefined
+import { Nothing } from './domain'
+
+export type JSONPrimitive = string | boolean | number | Nothing
 export interface JSONObject {
   [k: string]: JSONValue
 }

@@ -1,4 +1,4 @@
-import { FirstArgument, Fun1 } from './domain'
+import { FirstArgument, Fun1, Maybe } from './domain'
 
 export function compose<A>(): (a: A) => A
 export function compose<A, B>(f1: (a: A) => B): (a: A) => B
@@ -90,12 +90,8 @@ export function flip<Ret>(f: (...rest: unknown[]) => Ret) {
   return (...args: unknown[]) => f(...args.reverse())
 }
 
-export function id<T>(v: T): T {
-  return v
-}
-
 export function memoize<T>(f: () => NonNullable<T>): () => NonNullable<T> {
-  let value: T | undefined
+  let value: Maybe<T>
   return () => {
     if (value === undefined) {
       value = f()
