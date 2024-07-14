@@ -10,7 +10,6 @@ The core of Tempo is the `Renderable` type. A `Renderable` is a function with th
 
 ```ts
 type Renderable = (context: DOMContext) =&gt; Clear
-
 type Clear = (removeTree: boolean) =&gt; void
 ```
 

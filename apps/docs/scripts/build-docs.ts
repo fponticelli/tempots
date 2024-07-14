@@ -110,8 +110,8 @@ function renameMd(file: string) {
 
 function manglePageHref(url: string) {
   if (url.startsWith('./')) url = url.substring(2)
-    if (url.startsWith('/')) url = url.substring(1)
-  return `/page/${url}`
+  if (url.startsWith('/')) url = url.substring(1)
+  return `/${url}`
 }
 
 async function createPages(src: string, dst: string) {
