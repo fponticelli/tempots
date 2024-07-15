@@ -6,12 +6,12 @@
 
 [Project Homepage](https://tempots.com/)
 
-**Note that the documentation site is still referring to an older version of TempoTS. Hold one while it gets updated.**
-
 Tempo is a framework to build dynamic frontend applications.
 
-[TODO MVC demo](https://tempots.com/demo/todomvc/)
+[HNPWA demo](https://tempots.com/demo/hnpwa)
 
-[HNPWA demo](https://tempots.com/demo/hnpwa/)
+[7GUIs](https://tempots.com/demo/7guis)
 
-[Sample Application demo](https://tempots.com/demo/readme/)
+[TODO MVC demo](https://tempots.com/demo/todomvc)
+
+[Counter App](https://tempots.com/demo/counter)
