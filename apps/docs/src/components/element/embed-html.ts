@@ -64,7 +64,7 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
                 '▾ on this page ▾'
               ),
               html.div(
-                attr.class('flex-1 overflow-y-auto columns-3xs xl:columns-1'),
+                attr.class('flex-1 columns-3xs xl:columns-1'),
                 html.ul(
                   ForEach(toc, item => {
                     return html.li(
