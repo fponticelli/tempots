@@ -1,4 +1,4 @@
-import { renderableOfTNode } from '../mountable/element'
+import { renderableOfTNode } from '../renderable/element'
 import { TNode, Renderable } from '../types/domain'
 import { DOMContext } from './dom-context'
 import { removeDOMNode } from './dom-utils'

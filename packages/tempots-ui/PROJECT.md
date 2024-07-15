@@ -75,6 +75,18 @@ export function AsyncResultView&lt;T, E&gt;(
 ): Renderable
 ```
 
+### Appearance
+
+#### ProvideAppearance
+
+#### UseAppearance
+
+### InViewport / WhenInViewport
+
+### HiddenWhenEmpty
+
+### HtmlTitle
+
 ### PopOver
 
 ```ts
@@ -115,3 +127,7 @@ export function PopOver({
 ```ts
 export function SelectOnFocus(): Renderable
 ```
+
+### size
+
+size.element / size.window

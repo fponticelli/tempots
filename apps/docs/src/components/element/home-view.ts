@@ -5,7 +5,7 @@ import { PageView } from './page-view'
 export function HomeView() {
   return html.div(
     html.div(
-      attr.class('float-right mt-4'),
+      attr.class('float-right mt-4 mr-4'),
       CommitsShield('fponticelli', 'tempots')
     ),
     PageView(

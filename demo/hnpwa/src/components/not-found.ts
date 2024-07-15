@@ -1,4 +1,5 @@
-import { Fragment, HTMLTitle } from '@tempots/dom'
+import { Fragment } from '@tempots/dom'
+import { HTMLTitle } from '@tempots/ui'
 import { Notification } from './notification'
 
 export const NotFound = () =>

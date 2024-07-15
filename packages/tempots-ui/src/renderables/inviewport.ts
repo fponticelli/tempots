@@ -1,12 +1,17 @@
-import { ssr } from '../dom/ssr'
-import { Prop, Signal, prop } from '../std/signal'
-import { TNode, Renderable } from '../types/domain'
-import { renderableOfTNode } from './element'
-import { Empty } from './empty'
-import { Fragment } from './fragment'
-import { OnUnmount } from './onunmount'
-import { OnMount } from './onmount'
-import { When } from './when'
+import {
+  ssr,
+  Prop,
+  Signal,
+  prop,
+  TNode,
+  Renderable,
+  renderableOfTNode,
+  Empty,
+  Fragment,
+  OnUnmount,
+  OnMount,
+  When,
+} from '@tempots/dom'
 
 export type InViewportMode = 'partial' | 'full'
 

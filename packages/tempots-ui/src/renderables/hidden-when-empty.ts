@@ -1,5 +1,4 @@
-import { DOMContext } from '../dom/dom-context'
-import { Renderable } from '../types/domain'
+import { DOMContext, Renderable } from '@tempots/dom'
 
 export const HiddenWhenEmpty: Renderable = (ctx: DOMContext) => {
   const el = ctx.element as HTMLElement

@@ -20,6 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vitest/globals"]
   },
-  "include": ["src"],
+  "include": ["src", "../tempots-ui/src/components/appearance.ts", "../tempots-ui/src/renderables/inviewport.ts", "../tempots-ui/src/renderables/html-title.ts", "../tempots-ui/src/renderables/hidden-when-empty.ts"],
   "exclude": ["scripts"]
 }

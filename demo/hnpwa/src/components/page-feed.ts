@@ -8,8 +8,8 @@ import {
   computed,
   When,
   Fragment,
-  HTMLTitle,
 } from '@tempots/dom'
+import { HTMLTitle } from '@tempots/ui'
 import { Route } from '../route'
 import { Item, PageFeed } from '../types'
 import { LinkRoute } from './link-route'

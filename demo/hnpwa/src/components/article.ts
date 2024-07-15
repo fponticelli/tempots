@@ -1,4 +1,5 @@
-import { attr, Ensure, html, HTMLTitle } from '@tempots/dom'
+import { attr, Ensure, html } from '@tempots/dom'
+import { HTMLTitle } from '@tempots/ui'
 import type { Signal } from '@tempots/dom'
 import { Item } from '../types'
 import { ItemFooter, ItemMainLink } from './page-feed'

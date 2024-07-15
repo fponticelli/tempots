@@ -35,7 +35,7 @@ Using `TNode` makes the API more flexible and allows for a more declarative synt
 ```ts
 html.div('Hello World')
 // equivalent to
-html.div(text('Hello World'))
+html.div(Text('Hello World'))
 ```
 
 ### Clear

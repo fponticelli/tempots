@@ -1,7 +1,11 @@
-import { DOMContext } from '../dom/dom-context'
-import { Signal, prop } from '../std/signal'
-import { TNode, Size } from '../types/domain'
-import { renderableOfTNode } from './element'
+import {
+  DOMContext,
+  Signal,
+  prop,
+  TNode,
+  Size,
+  renderableOfTNode,
+} from '@tempots/dom'
 
 const elementSizeMonitor =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {

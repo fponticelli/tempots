@@ -1,4 +1,5 @@
-import { Signal, html, attr, Ensure, HTMLTitle } from '@tempots/dom'
+import { Signal, html, attr, Ensure } from '@tempots/dom'
+import { HTMLTitle } from '@tempots/ui'
 import { User } from '../types'
 
 export interface ProfileViewProps {
