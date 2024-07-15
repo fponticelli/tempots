@@ -35,7 +35,7 @@ type TOCItem = {
 
 const mapLevel: Record<number, string> = {
   1: 'ml-0 font-bold text-md mb-1',
-  2: 'ml-0 font-semibold text-sm border-b mt-2 mb-1',
+  2: 'ml-0 font-semibold text-sm border mt-2 mb-1 px-1 py-0.5 bg-gray-100 rounded',
   3: 'list-disc ml-3 text-sm',
   4: 'list-disc ml-6 text-sm',
   5: 'list-disc ml-9 text-sm',
@@ -52,8 +52,9 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
             'xl:sticky top-0 right-0 max-w-full border rounded-md bg-white xl:w-64 xl:max-h-[calc(100dvh-15rem)] xl:overflow-hidden'
           ),
           html.div(
-            attr.class('p-4'),
-            attr.class('relative h-full overflow-hidden'),
+            attr.class(
+              'p-4 relative xl:max-h-[calc(100dvh-15rem)] xl:overflow-auto'
+            ),
             html.div(
               attr.class('flex flex-col gap-2 overflow-hidden'),
               html.div(
@@ -63,9 +64,7 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
                 '▾ on this page ▾'
               ),
               html.div(
-                attr.class(
-                  'flex-1 overflow-y-auto sm:columns-3 lg:columns-3 xl:columns-1'
-                ),
+                attr.class('flex-1 overflow-y-auto columns-3xs xl:columns-1'),
                 html.ul(
                   ForEach(toc, item => {
                     return html.li(

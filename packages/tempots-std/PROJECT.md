@@ -1,4 +1,4 @@
-## array
+## Array
 
 ```ts
 import '@tempots/std/array'
@@ -318,7 +318,7 @@ const AsyncResult = {
 }
 ```
 
-## bigint
+## Bigint
 
 ```ts
 import '@tempots/std/bigint'
@@ -434,7 +434,7 @@ function isNegative(x: bigint): boolean
 function isPositive(x: bigint): boolean
 ```
 
-## boolean
+## Boolean helpers
 
 ```ts
 import '@tempots/std/boolean'
@@ -482,7 +482,7 @@ Returns `true` when arguments are different.
 function xor(a: boolean, b: boolean): boolean
 ```
 
-## equal
+## Equality helpers
 
 ```ts
 import '@tempots/std/equal'
@@ -508,7 +508,7 @@ function deepEqual&lt;A&gt;(a: A, b: A): boolean
 function looseEqual&lt;T&gt;(a: T, b: T): boolean
 ```
 
-## function
+## Function helpers
 
 ```ts
 import '@tempots/std/function'
@@ -608,7 +608,7 @@ function flip&lt;A, B, C, D, E, F, G&gt;(
 function memoize&lt;T&gt;(f: () =&gt; NonNullable&lt;T&gt;): () =&gt; NonNullable&lt;T&gt;
 ```
 
-## json
+## JSON Types
 
 ```ts
 import '@tempots/std/json'
@@ -619,7 +619,7 @@ It provides the following types `JSONPrimitive`, `JSONObject`, `JSONArray`, and 
 Note that even if technically not correct, the value `undefined` is also considered a `JSONValue`.
 
 
-## number
+## Number helpers
 
 ```ts
 import '@tempots/std/number'
@@ -847,7 +847,7 @@ Similar to `wrap`, it works for numbers between 0 and `max`.
 function wrapCircular(v: number, max: number): number
 ```
 
-## object
+## Object helpers
 
 ```ts
 import '@tempots/std/object'
@@ -897,7 +897,7 @@ function merge&lt;
 function isEmpty(obj: object): boolean
 ```
 
-## regexp
+## RegExp helpers
 
 ```ts
 import '@tempots/std/regexp'
@@ -919,7 +919,7 @@ function map(
 ): string
 ```
 
-## result
+## Result
 
 ```ts
 import '@tempots/std/result'
@@ -990,7 +990,7 @@ const Result = {
 }
 ```
 
-## string
+## String helpers
 
 ```ts
 import '@tempots/std/string'
@@ -1680,7 +1680,8 @@ function splitOnFirst(
   find: string
 ): [string] | [string, string]
 ```
-## validation
+
+## Validation
 
 ```ts
 import '@tempots/std/validation'
@@ -1727,7 +1728,7 @@ const Validation = {
 }
 ```
 
-## domain
+## Tempo reusable types
 
 ```ts
 import '@tempots/std/domain'
