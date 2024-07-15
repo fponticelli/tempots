@@ -1,4 +1,4 @@
-## Array
+## Array helpers
 
 ```ts
 import '@tempots/std/array'
@@ -318,7 +318,7 @@ const AsyncResult = {
 }
 ```
 
-## Bigint
+## Bigint helpers
 
 ```ts
 import '@tempots/std/bigint'
