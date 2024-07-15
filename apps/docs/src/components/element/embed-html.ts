@@ -49,22 +49,41 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
       html.div(
         html.div(
           attr.class(
-            'text-gray-600 text-sm border text-center rounded-md p-1 mb-2 bg-gray-600 text-white'
+            'xl:sticky top-0 right-0 max-w-full border rounded-md bg-white xl:w-64 xl:max-h-[calc(100dvh-15rem)] xl:overflow-hidden'
           ),
-          '▾ on this page ▾'
-        ),
-        html.ul(
-          ForEach(toc, item => {
-            return html.li(
-              attr.class('text-gray-400'),
-              attr.class(item.$.level.map(level => mapLevel[level] ?? 'ml-0')),
-              html.a(
-                attr.class('hover:underline text-blue-900'),
-                attr.href(item.$.href),
-                item.$.title
+          html.div(
+            attr.class('p-4'),
+            attr.class('relative h-full overflow-hidden'),
+            html.div(
+              attr.class('flex flex-col gap-2 overflow-hidden'),
+              html.div(
+                attr.class(
+                  'text-gray-600 text-sm border text-center rounded-md p-1 bg-gray-600 text-white'
+                ),
+                '▾ on this page ▾'
+              ),
+              html.div(
+                attr.class(
+                  'flex-1 overflow-y-auto sm:columns-3 lg:columns-3 xl:columns-1'
+                ),
+                html.ul(
+                  ForEach(toc, item => {
+                    return html.li(
+                      attr.class('text-gray-400'),
+                      attr.class(
+                        item.$.level.map(level => mapLevel[level] ?? 'ml-0')
+                      ),
+                      html.a(
+                        attr.class('hover:underline text-blue-900'),
+                        attr.href(item.$.href),
+                        item.$.title
+                      )
+                    )
+                  })
+                )
               )
             )
-          })
+          )
         )
       )
   )
@@ -90,7 +109,7 @@ export function EmbedHTML(content: Value<string>) {
   const toc = prop<TOCItem[]>([])
   return html.div(
     attr.class(
-      'flex flex-col flex-col-reverse md:flex-row gap-4 md:justify-between'
+      'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'
     ),
     html.div(
       attr.class(Styles.prose),
@@ -104,9 +123,6 @@ export function EmbedHTML(content: Value<string>) {
         })
       )
     ),
-    html.div(
-      attr.class('relative self-stretch'),
-      html.div(attr.class('md:sticky top-0 right-0 w-64'), TOCView(toc))
-    )
+    TOCView(toc)
   )
 }
