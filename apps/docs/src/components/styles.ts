@@ -20,6 +20,6 @@ export const Styles = {
   },
   prose:
     'prose prose-zinc prose-md prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-h5:text-lg prose-h6:text-lg ' +
-    'prose-code:text-zinc-600 prose-code:before:content-none prose-code:after:content-none ',
+    'prose-code:before:content-none prose-code:after:content-none ',
   //  dark:prose-invert
 }

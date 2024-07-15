@@ -6,7 +6,7 @@ order: 20
 
 Tempo is available as a package on npm. You can install it using npm or yarn:
 
-```sh
+```bash
 # npm
 npm install @tempots/dom
 

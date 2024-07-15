@@ -2,7 +2,7 @@ Tempo DOM is a lightweight UI Framework for building web applications. It has no
 
 To install use:
 
-```sh
+```bash
 # npm
 npm install @tempots/dom
 
