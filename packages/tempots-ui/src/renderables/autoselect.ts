@@ -1,5 +1,4 @@
-import { DOMContext } from '../dom/dom-context'
-import type { Renderable } from '../types/domain'
+import { DOMContext, type Renderable } from '@tempots/dom'
 
 export const AutoSelect =
   (delay: number = 10): Renderable =>

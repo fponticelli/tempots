@@ -20,6 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vitest/globals"]
   },
-  "include": ["src", "../tempots-ui/src/components/appearance.ts", "../tempots-ui/src/renderables/inviewport.ts", "../tempots-ui/src/renderables/html-title.ts", "../tempots-ui/src/renderables/hidden-when-empty.ts"],
+  "include": ["src", "../tempots-ui/src/components/appearance.ts", "../tempots-ui/src/renderables/inviewport.ts", "../tempots-ui/src/renderables/html-title.ts", "../tempots-ui/src/renderables/hidden-when-empty.ts", "../tempots-ui/src/renderables/autoselect.ts", "../tempots-ui/src/renderables/autofocus.ts"],
   "exclude": ["scripts"]
 }

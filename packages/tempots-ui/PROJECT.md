@@ -131,3 +131,7 @@ export function SelectOnFocus(): Renderable
 ### size
 
 size.element / size.window
+
+### AutoFocus
+
+### AutoSelect

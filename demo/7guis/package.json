@@ -14,7 +14,8 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@tempots/dom": "*"
+    "@tempots/dom": "*",
+    "@tempots/ui": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

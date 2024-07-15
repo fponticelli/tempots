@@ -4,7 +4,6 @@ import {
   attr,
   type Renderable,
   on,
-  AutoSelect,
   emit,
   Signal,
   prop,
@@ -17,6 +16,7 @@ import {
 } from '@tempots/dom'
 import { bmiData } from './cell-sample'
 import { InputText } from './ui'
+import { AutoSelect } from '@tempots/ui'
 
 const data = bmiData // change to sampleData if desired
 const NUM_COLUMNS = 26

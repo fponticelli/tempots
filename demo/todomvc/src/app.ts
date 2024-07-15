@@ -1,7 +1,5 @@
 import {
   attr,
-  AutoFocus,
-  AutoSelect,
   computed,
   emit,
   ForEach,
@@ -16,6 +14,7 @@ import {
   Signal,
   When,
 } from '@tempots/dom'
+import { AutoFocus, AutoSelect } from '@tempots/ui'
 import { Action, AllFilters, Filter, State, Todo } from './types'
 import { changeF, countCompleted, filterF, selectedF, update } from './update'
 
