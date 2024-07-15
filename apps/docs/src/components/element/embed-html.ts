@@ -36,15 +36,15 @@ type TOCItem = {
 const mapLevel: Record<number, string> = {
   1: 'ml-0 font-bold text-md mb-1',
   2: 'ml-0 font-semibold text-sm border mt-2 mb-1 px-1 py-0.5 bg-gray-100 rounded',
-  3: 'list-disc ml-3 text-sm',
+  3: 'list-disc ml-4 text-sm',
   4: 'list-disc ml-6 text-sm',
-  5: 'list-disc ml-9 text-sm',
-  6: 'list-disc ml-12 text-sm',
+  5: 'list-disc ml-8 text-sm',
+  6: 'list-disc ml-10 text-sm',
 }
 
 const TOCView = (toc: Signal<TOCItem[]>) => {
   return Ensure(
-    toc.map(v => (v.length > 1 ? v : null)),
+    toc.map(v => (v.length > 3 ? v : null)),
     toc =>
       html.div(
         html.div(
