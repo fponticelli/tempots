@@ -9,7 +9,7 @@ export function Counter(): Renderable {
     attr.class('gap-2 items-center'),
     Txt($count.map(String), { size: 'xl' }),
     Button(
-      on.click(() => $count.update(c => c + 1)),
+      on.click(() => $count.value++),
       'Increment'
     )
   )

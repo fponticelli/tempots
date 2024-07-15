@@ -43,4 +43,8 @@ export const bmiData: Record<string, string> = {
   B3: '=B2/100', // Convert height from cm to m
   A4: 'BMI',
   B4: '=B1*1/B3*1/B3', // BMI calculation formula
+  A6: 'Celsius',
+  B6: '22',
+  A7: 'Fahrenheit',
+  B7: '=B6*1.8+32',
 }

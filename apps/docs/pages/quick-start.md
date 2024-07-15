@@ -52,8 +52,8 @@ const count = prop(0)
 const Counter = html.div(
   html.h1(count.map(v => `count: ${v}`)),
   html.div(
-    html.button(on.click(() => count.update(v => v + 1)), '+'),
-    html.button(on.click(() => count.update(v => v - 1)), '-'),
+    html.button(on.click(() => count.value++), '+'),
+    html.button(on.click(() => count.value--), '-'),
   )
 )
 
@@ -61,7 +61,7 @@ const Counter = html.div(
 render(Counter, document.body)
 ```
 
-The `count` signal is updated by calling `count.update()` that computes a new value based on the current value. `count` can also be set directly by calling `count.set()`.
+The `count` signal is updated by mutating the `count.value` that computes a new value based on the current value. `count` can also be set directly by calling `count.set()` or update with a function with `count.update(v => v+1)`.
 
 What about ``count.map(v => `count: ${v}`)``? This is a `Computed` signal that is derived from the `count` signal. It will update whenever `count` changes. The `map()` function is a helper function that maps the value of the signal to a new value.
 

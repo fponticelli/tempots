@@ -23,16 +23,16 @@ export function RepeatDemo(): Renderable {
       attr.class('gap-2'),
       Button(
         'Add 1',
-        on.click(() => $count.update(c => c + 1))
+        on.click(() => ($count.value += 1))
       ),
       Button(
         'Add 10',
-        on.click(() => $count.update(c => c + 10))
+        on.click(() => ($count.value += 10))
       ),
       Button(
         attr.disabled($deleteDisabled),
         'Delete 1',
-        on.click(() => $count.update(c => c - 1))
+        on.click(() => ($count.value -= 1))
       ),
       Button(
         attr.disabled($deleteDisabled),

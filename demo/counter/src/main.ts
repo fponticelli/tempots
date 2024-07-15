@@ -13,15 +13,11 @@ function App(): Renderable {
         attr.class('buttons'),
         html.button(
           attr.disabled(disabled),
-          on.click(() => {
-            count.update(v => v - 1)
-          }),
+          on.click(() => count.value--),
           '-'
         ),
         html.button(
-          on.click(() => {
-            count.update(v => v + 1)
-          }),
+          on.click(() => count.value++),
           '+'
         )
       )
