@@ -8,8 +8,7 @@
     "build": "tsc && vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "docs:maketoc": "tsx ./scripts/build-docs.ts"
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@tabler/icons": "^3.10.0",
@@ -42,7 +41,6 @@
     "tailwindcss": "^3.4.3",
     "ts-morph": "^23.0.0",
     "tsx": "^4.16.2",
-    "typedoc": "^0.26.3",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.7.1",
     "vite": "^5.2.0",

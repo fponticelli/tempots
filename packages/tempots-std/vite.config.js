@@ -34,21 +34,11 @@ function writeExports(names) {
   updateExportsAndTypesVersions(packageLibJson, names)
 }
 
-function witeTypedocJson(names) {
-  const cwd = process.cwd()
-  const typedocJson = path.join(cwd, 'typedoc.json')
-  const content = fs.readFileSync(typedocJson, { encoding: 'utf-8' })
-  const json = JSON.parse(content)
-  json.entryPoints = names.map((name) => `src/${name}.ts`)
-  fs.writeFileSync(typedocJson, JSON.stringify(json, null, 2))
-}
-
 const names = fs.readdirSync(resolve(__dirname, 'src'))
   .filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'))
   .map((file) => file.replace(/\.ts$/, ''))
 
 writeExports(names)
-witeTypedocJson(names)
 
 const files = names.map((file) => resolve(__dirname, 'src', `${file}.ts`))
 

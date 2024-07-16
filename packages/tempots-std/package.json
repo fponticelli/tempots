@@ -90,7 +90,6 @@
   "scripts": {
     "build": "vite build && cp package.lib.json dist/package.json",
     "build:watch": "vite build --watch",
-    "docs": "typedoc && typedoc-json-parser",
     "test": "vitest --run",
     "test:watch": "vitest --watch --coverage",
     "test:coverage": "vitest --coverage",
@@ -120,9 +119,6 @@
     "globals": "^15.0.0",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.26.4",
-    "typedoc-json-parser": "^10.1.5",
-    "typedoc-plugin-markdown": "^4.2.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.7.1",
     "vite": "^5.2.0",
