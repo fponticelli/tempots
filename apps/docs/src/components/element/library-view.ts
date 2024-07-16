@@ -4,6 +4,7 @@ import { Styles } from '../styles'
 import { NPMShield } from './npm-shield'
 import { Tag } from './tag'
 import { EmbedHTML } from './embed-html'
+import { CheckCode } from './check-code'
 
 export function LibraryInfo(library: Value<Library>) {
   return html.div(
@@ -18,7 +19,13 @@ export function LibraryInfo(library: Value<Library>) {
         )
       ),
       html.div(
-        attr.class('min-w-40 text-right'),
+        attr.class(
+          'text-right flex flex-row justify-end items-center gap-2 w-60'
+        ),
+        CheckCode(
+          'packages',
+          Signal.map(library, ({ name }) => name)
+        ),
         NPMShield(Signal.map(library, ({ title }) => title))
       )
     ),
