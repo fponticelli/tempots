@@ -12,7 +12,7 @@ export function PageView(page: Signal<Page>) {
   return html.div(
     attr.class('w-full h-full print:overflow-visible overflow-auto p-2'),
     html.div(
-      attr.class('text-center'),
+      attr.class('text-center mb-2'),
       html.a(
         attr.target('_blank'),
         attr.class(
