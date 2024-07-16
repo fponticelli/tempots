@@ -1,6 +1,7 @@
 ---
 title: Render
 order: 50
+description: Rendering is the final act of applying Renderables to the DOM. When defining renderables, nothing in the DOM is changed or updated, not until those renderables are applied using either render() or renderWithContext().
 ---
 # Render
 

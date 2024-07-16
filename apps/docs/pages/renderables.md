@@ -1,6 +1,7 @@
 ---
 title: Renderables
 order: 40
+description: Renderables are the building blocks of Tempo applications. They are the templates that are rendered to the DOM. Tempo provides a set of functions to create and manipulate renderables.
 ---
 # Renderables
 

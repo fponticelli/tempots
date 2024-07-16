@@ -17,6 +17,7 @@ export type Demo = {
 export type Page = {
   title: string
   path: string
+  description?: string
 }
 
 export type Toc = {

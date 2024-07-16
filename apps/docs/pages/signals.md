@@ -1,6 +1,7 @@
 ---
 title: Signals
 order: 40
+description: Signals are the reactive data stores. They are used to manage state and notify state changes.
 ---
 # Signals
 

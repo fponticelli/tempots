@@ -5,6 +5,8 @@ import { NPMShield } from './npm-shield'
 import { Tag } from './tag'
 import { EmbedHTML } from './embed-html'
 import { CheckCode } from './check-code'
+import { HTMLTitle } from '@tempots/ui'
+import { OpenGraph } from './open-graph'
 
 export function LibraryInfo(library: Value<Library>) {
   return html.div(
@@ -20,13 +22,13 @@ export function LibraryInfo(library: Value<Library>) {
       ),
       html.div(
         attr.class(
-          'text-right flex flex-row justify-end items-center gap-2 w-60'
+          'text-right flex flex-col justify-end items-center gap-2 min-w-20'
         ),
+        NPMShield(Signal.map(library, ({ title }) => title)),
         CheckCode(
           'packages',
           Signal.map(library, ({ name }) => name)
-        ),
-        NPMShield(Signal.map(library, ({ title }) => title))
+        )
       )
     ),
     html.div(
@@ -38,6 +40,12 @@ export function LibraryInfo(library: Value<Library>) {
 
 export function LibraryView(data: Signal<Library>) {
   return html.div(
+    HTMLTitle(data.map(({ title }) => `Tempo • ${title}`)),
+    OpenGraph({
+      title: data.map(({ title }) => `${title} • Tempo`),
+      description: data.$.description,
+      keywords: data.$.keywords as Value<string[] | undefined>,
+    }),
     attr.class(
       'w-full h-full print:overflow-visible overflow-auto p-2 flex flex-col gap-2'
     ),

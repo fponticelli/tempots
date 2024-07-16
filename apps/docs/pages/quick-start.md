@@ -1,6 +1,7 @@
 ---
 title: Quick Start
 order: 10
+description: Get started with Tempo in a few simple steps.
 ---
 # Quick Start
 

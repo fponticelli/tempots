@@ -2,9 +2,16 @@ import { attr, html, Signal } from '@tempots/dom'
 import { Styles } from '../styles'
 import { Demo } from '../../model/domain'
 import { CheckCode } from './check-code'
+import { HTMLTitle } from '@tempots/ui'
+import { OpenGraph } from './open-graph'
 
 export function DemoView(demo: Signal<Demo & { id: string }>) {
   return html.div(
+    HTMLTitle(demo.map(({ title }) => `Tempo • ${title}`)),
+    OpenGraph({
+      title: demo.map(({ title }) => `${title} • Tempo`),
+      description: demo.$.description as Signal<string | undefined>,
+    }),
     attr.class('w-full h-full flex flex-col p-2'),
     html.h1(
       attr.class(Styles.heading.small),

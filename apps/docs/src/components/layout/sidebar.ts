@@ -111,15 +111,17 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           html.ul(
             attr.role('list'),
             attr.class('-mx-2'),
-            pages.map(({ title, path }) =>
-              html.li(
-                MenuLink({
-                  href: `/page/${path}`,
-                  label: title,
-                  active,
-                })
+            pages
+              .filter(({ path }) => path !== 'index') // exclude homepage
+              .map(({ title, path }) =>
+                html.li(
+                  MenuLink({
+                    href: `/page/${path}`,
+                    label: title,
+                    active,
+                  })
+                )
               )
-            )
           )
         ),
         html.li(

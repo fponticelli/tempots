@@ -7,9 +7,7 @@ export function NPMShield(name: Value<string>) {
     attr.href(Signal.map(name, n => `https://www.npmjs.com/package/${n}`)),
     html.img(
       attr.class('h-[20px]'),
-      attr.src(
-        Signal.map(name, n => `https://img.shields.io/npm/v/${n}?label=${n}`)
-      ),
+      attr.src(Signal.map(name, n => `https://img.shields.io/npm/v/${n}`)),
       attr.alt(Signal.map(name, n => `npm install ${n}`))
     )
   )

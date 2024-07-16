@@ -15,7 +15,7 @@ import { HomeView } from './element/home-view'
 export const AppRouter = (toc: Toc) => {
   const map = tocAsMap(toc)
   return Router({
-    '/': () => HomeView(),
+    '/': () => HomeView(map.pages.get('index')!),
     '/tools': () => ToolsView(),
     '/tool/html-to-tempo': () => HtmlToTempo(),
     '/page/:id': info =>

@@ -1,6 +1,7 @@
 ---
 title: How Does It Work?
 order: 30
+description: Learn how Tempo works under the hood.
 ---
 # How Does It Work?
 

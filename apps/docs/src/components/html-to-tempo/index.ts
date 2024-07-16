@@ -2,6 +2,8 @@ import { attr, html, OnUnmount, prop, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
+import { HTMLTitle } from '@tempots/ui'
+import { OpenGraph } from '../element/open-graph'
 
 export function EditorContainer(
   title: Value<string>,
@@ -22,6 +24,11 @@ export function HtmlToTempo() {
   )
   const tempo = prop('')
   return html.div(
+    HTMLTitle('Tempo • HTML to Tempo'),
+    OpenGraph({
+      title: 'HTML to Tempo • Tempo',
+      description: 'A simple tool to convert HTML to Tempo code.',
+    }),
     attr.class(
       'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-full overflow-hidden gap-2 p-2'
     ),

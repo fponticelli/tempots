@@ -156,6 +156,7 @@ async function createPages(src: string, dst: string) {
       sect.pages.push({
         path: d.dest.substring(0, d.dest.length - 5), // remove .html
         title: d.data.title,
+        description: d.data.description,
       })
     })
   return section

@@ -1,6 +1,7 @@
 ---
-title: Home
+title: Documentation
 order: 0
+description: This is the documentation site for Tempo. Tempo is a modern, open-source, and fast web framework written in TypeScript.
 ---
 # Tempo
 

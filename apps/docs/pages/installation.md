@@ -1,6 +1,7 @@
 ---
 title: Installation
 order: 20
+description: Install Tempo using npm or yarn.
 ---
 # Installation
 

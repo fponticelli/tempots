@@ -58,6 +58,15 @@ export function setLocationFromUrl(prop: Prop<Location>, url: string) {
   return prop
 }
 
+export function getFullURL(location: Location) {
+  const search = new URLSearchParams(location.search)
+  const searchStr = search.toString()
+  const hash = location.hash
+  return `${location.pathname}${searchStr ? `?${searchStr}` : ''}${
+    hash ? `#${hash}` : ''
+  }`
+}
+
 export function makeLocationProp(): Prop<Location> {
   const location = prop(makeLocation(), equalsLocation)
 
