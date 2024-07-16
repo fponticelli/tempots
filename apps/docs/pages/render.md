@@ -20,7 +20,7 @@ function render(
   node: Renderable,
   parent: Node | string,
   { doc, clear }: { doc?: Document; clear?: boolean } = {}
-): () =&gt; void
+): () => void
 ```
 
 ## renderWithContext()
