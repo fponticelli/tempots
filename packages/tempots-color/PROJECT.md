@@ -2,6 +2,16 @@ The @tempots/color library provides a set of immutable color classes and functio
 
 ## Convert
 
+This module provides functions to convert between color spaces.
+
+To use it, import function(s) from the module:
+
+```ts
+import { hsl2rgb } from '@tempots/color/convert'
+```
+
+### Functions
+
 ```ts
 function cmyk2luv(cmyk: CMYK, whiteReference = WHITE_REFERENCE): LUV
 function cmyk2hsl(cmyk: CMYK): HSLfunction cmyk2hsluv(
@@ -108,9 +118,13 @@ function xyz2srgb(xyz: XYZ): SRGB
 
 ## CMYK
 
+The CMYK class represents a color in the Cyan/Magenta/Yellow/Black (CMYK)  color space. To use it, import the class:
+
 ```ts
 import { CMYK } from '@tempots/color/cmyk'
 ```
+
+The CMYK constructor takes four arguments: cyan, magenta, yellow, and black. Each argument is a number between 0 and 100.
 
 ```ts
 class CMYK {
@@ -138,9 +152,13 @@ class CMYK {
 
 ## HSL
 
+The HSL class represents a color in the Hue/Saturation/Lightness (HSL) color space. To use it, import the class:
+
 ```ts
 import { HSL } from '@tempots/color/hsl'
 ```
+
+The HSL constructor takes three arguments: hue, saturation, and lightness. Hue is an angle in degrees between 0 and 360, and saturation and lightness are numbers between 0 and 100.
 
 ```ts
 class HSL {
@@ -165,9 +183,13 @@ class HSL {
 
 ## HSLA
 
+The HSLA class represents a color in the Hue/Saturation/Lightness/Alpha (HSLA) color space. To use it, import the class:
+
 ```ts
 import { HSLA } from '@tempots/color/hsla'
 ```
+
+The HSLA constructor takes four arguments: hue, saturation, lightness, and alpha. Hue is an angle in degrees between 0 and 360, and saturation, lightness, and alpha are numbers between 0 and 100. Alpha is the transparency of the color, with 0 being fully transparent and 100 being fully opaque.
 
 ```ts
 class HSLA extends HSL {
@@ -184,9 +206,13 @@ class HSLA extends HSL {
 
 ## HSLuv
 
+The HSLuv class represents a color in the HSLuv color space. To use it, import the class:
+
 ```ts
 import { HSLuv } from '@tempots/color/hsluv'
 ```
+
+The HSLuv constructor takes three arguments: hue, saturation, and lightness. Hue is an angle in degrees between 0 and 360, and saturation and lightness are numbers between 0 and 100.
 
 ```ts
 class HSLuv {
@@ -211,9 +237,13 @@ class HSLuv {
 
 ## HSV
 
+The HSV class represents a color in the Hue/Saturation/Value (HSV) color space. To use it, import the class:
+
 ```ts
 import { HSV } from '@tempots/color/hsv'
 ```
+
+The HSV constructor takes three arguments: hue, saturation, and value. Hue is an angle in degrees between 0 and 360, and saturation and value are numbers between 0 and 100.
 
 ```ts
 class HSV {
@@ -238,9 +268,13 @@ class HSV {
 
 ## LAB
 
+The LAB class represents a color in the CIE 1976 (L*, a*, b*) color space. To use it, import the class:
+
 ```ts
 import { LAB } from '@tempots/color/lab'
 ```
+
+The LAB constructor takes three arguments: lightness, a, and b. Lightness is a number between 0 and 100, and a and b are numbers between -128 and 127.
 
 ```ts
 class LAB {
@@ -265,9 +299,13 @@ class LAB {
 
 ## LCH
 
+The LCH class represents a color in the CIE LCh color space. To use it, import the class:
+
 ```ts
 import { LCH } from '@tempots/color/lch'
 ```
+
+The LCH constructor takes three arguments: luminance, chroma, and hue. Luminance is a number between 0 and 100, and chroma and hue are numbers between 0 and 100.
 
 ```ts
 class LCH {
@@ -287,9 +325,13 @@ class LCH {
 
 ## LUV
 
+The LUV class represents a color in the CIE 1976 (L*, u*, v*) color space. To use it, import the class:
+
 ```ts
 import { LUV } from '@tempots/color/luv'
 ```
+
+The LUV constructor takes three arguments: lightness, u, and v. Lightness is a number between 0 and 100, and u and v are numbers between -128 and 127.
 
 ```ts
 class LUV {
@@ -309,9 +351,13 @@ class LUV {
 
 ## RGB
 
+The RGB class represents a color in the Red/Green/Blue (RGB) color space. To use it, import the class:
+
 ```ts
 import { RGB } from '@tempots/color/rgb'
 ```
+
+The RGB constructor takes a single argument: a number that represents the color as a 24-bit integer.
 
 ```ts
 class RGB {
@@ -330,9 +376,13 @@ class RGB {
 
 ## RGBA
 
+The RGBA class represents a color in the Red/Green/Blue/Alpha (RGBA) color space. To use it, import the class:
+
 ```ts
 import { RGBA } from '@tempots/color/rgba'
 ```
+
+The RGBA constructor takes a single argument: a number that represents the color as a 32-bit integer.
 
 ```ts
 class RGBA {
@@ -349,9 +399,13 @@ class RGBA {
 
 ## SRGB
 
+The SRGB class represents a color in the Standard RGB (sRGB) color space. To use it, import the class:
+
 ```ts
 import { SRGB } from '@tempots/color/srgb'
 ```
+
+The SRGB constructor takes three arguments: red, green, and blue. Each argument is a number between 0 and 255.
 
 ```ts
 class SRGB {
@@ -376,9 +430,13 @@ class SRGB {
 
 ## XYZ
 
+The XYZ class represents a color in the CIE 1931 (X, Y, Z) color space. To use it, import the class:
+
 ```ts
 import { XYZ } from '@tempots/color/xyz'
 ```
+
+The XYZ constructor takes three arguments: x, y, and z. Each argument is a number.
 
 ```ts
 class XYZ {
