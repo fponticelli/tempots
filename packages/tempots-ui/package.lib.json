@@ -1,14 +1,11 @@
 {
   "name": "@tempots/ui",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
-  "files": [
-    "dist"
-  ],
   "keywords": [
     "tempo",
     "tempots",
@@ -43,7 +40,7 @@
     "@floating-ui/dom": "^1.6.7"
   },
   "peerDependencies": {
-    "@tempots/dom": "16.0.0",
+    "@tempots/dom": "17.0.0",
     "@tempots/std": "0.10.7"
   }
 }
