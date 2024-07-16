@@ -59,7 +59,7 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
               attr.class('flex flex-col gap-2 overflow-hidden'),
               html.div(
                 attr.class(
-                  'text-gray-600 text-sm border text-center rounded-md p-1 bg-gray-600 text-white'
+                  'text-gray-600 text-sm text-center rounded-md p-1 bg-gray-600 text-white'
                 ),
                 '▾ on this page ▾'
               ),
