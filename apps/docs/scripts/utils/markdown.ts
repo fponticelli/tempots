@@ -71,9 +71,7 @@ export const markdownToHTML = (
     const a = anchors[i]
     const href = a.href
     if (href.startsWith('http:') || href.startsWith('https:')) continue
-    // console.log(anchorMangler.toString())
     a.href = anchorMangler?.(href) ?? href
-    console.log(a.href)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
