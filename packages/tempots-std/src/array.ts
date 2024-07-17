@@ -8,11 +8,11 @@ import { keys } from './object'
 /**
  * Applies a function to each element of an array and returns a new array with the results.
  *
- * @template A The type of the elements in the input array.
- * @template B The type of the elements in the output array.
- * @param {A[]} arr The input array.
- * @param {(a: A, index: number) => B} f The function to apply to each element.
- * @returns {B[]} The new array with the results of applying the function to each element.
+ * @typeParam A The type of the elements in the input array.
+ * @typeParam B The type of the elements in the output array.
+ * @param arr The input array.
+ * @param f The function to apply to each element.
+ * @returns The new array with the results of applying the function to each element.
  * @group manipulation
  */
 export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
@@ -22,11 +22,11 @@ export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
 /**
  * Applies a mapping function to each element of an array and flattens the result.
  *
- * @param arr - The input array.
- * @param f - The mapping function to apply to each element of the array.
+ * @param arr The input array.
+ * @param f The mapping function to apply to each element of the array.
  * @returns A new array with the flattened result of applying the mapping function to each element of the input array.
- * @template A - The type of the elements in the input array.
- * @template B - The type of the elements in the resulting flattened array.
+ * @typeParam A The type of the elements in the input array.
+ * @typeParam B The type of the elements in the resulting flattened array.
  * @group manipulation
  */
 export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
@@ -40,9 +40,9 @@ export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
 /**
  * Returns the first element of an array, or `undefined` if the array is empty.
  *
- * @param arr - The input array.
+ * @param arr The input array.
  * @returns The first element of the array, or `undefined` if the array is empty.
- * @typeparam A - The type of elements in the array.
+ * @typeParam A The type of elements in the array.
  * @group access
  */
 export function head<A>(arr: A[]): Maybe<A> {
@@ -52,7 +52,7 @@ export function head<A>(arr: A[]): Maybe<A> {
 /**
  * Returns a new array containing all elements of the input array except for the first element.
  *
- * @param arr - The input array.
+ * @param arr The input array.
  * @returns A new array containing all elements of the input array except for the first element.
  * @group access
  */
@@ -63,11 +63,11 @@ export function tail<A>(arr: A[]): A[] {
 /**
  * Checks if two arrays are equal based on a custom equality function.
  *
- * @template T - The type of elements in the arrays.
- * @param {T[]} a - The first array.
- * @param {T[]} b - The second array.
- * @param {(a: T, b: T) => boolean} equality - The custom equality function to compare elements.
- * @returns {boolean} - Returns `true` if the arrays are equal, `false` otherwise.
+ * @typeParam T The type of elements in the arrays.
+ * @param a The first array.
+ * @param b The second array.
+ * @param equality The custom equality function to compare elements.
+ * @returns Returns `true` if the arrays are equal, `false` otherwise.
  * @group comparison
  */
 export function equals<T>(
@@ -87,8 +87,8 @@ export function equals<T>(
 /**
  * Creates a function that checks if two arrays are equal using the provided equality function.
  *
- * @template T - The type of elements in the arrays.
- * @param equality - The equality function to use for comparing elements.
+ * @typeParam T The type of elements in the arrays.
+ * @param equality The equality function to use for comparing elements.
  * @returns A function that takes two arrays and returns a boolean indicating whether they are equal.
  * @group comparison
  */
@@ -101,7 +101,7 @@ export function makeEquals<T>(equality: (a: T, b: T) => boolean) {
 /**
  * Checks if an array is empty.
  *
- * @param arr - The array to check.
+ * @param arr The array to check.
  * @returns `true` if the array is empty, `false` otherwise.
  * @group query
  */
@@ -112,7 +112,7 @@ export function isEmpty<T>(arr: T[]): arr is [] {
 /**
  * Checks if an array has values.
  *
- * @param arr - The array to check.
+ * @param arr The array to check.
  * @returns `true` if the array has values, `false` otherwise.
  * @group query
  */
@@ -123,10 +123,10 @@ export function hasValues<T>(arr: T[]): arr is [T, ...T[]] {
 /**
  * Filters the elements of an array based on a predicate function.
  *
- * @template T - The type of the elements in the array.
- * @param {T[]} arr - The array to filter.
- * @param {(v: T) => boolean} predicate - The predicate function used to filter the elements.
- * @returns {T[]} - The filtered array.
+ * @typeParam T The type of the elements in the array.
+ * @param arr The array to filter.
+ * @param predicate The predicate function used to filter the elements.
+ * @returns The filtered array.
  * @group manipulation
  */
 export function filter<T>(arr: T[], predicate: (v: T) => boolean): T[] {
@@ -139,11 +139,11 @@ export function filter<T>(arr: T[], predicate: (v: T) => boolean): T[] {
  * Applies a mapping function to each element of an array and returns a new array
  * containing the mapped values, excluding any `null` or `undefined` values.
  *
- * @template A - The type of the elements in the input array.
- * @template B - The type of the elements in the output array.
- * @param {A[]} arr - The input array.
- * @param {(a: A, index: number) => Maybe<B>} f - The mapping function to apply to each element.
- * @returns {B[]} - The new array containing the mapped values.
+ * @typeParam A The type of the elements in the input array.
+ * @typeParam B The type of the elements in the output array.
+ * @param arr The input array.
+ * @param f The mapping function to apply to each element.
+ * @returns The new array containing the mapped values.
  * @group manipulation
  */
 export function filterMap<A, B>(
@@ -163,9 +163,9 @@ export function filterMap<A, B>(
 /**
  * Filters out null and undefined values from an array.
  *
- * @template T - The type of elements in the array.
- * @param {Array<T | null | undefined>} arr - The array to filter.
- * @returns {T[]} - The filtered array.
+ * @typeParam T The type of elements in the array.
+ * @param arr The array to filter.
+ * @returns The filtered array.
  * @group manipulation
  */
 export function filterNulls<T>(arr: Array<T | Nothing>): T[] {
@@ -175,9 +175,9 @@ export function filterNulls<T>(arr: Array<T | Nothing>): T[] {
 /**
  * Flattens a two-dimensional array into a one-dimensional array.
  *
- * @param arr - The two-dimensional array to flatten.
+ * @param arr The two-dimensional array to flatten.
  * @returns The flattened one-dimensional array.
- * @template T - The type of elements in the array.
+ * @typeParam T The type of elements in the array.
  * @group manipulation
  */
 export function flatten<T>(arr: T[][]): T[] {
@@ -187,12 +187,12 @@ export function flatten<T>(arr: T[][]): T[] {
 /**
  * Applies a function to each element of an array, accumulating the result from left to right.
  *
- * @template T The type of the array elements.
- * @template B The type of the accumulator.
- * @param {T[]} arr The array to iterate over.
- * @param {(acc: B, curr: T) => B} f The function to apply to each element.
- * @param {B} b The initial value of the accumulator.
- * @returns {B} The accumulated result.
+ * @typeParam T The type of the array elements.
+ * @typeParam B The type of the accumulator.
+ * @param arr The array to iterate over.
+ * @param f The function to apply to each element.
+ * @param b The initial value of the accumulator.
+ * @returns The accumulated result.
  * @group manipulation
  */
 export function foldLeft<T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B {
@@ -205,10 +205,10 @@ export function foldLeft<T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B {
 /**
  * Checks if all elements in an array satisfy a given predicate.
  *
- * @param arr - The array to check.
- * @param predicate - The predicate function to apply to each element.
+ * @param arr The array to check.
+ * @param predicate The predicate function to apply to each element.
  * @returns `true` if all elements satisfy the predicate, `false` otherwise.
- * @template T - The type of elements in the array.
+ * @typeParam T The type of elements in the array.
  * @group query
  */
 export function all<T>(arr: T[], predicate: (v: T) => boolean): boolean {
@@ -223,10 +223,10 @@ export function all<T>(arr: T[], predicate: (v: T) => boolean): boolean {
 /**
  * Checks if any element in the array satisfies the given predicate.
  *
- * @param arr - The array to check.
- * @param predicate - The predicate function to apply to each element.
+ * @param arr The array to check.
+ * @param predicate The predicate function to apply to each element.
  * @returns `true` if any element satisfies the predicate, `false` otherwise.
- * @template T - The type of elements in the array.
+ * @typeParam T The type of elements in the array.
  * @group query
  */
 export function any<T>(arr: T[], predicate: (v: T) => boolean): boolean {
@@ -241,10 +241,9 @@ export function any<T>(arr: T[], predicate: (v: T) => boolean): boolean {
 /**
  * Applies a function to each element in an array.
  *
- * @template T - The type of elements in the array.
- * @param {T[]} arr - The array to iterate over.
- * @param {(v: T) => void} f - The function to apply to each element.
- * @returns {void}
+ * @typeParam T The type of elements in the array.
+ * @param arr The array to iterate over.
+ * @param f The function to apply to each element.
  * @group effect
  */
 export function each<T>(arr: T[], f: (v: T) => void): void {
@@ -254,9 +253,9 @@ export function each<T>(arr: T[], f: (v: T) => void): void {
 /**
  * Concatenates multiple arrays into a single array.
  *
- * @param arrs - The arrays to concatenate.
+ * @param arrs The arrays to concatenate.
  * @returns The concatenated array.
- * @template A - The type of elements in the arrays.
+ * @typeParam A The type of elements in the arrays.
  * @group manipulation
  */
 export function concat<A>(...arrs: A[][]): A[] {
@@ -266,8 +265,8 @@ export function concat<A>(...arrs: A[][]): A[] {
 /**
  * Creates a compare function that compares two arrays based on their lengths and element values.
  *
- * @param comparef - The compare function to use for comparing the elements of the arrays.
- * @param shorterFirst - Optional. Specifies whether shorter arrays should be considered smaller. Defaults to true.
+ * @param comparef The compare function to use for comparing the elements of the arrays.
+ * @param shorterFirst Optional. Specifies whether shorter arrays should be considered smaller. Defaults to true.
  * @returns A compare function that can be used to compare arrays.
  * @group comparison
  */
@@ -289,9 +288,9 @@ export function makeCompare<A>(comparef: Compare<A>, shorterFirst = true) {
 /**
  * Sorts an array in place using the provided compare function.
  *
- * @template A - The type of elements in the array.
- * @param compare - The compare function used to determine the order of the elements.
- * @param arr - The array to be sorted.
+ * @typeParam A The type of elements in the array.
+ * @param compare The compare function used to determine the order of the elements.
+ * @param arr The array to be sorted.
  * @returns The sorted array.
  * @group manipulation
  */
@@ -302,8 +301,8 @@ export function sort<A>(compare: Compare<A>, arr: A[]): A[] {
 /**
  * Generates an array of values by applying a function to each index.
  *
- * @param length - The length of the resulting array.
- * @param f - The function to apply to each index. It takes the index as a parameter and returns the corresponding value.
+ * @param length The length of the resulting array.
+ * @param f The function to apply to each index. It takes the index as a parameter and returns the corresponding value.
  * @returns An array of values generated by applying the function to each index.
  * @group creation
  */
@@ -314,8 +313,8 @@ export function range<A>(length: number, f: (index: number) => A): A[] {
 /**
  * Generates an array of numbers in a specified range.
  *
- * @param length - The length of the array to generate.
- * @param startAt - The starting value of the range. Default is 0.
+ * @param length The length of the array to generate.
+ * @param startAt The starting value of the range. Default is 0.
  * @returns An array of numbers in the specified range.
  * @group creation
  */
@@ -326,9 +325,9 @@ export function numbersRange(length: number, startAt = 0): number[] {
 /**
  * Creates a new array with the specified length and fills it with the provided value.
  *
- * @template A - The type of the elements in the array.
- * @param length - The length of the new array.
- * @param value - The value to fill the array with.
+ * @typeParam A The type of the elements in the array.
+ * @param length The length of the new array.
+ * @param value The value to fill the array with.
  * @returns A new array filled with the specified value.
  * @group creation
  */
@@ -339,8 +338,8 @@ export function fill<A>(length: number, value: A): A[] {
 /**
  * Returns an array containing only the distinct primitive values from the input array.
  *
- * @template T - The type of the input array elements.
- * @param values - The input array.
+ * @typeParam T The type of the input array elements.
+ * @param values The input array.
  * @returns An array containing only the distinct primitive values from the input array.
  * @group manipulation
  */
@@ -351,10 +350,10 @@ export function distinctPrimitive<T extends Primitive>(values: T[]): T[] {
 /**
  * Returns an array of distinct elements from the input array based on the provided predicate.
  *
- * @template T - The type of elements in the input array.
- * @param {T[]} values - The input array.
- * @param {(a: T) => string} predicate - The predicate function used to determine uniqueness.
- * @returns {T[]} - An array of distinct elements.
+ * @typeParam T The type of elements in the input array.
+ * @param values The input array.
+ * @param predicate The predicate function used to determine uniqueness.
+ * @returns An array of distinct elements.
  * @group manipulation
  */
 export function distinctByPredicate<T>(
@@ -371,10 +370,10 @@ export function distinctByPredicate<T>(
 /**
  * Removes the first occurrence of an item from an array.
  *
- * @template A - The type of the array elements.
- * @param {A[]} arr - The array from which to remove the item.
- * @param {A} item - The item to remove from the array.
- * @returns {boolean} - `true` if the item was found and removed, `false` otherwise.
+ * @typeParam A The type of the array elements.
+ * @param arr The array from which to remove the item.
+ * @param item The item to remove from the array.
+ * @returns `true` if the item was found and removed, `false` otherwise.
  * @group mutation
  */
 export function remove<A>(arr: A[], item: A): boolean {
@@ -390,10 +389,10 @@ export function remove<A>(arr: A[], item: A): boolean {
 /**
  * Removes the elements from an array that satisfy the given predicate.
  *
- * @template A - The type of elements in the array.
- * @param {A[]} arr - The array from which elements will be removed.
- * @param {(a: A) => boolean} predicate - The predicate function used to determine which elements to remove.
- * @returns {boolean} - `true` if at least one element was removed, `false` otherwise.
+ * @typeParam A The type of elements in the array.
+ * @param arr The array from which elements will be removed.
+ * @param predicate The predicate function used to determine which elements to remove.
+ * @returns `true` if at least one element was removed, `false` otherwise.
  * @group mutation
  */
 export function removeByPredicate<A>(
@@ -412,7 +411,7 @@ export function removeByPredicate<A>(
 /**
  * Converts an IterableIterator to an array.
  *
- * @param it - The IterableIterator to convert.
+ * @param it The IterableIterator to convert.
  * @returns An array containing the values from the IterableIterator.
  * @group creation
  */
@@ -436,12 +435,12 @@ export interface DiffOperations<T> {
 /**
  * Calculates the difference operations between two arrays based on a key function.
  *
- * @template T - The type of elements in the arrays.
- * @template K - The type of the key used to compare elements.
- * @param {T[]} from - The source array.
- * @param {T[]} to - The target array.
- * @param {(v: T) => K} getKey - The key function used to compare elements.
- * @returns {DiffOperations<T>} - The difference operations between the two arrays.
+ * @typeParam T The type of elements in the arrays.
+ * @typeParam K The type of the key used to compare elements.
+ * @param from The source array.
+ * @param to The target array.
+ * @param getKey The key function used to compare elements.
+ * @returns The difference operations between the two arrays.
  * @group manipulation
  */
 export function diffOperations<T, K>(
@@ -513,10 +512,10 @@ export function diffOperations<T, K>(
 /**
  * Applies a series of operations to an array and returns the modified array.
  *
- * @template T - The type of elements in the array.
- * @param {DiffOperations<T>} operations - The operations to apply.
- * @param {T[]} start - The initial array.
- * @returns {T[]} - The modified array after applying the operations.
+ * @typeParam T The type of elements in the array.
+ * @param operations The operations to apply.
+ * @param start The initial array.
+ * @returns The modified array after applying the operations.
  * @group manipulation
  */
 export function applyOperations<T>(
@@ -541,9 +540,9 @@ export function applyOperations<T>(
 /**
  * Joins an array of values into a string using a conjunction and separator.
  *
- * @param arr - The array of values to join.
- * @param conjunction - The conjunction to use between the second-to-last and last value. Default is ' and '.
- * @param separator - The separator to use between each value. Default is ', '.
+ * @param arr The array of values to join.
+ * @param conjunction The conjunction to use between the second-to-last and last value. Default is ' and '.
+ * @param separator The separator to use between each value. Default is ', '.
  * @returns The joined string.
  * @group transformation
  */
@@ -562,11 +561,11 @@ export function joinWithConjunction<A>(
  * The ranks are assigned in ascending order, with the lowest value receiving a rank of 0.
  * If there are duplicate values, the rank of the duplicates can be incremented or not based on the `incrementDuplicates` parameter.
  *
- * @template T - The type of elements in the array.
- * @param {T[]} array - The array to rank.
- * @param {(a: T, b: T) => number} compare - The compare function used to determine the order of elements.
- * @param {boolean} [incrementDuplicates=true] - Whether to increment the rank of duplicate values.
- * @returns {number[]} - An array of ranks corresponding to the elements in the input array.
+ * @typeParam T The type of elements in the array.
+ * @param array The array to rank.
+ * @param compare The compare function used to determine the order of elements.
+ * @param incrementDuplicates Whether to increment the rank of duplicate values.
+ * @returns An array of ranks corresponding to the elements in the input array.
  * @group transformation
  */
 export function rank<T>(

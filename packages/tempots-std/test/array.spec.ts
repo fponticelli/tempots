@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { applyOperations, type DiffOperations, diffOperations, map, head, isEmpty, tail, numbersRange, fill, makeCompare, mapNotNull, flatMap, equals, makeEquals, hasValues, filter, filterNulls, flatten, joinWithConjunction, remove, removeByPredicate, foldLeft, any, each, concat, sort, distinctPrimitive, distinctByPredicate, ofIterableIterator, rank } from '../src/array'
+import { applyOperations, type DiffOperations, diffOperations, map, head, isEmpty, tail, numbersRange, fill, makeCompare, filterMap, flatMap, equals, makeEquals, hasValues, filter, filterNulls, flatten, joinWithConjunction, remove, removeByPredicate, foldLeft, any, each, concat, sort, distinctPrimitive, distinctByPredicate, ofIterableIterator, rank } from '../src/array'
 import { compare as compareString } from '../src/string'
 
 describe('arrays:map', () => {
@@ -12,15 +12,15 @@ describe('arrays:map', () => {
   })
 })
 
-describe('arrays:mapNotNull', () => {
+describe('arrays:filterMap', () => {
   test('should work with empty arrays', () => {
-    expect(mapNotNull([], a => a)).toEqual([])
+    expect(filterMap([], a => a)).toEqual([])
   })
   test('should work with any array', () => {
-    expect(mapNotNull([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
+    expect(filterMap([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
   })
   test('should work with null values', () => {
-    expect(mapNotNull([1, 2, 3], a => a === 2 ? null : a + 1)).toEqual([2, 4])
+    expect(filterMap([1, 2, 3], a => a === 2 ? null : a + 1)).toEqual([2, 4])
   })
 })
 

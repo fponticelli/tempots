@@ -8,7 +8,7 @@ export interface Valid {
 }
 /**
  * Represents an invalid value with an associated error.
- * @template E - The type of the error.
+ * @typeParam E - The type of the error.
  */
 export interface Invalid<E> {
   type: 'invalid'
@@ -17,13 +17,13 @@ export interface Invalid<E> {
 
 /**
  * Represents a type that can either be `Valid` or `Invalid`.
- * @typeparam E - The type of the error associated with an `Invalid` value.
+ * @typeParam E - The type of the error associated with an `Invalid` value.
  */
 export type Validation<E> = Valid | Invalid<E>
 
 /**
  * Represents a promise that resolves to a `Validation` object.
- * @template E - The type of the error value in the `Validation` object.
+ * @typeParam E - The type of the error value in the `Validation` object.
  */
 export type PromiseValidation<E> = PromiseLike<Validation<E>>
 

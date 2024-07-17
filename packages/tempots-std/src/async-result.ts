@@ -15,7 +15,7 @@ export interface Loading<V> {
 }
 /**
  * Represents a successful result.
- * @template V The type of the value.
+ * @typeParam V The type of the value.
  */
 export interface Success<V> {
   type: 'Success'
@@ -23,7 +23,7 @@ export interface Success<V> {
 }
 /**
  * Represents a failure result.
- * @template E - The type of the error.
+ * @typeParam E - The type of the error.
  */
 export interface Failure<E> {
   type: 'Failure'
@@ -37,8 +37,8 @@ export interface Failure<E> {
  * - `Success`: The operation has completed successfully and contains a value of type `V`.
  * - `Failure`: The operation has completed with an error and contains an error of type `E`.
  *
- * @typeparam V The type of the value on success.
- * @typeparam E The type of the error on failure.
+ * @typeParam V The type of the value on success.
+ * @typeParam E The type of the error on failure.
  */
 export type AsyncResult<V, E> = NotAsked | Loading<V> | Success<V> | Failure<E>
 

@@ -34,10 +34,23 @@ export function compose<Args extends Fun1<unknown, unknown>[]>(...args: Args) {
   return (a: FirstArgument<Args[0]>) => args.reduce((acc: any, f) => f(acc), a)
 }
 
+/**
+ * Returns the input value as is.
+ *
+ * @param v - The value to be returned.
+ * @returns The input value.
+ * @template T - The type of the input value.
+ */
 export function identity<T>(v: T): T {
   return v
 }
 
+/**
+ * Curries a function from left to right.
+ *
+ * @param f - The function to curry.
+ * @returns A curried function.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function curryLeft<A, Rest extends any[], Ret>(
   f: (a: A, ...rest: Rest) => Ret
@@ -88,6 +101,14 @@ export function flip<Ret>(f: (...rest: unknown[]) => Ret) {
   return (...args: unknown[]) => f(...args.reverse())
 }
 
+/**
+ * Memoizes the result of a function and returns a new function that caches the result.
+ * The cached result is returned if available, otherwise the original function is called
+ * and the result is cached for future invocations.
+ *
+ * @param f The function to memoize.
+ * @returns A new function that caches the result of the original function.
+ */
 export function memoize<T>(f: () => NonNullable<T>): () => NonNullable<T> {
   let value: Maybe<T>
   return () => {

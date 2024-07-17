@@ -58,8 +58,8 @@ export function removeFields<T extends object, F extends Array<keyof T>>(
 /**
  * Merges two objects together.
  *
- * @template A - The type of the first object.
- * @template B - The type of the second object.
+ * @typeParam A - The type of the first object.
+ * @typeParam B - The type of the second object.
  * @param {A} a - The first object to merge.
  * @param {B} b - The second object to merge.
  * @returns {Merge<A, B>} - The merged object.

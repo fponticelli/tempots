@@ -3,7 +3,7 @@ import { Maybe } from './domain'
 
 /**
  * Represents a successful result.
- * @template V The type of the value.
+ * @typeParam V The type of the value.
  */
 export interface Success<V> {
   type: 'Success'
@@ -11,7 +11,7 @@ export interface Success<V> {
 }
 /**
  * Represents a failure result.
- * @template E - The type of the error.
+ * @typeParam E - The type of the error.
  */
 export interface Failure<E> {
   type: 'Failure'
@@ -20,15 +20,15 @@ export interface Failure<E> {
 
 /**
  * Represents a result that can either be a success or a failure.
- * @typeparam V The type of the value in case of success.
- * @typeparam E The type of the error in case of failure.
+ * @typeParam V The type of the value in case of success.
+ * @typeParam E The type of the error in case of failure.
  */
 export type Result<V, E> = Success<V> | Failure<E>
 
 /**
  * Represents a promise that resolves to a `Result` type.
- * @template V The type of the value contained in the `Result`.
- * @template E The type of the error contained in the `Result`.
+ * @typeParam V The type of the value contained in the `Result`.
+ * @typeParam E The type of the error contained in the `Result`.
  */
 export type PromiseResult<V, E> = PromiseLike<Result<V, E>>
 
