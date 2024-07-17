@@ -2,9 +2,10 @@
  * Checks if two values are strictly equal.
  *
  * @typeParam A - The type of the values to compare.
- * @param a The first value to compare.
- * @param b The second value to compare.
+ * @param a - The first value to compare.
+ * @param b - The second value to compare.
  * @returns `true` if the values are strictly equal, `false` otherwise.
+ * @public
  */
 export function strictEqual<A>(a: A, b: A): boolean {
   return a === b || (a !== a && b !== b)
@@ -14,9 +15,10 @@ export function strictEqual<A>(a: A, b: A): boolean {
  * Checks if two values are equal by comparing their contents.
  *
  * @typeParam A - The type of the values being compared.
- * @param a The first value to compare.
- * @param b The second value to compare.
+ * @param a - The first value to compare.
+ * @param b - The second value to compare.
  * @returns `true` if the values are deeply equal, `false` otherwise.
+ * @public
  */
 export function deepEqual<A>(a: A, b: A): boolean {
   if (strictEqual(a, b)) return true
@@ -115,9 +117,10 @@ export function deepEqual<A>(a: A, b: A): boolean {
 /**
  * Checks if two values are loosely equal.
  *
- * @param a The first value to compare.
- * @param b The second value to compare.
+ * @param a - The first value to compare.
+ * @param b - The second value to compare.
  * @returns `true` if the values are loosely equal, `false` otherwise.
+ * @public
  */
 export function looseEqual<T>(a: T, b: T): boolean {
   return a == b

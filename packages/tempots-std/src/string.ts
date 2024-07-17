@@ -1,5 +1,6 @@
 /**
  * Utility functions to manipulate string values.
+ * @public
  */
 
 import { range, any, all, fill } from './array'
@@ -7,9 +8,10 @@ import { map as mapR } from './regexp'
 
 /**
  * Replaces all occurrances of `placeholder` in `subject` with the value `replacement`.
- * @param subject
- * @param placeholder
- * @param replacement
+ * @param subject -
+ * @param placeholder -
+ * @param replacement -
+ * @public
  */
 export function replace(
   subject: string,
@@ -22,6 +24,7 @@ export function replace(
 /**
  * `after` searches for the first occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
+ * @public
  */
 export function after(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
@@ -32,6 +35,7 @@ export function after(value: string, searchFor: string): string {
 /**
  * `afterLast` searches for the last occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
+ * @public
  */
 export function afterLast(value: string, searchFor: string): string {
   const pos = value.lastIndexOf(searchFor)
@@ -42,6 +46,7 @@ export function afterLast(value: string, searchFor: string): string {
 /**
  * `before` searches for the first occurrance of `searchFor` and returns the text before that.
  * If `searchFor` is not found, an empty string is returned.
+ * @public
  */
 export function before(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
@@ -52,6 +57,7 @@ export function before(value: string, searchFor: string): string {
 /**
  * `beforeLast` searches for the last occurrance of `searchFor` and returns the text before that.
  * If `searchFor` is not found, an empty string is returned.
+ * @public
  */
 export function beforeLast(value: string, searchFor: string): string {
   const pos = value.lastIndexOf(searchFor)
@@ -61,6 +67,7 @@ export function beforeLast(value: string, searchFor: string): string {
 
 /**
  * `capitalize` returns a string with the first character convert to upper case.
+ * @public
  */
 export function capitalize(s: string): string {
   return s.substring(0, 1).toUpperCase() + s.substring(1)
@@ -71,6 +78,7 @@ const upperMatch = (s: string): string => s.toUpperCase()
 /**
  * Capitalize the first letter of every word in `value`. If `whiteSpaceOnly` is set to `true`
  * the process is limited to whitespace separated words.
+ * @public
  */
 export function capitalizeWords(value: string, whiteSpaceOnly = false): string {
   if (whiteSpaceOnly) {
@@ -82,6 +90,7 @@ export function capitalizeWords(value: string, whiteSpaceOnly = false): string {
 
 /**
  * Replaces occurrances of `\r\n`, `\n\r`, `\r` with `\n`
+ * @public
  */
 export function canonicalizeNewlines(value: string): string {
   return value.replace(CANONICALIZE_LINES, '\n')
@@ -89,6 +98,7 @@ export function canonicalizeNewlines(value: string): string {
 
 /**
  * Compares two strings ignoring their case.
+ * @public
  */
 export function compareCaseInsensitive(a: string, b: string): number {
   if (a == null && b == null) return 0
@@ -117,6 +127,7 @@ export function startsWithCaseInsensitive(s: string, start: string): boolean {
 
 /**
  * Compares a string `s` with many `values` and see if one of them matches its end ignoring their case.
+ * @public
  */
 export function endsWithAnyCaseInsensitive(
   s: string,
@@ -130,6 +141,7 @@ export function endsWithAnyCaseInsensitive(
 
 /**
  * Compares a string `s` with many `values` and see if one of them matches its beginning ignoring their case.
+ * @public
  */
 export function startsWithAnyCaseInsensitive(
   s: string,
@@ -146,6 +158,7 @@ export function startsWithAnyCaseInsensitive(
  * - remove trailing/leading whitespaces
  * - within the string, it collapses seqeunces of whitespaces into a single space character
  * For whitespaces in this description, it is intended to be anything that is matched by the regular expression `\s`.
+ * @public
  */
 export function collapse(value: string): string {
   return value.trim().replace(WSG, ' ')
@@ -154,6 +167,7 @@ export function collapse(value: string): string {
 /**
  * It compares to string and it returns a negative number if `a` is inferior to `b`, zero if they are the same,
  * or otherwise a positive non-sero number.
+ * @public
  */
 export function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0
@@ -161,6 +175,7 @@ export function compare(a: string, b: string): number {
 
 /**
  * `contains` returns `true` if `s` contains one or more occurrences of `test` regardless of the text case.
+ * @public
  */
 export function containsCaseInsensitive(s: string, test: string): boolean {
   return s.toLowerCase().includes(test.toLowerCase())
@@ -168,6 +183,7 @@ export function containsCaseInsensitive(s: string, test: string): boolean {
 
 /**
  * `contains` returns `true` if `s` contains one or more occurrences of `test`.
+ * @public
  */
 export function contains(s: string, test: string): boolean {
   return s.includes(test)
@@ -175,6 +191,7 @@ export function contains(s: string, test: string): boolean {
 
 /**
  * Return the number of occurances of `test` in `s`.
+ * @public
  */
 export function count(s: string, test: string): number {
   return s.split(test).length - 1
@@ -182,6 +199,7 @@ export function count(s: string, test: string): number {
 
 /**
  * `contains` returns `true` if `s` contains any of the strings in `tests` regardless of the text case
+ * @public
  */
 export function containsAnyCaseInsensitive(
   s: string,
@@ -192,6 +210,7 @@ export function containsAnyCaseInsensitive(
 
 /**
  * `contains` returns `true` if `s` contains any of the strings in `tests`
+ * @public
  */
 export function containsAny(s: string, tests: string[]): boolean {
   return any(tests, t => contains(s, t))
@@ -199,6 +218,7 @@ export function containsAny(s: string, tests: string[]): boolean {
 
 /**
  * `contains` returns `true` if `s` contains all of the strings in `tests` regardless of the text case
+ * @public
  */
 export function containsAllCaseInsensitive(
   s: string,
@@ -209,6 +229,7 @@ export function containsAllCaseInsensitive(
 
 /**
  * `contains` returns `true` if `s` contains all of the strings in `tests`
+ * @public
  */
 export function containsAll(s: string, tests: string[]): boolean {
   return all(tests, t => contains(s, t))
@@ -216,6 +237,7 @@ export function containsAll(s: string, tests: string[]): boolean {
 
 /**
  * `dasherize` replaces all the occurrances of `_` with `-`
+ * @public
  */
 export function dasherize(s: string): string {
   return s.replace('_', '-')
@@ -228,6 +250,7 @@ export function dasherize(s: string): string {
  * ```ts
  * diffIndex('abcdef', 'abc123') // returns 3
  * ```
+ * @public
  */
 export function diffIndex(a: string, b: string): number {
   if (a === b) return -1
@@ -244,6 +267,7 @@ export function diffIndex(a: string, b: string): number {
  * ```ts
  * ellipsis('tempo is a nice library', 9) // returns 'tempo is …'
  * ```
+ * @public
  */
 export function ellipsis(s: string, maxlen = 20, symbol = '…'): string {
   const sl = s.length
@@ -262,6 +286,7 @@ export function ellipsis(s: string, maxlen = 20, symbol = '…'): string {
  * ```ts
  * ellipsisMiddle('tempo is a nice library', 18) // returns 'tempo is … library'
  * ```
+ * @public
  */
 export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
   const sl = s.length
@@ -278,6 +303,7 @@ export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
 
 /**
  * Returns `true` if `s` ends with any of the values in `values`.
+ * @public
  */
 export function endsWithAny(s: string, values: string[]): boolean {
   return any(values, end => endsWith(s, end))
@@ -286,6 +312,7 @@ export function endsWithAny(s: string, values: string[]): boolean {
 /**
  * `filter` applies `predicate` character by character to `s` and it returns a filtered
  * version of the string.
+ * @public
  */
 export function filter(s: string, predicate: (s: string) => boolean): string {
   return toArray(s).filter(predicate).join('')
@@ -293,6 +320,7 @@ export function filter(s: string, predicate: (s: string) => boolean): string {
 
 /**
  * Same as `filter` but `predicate` operates on integer char codes instead of string characters.
+ * @public
  */
 export function filterCharcode(
   s: string,
@@ -305,6 +333,7 @@ export function filterCharcode(
 /**
  * `from` searches for the first occurrance of `searchFor` and returns the text from that point on.
  * If `searchFor` is not found, an empty string is returned.
+ * @public
  */
 export function from(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
@@ -323,6 +352,7 @@ export function hashCode(value: string, seed = 0x811c9dc5): number {
 
 /**
  * Returns `true` if `value` is not `null` and contains at least one character.
+ * @public
  */
 export function hasContent(value: string): boolean {
   return value != null && value.length > 0
@@ -330,6 +360,7 @@ export function hasContent(value: string): boolean {
 
 /**
  * Works the same as `underscore` but also replaces underscores with whitespaces.
+ * @public
  */
 export function humanize(s: string): string {
   return replace(underscore(s), '_', ' ')
@@ -337,6 +368,7 @@ export function humanize(s: string): string {
 
 /**
  * Checks if `s` contains only (and at least one) alphabetical characters.
+ * @public
  */
 export function isAlpha(s: string): boolean {
   return s.length > 0 && !IS_ALPHA.test(s)
@@ -344,6 +376,7 @@ export function isAlpha(s: string): boolean {
 
 /**
  * `isAlphaNum` returns `true` if the string only contains alpha-numeric characters.
+ * @public
  */
 export function isAlphaNum(value: string): boolean {
   return ALPHANUM.test(value)
@@ -356,6 +389,7 @@ export function isBreakingWhitespace(value: string): boolean {
 /**
  * Returns `true` if the value string is composed of only lower cased characters
  * or case neutral characters.
+ * @public
  */
 export function isLowerCase(value: string): boolean {
   return value.toLowerCase() === value
@@ -364,6 +398,7 @@ export function isLowerCase(value: string): boolean {
 /**
  * Returns `true` if the value string is composed of only upper cased characters
  * or case neutral characters.
+ * @public
  */
 export function isUpperCase(value: string): boolean {
   return value.toUpperCase() === value
@@ -371,6 +406,7 @@ export function isUpperCase(value: string): boolean {
 
 /**
  * `ifEmpty` returns `value` if it is neither `null` or empty, otherwise it returns `alt`
+ * @public
  */
 export function ifEmpty(value: string, alt: string): string {
   return value != null && value !== '' ? value : alt
@@ -378,6 +414,7 @@ export function ifEmpty(value: string, alt: string): string {
 
 /**
  * `isDigitsOnly` returns `true` if the string only contains digits.
+ * @public
  */
 export function isDigitsOnly(value: string): boolean {
   return DIGITS.test(value)
@@ -385,6 +422,7 @@ export function isDigitsOnly(value: string): boolean {
 
 /**
  * `isEmpty` returns true if either `value` is null or is an empty string.
+ * @public
  */
 export function isEmpty(value: string): boolean {
   return value == null || value === ''
@@ -392,6 +430,7 @@ export function isEmpty(value: string): boolean {
 
 /**
  * Convert first letter in `value` to lower case.
+ * @public
  */
 export function lowerCaseFirst(value: string): string {
   return value.substring(0, 1).toLowerCase() + value.substring(1)
@@ -399,6 +438,7 @@ export function lowerCaseFirst(value: string): string {
 
 /**
  * Returns a random substring from the `value` argument. The length of such value is by default `1`.
+ * @public
  */
 export function random(value: string, length = 1): string {
   return value.substring(
@@ -409,6 +449,7 @@ export function random(value: string, length = 1): string {
 
 /**
  * Returns a random sampling of the specified length from the seed string.
+ * @public
  */
 export function randomSequence(alphabet: string, length: number): string {
   return range(length, () => random(alphabet)).join('')
@@ -416,6 +457,7 @@ export function randomSequence(alphabet: string, length: number): string {
 
 /**
  * Like `randomSequence`, but automatically uses the base64 sequence as the seed string.
+ * @public
  */
 export function randomSequence64(length: number): string {
   return randomSequence(BASE64_ALPHABET, length)
@@ -423,6 +465,7 @@ export function randomSequence64(length: number): string {
 
 /**
  * It maps a string character by character using `callback`.
+ * @public
  */
 export function map<T>(callback: (c: string) => T, value: string): T[] {
   return toArray(value).map(callback)
@@ -430,6 +473,7 @@ export function map<T>(callback: (c: string) => T, value: string): T[] {
 
 /**
  * If present, it removes all the occurrences of `toremove` from `value`.
+ * @public
  */
 export function remove(value: string, toremove: string): string {
   return replace(value, toremove, '')
@@ -437,6 +481,7 @@ export function remove(value: string, toremove: string): string {
 
 /**
  * If present, it removes the `toremove` text from the end of `value`.
+ * @public
  */
 export function removeAfter(value: string, toremove: string): string {
   return endsWith(value, toremove)
@@ -446,6 +491,7 @@ export function removeAfter(value: string, toremove: string): string {
 
 /**
  * Removes a slice from `index` to `index + length` from `value`.
+ * @public
  */
 export function removeAt(value: string, index: number, length: number): string {
   return value.substring(0, index) + value.substring(index + length)
@@ -453,6 +499,7 @@ export function removeAt(value: string, index: number, length: number): string {
 
 /**
  * If present, it removes the `toremove` text from the beginning of `value`.
+ * @public
  */
 export function removeBefore(value: string, toremove: string): string {
   return startsWith(value, toremove) ? value.substring(toremove.length) : value
@@ -460,6 +507,7 @@ export function removeBefore(value: string, toremove: string): string {
 
 /**
  * If present, it removes the first occurrence of `toremove` from `value`.
+ * @public
  */
 export function removeOne(value: string, toremove: string): string {
   const pos = value.indexOf(toremove)
@@ -472,6 +520,7 @@ export function removeOne(value: string, toremove: string): string {
  * ```ts
  * repeat('Xy', 3) // generates 'XyXyXy'
  * ```
+ * @public
  */
 export function repeat(s: string, times: number): string {
   return fill(times, s).join('')
@@ -479,6 +528,7 @@ export function repeat(s: string, times: number): string {
 
 /**
  * Returns a new string whose characters are in reverse order.
+ * @public
  */
 export function reverse(s: string): string {
   const arr = toArray(s)
@@ -488,6 +538,7 @@ export function reverse(s: string): string {
 
 /**
  * Converts a string in a quoted string.
+ * @public
  */
 export function smartQuote(s: string, prefer = "'"): string {
   if (prefer === "'") {
@@ -515,6 +566,7 @@ export function jsQuote(s: string, prefer = "'"): string {
 
 /**
  * It only splits on the first occurrance of separator.
+ * @public
  */
 export function splitOnce(
   s: string,
@@ -527,6 +579,7 @@ export function splitOnce(
 
 /**
  * Returns `true` if `s` starts with any of the values in `values`.
+ * @public
  */
 export function startsWithAny(s: string, values: string[]): boolean {
   return any(values, start => s.startsWith(start))
@@ -535,6 +588,7 @@ export function startsWithAny(s: string, values: string[]): boolean {
 /**
  * `stripTags` removes any HTML/XML markup from the string leaving only the concatenation
  * of the existing text nodes.
+ * @public
  */
 export function stripTags(s: string): string {
   return s.replace(STRIPTAGS, '')
@@ -543,6 +597,7 @@ export function stripTags(s: string): string {
 /**
  * Surrounds a string with the contents of `left` and `right`. If `right` is omitted,
  * `left` will be used on both sides
+ * @public
  */
 export function surround(s: string, left: string, right = left): string {
   return `${left}${s}${right}`
@@ -550,6 +605,7 @@ export function surround(s: string, left: string, right = left): string {
 
 /**
  * It transforms a string into an `Array` of characters.
+ * @public
  */
 export function toArray(s: string): string[] {
   return s.split('')
@@ -557,6 +613,7 @@ export function toArray(s: string): string[] {
 
 /**
  * It transforms a string into an `Array` of char codes in integer format.
+ * @public
  */
 export function toCharcodes(s: string): number[] {
   return range(s.length, i => s.charCodeAt(i))
@@ -565,6 +622,7 @@ export function toCharcodes(s: string): number[] {
 /**
  * Returns an array of `string` whose elements are equally long (using `len`). If the string `s`
  * is not exactly divisible by `len` the last element of the array will be shorter.
+ * @public
  */
 export function toChunks(s: string, len: number): string[] {
   const chunks: string[] = []
@@ -577,6 +635,7 @@ export function toChunks(s: string, len: number): string[] {
 
 /**
  * Returns an array of `string` split by line breaks.
+ * @public
  */
 export function toLines(s: string): string[] {
   return s.split(SPLIT_LINES)
@@ -584,6 +643,7 @@ export function toLines(s: string): string[] {
 
 /**
  * `trimChars` removes from the beginning and the end of the string any character that is present in `charlist`.
+ * @public
  */
 export function trimChars(value: string, charlist: string): string {
   return trimCharsRight(trimCharsLeft(value, charlist), charlist)
@@ -591,6 +651,7 @@ export function trimChars(value: string, charlist: string): string {
 
 /**
  * `trimCharsLeft` removes from the beginning of the string any character that is present in `charlist`.
+ * @public
  */
 export function trimCharsLeft(value: string, charlist: string): string {
   let pos = 0
@@ -603,6 +664,7 @@ export function trimCharsLeft(value: string, charlist: string): string {
 
 /**
  * `trimCharsRight` removes from the end of the string any character that is present in `charlist`.
+ * @public
  */
 export function trimCharsRight(value: string, charlist: string): string {
   const len = value.length
@@ -619,6 +681,7 @@ export function trimCharsRight(value: string, charlist: string): string {
 /**
  * `underscore` finds UpperCase characters and turns them into LowerCase and prepends them with a whtiespace.
  * Sequences of more than one UpperCase character are left untouched.
+ * @public
  */
 export function underscore(s: string): string {
   s = s.replace(/::/g, '/')
@@ -630,6 +693,7 @@ export function underscore(s: string): string {
 
 /**
  * Convert first letter in `value` to upper case.
+ * @public
  */
 export function upperCaseFirst(value: string): string {
   return value.substring(0, 1).toUpperCase() + value.substring(1)
@@ -638,6 +702,7 @@ export function upperCaseFirst(value: string): string {
 /**
  * `upTo` searches for the first occurrance of `searchFor` and returns the text up to that point.
  * If `searchFor` is not found, the entire string is returned.
+ * @public
  */
 export function upTo(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
@@ -648,6 +713,7 @@ export function upTo(value: string, searchFor: string): string {
 /**
  * `wrapColumns` splits a long string into lines that are at most `columns` long.
  * Words whose length exceeds `columns` are not split.
+ * @public
  */
 export function wrapColumns(
   s: string,
@@ -669,6 +735,7 @@ export function wrapColumns(
  * @param s - The input string.
  * @param pos - The position of the character to check.
  * @returns A boolean indicating whether the character at the specified position is a whitespace character.
+ * @public
  */
 export function isSpaceAt(s: string, pos: number): boolean {
   if (pos < 0 || pos >= s.length) return false
@@ -689,6 +756,7 @@ export function isSpaceAt(s: string, pos: number): boolean {
  * @param s - The string to encode.
  * @returns The base64 encoded string.
  * @throws Error if no implementation is found for base64 encoding.
+ * @public
  */
 export function encodeBase64(s: string): string {
   if (typeof Buffer !== 'undefined') {
@@ -706,6 +774,7 @@ export function encodeBase64(s: string): string {
  * @param s - The base64 encoded string to decode.
  * @returns The decoded string.
  * @throws An error if no implementation is found for base64 decoding.
+ * @public
  */
 export function decodeBase64(s: string): string {
   if (typeof Buffer !== 'undefined') {
@@ -726,6 +795,7 @@ export function decodeBase64(s: string): string {
  * @param indent - The indentation string to prepend to each line.
  * @param newline - The newline character to use for line breaks.
  * @returns The wrapped string.
+ * @public
  */
 export function wrapLine(
   s: string,
@@ -770,6 +840,7 @@ export function wrapLine(
  * @param char - The character to use for padding.
  * @param length - The desired length of the padded string.
  * @returns The padded string.
+ * @public
  */
 export function lpad(s: string, char: string, length: number): string {
   const diff = length - s.length
@@ -788,6 +859,7 @@ export function lpad(s: string, char: string, length: number): string {
  * @param char - The character to use for padding.
  * @param length - The desired length of the padded string.
  * @returns The padded string.
+ * @public
  */
 export function rpad(s: string, char: string, length: number): string {
   const diff = length - s.length
@@ -808,6 +880,7 @@ export function rpad(s: string, char: string, length: number): string {
  * @param s - The string to split.
  * @param find - The substring to search for.
  * @returns An array containing the split parts of the string.
+ * @public
  */
 export function splitOnLast(
   s: string,
@@ -829,6 +902,7 @@ export function splitOnLast(
  * @param s - The string to split.
  * @param find - The substring to search for.
  * @returns An array containing the split parts of the string.
+ * @public
  */
 export function splitOnFirst(
   s: string,

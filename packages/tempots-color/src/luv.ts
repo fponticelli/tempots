@@ -12,9 +12,9 @@ export class LUV {
   readonly v: number
   /**
    *
-   * @param l
-   * @param u range (0, 1)
-   * @param v range (0, 1)
+   * @param l - Lightness in range (0, 1)
+   * @param u - range (-1, 1)
+   * @param v - range (0, 1)
    */
   constructor(l: number, u: number, v: number) {
     this.l = l

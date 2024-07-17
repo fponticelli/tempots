@@ -32,9 +32,9 @@ export class HSV {
   readonly value: number
   /**
    *
-   * @param hue Angle in degrees (0-360)
-   * @param saturation Percentage (0-100)
-   * @param value Percentage (0-100)
+   * @param hue - Angle in degrees (0-360)
+   * @param saturation - Percentage (0-100)
+   * @param value - Percentage (0-100)
    */
   constructor(hue: number, saturation: number, value: number) {
     this.hue = hue

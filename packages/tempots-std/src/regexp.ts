@@ -4,9 +4,10 @@
 
 /**
  * Map the function `f` on each occurance matched by the pattern.
- * @param f
- * @param pattern
- * @param subject
+ * @param f - The function to apply to each match.
+ * @param pattern - The pattern to match.
+ * @param subject - The string to search.
+ * @public
  */
 export function map(
   subject: string,

@@ -5,9 +5,10 @@
 /**
  * Returns a comparison value (`Int`) from two boolean values.
  *
- * @param a The first boolean value.
- * @param b The second boolean value.
+ * @param a - The first boolean value.
+ * @param b - The second boolean value.
  * @returns A comparison value.
+ * @public
  */
 export function compare(a: boolean, b: boolean): number {
   return a === b ? 0 : a ? -1 : 1
@@ -16,8 +17,9 @@ export function compare(a: boolean, b: boolean): number {
 /**
  * Converts a boolean to an integer value (`true` => `1`, `false` => `0`).
  *
- * @param v The boolean value.
+ * @param v - The boolean value.
  * @returns The integer value.
+ * @public
  */
 export function toInt(v: boolean): number {
   return v ? 1 : 0
@@ -32,8 +34,9 @@ export function toInt(v: boolean): number {
  *
  * The comparison is case insensitive.
  *
- * @param v The value to check.
+ * @param v - The value to check.
  * @returns `true` if the value can be parsed; otherwise, `false`.
+ * @public
  */
 export function canParse(v: string): boolean {
   if (v == null) return false
@@ -57,8 +60,9 @@ export function canParse(v: string): boolean {
  * - `'0'` / `'1'`
  * - `'on'` / `'off'`
  *
- * @param v The value to parse.
+ * @param v - The value to parse.
  * @returns The parsed boolean value.
+ * @public
  */
 export function parse(v: string): boolean {
   switch (v.toLowerCase()) {
@@ -78,9 +82,10 @@ export function parse(v: string): boolean {
 /**
  * Returns `true` when arguments are different.
  *
- * @param a The first boolean value.
- * @param b The second boolean value.
+ * @param a - The first boolean value.
+ * @param b - The second boolean value.
  * @returns The result of the XOR operation.
+ * @public
  */
 export function xor(a: boolean, b: boolean): boolean {
   return a !== b

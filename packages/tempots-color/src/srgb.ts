@@ -32,9 +32,9 @@ export class SRGB {
   readonly green: number
   /**
    *
-   * @param red Percentage (0-100)
-   * @param blue Percentage (0-100)
-   * @param green Percentage (0-100)
+   * @param red - Percentage (0-100)
+   * @param blue - Percentage (0-100)
+   * @param green - Percentage (0-100)
    */
   constructor(red: number, blue: number, green: number) {
     this.red = clamp(red, 0, 100)

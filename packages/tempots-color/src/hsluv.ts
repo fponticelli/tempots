@@ -28,9 +28,9 @@ export class HSLuv {
   readonly lightness: number
   /**
    *
-   * @param hue Angle in degrees (0-360)
-   * @param saturation
-   * @param lightness
+   * @param hue - Angle in degrees (0-360)
+   * @param saturation - Percentage (0-100)
+   * @param lightness - Percentage (0-100)
    */
   constructor(hue: number, saturation: number, lightness: number) {
     this.hue = hue % 360.0

@@ -28,9 +28,9 @@ export class LAB {
   readonly b: number
   /**
    *
-   * @param lightness Lightness in range (0, 100)
-   * @param a usually in the range (~-150, ~+150) - not clamped
-   * @param b usually in the range (~-150, ~+150) - not clamped
+   * @param lightness - Lightness in range (0, 100)
+   * @param a - usually in the range (~-150, ~+150) - not clamped
+   * @param b - usually in the range (~-150, ~+150) - not clamped
    */
   constructor(lightness: number, a: number, b: number) {
     this.lightness = clamp(lightness, 0, 100)

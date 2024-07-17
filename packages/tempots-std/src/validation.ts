@@ -2,6 +2,7 @@ import { Result } from './result'
 
 /**
  * Represents a valid result.
+ * @public
  */
 export interface Valid {
   type: 'valid'
@@ -9,6 +10,7 @@ export interface Valid {
 /**
  * Represents an invalid value with an associated error.
  * @typeParam E - The type of the error.
+ * @public
  */
 export interface Invalid<E> {
   type: 'invalid'
@@ -18,17 +20,20 @@ export interface Invalid<E> {
 /**
  * Represents a type that can either be `Valid` or `Invalid`.
  * @typeParam E - The type of the error associated with an `Invalid` value.
+ * @public
  */
 export type Validation<E> = Valid | Invalid<E>
 
 /**
  * Represents a promise that resolves to a `Validation` object.
  * @typeParam E - The type of the error value in the `Validation` object.
+ * @public
  */
 export type PromiseValidation<E> = PromiseLike<Validation<E>>
 
 /**
  * Utility functions for working with `Validation` types.
+ * @public
  */
 export const Validation = {
   /**
@@ -39,7 +44,7 @@ export const Validation = {
   valid: { type: 'valid' } satisfies Validation<any>,
   /**
    * Creates an invalid `Validation`.
-   * @param error The error associated with the invalid value.
+   * @param error - The error associated with the invalid value.
    * @returns A `Validation` that is `Invalid`.
    */
   invalid<E>(error: E): Validation<E> {
@@ -47,7 +52,7 @@ export const Validation = {
   },
   /**
    * Checks if a `Validation` is `Valid`.
-   * @param r The `Validation` to check.
+   * @param r - The `Validation` to check.
    * @returns `true` if the `Validation` is `Valid`, otherwise `false`.
    */
   isValid<E>(r: Validation<E>): r is Valid {
@@ -55,7 +60,7 @@ export const Validation = {
   },
   /**
    * Checks if a `Validation` is `Invalid`.
-   * @param r The `Validation` to check.
+   * @param r - The `Validation` to check.
    * @returns `true` if the `Validation` is `Invalid`, otherwise `false`.
    */
   isInvalid<E>(r: Validation<E>): r is Invalid<E> {
@@ -63,9 +68,9 @@ export const Validation = {
   },
   /**
    * Maps the value of a `Validation` to a new value.
-   * @param r The `Validation` to map.
-   * @param valid The mapping function for a valid value.
-   * @param invalid The mapping function for an invalid value.
+   * @param r - The `Validation` to map.
+   * @param valid - The mapping function for a valid value.
+   * @param invalid - The mapping function for an invalid value.
    * @returns The mapped value.
    */
   match: <V, E>(
@@ -81,8 +86,8 @@ export const Validation = {
   },
   /**
    * Maps the value of a `Validation` to a new `Validation`.
-   * @param validation The `Validation` to map.
-   * @param value The value to map.
+   * @param validation - The `Validation` to map.
+   * @param value - The value to map.
    * @returns A new `Validation` with the mapped value.
    */
   toResult: <T, E>(validation: Validation<E>, value: T): Result<T, E> =>
@@ -94,8 +99,8 @@ export const Validation = {
   /**
    * Execute a function when the `Validation` is valid.
    *
-   * @param r The `Validation` to check.
-   * @param apply The function to execute when the `Validation` is valid.
+   * @param r - The `Validation` to check.
+   * @param apply - The function to execute when the `Validation` is valid.
    * @returns The `Validation` object.
    */
   whenValid: <E>(r: Validation<E>, apply: () => void): Validation<E> => {
@@ -107,8 +112,8 @@ export const Validation = {
   /**
    * Execute a function when the `Validation` is invalid.
    *
-   * @param r The `Validation` to check.
-   * @param apply The function to execute when the `Validation` is invalid.
+   * @param r - The `Validation` to check.
+   * @param apply - The function to execute when the `Validation` is invalid.
    * @returns The `Validation` object.
    */
   whenInvalid: <E>(r: Validation<E>, apply: (e: E) => void): Validation<E> => {

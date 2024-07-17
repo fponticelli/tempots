@@ -12,9 +12,9 @@ export class LCH {
   readonly hue: number
   /**
    *
-   * @param luminance Luminance in cd/m^2
-   * @param chroma
-   * @param hue Angle in degrees (0-360)
+   * @param luminance - Luminance in cd/m^2
+   * @param chroma -
+   * @param hue - Angle in degrees (0-360)
    */
   constructor(luminance: number, chroma: number, hue: number) {
     this.luminance = luminance < 0 ? 0 : luminance

@@ -5,6 +5,7 @@ import { IndexKey, Merge, TupleToUnion } from './domain'
  *
  * @param obj - The object from which to extract keys.
  * @returns An array of keys from the object.
+ * @public
  */
 export function keys<T extends object>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof T>
@@ -16,6 +17,7 @@ export function keys<T extends object>(obj: T): Array<keyof T> {
  * @param a - The first object.
  * @param b - The second object.
  * @returns `true` if both objects have the same keys, `false` otherwise.
+ * @public
  */
 export function sameKeys<T extends object>(a: T, b: T): boolean {
   const ak = keys(a)
@@ -32,6 +34,7 @@ export function sameKeys<T extends object>(a: T, b: T): boolean {
  *
  * @param obj - The value to check.
  * @returns `true` if the value is an object, `false` otherwise.
+ * @public
  */
 export function isObject(obj: unknown): obj is Record<IndexKey, unknown> {
   return obj != null && Object.getPrototypeOf(obj) === Object.prototype
@@ -43,6 +46,7 @@ export function isObject(obj: unknown): obj is Record<IndexKey, unknown> {
  * @param ob - The object from which fields will be removed.
  * @param fields - The fields to be removed from the object.
  * @returns A new object without the specified fields.
+ * @public
  */
 export function removeFields<T extends object, F extends Array<keyof T>>(
   ob: T,
@@ -60,9 +64,10 @@ export function removeFields<T extends object, F extends Array<keyof T>>(
  *
  * @typeParam A - The type of the first object.
  * @typeParam B - The type of the second object.
- * @param {A} a - The first object to merge.
- * @param {B} b - The second object to merge.
- * @returns {Merge<A, B>} - The merged object.
+ * @param a - The first object to merge.
+ * @param b - The second object to merge.
+ * @returns The merged object.
+ * @public
  */
 export function merge<
   A extends Record<IndexKey, unknown>,
@@ -77,6 +82,7 @@ export function merge<
  *
  * @param obj - The object to check.
  * @returns `true` if the object is empty, `false` otherwise.
+ * @public
  */
 export function isEmpty(obj: object): boolean {
   return Object.keys(obj).length === 0

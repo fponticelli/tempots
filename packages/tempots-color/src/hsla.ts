@@ -7,10 +7,10 @@ export class HSLA extends HSL {
   readonly alpha: number
   /**
    *
-   * @param hue Angle in degrees (0-360)
-   * @param saturation Percentage (0-100)
-   * @param lightness Percentage (0-100)
-   * @param alpha Percentage (0-100)
+   * @param hue - Angle in degrees (0-360)
+   * @param saturation - Percentage (0-100)
+   * @param lightness - Percentage (0-100)
+   * @param alpha - Percentage (0-100)
    */
   constructor(hue: number, saturation = 50, lightness = 50, alpha = 100) {
     super(hue, saturation, lightness)

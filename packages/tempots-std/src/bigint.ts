@@ -4,6 +4,7 @@
  * @param x - The dividend.
  * @param y - The divisor.
  * @returns The result of dividing `x` by `y`, rounded up to the nearest whole number.
+ * @public
  */
 export function ceilDiv(x: bigint, y: bigint): bigint {
   if (y < 0n) {
@@ -19,6 +20,7 @@ export function ceilDiv(x: bigint, y: bigint): bigint {
  * @param x - The dividend.
  * @param y - The divisor.
  * @returns The largest integer less than or equal to the quotient of `x` divided by `y`.
+ * @public
  */
 export function floorDiv(x: bigint, y: bigint): bigint {
   if (y < 0n) {
@@ -33,6 +35,7 @@ export function floorDiv(x: bigint, y: bigint): bigint {
  * @param x - The first BigInt value to compare.
  * @param y - The second BigInt value to compare.
  * @returns A negative number if `x` is less than `y`, a positive number if `x` is greater than `y`,
+ * @public
  *          or zero if `x` is equal to `y`.
  */
 export function compare(x: bigint, y: bigint): number {
@@ -44,6 +47,7 @@ export function compare(x: bigint, y: bigint): number {
  *
  * @param x - The bigint to compute the absolute value of.
  * @returns The absolute value of `x`.
+ * @public
  */
 export function abs(x: bigint): bigint {
   return x < 0n ? -x : x
@@ -55,6 +59,7 @@ export function abs(x: bigint): bigint {
  * @param x - The first BigInt value.
  * @param y - The second BigInt value.
  * @returns The smaller of the two BigInt values.
+ * @public
  */
 export function min(x: bigint, y: bigint): bigint {
   return x < y ? x : y
@@ -66,6 +71,7 @@ export function min(x: bigint, y: bigint): bigint {
  * @param x - The first BigInt value.
  * @param y - The second BigInt value.
  * @returns The maximum of the two BigInt values.
+ * @public
  */
 export function max(x: bigint, y: bigint): bigint {
   return x > y ? x : y
@@ -77,6 +83,7 @@ export function max(x: bigint, y: bigint): bigint {
  * @param x - The base number.
  * @param y - The exponent.
  * @returns The result of raising `x` to the power of `y`.
+ * @public
  * @throws {Error} If the exponent `y` is negative.
  */
 export function pow(x: bigint, y: bigint): bigint {
@@ -96,6 +103,7 @@ export function pow(x: bigint, y: bigint): bigint {
  * @param x - The first BigInt number.
  * @param y - The second BigInt number.
  * @returns The GCD of `x` and `y`.
+ * @public
  */
 export function gcd(x: bigint, y: bigint): bigint {
   x = abs(x)
@@ -114,6 +122,7 @@ export function gcd(x: bigint, y: bigint): bigint {
  * @param x - The first BigInt number.
  * @param y - The second BigInt number.
  * @returns The least common multiple of `x` and `y`.
+ * @public
  */
 export function lcm(x: bigint, y: bigint): bigint {
   return abs(x * y) / gcd(x, y)
@@ -124,6 +133,7 @@ export function lcm(x: bigint, y: bigint): bigint {
  *
  * @param x - The number to check for primality.
  * @returns `true` if the number is prime, `false` otherwise.
+ * @public
  */
 export function isPrime(x: bigint): boolean {
   if (x < 2n) return false
@@ -142,6 +152,7 @@ export function isPrime(x: bigint): boolean {
  *
  * @param x - The starting number.
  * @returns The next prime number greater than `x`.
+ * @public
  */
 export function nextPrime(x: bigint): bigint {
   if (x < 2n) return 2n
@@ -158,6 +169,7 @@ export function nextPrime(x: bigint): bigint {
  *
  * @param x - The number to find the previous prime for.
  * @returns The previous prime number less than `x`.
+ * @public
  * @throws Error if there is no previous prime.
  */
 export function prevPrime(x: bigint): bigint {
@@ -174,6 +186,7 @@ export function prevPrime(x: bigint): bigint {
  *
  * @param x - The bigint to check.
  * @returns `true` if the bigint is even, `false` otherwise.
+ * @public
  */
 export function isEven(x: bigint): boolean {
   return x % 2n === 0n
@@ -184,6 +197,7 @@ export function isEven(x: bigint): boolean {
  *
  * @param x - The bigint to check.
  * @returns `true` if the bigint is odd, `false` otherwise.
+ * @public
  */
 export function isOdd(x: bigint): boolean {
   return x % 2n !== 0n
@@ -194,6 +208,7 @@ export function isOdd(x: bigint): boolean {
  *
  * @param x - The bigint to check.
  * @returns `true` if the bigint is zero, `false` otherwise.
+ * @public
  */
 export function isZero(x: bigint): boolean {
   return x === 0n
@@ -204,6 +219,7 @@ export function isZero(x: bigint): boolean {
  *
  * @param x - The bigint to check.
  * @returns `true` if the bigint is equal to 1n, `false` otherwise.
+ * @public
  */
 export function isOne(x: bigint): boolean {
   return x === 1n
@@ -214,6 +230,7 @@ export function isOne(x: bigint): boolean {
  *
  * @param x - The bigint to check.
  * @returns `true` if the bigint is negative, `false` otherwise.
+ * @public
  */
 export function isNegative(x: bigint): boolean {
   return x < 0n
@@ -224,6 +241,7 @@ export function isNegative(x: bigint): boolean {
  *
  * @param x - The bigint to check.
  * @returns `true` if the bigint is positive, `false` otherwise.
+ * @public
  */
 export function isPositive(x: bigint): boolean {
   return x > 0n

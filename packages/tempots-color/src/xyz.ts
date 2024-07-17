@@ -12,9 +12,9 @@ export class XYZ {
   readonly z: number
   /**
    *
-   * @param x
-   * @param y 100 is the brightest white
-   * @param z
+   * @param x -
+   * @param y - 100 is the brightest white
+   * @param z -
    */
   constructor(x: number, y: number, z: number) {
     this.x = x
