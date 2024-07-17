@@ -5,24 +5,30 @@
 import type { Compare, Maybe, Nothing, Primitive } from './domain'
 import { keys } from './object'
 
+/**
+ * Applies a function to each element of an array and returns a new array with the results.
+ *
+ * @template A The type of the elements in the input array.
+ * @template B The type of the elements in the output array.
+ * @param {A[]} arr The input array.
+ * @param {(a: A, index: number) => B} f The function to apply to each element.
+ * @returns {B[]} The new array with the results of applying the function to each element.
+ * @group manipulation
+ */
 export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
   return Array.from({ length: arr.length }, (_, i) => f(arr[i], i))
 }
 
-export function mapNotNull<A, B>(
-  arr: A[],
-  f: (a: A, index: number) => B | Nothing
-): B[] {
-  const buff = [] as B[]
-  for (let i = 0; i < arr.length; i++) {
-    const v = f(arr[i], i)
-    if (v != null) {
-      buff.push(v)
-    }
-  }
-  return buff
-}
-
+/**
+ * Applies a mapping function to each element of an array and flattens the result.
+ *
+ * @param arr - The input array.
+ * @param f - The mapping function to apply to each element of the array.
+ * @returns A new array with the flattened result of applying the mapping function to each element of the input array.
+ * @template A - The type of the elements in the input array.
+ * @template B - The type of the elements in the resulting flattened array.
+ * @group manipulation
+ */
 export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
   const buff: B[] = []
   for (const el of arr) {
@@ -31,14 +37,39 @@ export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
   return buff
 }
 
+/**
+ * Returns the first element of an array, or `undefined` if the array is empty.
+ *
+ * @param arr - The input array.
+ * @returns The first element of the array, or `undefined` if the array is empty.
+ * @typeparam A - The type of elements in the array.
+ * @group access
+ */
 export function head<A>(arr: A[]): Maybe<A> {
   return arr.length > 0 ? arr[0] : undefined
 }
 
+/**
+ * Returns a new array containing all elements of the input array except for the first element.
+ *
+ * @param arr - The input array.
+ * @returns A new array containing all elements of the input array except for the first element.
+ * @group access
+ */
 export function tail<A>(arr: A[]): A[] {
   return arr.slice(1)
 }
 
+/**
+ * Checks if two arrays are equal based on a custom equality function.
+ *
+ * @template T - The type of elements in the arrays.
+ * @param {T[]} a - The first array.
+ * @param {T[]} b - The second array.
+ * @param {(a: T, b: T) => boolean} equality - The custom equality function to compare elements.
+ * @returns {boolean} - Returns `true` if the arrays are equal, `false` otherwise.
+ * @group comparison
+ */
 export function equals<T>(
   a: T[],
   b: T[],
@@ -53,26 +84,68 @@ export function equals<T>(
   }
 }
 
+/**
+ * Creates a function that checks if two arrays are equal using the provided equality function.
+ *
+ * @template T - The type of elements in the arrays.
+ * @param equality - The equality function to use for comparing elements.
+ * @returns A function that takes two arrays and returns a boolean indicating whether they are equal.
+ * @group comparison
+ */
 export function makeEquals<T>(equality: (a: T, b: T) => boolean) {
   return function (a: T[], b: T[]) {
     return equals(a, b, equality)
   }
 }
 
+/**
+ * Checks if an array is empty.
+ *
+ * @param arr - The array to check.
+ * @returns `true` if the array is empty, `false` otherwise.
+ * @group query
+ */
 export function isEmpty<T>(arr: T[]): arr is [] {
   return arr.length === 0
 }
 
+/**
+ * Checks if an array has values.
+ *
+ * @param arr - The array to check.
+ * @returns `true` if the array has values, `false` otherwise.
+ * @group query
+ */
 export function hasValues<T>(arr: T[]): arr is [T, ...T[]] {
   return arr.length > 0
 }
 
+/**
+ * Filters the elements of an array based on a predicate function.
+ *
+ * @template T - The type of the elements in the array.
+ * @param {T[]} arr - The array to filter.
+ * @param {(v: T) => boolean} predicate - The predicate function used to filter the elements.
+ * @returns {T[]} - The filtered array.
+ * @group manipulation
+ */
 export function filter<T>(arr: T[], predicate: (v: T) => boolean): T[] {
   const buff = [] as T[]
   for (const a of arr) if (predicate(a)) buff.push(a)
   return buff
 }
 
+/**
+ * Applies a mapping function to each element of an array and returns a new array
+ * containing the mapped values, excluding any `null` or `undefined` values.
+ *
+ * @template A - The type of the elements in the input array.
+ * @template B - The type of the elements in the output array.
+ * @param {A[]} arr - The input array.
+ * @param {(a: A, index: number) => Maybe<B>} f - The mapping function to apply to each element.
+ * @returns {B[]} - The new array containing the mapped values.
+ * @group manipulation
+ */
 export function filterMap<A, B>(
   arr: A[],
   f: (a: A, index: number) => Maybe<B>
@@ -87,14 +160,41 @@ export function filterMap<A, B>(
   return buff
 }
 
+/**
+ * Filters out null and undefined values from an array.
+ *
+ * @template T - The type of elements in the array.
+ * @param {Array<T | null | undefined>} arr - The array to filter.
+ * @returns {T[]} - The filtered array.
+ * @group manipulation
+ */
 export function filterNulls<T>(arr: Array<T | Nothing>): T[] {
   return filter(arr, v => v != null) as T[]
 }
 
+/**
+ * Flattens a two-dimensional array into a one-dimensional array.
+ *
+ * @param arr - The two-dimensional array to flatten.
+ * @returns The flattened one-dimensional array.
+ * @template T - The type of elements in the array.
+ * @group manipulation
+ */
 export function flatten<T>(arr: T[][]): T[] {
   return ([] as T[]).concat(...arr)
 }
 
+/**
+ * Applies a function to each element of an array, accumulating the result from left to right.
+ *
+ * @template T The type of the array elements.
+ * @template B The type of the accumulator.
+ * @param {T[]} arr The array to iterate over.
+ * @param {(acc: B, curr: T) => B} f The function to apply to each element.
+ * @param {B} b The initial value of the accumulator.
+ * @returns {B} The accumulated result.
+ * @group manipulation
+ */
 export function foldLeft<T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B {
   for (const a of arr) {
     b = f(b, a)
@@ -102,6 +202,15 @@ export function foldLeft<T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B {
   return b
 }
 
+/**
+ * Checks if all elements in an array satisfy a given predicate.
+ *
+ * @param arr - The array to check.
+ * @param predicate - The predicate function to apply to each element.
+ * @returns `true` if all elements satisfy the predicate, `false` otherwise.
+ * @template T - The type of elements in the array.
+ * @group query
+ */
 export function all<T>(arr: T[], predicate: (v: T) => boolean): boolean {
   for (const a of arr) {
     if (!predicate(a)) {
@@ -111,6 +220,15 @@ export function all<T>(arr: T[], predicate: (v: T) => boolean): boolean {
   return true
 }
 
+/**
+ * Checks if any element in the array satisfies the given predicate.
+ *
+ * @param arr - The array to check.
+ * @param predicate - The predicate function to apply to each element.
+ * @returns `true` if any element satisfies the predicate, `false` otherwise.
+ * @template T - The type of elements in the array.
+ * @group query
+ */
 export function any<T>(arr: T[], predicate: (v: T) => boolean): boolean {
   for (const a of arr) {
     if (predicate(a)) {
@@ -120,14 +238,39 @@ export function any<T>(arr: T[], predicate: (v: T) => boolean): boolean {
   return false
 }
 
+/**
+ * Applies a function to each element in an array.
+ *
+ * @template T - The type of elements in the array.
+ * @param {T[]} arr - The array to iterate over.
+ * @param {(v: T) => void} f - The function to apply to each element.
+ * @returns {void}
+ * @group effect
+ */
 export function each<T>(arr: T[], f: (v: T) => void): void {
   for (const a of arr) f(a)
 }
 
+/**
+ * Concatenates multiple arrays into a single array.
+ *
+ * @param arrs - The arrays to concatenate.
+ * @returns The concatenated array.
+ * @template A - The type of elements in the arrays.
+ * @group manipulation
+ */
 export function concat<A>(...arrs: A[][]): A[] {
   return ([] as A[]).concat(...arrs)
 }
 
+/**
+ * Creates a compare function that compares two arrays based on their lengths and element values.
+ *
+ * @param comparef - The compare function to use for comparing the elements of the arrays.
+ * @param shorterFirst - Optional. Specifies whether shorter arrays should be considered smaller. Defaults to true.
+ * @returns A compare function that can be used to compare arrays.
+ * @group comparison
+ */
 export function makeCompare<A>(comparef: Compare<A>, shorterFirst = true) {
   return function (a: A[], b: A[]) {
     if (a.length < b.length) {
@@ -143,26 +286,77 @@ export function makeCompare<A>(comparef: Compare<A>, shorterFirst = true) {
   }
 }
 
+/**
+ * Sorts an array in place using the provided compare function.
+ *
+ * @template A - The type of elements in the array.
+ * @param compare - The compare function used to determine the order of the elements.
+ * @param arr - The array to be sorted.
+ * @returns The sorted array.
+ * @group manipulation
+ */
 export function sort<A>(compare: Compare<A>, arr: A[]): A[] {
   return arr.slice().sort(compare)
 }
 
+/**
+ * Generates an array of values by applying a function to each index.
+ *
+ * @param length - The length of the resulting array.
+ * @param f - The function to apply to each index. It takes the index as a parameter and returns the corresponding value.
+ * @returns An array of values generated by applying the function to each index.
+ * @group creation
+ */
 export function range<A>(length: number, f: (index: number) => A): A[] {
   return Array.from({ length }, (_, i) => f(i))
 }
 
+/**
+ * Generates an array of numbers in a specified range.
+ *
+ * @param length - The length of the array to generate.
+ * @param startAt - The starting value of the range. Default is 0.
+ * @returns An array of numbers in the specified range.
+ * @group creation
+ */
 export function numbersRange(length: number, startAt = 0): number[] {
   return range(length, i => startAt + i)
 }
 
+/**
+ * Creates a new array with the specified length and fills it with the provided value.
+ *
+ * @template A - The type of the elements in the array.
+ * @param length - The length of the new array.
+ * @param value - The value to fill the array with.
+ * @returns A new array filled with the specified value.
+ * @group creation
+ */
 export function fill<A>(length: number, value: A): A[] {
   return range(length, () => value)
 }
 
+/**
+ * Returns an array containing only the distinct primitive values from the input array.
+ *
+ * @template T - The type of the input array elements.
+ * @param values - The input array.
+ * @returns An array containing only the distinct primitive values from the input array.
+ * @group manipulation
+ */
 export function distinctPrimitive<T extends Primitive>(values: T[]): T[] {
   return Array.from(new Set(values))
 }
 
+/**
+ * Returns an array of distinct elements from the input array based on the provided predicate.
+ *
+ * @template T - The type of elements in the input array.
+ * @param {T[]} values - The input array.
+ * @param {(a: T) => string} predicate - The predicate function used to determine uniqueness.
+ * @returns {T[]} - An array of distinct elements.
+ * @group manipulation
+ */
 export function distinctByPredicate<T>(
   values: T[],
   predicate: (a: T) => string
@@ -174,6 +368,15 @@ export function distinctByPredicate<T>(
   return keys(map).map(k => map[k])
 }
 
+/**
+ * Removes the first occurrence of an item from an array.
+ *
+ * @template A - The type of the array elements.
+ * @param {A[]} arr - The array from which to remove the item.
+ * @param {A} item - The item to remove from the array.
+ * @returns {boolean} - `true` if the item was found and removed, `false` otherwise.
+ * @group mutation
+ */
 export function remove<A>(arr: A[], item: A): boolean {
   const index = arr.indexOf(item)
   if (index < 0) {
@@ -184,6 +387,15 @@ export function remove<A>(arr: A[], item: A): boolean {
   }
 }
 
+/**
+ * Removes the elements from an array that satisfy the given predicate.
+ *
+ * @template A - The type of elements in the array.
+ * @param {A[]} arr - The array from which elements will be removed.
+ * @param {(a: A) => boolean} predicate - The predicate function used to determine which elements to remove.
+ * @returns {boolean} - `true` if at least one element was removed, `false` otherwise.
+ * @group mutation
+ */
 export function removeByPredicate<A>(
   arr: A[],
   predicate: (a: A) => boolean
@@ -197,6 +409,13 @@ export function removeByPredicate<A>(
   }
 }
 
+/**
+ * Converts an IterableIterator to an array.
+ *
+ * @param it - The IterableIterator to convert.
+ * @returns An array containing the values from the IterableIterator.
+ * @group creation
+ */
 export function ofIterableIterator<A>(it: IterableIterator<A>): A[] {
   const buff = [] as A[]
   for (let r = it.next(); !(r.done ?? false); r = it.next()) {
@@ -205,12 +424,26 @@ export function ofIterableIterator<A>(it: IterableIterator<A>): A[] {
   return buff
 }
 
+/**
+ * Represents the different operations that can be performed on an array.
+ */
 export interface DiffOperations<T> {
   removals: Array<{ at: number; qt: number }>
   swaps: Array<{ from: number; to: number }>
   inserts: Array<{ at: number; values: T[] }>
 }
 
+/**
+ * Calculates the difference operations between two arrays based on a key function.
+ *
+ * @template T - The type of elements in the arrays.
+ * @template K - The type of the key used to compare elements.
+ * @param {T[]} from - The source array.
+ * @param {T[]} to - The target array.
+ * @param {(v: T) => K} getKey - The key function used to compare elements.
+ * @returns {DiffOperations<T>} - The difference operations between the two arrays.
+ * @group manipulation
+ */
 export function diffOperations<T, K>(
   from: T[],
   to: T[],
@@ -277,6 +510,15 @@ export function diffOperations<T, K>(
   return ops
 }
 
+/**
+ * Applies a series of operations to an array and returns the modified array.
+ *
+ * @template T - The type of elements in the array.
+ * @param {DiffOperations<T>} operations - The operations to apply.
+ * @param {T[]} start - The initial array.
+ * @returns {T[]} - The modified array after applying the operations.
+ * @group manipulation
+ */
 export function applyOperations<T>(
   operations: DiffOperations<T>,
   start: T[]
@@ -296,6 +538,15 @@ export function applyOperations<T>(
   return buff
 }
 
+/**
+ * Joins an array of values into a string using a conjunction and separator.
+ *
+ * @param arr - The array of values to join.
+ * @param conjunction - The conjunction to use between the second-to-last and last value. Default is ' and '.
+ * @param separator - The separator to use between each value. Default is ', '.
+ * @returns The joined string.
+ * @group transformation
+ */
 export function joinWithConjunction<A>(
   arr: A[],
   conjunction = ' and ',
@@ -306,10 +557,22 @@ export function joinWithConjunction<A>(
   return `${arr.slice(0, -1).join(separator)}${conjunction}${String(arr[arr.length - 1])}`
 }
 
+/**
+ * Assigns ranks to the elements in the array based on the provided compare function.
+ * The ranks are assigned in ascending order, with the lowest value receiving a rank of 0.
+ * If there are duplicate values, the rank of the duplicates can be incremented or not based on the `incrementDuplicates` parameter.
+ *
+ * @template T - The type of elements in the array.
+ * @param {T[]} array - The array to rank.
+ * @param {(a: T, b: T) => number} compare - The compare function used to determine the order of elements.
+ * @param {boolean} [incrementDuplicates=true] - Whether to increment the rank of duplicate values.
+ * @returns {number[]} - An array of ranks corresponding to the elements in the input array.
+ * @group transformation
+ */
 export function rank<T>(
   array: T[],
   compare: (a: T, b: T) => number,
-  incrementDuplicates = true
+  incrementDuplicates: boolean = true
 ): number[] {
   const arr = array.map((v, i): [T, number] => [v, i])
   arr.sort((a, b) => compare(a[0], b[0]))

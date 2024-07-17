@@ -8,8 +8,20 @@ export const TOLERANCE = 10e-5
 export const EPSILON = 1e-9
 
 /**
-Returns the angular distance between 2 angles.
-**/
+ * Calculates the minimum difference between two angles in degrees.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param turn - The total number of degrees in a full turn. Default is 360.0.
+ * @returns The difference between the two angles.
+ * @example
+ * ```ts
+ * angleDifference(0, 90) // returns 90
+ * angleDifference(90, 0) // returns -90
+ * angleDifference(0, 270) // returns -90
+ * angleDifference(270, 0) // returns 90
+ * ```
+ */
 export function angleDifference(a: number, b: number, turn = 360.0): number {
   let r = (b - a) % turn
   if (r < 0) r += turn
@@ -18,67 +30,165 @@ export function angleDifference(a: number, b: number, turn = 360.0): number {
 }
 
 /**
-Rounds a number up to the specified number of decimals.
-**/
+ * Rounds a number up to the specified number of decimals.
+ *
+ * @param v - The number to round up.
+ * @param decimals - The number of decimals to round up to.
+ * @returns The rounded up number.
+ * @example
+ * ```ts
+ * ceilTo(1.234, 2) // returns 1.24
+ * ceilTo(1.234, 1) // returns 1.3
+ * ceilTo(1.234, 0) // returns 2
+ * ```
+ */
 export function ceilTo(v: number, decimals: number): number {
   const p = Math.pow(10, decimals)
   return Math.ceil(v * p) / p
 }
 
 /**
-`clamp` restricts a value within the specified range.
-```ts
-log(clamp(1.3, 0, 1)) // prints 1
-log(clamp(0.8, 0, 1)) // prints 0.8
-log(clamp(-0.5, 0, 1)) // prints 0.0
-```
-**/
+ * `clamp` restricts a value within the specified range.
+ *
+ * @param value - The value to clamp.
+ * @param min - The minimum value.
+ * @param max - The maximum value.
+ * @returns The clamped value.
+ * @example
+ * ```ts
+ * clamp(1.3, 0, 1) // returns 1
+ * clamp(0.8, 0, 1) // returns 0.8
+ * clamp(-0.5, 0, 1) // returns 0.0
+ * ```
+ **/
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
+/**
+ * Clamps a number to a specified range and returns an integer value.
+ *
+ * @param value - The number to clamp.
+ * @param min - The minimum value of the range.
+ * @param max - The maximum value of the range.
+ * @returns The clamped integer value.
+ * @example
+ * ```ts
+ * clampInt(5, 0, 10) // returns 5
+ * clampInt(15, 0, 10) // returns 10
+ * clampInt(-5, 0, 10) // returns 0
+ * ```
+ **/
 export function clampInt(value: number, min: number, max: number): number {
   return Math.trunc(clamp(value, min, max))
 }
 
 /**
-Like clamp but you only pass one argument (`max`) that is used as the upper limit
-and the opposite (additive inverse or `-max`) as the lower limit.
-**/
+ * Like clamp but you only pass one argument (`max`) that is used as the upper limit
+ * and the opposite (additive inverse or `-max`) as the lower limit.
+ *
+ * @param v - The value to clamp.
+ * @param max - The maximum value.
+ * @returns The clamped value.
+ * @example
+ * ```ts
+ * clampSym(5, 10) // returns 5
+ * clampSym(15, 10) // returns 10
+ * clampSym(-5, 10) // returns -5
+ * clampSym(-15, 10) // returns -10
+ * ```
+ **/
 export function clampSym(v: number, max: number): number {
   return clamp(v, -max, max)
 }
 
 /**
-It returns the comparison value (an integer number) between two `float` values.
-**/
+ * It returns the comparison value (an integer number) between two `float` values.
+ *
+ * @param a - The first value to compare.
+ * @param b - The second value to compare.
+ * @returns A number indicating the relative order of the two values.
+ * @example
+ * ```ts
+ * compare(5, 10) // returns -1
+ * compare(10, 5) // returns 1
+ * compare(5, 5) // returns 0
+ * ```
+ **/
 export function compare(a: number, b: number): number {
   return a < b ? -1 : a > b ? 1 : 0
 }
 
 /**
-Rounds a number down to the specified number of decimals.
-**/
+ * Rounds a number down to the specified number of decimals.
+ *
+ * @param v - The number to round down.
+ * @param decimals - The number of decimals to round down to.
+ * @returns The rounded down number.
+ * @example
+ * ```ts
+ * floorTo(1.234, 2) // returns 1.23
+ * floorTo(1.234, 1) // returns 1.2
+ * floorTo(1.234, 0) // returns 1
+ * ```
+ **/
 export function floorTo(v: number, decimals: number): number {
   const p = Math.pow(10, decimals)
   return Math.floor(v * p) / p
 }
 
+/**
+ * Converts a number to its hexadecimal representation.
+ *
+ * @param num - The number to convert.
+ * @param length - The desired length of the hexadecimal string. Defaults to 0.
+ * @returns The hexadecimal representation of the number.
+ * @example
+ * ```ts
+ * toHex(255) // returns 'ff'
+ * toHex(255, 4) // returns '00ff'
+ * toHex(255, 8) // returns '000000ff'
+ * ```
+ */
 export function toHex(num: number, length = 0): string {
   return lpad(num.toString(16), '0', length)
 }
 
 /**
-`interpolate` returns a value between `a` and `b` for any value of `t` (normally between 0 and 1).
-**/
+ * `interpolate` returns a value between `a` and `b` for any value of `t` (normally between 0 and 1).
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param t - The interpolation value.
+ * @returns The interpolated value.
+ * @example
+ * ```ts
+ * interpolate(0, 10, 0.5) // returns 5
+ * interpolate(0, 10, 0.25) // returns 2.5
+ * interpolate(0, 10, 0.75) // returns 7.5
+ * ```
+ **/
 export function interpolate(a: number, b: number, t: number): number {
   return (b - a) * t + a
 }
 
 /**
-Interpolates values in a polar coordinate system looking for the narrowest delta angle.
-It can be either clock-wise or counter-clock-wise.
-**/
+ * Interpolates values in a polar coordinate system looking for the narrowest delta angle.
+ * It can be either clock-wise or counter-clock-wise.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param t - The interpolation value.
+ * @param turn - The total number of degrees in a full turn. Default is 360.0.
+ * @returns The interpolated angle.
+ * @example
+ * ```ts
+ * interpolateAngle(0, 90, 0.5) // returns 45
+ * interpolateAngle(0, 270, 0.5) // returns 315
+ * interpolateAngle(0, 90, 0.25) // returns 22.5
+ * interpolateAngle(0, 270, 0.25) // returns 337.5
+ * ```
+ **/
 export function interpolateAngle(
   a: number,
   b: number,
@@ -88,6 +198,21 @@ export function interpolateAngle(
   return wrapCircular(interpolate(a, a + angleDifference(a, b, turn), t), turn)
 }
 
+/**
+ * Calculates the widest angle difference between two angles.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param turn - The total angle of a full turn. Defaults to 360 degrees.
+ * @returns The widest angle difference between `a` and `b`.
+ * @example
+ * ```ts
+ * widestAngleDifference(0, 90) // returns 90
+ * widestAngleDifference(90, 0) // returns -90
+ * widestAngleDifference(0, 270) // returns -90
+ * widestAngleDifference(270, 0) // returns 90
+ * ```
+ */
 export function widestAngleDifference(
   a: number,
   b: number,
@@ -100,9 +225,22 @@ export function widestAngleDifference(
 }
 
 /**
-Interpolates values in a polar coordinate system looking for the wideset delta angle.
-It can be either clock-wise or counter-clock-wise.
-**/
+ * Interpolates values in a polar coordinate system looking for the wideset delta angle.
+ * It can be either clock-wise or counter-clock-wise.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param t - The interpolation value.
+ * @param turn - The total number of degrees in a full turn. Default is 360.0.
+ * @returns The interpolated angle.
+ * @example
+ * ```ts
+ * interpolateWidestAngle(0, 90, 0.5) // returns 45
+ * interpolateWidestAngle(0, 270, 0.5) // returns 315
+ * interpolateWidestAngle(0, 90, 0.25) // returns 22.5
+ * interpolateWidestAngle(0, 270, 0.25) // returns 337.5
+ * ```
+ **/
 export function interpolateWidestAngle(
   a: number,
   b: number,
@@ -116,8 +254,21 @@ export function interpolateWidestAngle(
 }
 
 /**
-Interpolates values in a polar coordinate system always in clock-wise direction.
-**/
+ * Interpolates values in a polar coordinate system always in clock-wise direction.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param t - The interpolation value.
+ * @param turn - The total number of degrees in a full turn. Default is 360.0.
+ * @returns The interpolated angle.
+ * @example
+ * ```ts
+ * interpolateAngleCW(0, 90, 0.5) // returns 45
+ * interpolateAngleCW(0, 270, 0.5) // returns 315
+ * interpolateAngleCW(0, 90, 0.25) // returns 22.5
+ * interpolateAngleCW(0, 270, 0.25) // returns 337.5
+ * ```
+ **/
 export function interpolateAngleCW(
   a: number,
   b: number,
@@ -131,8 +282,21 @@ export function interpolateAngleCW(
 }
 
 /**
-Interpolates values in a polar coordinate system always in counter-clock-wise direction.
-**/
+ * Interpolates values in a polar coordinate system always in counter-clock-wise direction.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param t - The interpolation value.
+ * @param turn - The total number of degrees in a full turn. Default is 360.0.
+ * @returns The interpolated angle.
+ * @example
+ * ```ts
+ * interpolateAngleCCW(0, 90, 0.5) // returns 45
+ * interpolateAngleCCW(0, 270, 0.5) // returns 315
+ * interpolateAngleCCW(0, 90, 0.25) // returns 22.5
+ * interpolateAngleCCW(0, 270, 0.25) // returns 337.5
+ * ```
+ **/
 export function interpolateAngleCCW(
   a: number,
   b: number,
@@ -146,10 +310,21 @@ export function interpolateAngleCCW(
 }
 
 /**
-number numbers can sometime introduce tiny errors even for simple operations.
-`nearEquals` compares two floats using a tiny tollerance (last optional
-argument). By default it is defined as `EPSILON`.
-**/
+ * number numbers can sometime introduce tiny errors even for simple operations.
+ * `nearEquals` compares two floats using a tiny tollerance (last optional
+ * argument). By default it is defined as `EPSILON`.
+ *
+ * @param a - The first number to compare.
+ * @param b - The second number to compare.
+ * @param tollerance - The tollerance value. Default is `EPSILON`.
+ * @returns `true` if the numbers are very close, `false` otherwise.
+ * @example
+ * ```ts
+ * nearEquals(5, 5.000000000000001) // returns true
+ * nearEquals(5, 5.000000000001) // returns false
+ * nearEquals(5, 5.000000000001, 1e-9) // returns true
+ * ```
+ **/
 export function nearEquals(
   a: number,
   b: number,
@@ -167,11 +342,24 @@ export function nearEquals(
 }
 
 /**
-number numbers can sometime introduce tiny errors even for simple operations.
-`nearEqualAngles` compares two angles (default is 360deg) using a tiny
-tollerance (last optional argument). By default the tollerance is defined as
-`EPSILON`.
-**/
+ * number numbers can sometime introduce tiny errors even for simple operations.
+ * `nearEqualAngles` compares two angles (default is 360deg) using a tiny
+ * tollerance (last optional argument). By default the tollerance is defined as
+ * `EPSILON`.
+ *
+ * @param a - The first angle in degrees.
+ * @param b - The second angle in degrees.
+ * @param turn - The total number of degrees in a full turn. Default is 360.0.
+ * @param tollerance - The tollerance value. Default is `EPSILON`.
+ * @returns `true` if the angles are very close, `false` otherwise.
+ * @example
+ * ```ts
+ * nearEqualAngles(0, 360) // returns true
+ * nearEqualAngles(0, 361) // returns false
+ * nearEqualAngles(0, 360.000000000001) // returns true
+ * nearEqualAngles(0, 361, 360, 1) // returns true
+ * ```
+ **/
 export function nearEqualAngles(
   a: number,
   b: number,
@@ -182,41 +370,90 @@ export function nearEqualAngles(
 }
 
 /**
-`nearZero` finds if the passed number is zero or very close to it. By default
-`EPSILON` is used as the tollerance value.
-**/
+ * `nearZero` finds if the passed number is zero or very close to it. By default
+ * `EPSILON` is used as the tollerance value.
+ *
+ * @param n - The number to check.
+ * @param tollerance - The tollerance value. Default is `EPSILON`.
+ * @returns `true` if the number is zero or very close to it, `false` otherwise.
+ * @example
+ * ```ts
+ * nearZero(0.000000000000001) // returns true
+ * nearZero(0.000000001) // returns false
+ * nearZero(0.000000001, 1e-9) // returns true
+ * ```
+ **/
 export function nearZero(n: number, tollerance = EPSILON): boolean {
   return Math.abs(n) <= tollerance
 }
 
 /**
-Computes the nth root (`index`) of `base`.
-**/
+ * Computes the nth root (`index`) of `base`.
+ *
+ * @param base - The base number.
+ * @param index - The index of the root.
+ * @returns The nth root of the base number.
+ * @example
+ * ```ts
+ * root(8, 3) // returns 2
+ * root(27, 3) // returns 3
+ * root(16, 4) // returns 2
+ * ```
+ **/
 export function root(base: number, index: number): number {
   return Math.pow(base, 1 / index)
 }
 
 /**
-Rounds a number to the specified number of decimals.
-**/
+ * Rounds a number to the specified number of decimals.
+ *
+ * @param f - The number to round.
+ * @param decimals - The number of decimals to round to.
+ * @returns The rounded number.
+ * @example
+ * ```ts
+ * roundTo(1.234, 2) // returns 1.23
+ * roundTo(1.234, 1) // returns 1.2
+ * roundTo(1.234, 0) // returns 1
+ * ```
+ **/
 export function roundTo(f: number, decimals: number): number {
   const p = Math.pow(10, decimals)
   return Math.round(f * p) / p
 }
 
 /**
-`sign` returns `-1` if `value` is a negative number, `1` otherwise.
-*/
+ * `sign` returns `-1` if `value` is a negative number, `1` otherwise.
+ *
+ * @param value - The number to check.
+ * @returns `-1` if the number is negative, `1` otherwise.
+ * @example
+ * ```ts
+ * sign(-5) // returns -1
+ * sign(5) // returns 1
+ * ```
+ */
 export function sign<T extends number>(value: T): number {
   return value < 0 ? -1 : 1
 }
 
 /**
-Passed two boundaries values (`min`, `max`), `wrap` ensures that the passed value `v` will
-be included in the boundaries. If the value exceeds `max`, the value is reduced by `min`
-repeatedely until it falls within the range. Similar and inverted treatment is performed if
-the value is below `min`.
-**/
+ * Passed two boundaries values (`min`, `max`), `wrap` ensures that the passed value `v` will
+ * be included in the boundaries. If the value exceeds `max`, the value is reduced by `min`
+ * repeatedely until it falls within the range. Similar and inverted treatment is performed if
+ * the value is below `min`.
+ *
+ * @param v - The value to wrap.
+ * @param min - The minimum value of the range.
+ * @param max - The maximum value of the range.
+ * @returns The wrapped value.
+ * @example
+ * ```ts
+ * wrap(5, 0, 10) // returns 5
+ * wrap(15, 0, 10) // returns 5
+ * wrap(-5, 0, 10) // returns 5
+ * ```
+ **/
 export function wrap(v: number, min: number, max: number): number {
   const range = max - min + 1
   if (v < min) v += range * ((min - v) / range + 1)
@@ -224,8 +461,18 @@ export function wrap(v: number, min: number, max: number): number {
 }
 
 /**
-Similar to `wrap`, it works for numbers between 0 and `max`.
-**/
+ * Similar to `wrap`, it works for numbers between 0 and `max`.
+ *
+ * @param v - The value to wrap.
+ * @param max - The maximum value of the range.
+ * @returns The wrapped value.
+ * @example
+ * ```ts
+ * wrapCircular(5, 10) // returns 5
+ * wrapCircular(15, 10) // returns 5
+ * wrapCircular(-5, 10) // returns 5
+ * ```
+ **/
 export function wrapCircular(v: number, max: number): number {
   v = v % max
   if (v < 0) v += max

@@ -1,151 +1,25 @@
-## Array helpers
+# Array helpers
+
+Contains utility functions for working with arrays. The functions are available under the `@tempots/std/array` module.
 
 ```ts
-import '@tempots/std/array'
+import { /* utility_to_import */ } '@tempots/std/array'
 ```
-
-Contains utility functions for working with arrays.
 
 TODO
 
-### map
+## create
+
+### fill
 
 ```ts
-function map&lt;A, B&gt;(arr: A[], f: (a: A, index: number) =&gt; B): B[]
-```
-
-### mapNotNull
-
-```ts
-function mapNotNull&lt;A, B&gt;(
-  arr: A[],
-  f: (a: A, index: number) =&gt; B | Nothing
-): B[]
-```
-
-### flatMap
-
-```ts
-function flatMap&lt;A, B&gt;(arr: A[], f: (a: A) =&gt; B[]): B[]
-```
-
-### head
-
-```ts
-function head&lt;A&gt;(arr: A[]): Maybe&lt;A&gt;
-```
-
-### tail
-
-```ts
-function tail&lt;A&gt;(arr: A[]): A[]
-```
-
-### equals
-
-```ts
-function equals&lt;T&gt;(
-  a: T[],
-  b: T[],
-  equality: (a: T, b: T) =&gt; boolean
-): boolean
-```
-
-### makeEquals
-
-```ts
-function makeEquals&lt;T&gt;(equality: (a: T, b: T) =&gt; boolean)
-  =&gt; (a: T[], b: T[])
-  =&gt; boolean
-```
-
-### isEmpty
-
-```ts
-function isEmpty&lt;T&gt;(arr: T[]): arr is []
-```
-
-### hasValues
-
-```ts
-function hasValues&lt;T&gt;(arr: T[]): arr is [T, ...T[]]
-```
-
-### filter
-
-```ts
-function filter&lt;T&gt;(arr: T[], predicate: (v: T) =&gt; boolean): T[]
-```
-
-### filterMap
-
-```ts
-function filterMap&lt;A, B&gt;(
-  arr: A[],
-  f: (a: A, index: number) =&gt; Maybe&lt;B&gt;
-): B[]
-```
-
-### filterNulls
-
-```ts
-function filterNulls&lt;T&gt;(arr: Array&lt;T | Nothing&gt;): T[]
-```
-
-### flatten
-
-```ts
-function flatten&lt;T&gt;(arr: T[][]): T[]
-```
-
-### foldLeft
-
-```ts
-function foldLeft&lt;T, B&gt;(arr: T[], f: (acc: B, curr: T) =&gt; B, b: B): B
-```
-
-### all
-
-```ts
-function all&lt;T&gt;(arr: T[], predicate: (v: T) =&gt; boolean): boolean
-```
-
-### any
-
-```ts
-function any&lt;T&gt;(arr: T[], predicate: (v: T) =&gt; boolean): boolean
-```
-
-### each
-
-```ts
-function each&lt;T&gt;(arr: T[], f: (v: T) =&gt; void): void
-```
-
-### concat
-
-```ts
-function concat&lt;A&gt;(...arrs: A[][]): A[]
-```
-
-### makeCompare
-
-```ts
-function makeCompare&lt;A&gt;(comparef: Compare&lt;A&gt;, shorterFirst = true)
-  =&gt; (a: A[], b: A[])
-  =&gt; number
-```
-
-### sort
-
-```ts
-function sort&lt;A&gt;(compare: Compare&lt;A&gt;, arr: A[]): A[]
+function fill&lt;A>(length: number, value: A): A[]
 ```
 
 ### range
 
 ```ts
-function range&lt;A&gt;(length: number, f: (index: number) =&gt; A): A[]
+function range&lt;A>(length: number, f: (index: number) => A): A[]
 ```
 
 ### numbersRange
@@ -154,65 +28,197 @@ function range&lt;A&gt;(length: number, f: (index: number) =&gt; A): A[]
 function numbersRange(length: number, startAt = 0): number[]
 ```
 
-### fill
+## manipulate
+
+### concat
 
 ```ts
-function fill&lt;A&gt;(length: number, value: A): A[]
+function concat&lt;A>(...arrs: A[][]): A[]
+```
+
+### filter
+
+```ts
+function filter&lt;T>(arr: T[], predicate: (v: T) => boolean): T[]
+```
+
+### filterMap
+
+```ts
+function filterMap&lt;A, B>(
+  arr: A[],
+  f: (a: A, index: number) => Maybe&lt;B>
+): B[]
+```
+
+### filterNulls
+
+```ts
+function filterNulls&lt;T>(arr: Array&lt;T | Nothing>): T[]
+```
+
+### flatMap
+
+```ts
+function flatMap&lt;A, B>(arr: A[], f: (a: A) => B[]): B[]
+```
+
+### flatten
+
+```ts
+function flatten&lt;T>(arr: T[][]): T[]
+```
+
+### foldLeft
+
+```ts
+function foldLeft&lt;T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B
+```
+
+### map
+
+```ts
+function map&lt;A, B>(arr: A[], f: (a: A, index: number) => B): B[]
+```
+
+### mapNotNull
+
+```ts
+function mapNotNull&lt;A, B>(
+  arr: A[],
+  f: (a: A, index: number) => B | Nothing
+): B[]
+```
+
+### sort
+
+```ts
+function sort&lt;A>(compare: Compare&lt;A>, arr: A[]): A[]
+```
+
+## query
+
+### all
+
+```ts
+function all&lt;T>(arr: T[], predicate: (v: T) => boolean): boolean
+```
+
+### any
+
+```ts
+function any&lt;T>(arr: T[], predicate: (v: T) => boolean): boolean
+```
+
+### each
+
+```ts
+function each&lt;T>(arr: T[], f: (v: T) => void): void
+```
+
+### equals
+
+```ts
+function equals&lt;T>(
+  a: T[],
+  b: T[],
+  equality: (a: T, b: T) => boolean
+): boolean
+```
+
+### hasValues
+
+```ts
+function hasValues&lt;T>(arr: T[]): arr is [T, ...T[]]
+```
+
+### head
+
+```ts
+function head&lt;A>(arr: A[]): Maybe&lt;A>
+```
+
+### isEmpty
+
+```ts
+function isEmpty&lt;T>(arr: T[]): arr is []
+```
+
+### makeEquals
+
+```ts
+function makeEquals&lt;T>(equality: (a: T, b: T) => boolean)
+  => (a: T[], b: T[])
+  => boolean
+```
+
+### tail
+
+```ts
+function tail&lt;A>(arr: A[]): A[]
+```
+
+### makeCompare
+
+```ts
+function makeCompare&lt;A>(comparef: Compare&lt;A>, shorterFirst = true)
+  => (a: A[], b: A[])
+  => number
 ```
 
 ### distinctPrimitive
 
 ```ts
-function distinctPrimitive&lt;T extends Primitive&gt;(values: T[]): T[]
+function distinctPrimitive&lt;T extends Primitive>(values: T[]): T[]
 ```
 
 ### distinctByPredicate
 
 ```ts
-function distinctByPredicate&lt;T&gt;(
+function distinctByPredicate&lt;T>(
   values: T[],
-  predicate: (a: T) =&gt; string
+  predicate: (a: T) => string
 ): T[]
 ```
 
 ### remove
 
 ```ts
-function remove&lt;A&gt;(arr: A[], item: A): boolean
+function remove&lt;A>(arr: A[], item: A): boolean
 ```
 
 ### removeByPredicate
 
 ```ts
-function removeByPredicate&lt;A&gt;(
+function removeByPredicate&lt;A>(
   arr: A[],
-  predicate: (a: A) =&gt; boolean
+  predicate: (a: A) => boolean
 ): boolean
 ```
 
 ### ofIterableIterator
 
 ```ts
-function ofIterableIterator&lt;A&gt;(it: IterableIterator&lt;A&gt;): A[]
+function ofIterableIterator&lt;A>(it: IterableIterator&lt;A>): A[]
 ```
 
 ### diffOperations / applyOperations
 
 ```ts
-interface DiffOperations&lt;T&gt; {
-  removals: Array&lt;{ at: number; qt: number }&gt;
-  swaps: Array&lt;{ from: number; to: number }&gt;
-  inserts: Array&lt;{ at: number; values: T[] }&gt;
+interface DiffOperations&lt;T> {
+  removals: Array&lt;{ at: number; qt: number }>
+  swaps: Array&lt;{ from: number; to: number }>
+  inserts: Array&lt;{ at: number; values: T[] }>
 }
 
-function diffOperations&lt;T, K&gt;(
+function diffOperations&lt;T, K>(
   from: T[],
   to: T[],
-  getKey: (v: T) =&gt; K
-): DiffOperations&lt;T&gt;
+  getKey: (v: T) => K
+): DiffOperations&lt;T>
 
-function applyOperations&lt;T&gt;(
-  operations: DiffOperations&lt;T&gt;,
+function applyOperations&lt;T>(
+  operations: DiffOperations&lt;T>,
   start: T[]
 ): T[]
 ```
@@ -220,7 +226,7 @@ function applyOperations&lt;T&gt;(
 ### joinWithConjunction
 
 ```ts
-function joinWithConjunction&lt;A&gt;(
+function joinWithConjunction&lt;A>(
   arr: A[],
   conjunction = ' and ',
   separator = ', '
@@ -230,21 +236,21 @@ function joinWithConjunction&lt;A&gt;(
 ### rank
 
 ```ts
-function rank&lt;T&gt;(
+function rank&lt;T>(
   array: T[],
-  compare: (a: T, b: T) =&gt; number,
+  compare: (a: T, b: T) => number,
   incrementDuplicates = true
 ): number[]
 ```
 
-## Async
+# Async
 
 TODO
 
-## AsyncResult
+# AsyncResult
 
 ```ts
-import '@tempots/std/async-result'
+import { /* utility_to_import */ } '@tempots/std/async-result'
 ```
 
 TODO
@@ -256,72 +262,72 @@ interface NotAsked {
 ```
 
 ```ts
-interface Loading&lt;V&gt; {
+interface Loading&lt;V> {
   type: 'Loading'
   previousValue?: V
 }
 ```
 
 ```ts
-interface Success&lt;V&gt; {
+interface Success&lt;V> {
   type: 'Success'
   value: V
 }
 ```
 
 ```ts
-interface Failure&lt;E&gt; {
+interface Failure&lt;E> {
   type: 'Failure'
   error: E
 }
 ```
 
 ```ts
-type AsyncResult&lt;V, E&gt; = NotAsked | Loading&lt;V&gt; | Success&lt;V&gt; | Failure&lt;E&gt;
+type AsyncResult&lt;V, E> = NotAsked | Loading&lt;V> | Success&lt;V> | Failure&lt;E>
 ```
 
 ```ts
 const AsyncResult = {
-  notAsked: AsyncResult&lt;never, never&gt;,
-  loading&lt;V&gt;(previousValue: Maybe&lt;V&gt; = undefined): AsyncResult&lt;V, never&gt;,
-  success&lt;V&gt;(value: V): AsyncResult&lt;V, never&gt;,
-  failure&lt;E&gt;(error: E): AsyncResult&lt;never, E&gt;,
-  isSuccess&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;): r is Success&lt;V&gt;,
-  isFailure&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;): r is Failure&lt;E&gt;,
-  isNotAsked&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;): r is NotAsked,
-  isLoading&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;): r is Loading&lt;V&gt;,
-  getOrElse&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;, alt: V): V,
-  getOrElseLazy&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;, altf: () =&gt; V): V,
-  getOrNull&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;): V | null,
-  getOrUndefined&lt;V, E&gt;(r: AsyncResult&lt;V, E&gt;): Maybe&lt;V&gt;,
+  notAsked: AsyncResult&lt;never, never>,
+  loading&lt;V>(previousValue: Maybe&lt;V> = undefined): AsyncResult&lt;V, never>,
+  success&lt;V>(value: V): AsyncResult&lt;V, never>,
+  failure&lt;E>(error: E): AsyncResult&lt;never, E>,
+  isSuccess&lt;V, E>(r: AsyncResult&lt;V, E>): r is Success&lt;V>,
+  isFailure&lt;V, E>(r: AsyncResult&lt;V, E>): r is Failure&lt;E>,
+  isNotAsked&lt;V, E>(r: AsyncResult&lt;V, E>): r is NotAsked,
+  isLoading&lt;V, E>(r: AsyncResult&lt;V, E>): r is Loading&lt;V>,
+  getOrElse&lt;V, E>(r: AsyncResult&lt;V, E>, alt: V): V,
+  getOrElseLazy&lt;V, E>(r: AsyncResult&lt;V, E>, altf: () => V): V,
+  getOrNull&lt;V, E>(r: AsyncResult&lt;V, E>): V | null,
+  getOrUndefined&lt;V, E>(r: AsyncResult&lt;V, E>): Maybe&lt;V>,
   cmatch:
-    &lt;V1, V2, E&gt;(
-      success: (value: V1) =&gt; V2,
-      failure: (error: E) =&gt; V2,
-      loading: (previousValue?: V1) =&gt; V2,
-      idle: () =&gt; V2 = loading
-    ) =&gt;
-    (r: AsyncResult&lt;V1, E&gt;): V2,
-  match: &lt;V1, V2, E&gt;(
-    r: AsyncResult&lt;V1, E&gt;,
-    success: (value: V1) =&gt; V2,
-    failure: (error: E) =&gt; V2,
-    loading: (previousValue?: V1) =&gt; V2,
-    idle: () =&gt; V2 = loading
+    &lt;V1, V2, E>(
+      success: (value: V1) => V2,
+      failure: (error: E) => V2,
+      loading: (previousValue?: V1) => V2,
+      idle: () => V2 = loading
+    ) =>
+    (r: AsyncResult&lt;V1, E>): V2,
+  match: &lt;V1, V2, E>(
+    r: AsyncResult&lt;V1, E>,
+    success: (value: V1) => V2,
+    failure: (error: E) => V2,
+    loading: (previousValue?: V1) => V2,
+    idle: () => V2 = loading
   ): V2,
   whenSuccess:
-    &lt;V, E&gt;(apply: (v: V) =&gt; void) =&gt;
-    (r: AsyncResult&lt;V, E&gt;): AsyncResult&lt;V, E&gt;,
+    &lt;V, E>(apply: (v: V) => void) =>
+    (r: AsyncResult&lt;V, E>): AsyncResult&lt;V, E>,
   whenFailure:
-    &lt;V, E&gt;(apply: (e: E) =&gt; void) =&gt;
-    (r: AsyncResult&lt;V, E&gt;): AsyncResult&lt;V, E&gt;,
+    &lt;V, E>(apply: (e: E) => void) =>
+    (r: AsyncResult&lt;V, E>): AsyncResult&lt;V, E>,
 }
 ```
 
-## Bigint helpers
+# Bigint helpers
 
 ```ts
-import '@tempots/std/bigint'
+import { /* utility_to_import */ } '@tempots/std/bigint'
 ```
 
 TODO
@@ -434,10 +440,10 @@ function isNegative(x: bigint): boolean
 function isPositive(x: bigint): boolean
 ```
 
-## Boolean helpers
+# Boolean helpers
 
 ```ts
-import '@tempots/std/boolean'
+import { /* utility_to_import */ } '@tempots/std/boolean'
 ```
 
 Utility functions to manipulate `boolean` values.
@@ -450,7 +456,7 @@ Returns a comparison value (`Int`) from two boolean values.
 function compare(a: boolean, b: boolean): number
 ```
 
-Converts a boolean to an integer value (`true` =&gt; `1`, `false` =&gt; `0`).
+Converts a boolean to an integer value (`true` => `1`, `false` => `0`).
 
 ### toInt
 
@@ -482,10 +488,10 @@ Returns `true` when arguments are different.
 function xor(a: boolean, b: boolean): boolean
 ```
 
-## Equality helpers
+# Equality helpers
 
 ```ts
-import '@tempots/std/equal'
+import { /* utility_to_import */ } '@tempots/std/equal'
 ```
 
 TODO
@@ -493,25 +499,25 @@ TODO
 ### strictEqual
 
 ```ts
-function strictEqual&lt;A&gt;(a: A, b: A): boolean
+function strictEqual&lt;A>(a: A, b: A): boolean
 ```
 
 ### deepEqual
 
 ```ts
-function deepEqual&lt;A&gt;(a: A, b: A): boolean
+function deepEqual&lt;A>(a: A, b: A): boolean
 ```
 
 ### looseEqual
 
 ```ts
-function looseEqual&lt;T&gt;(a: T, b: T): boolean
+function looseEqual&lt;T>(a: T, b: T): boolean
 ```
 
-## Function helpers
+# Function helpers
 
 ```ts
-import '@tempots/std/function'
+import { /* utility_to_import */ } '@tempots/std/function'
 ```
 
 TODO
@@ -519,99 +525,99 @@ TODO
 ### compose
 
 ```ts
-function compose&lt;A&gt;(): (a: A) =&gt; A
-function compose&lt;A, B&gt;(f1: (a: A) =&gt; B): (a: A) =&gt; B
-function compose&lt;A, B, C&gt;(f1: (a: A) =&gt; B, f2: (b: B) =&gt; C): (a: A) =&gt; C
-function compose&lt;A, B, C, D&gt;(
-  f1: (a: A) =&gt; B,
-  f2: (b: B) =&gt; C,
-  f3: (c: C) =&gt; D
-): (a: A) =&gt; D
-function compose&lt;A, B, C, D, E&gt;(
-  f1: (a: A) =&gt; B,
-  f2: (b: B) =&gt; C,
-  f3: (c: C) =&gt; D,
-  f4: (d: D) =&gt; E
-): (a: A) =&gt; E
-function compose&lt;A, B, C, D, E, F&gt;(
-  f1: (a: A) =&gt; B,
-  f2: (b: B) =&gt; C,
-  f3: (c: C) =&gt; D,
-  f4: (d: D) =&gt; E,
-  f5: (e: E) =&gt; F
-): (a: A) =&gt; F
-function compose&lt;A, B, C, D, E, F, G&gt;(
-  f1: (a: A) =&gt; B,
-  f2: (b: B) =&gt; C,
-  f3: (c: C) =&gt; D,
-  f4: (d: D) =&gt; E,
-  f5: (e: E) =&gt; F,
-  f6: (f: F) =&gt; G
-): (a: A) =&gt; G
+function compose&lt;A>(): (a: A) => A
+function compose&lt;A, B>(f1: (a: A) => B): (a: A) => B
+function compose&lt;A, B, C>(f1: (a: A) => B, f2: (b: B) => C): (a: A) => C
+function compose&lt;A, B, C, D>(
+  f1: (a: A) => B,
+  f2: (b: B) => C,
+  f3: (c: C) => D
+): (a: A) => D
+function compose&lt;A, B, C, D, E>(
+  f1: (a: A) => B,
+  f2: (b: B) => C,
+  f3: (c: C) => D,
+  f4: (d: D) => E
+): (a: A) => E
+function compose&lt;A, B, C, D, E, F>(
+  f1: (a: A) => B,
+  f2: (b: B) => C,
+  f3: (c: C) => D,
+  f4: (d: D) => E,
+  f5: (e: E) => F
+): (a: A) => F
+function compose&lt;A, B, C, D, E, F, G>(
+  f1: (a: A) => B,
+  f2: (b: B) => C,
+  f3: (c: C) => D,
+  f4: (d: D) => E,
+  f5: (e: E) => F,
+  f6: (f: F) => G
+): (a: A) => G
 ```
 
 ### identity
 
 ```ts
-function identity&lt;T&gt;(v: T): T
+function identity&lt;T>(v: T): T
 ```
 
 ### curryLeft
 
 ```ts
-function curryLeft&lt;A, Rest extends any[], Ret&gt;(
-  f: (a: A, ...rest: Rest) =&gt; Ret
-) =&gt; (a: A) =&gt; (...rest: Rest): Ret
+function curryLeft&lt;A, Rest extends any[], Ret>(
+  f: (a: A, ...rest: Rest) => Ret
+) => (a: A) => (...rest: Rest): Ret
 ```
 
 ### curryRight
 
 ```ts
-function curryRight&lt;A, B, C, D&gt;(
-  f: (a: A, b: B, c: C) =&gt; D
-): (a: A, b: B) =&gt; (c: C) =&gt; D
-function curryRight&lt;A, B, C, D, E&gt;(
-  f: (a: A, b: B, c: C, d: D) =&gt; E
-): (a: A, b: B, c: C) =&gt; (d: D) =&gt; E
-function curryRight&lt;A, B, C, D, E, F&gt;(
-  f: (a: A, b: B, c: C, d: D, e: E) =&gt; F
-): (a: A, b: B, c: C, d: D) =&gt; (e: E) =&gt; F
-function curryRight&lt;A, B, C, D, E, F, G&gt;(
-  f: (a: A, b: B, c: C, d: D, e: E, f: F) =&gt; G
-): (a: A, b: B, c: C, d: D, e: E) =&gt; (f: F) =&gt; G
+function curryRight&lt;A, B, C, D>(
+  f: (a: A, b: B, c: C) => D
+): (a: A, b: B) => (c: C) => D
+function curryRight&lt;A, B, C, D, E>(
+  f: (a: A, b: B, c: C, d: D) => E
+): (a: A, b: B, c: C) => (d: D) => E
+function curryRight&lt;A, B, C, D, E, F>(
+  f: (a: A, b: B, c: C, d: D, e: E) => F
+): (a: A, b: B, c: C, d: D) => (e: E) => F
+function curryRight&lt;A, B, C, D, E, F, G>(
+  f: (a: A, b: B, c: C, d: D, e: E, f: F) => G
+): (a: A, b: B, c: C, d: D, e: E) => (f: F) => G
 ```
 
 ### flip
 
 ```ts
-function flip&lt;A, B, C&gt;(f: (a: A, b: B) =&gt; C): (b: B, a: A) =&gt; C
-function flip&lt;A, B, C, D&gt;(
-  f: (a: A, b: B, c: C) =&gt; D
-): (c: C, b: B, a: A) =&gt; D
-function flip&lt;A, B, C, D, E&gt;(
-  f: (a: A, b: B, c: C, d: D) =&gt; E
-): (d: D, c: C, b: B, a: A) =&gt; E
-function flip&lt;A, B, C, D, E&gt;(
-  f: (a: A, b: B, c: C, d: D) =&gt; E
-): (d: D, c: C, b: B, a: A) =&gt; E
-function flip&lt;A, B, C, D, E, F&gt;(
-  f: (a: A, b: B, c: C, d: D, e: E) =&gt; F
-): (e: E, d: D, c: C, b: B, a: A) =&gt; F
-function flip&lt;A, B, C, D, E, F, G&gt;(
-  f: (a: A, b: B, c: C, d: D, e: E, f: F) =&gt; G
-): (f: F, e: E, d: D, c: C, b: B, a: A) =&gt; G
+function flip&lt;A, B, C>(f: (a: A, b: B) => C): (b: B, a: A) => C
+function flip&lt;A, B, C, D>(
+  f: (a: A, b: B, c: C) => D
+): (c: C, b: B, a: A) => D
+function flip&lt;A, B, C, D, E>(
+  f: (a: A, b: B, c: C, d: D) => E
+): (d: D, c: C, b: B, a: A) => E
+function flip&lt;A, B, C, D, E>(
+  f: (a: A, b: B, c: C, d: D) => E
+): (d: D, c: C, b: B, a: A) => E
+function flip&lt;A, B, C, D, E, F>(
+  f: (a: A, b: B, c: C, d: D, e: E) => F
+): (e: E, d: D, c: C, b: B, a: A) => F
+function flip&lt;A, B, C, D, E, F, G>(
+  f: (a: A, b: B, c: C, d: D, e: E, f: F) => G
+): (f: F, e: E, d: D, c: C, b: B, a: A) => G
 ```
 
 ### memoize
 
 ```ts
-function memoize&lt;T&gt;(f: () =&gt; NonNullable&lt;T&gt;): () =&gt; NonNullable&lt;T&gt;
+function memoize&lt;T>(f: () => NonNullable&lt;T>): () => NonNullable&lt;T>
 ```
 
-## JSON Types
+# JSON Types
 
 ```ts
-import '@tempots/std/json'
+import { /* utility_to_import */ } '@tempots/std/json'
 ```
 
 It provides the following types `JSONPrimitive`, `JSONObject`, `JSONArray`, and `JSONValue`.
@@ -619,10 +625,10 @@ It provides the following types `JSONPrimitive`, `JSONObject`, `JSONArray`, and 
 Note that even if technically not correct, the value `undefined` is also considered a `JSONValue`.
 
 
-## Number helpers
+# Number helpers
 
 ```ts
-import '@tempots/std/number'
+import { /* utility_to_import */ } '@tempots/std/number'
 ```
 
 TODO
@@ -825,7 +831,7 @@ function roundTo(f: number, decimals: number): number
 ### sign
 
 ```ts
-function sign&lt;T extends number&gt;(value: T): number
+function sign&lt;T extends number>(value: T): number
 ```
 
 Passed two boundaries values (`min`, `max`), `wrap` ensures that the passed value `v` will
@@ -847,10 +853,10 @@ Similar to `wrap`, it works for numbers between 0 and `max`.
 function wrapCircular(v: number, max: number): number
 ```
 
-## Object helpers
+# Object helpers
 
 ```ts
-import '@tempots/std/object'
+import { /* utility_to_import */ } '@tempots/std/object'
 ```
 
 TODO
@@ -858,37 +864,37 @@ TODO
 ### keys
 
 ```ts
-function keys&lt;T extends object&gt;(obj: T): Array&lt;keyof T&gt;
+function keys&lt;T extends object>(obj: T): Array&lt;keyof T>
 ```
 
 ### sameKeys
 
 ```ts
-function sameKeys&lt;T extends object&gt;(a: T, b: T): boolean
+function sameKeys&lt;T extends object>(a: T, b: T): boolean
 ```
 
 ### isObject
 
 ```ts
-function isObject(obj: unknown): obj is Record&lt;IndexKey, unknown&gt;
+function isObject(obj: unknown): obj is Record&lt;IndexKey, unknown>
 ```
 
 ### removeFields
 
 ```ts
-function removeFields&lt;T extends object, F extends Array&lt;keyof T&gt;&gt;(
+function removeFields&lt;T extends object, F extends Array&lt;keyof T>>(
   ob: T,
   ...fields: F
-): Omit&lt;T, TupleToUnion&lt;F&gt;&gt;
+): Omit&lt;T, TupleToUnion&lt;F>>
 ```
 
 ### merge
 
 ```ts
 function merge&lt;
-  A extends Record&lt;IndexKey, unknown&gt;,
-  B extends Record&lt;IndexKey, unknown&gt;,
-&gt;(a: A, b: B): Merge&lt;A, B&gt;
+  A extends Record&lt;IndexKey, unknown>,
+  B extends Record&lt;IndexKey, unknown>,
+>(a: A, b: B): Merge&lt;A, B>
 ```
 
 ### isEmpty
@@ -897,10 +903,10 @@ function merge&lt;
 function isEmpty(obj: object): boolean
 ```
 
-## RegExp helpers
+# RegExp helpers
 
 ```ts
-import '@tempots/std/regexp'
+import { /* utility_to_import */ } '@tempots/std/regexp'
 ```
 
 TODO
@@ -915,85 +921,85 @@ Map the function `f` on each occurance matched by the pattern.
 function map(
   subject: string,
   pattern: RegExp,
-  f: (...s: string[]) =&gt; string
+  f: (...s: string[]) => string
 ): string
 ```
 
-## Result
+# Result
 
 ```ts
-import '@tempots/std/result'
+import { /* utility_to_import */ } '@tempots/std/result'
 ```
 
 TODO
 
 ```ts
-interface Success&lt;V&gt; {
+interface Success&lt;V> {
   type: 'Success'
   value: V
 }
 
-interface Failure&lt;E&gt; {
+interface Failure&lt;E> {
   type: 'Failure'
   error: E
 }
 
-type Result&lt;V, E&gt; = Success&lt;V&gt; | Failure&lt;E&gt;
+type Result&lt;V, E> = Success&lt;V> | Failure&lt;E>
 ```
 
 ```ts
-type PromiseResult&lt;V, E&gt; = PromiseLike&lt;Result&lt;V, E&gt;&gt;
+type PromiseResult&lt;V, E> = PromiseLike&lt;Result&lt;V, E>>
 ```
 
 ```ts
 const Result = {
-  success&lt;V&gt;(value: V): Result&lt;V, any&gt;,
-  failure&lt;E&gt;(error: E): Result&lt;any, E&gt;,
+  success&lt;V>(value: V): Result&lt;V, any>,
+  failure&lt;E>(error: E): Result&lt;any, E>,
   cmap:
-    &lt;V1, V2, E&gt;(f: (value: V1) =&gt; V2) =&gt;
-    (r: Result&lt;V1, E&gt;): Result&lt;V2, E&gt;,
-  map: &lt;V1, V2, E&gt;(r: Result&lt;V1, E&gt;, f: (value: V1) =&gt; V2): Result&lt;V2, E&gt;,
+    &lt;V1, V2, E>(f: (value: V1) => V2) =>
+    (r: Result&lt;V1, E>): Result&lt;V2, E>,
+  map: &lt;V1, V2, E>(r: Result&lt;V1, E>, f: (value: V1) => V2): Result&lt;V2, E>,
   cflatMap:
-    &lt;V1, V2, E&gt;(f: (value: V1) =&gt; Result&lt;V2, E&gt;) =&gt;
-    (r: Result&lt;V1, E&gt;): Result&lt;V2, E&gt;,
-  flatMap: &lt;V1, V2, E&gt;(
-    r: Result&lt;V1, E&gt;,
-    f: (value: V1) =&gt; Result&lt;V2, E&gt;
-  ): Result&lt;V2, E&gt;,
-  toAsync&lt;V, E&gt;(r: Result&lt;V, E&gt;): AsyncResult&lt;V, E&gt;,
-  isSuccess&lt;V, E&gt;(r: Result&lt;V, E&gt;): r is Success&lt;V&gt;,
-  isFailure&lt;V, E&gt;(r: Result&lt;V, E&gt;): r is Failure&lt;E&gt;,
-  getOrElse&lt;V, E&gt;(r: Result&lt;V, E&gt;, alt: V): V,
-  getOrElseLazy&lt;V, E&gt;(r: Result&lt;V, E&gt;, altf: () =&gt; V): V,
-  getOrNull&lt;V, E&gt;(r: Result&lt;V, E&gt;): V | null,
-  getOrUndefined&lt;V, E&gt;(r: Result&lt;V, E&gt;): Maybe&lt;V&gt;,
+    &lt;V1, V2, E>(f: (value: V1) => Result&lt;V2, E>) =>
+    (r: Result&lt;V1, E>): Result&lt;V2, E>,
+  flatMap: &lt;V1, V2, E>(
+    r: Result&lt;V1, E>,
+    f: (value: V1) => Result&lt;V2, E>
+  ): Result&lt;V2, E>,
+  toAsync&lt;V, E>(r: Result&lt;V, E>): AsyncResult&lt;V, E>,
+  isSuccess&lt;V, E>(r: Result&lt;V, E>): r is Success&lt;V>,
+  isFailure&lt;V, E>(r: Result&lt;V, E>): r is Failure&lt;E>,
+  getOrElse&lt;V, E>(r: Result&lt;V, E>, alt: V): V,
+  getOrElseLazy&lt;V, E>(r: Result&lt;V, E>, altf: () => V): V,
+  getOrNull&lt;V, E>(r: Result&lt;V, E>): V | null,
+  getOrUndefined&lt;V, E>(r: Result&lt;V, E>): Maybe&lt;V>,
   cmatch:
-    &lt;V1, V2, E&gt;(success: (value: V1) =&gt; V2, failure: (error: E) =&gt; V2) =&gt;
-    (r: Result&lt;V1, E&gt;): V2,
-  match: &lt;V1, V2, E&gt;(
-    r: Result&lt;V1, E&gt;,
-    success: (value: V1) =&gt; V2,
-    failure: (error: E) =&gt; V2
+    &lt;V1, V2, E>(success: (value: V1) => V2, failure: (error: E) => V2) =>
+    (r: Result&lt;V1, E>): V2,
+  match: &lt;V1, V2, E>(
+    r: Result&lt;V1, E>,
+    success: (value: V1) => V2,
+    failure: (error: E) => V2
   ): V2,
   whenSuccess:
-    &lt;V, E&gt;(apply: (v: V) =&gt; void) =&gt;
-    (r: Result&lt;V, E&gt;): Result&lt;V, E&gt;,
+    &lt;V, E>(apply: (v: V) => void) =>
+    (r: Result&lt;V, E>): Result&lt;V, E>,
   whenFailure:
-    &lt;V, E&gt;(apply: (e: E) =&gt; void) =&gt;
-    (r: Result&lt;V, E&gt;): Result&lt;V, E&gt;,
-  combine: &lt;V, E&gt;(
-    r1: Result&lt;V, E&gt;,
-    r2: Result&lt;V, E&gt;,
-    combineV: (v1: V, v2: V) =&gt; V,
-    combineE: (e1: E, e2: E) =&gt; E
-  ): Result&lt;V, E&gt;,
+    &lt;V, E>(apply: (e: E) => void) =>
+    (r: Result&lt;V, E>): Result&lt;V, E>,
+  combine: &lt;V, E>(
+    r1: Result&lt;V, E>,
+    r2: Result&lt;V, E>,
+    combineV: (v1: V, v2: V) => V,
+    combineE: (e1: E, e2: E) => E
+  ): Result&lt;V, E>,
 }
 ```
 
-## String helpers
+# String helpers
 
 ```ts
-import '@tempots/std/string'
+import { /* utility_to_import */ } '@tempots/std/string'
 ```
 
 TODO
@@ -1270,7 +1276,7 @@ function endsWithAny(s: string, values: string[]): boolean
 ### filter
 
 ```ts
-function filter(s: string, predicate: (s: string) =&gt; boolean): string
+function filter(s: string, predicate: (s: string) => boolean): string
 ```
 
 Same as `filter` but `predicate` operates on integer char codes instead of string characters.
@@ -1280,7 +1286,7 @@ Same as `filter` but `predicate` operates on integer char codes instead of strin
 ```ts
 function filterCharcode(
   s: string,
-  predicate: (n: number) =&gt; boolean
+  predicate: (n: number) => boolean
 ): string
 ```
 
@@ -1411,7 +1417,7 @@ It maps a string character by character using `callback`.
 ### map
 
 ```ts
-function map&lt;T&gt;(callback: (c: string) =&gt; T, value: string): T[]
+function map&lt;T>(callback: (c: string) => T, value: string): T[]
 ```
 
 If present, it removes all the occurrences of `toremove` from `value`.
@@ -1681,10 +1687,10 @@ function splitOnFirst(
 ): [string] | [string, string]
 ```
 
-## Validation
+# Validation
 
 ```ts
-import '@tempots/std/validation'
+import { /* utility_to_import */ } '@tempots/std/validation'
 ```
 
 TODO
@@ -1693,45 +1699,45 @@ TODO
 interface Valid {
   type: 'valid'
 }
-interface Invalid&lt;E&gt; {
+interface Invalid&lt;E> {
   type: 'invalid'
   error: E
 }
-type Validation&lt;E&gt; = Valid | Invalid&lt;E&gt;
+type Validation&lt;E> = Valid | Invalid&lt;E>
 ```
 
 ```ts
-type PromiseValidation&lt;E&gt; = PromiseLike&lt;Validation&lt;E&gt;&gt;
+type PromiseValidation&lt;E> = PromiseLike&lt;Validation&lt;E>>
 ```
 
 ```ts
 const Validation = {
-  valid: { type: 'valid' } satisfies Validation&lt;any&gt;,
-  invalid&lt;E&gt;(error: E): Validation&lt;E&gt;,
-  isValid&lt;E&gt;(r: Validation&lt;E&gt;): r is Valid,
-  isInvalid&lt;E&gt;(r: Validation&lt;E&gt;): r is Invalid&lt;E&gt;,
+  valid: { type: 'valid' } satisfies Validation&lt;any>,
+  invalid&lt;E>(error: E): Validation&lt;E>,
+  isValid&lt;E>(r: Validation&lt;E>): r is Valid,
+  isInvalid&lt;E>(r: Validation&lt;E>): r is Invalid&lt;E>,
   cmatch:
-    &lt;V, E&gt;(valid: () =&gt; V, invalid: (error: E) =&gt; V) =&gt;
-    (r: Validation&lt;E&gt;): V,
-  match: &lt;V, E&gt;(
-    r: Validation&lt;E&gt;,
-    valid: () =&gt; V,
-    invalid: (error: E) =&gt; V
+    &lt;V, E>(valid: () => V, invalid: (error: E) => V) =>
+    (r: Validation&lt;E>): V,
+  match: &lt;V, E>(
+    r: Validation&lt;E>,
+    valid: () => V,
+    invalid: (error: E) => V
   ): V,
-  toResult: &lt;T, E&gt;(value: T): ((validation: Validation&lt;E&gt;) =&gt; Result&lt;T, E&gt;),
+  toResult: &lt;T, E>(value: T): ((validation: Validation&lt;E>) => Result&lt;T, E>),
   whenValid:
-    &lt;E&gt;(apply: () =&gt; void) =&gt;
-    (r: Validation&lt;E&gt;): Validation&lt;E&gt;,
+    &lt;E>(apply: () => void) =>
+    (r: Validation&lt;E>): Validation&lt;E>,
   whenInvalid:
-    &lt;E&gt;(apply: (e: E) =&gt; void) =&gt;
-    (r: Validation&lt;E&gt;): Validation&lt;E&gt;,
+    &lt;E>(apply: (e: E) => void) =>
+    (r: Validation&lt;E>): Validation&lt;E>,
 }
 ```
 
-## Tempo reusable types
+# Tempo reusable types
 
 ```ts
-import '@tempots/std/domain'
+import { /* utility_to_import */ } '@tempots/std/domain'
 ```
 
 Contains type helpers generally useful during development.
@@ -1741,7 +1747,7 @@ Contains type helpers generally useful during development.
 Type type of a comparison function that takes two arguments `T` and returns `number`.
 
 ```ts
-type Compare&lt;T&gt;
+type Compare&lt;T>
 ```
 
 ### Fun0 to Fun6
@@ -1749,29 +1755,29 @@ type Compare&lt;T&gt;
 Function types with 0 to 6 arguments.
 
 ```ts
-type Fun0&lt;R&gt;
-type Fun1&lt;A, R&gt;
-type Fun2&lt;A, B, R&gt;
-type Fun3&lt;A, B, C, R&gt;
-type Fun4&lt;A, B, C, D, R&gt;
-type Fun5&lt;A, B, C, D, E, R&gt;
-type Fun6&lt;A, B, C, D, E, F, R&gt;
+type Fun0&lt;R>
+type Fun1&lt;A, R>
+type Fun2&lt;A, B, R>
+type Fun3&lt;A, B, C, R>
+type Fun4&lt;A, B, C, D, R>
+type Fun5&lt;A, B, C, D, E, R>
+type Fun6&lt;A, B, C, D, E, F, R>
 ```
 
-### FilterTuple&lt;T&gt;
+### FilterTuple&lt;T>
 
 Filters a tuple type by a type.
 
 ```ts
-type FilterTuple&lt;T extends unknown[], N&gt;
+type FilterTuple&lt;T extends unknown[], N>
 ```
 
-### FirstArgument&lt;F&gt;
+### FirstArgument&lt;F>
 
 Extracts the first argument type of a function.
 
 ```ts
-type FirstArgument&lt;F&gt; = F extends Fun1&lt;infer A, unknown&gt; ? A : never
+type FirstArgument&lt;F> = F extends Fun1&lt;infer A, unknown> ? A : never
 ```
 
 ### Id
@@ -1779,7 +1785,7 @@ type FirstArgument&lt;F&gt; = F extends Fun1&lt;infer A, unknown&gt; ? A : never
 Flattens an object type.
 
 ```ts
-type Id&lt;T&gt; = {} & { [P in keyof T]: T[P] }
+type Id&lt;T> = {} & { [P in keyof T]: T[P] }
 ```
 
 ### IndexKey
@@ -1790,20 +1796,20 @@ The type of an object/array key.
 type IndexKey
 ```
 
-### Maybe&lt;T&gt;
+### Maybe&lt;T>
 
 A type that can be `T` or `undefined`.
 
 ```ts
-type Maybe&lt;T&gt; = T | undefined
+type Maybe&lt;T> = T | undefined
 ```
 
-### Merge&lt;A, B&gt;
+### Merge&lt;A, B>
 
 Merges two object types.
 
 ```ts
-type Merge&lt;A, B&gt; = Id&lt;A & B&gt;
+type Merge&lt;A, B> = Id&lt;A & B>
 ```
 
 ### Nothing
@@ -1822,7 +1828,7 @@ The type of a primitive JavaScript/TypeScript value.
 type Primitive = string | boolean | number | null | undefined
 ```
 
-### SplitLiteral&lt;T, SplitBy&gt;
+### SplitLiteral&lt;T, SplitBy>
 
 Splits a string literal by a string literal.
 
@@ -1830,10 +1836,10 @@ Splits a string literal by a string literal.
 type SplitLiteral&lt;
   T extends string,
   SplitBy extends string,
-&gt;
+>
 ```
 
-### SplitLiteralToUnion&lt;T, SplitBy&gt;
+### SplitLiteralToUnion&lt;T, SplitBy>
 
 Splits a string literal by a string literal and converts the result to a union type.
 
@@ -1841,14 +1847,14 @@ Splits a string literal by a string literal and converts the result to a union t
 type SplitLiteralToUnion&lt;
   T extends string,
   SplitBy extends string,
-&gt;
+>
 ```
 
 
-### TupleToUnion&lt;T&gt;
+### TupleToUnion&lt;T>
 
 Converts a tuple type to a union type.
 
 ```ts
-type TupleToUnion&lt;T extends unknown[]&gt; = T[number]
+type TupleToUnion&lt;T extends unknown[]> = T[number]
 ```

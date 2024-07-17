@@ -29,9 +29,7 @@ export function compose<A, B, C, D, E, F, G>(
   f5: (e: E) => F,
   f6: (f: F) => G
 ): (a: A) => G
-export function compose<Args extends Array<Fun1<unknown, unknown>>>(
-  ...args: Args
-) {
+export function compose<Args extends Fun1<unknown, unknown>[]>(...args: Args) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (a: FirstArgument<Args[0]>) => args.reduce((acc: any, f) => f(acc), a)
 }

@@ -663,6 +663,13 @@ export function wrapColumns(
     .join(newline)
 }
 
+/**
+ * Checks if the character at the specified position in a string is a whitespace character.
+ *
+ * @param s - The input string.
+ * @param pos - The position of the character to check.
+ * @returns A boolean indicating whether the character at the specified position is a whitespace character.
+ */
 export function isSpaceAt(s: string, pos: number): boolean {
   if (pos < 0 || pos >= s.length) return false
   const char = s.charCodeAt(pos)
@@ -676,26 +683,50 @@ export function isSpaceAt(s: string, pos: number): boolean {
   )
 }
 
+/**
+ * Encodes a string to base64.
+ *
+ * @param s - The string to encode.
+ * @returns The base64 encoded string.
+ * @throws Error if no implementation is found for base64 encoding.
+ */
 export function encodeBase64(s: string): string {
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(s).toString('base64')
   } else if (typeof btoa !== 'undefined') {
     return btoa(s)
   } else {
-    throw new Error('no implementation provided for base64 encoding')
+    throw new Error('no implementation found for base64 encoding')
   }
 }
 
+/**
+ * Decodes a base64 encoded string.
+ *
+ * @param s - The base64 encoded string to decode.
+ * @returns The decoded string.
+ * @throws An error if no implementation is found for base64 decoding.
+ */
 export function decodeBase64(s: string): string {
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(s, 'base64').toString('utf8')
   } else if (typeof atob !== 'undefined') {
     return atob(s)
   } else {
-    throw new Error('no implementation provided for base64 decoding')
+    throw new Error('no implementation found for base64 decoding')
   }
 }
 
+/**
+ * Wraps a string into multiple lines based on the specified number of columns,
+ * indentation, and newline character.
+ *
+ * @param s - The string to wrap.
+ * @param columns - The number of columns per line.
+ * @param indent - The indentation string to prepend to each line.
+ * @param newline - The newline character to use for line breaks.
+ * @returns The wrapped string.
+ */
 export function wrapLine(
   s: string,
   columns: number,
@@ -731,6 +762,15 @@ export function wrapLine(
   return indent + parts.join(newline + indent)
 }
 
+/**
+ * Pads a string on the left with a specified character until it reaches a specified length.
+ * If the string is already longer than the specified length, it is returned as is.
+ *
+ * @param s - The string to pad.
+ * @param char - The character to use for padding.
+ * @param length - The desired length of the padded string.
+ * @returns The padded string.
+ */
 export function lpad(s: string, char: string, length: number): string {
   const diff = length - s.length
   if (diff > 0) {
@@ -740,6 +780,15 @@ export function lpad(s: string, char: string, length: number): string {
   }
 }
 
+/**
+ * Pads a string on the right with a specified character until it reaches a specified length.
+ * If the string is already longer than the specified length, it is returned as is.
+ *
+ * @param s - The string to pad.
+ * @param char - The character to use for padding.
+ * @param length - The desired length of the padded string.
+ * @returns The padded string.
+ */
 export function rpad(s: string, char: string, length: number): string {
   const diff = length - s.length
   if (diff > 0) {
@@ -749,6 +798,17 @@ export function rpad(s: string, char: string, length: number): string {
   }
 }
 
+/**
+ * Splits a string into two parts at the last occurrence of a specified substring.
+ * If the substring is found, the function returns an array with two elements:
+ * the part of the string before the substring and the part after the substring.
+ * If the substring is not found, the function returns an array with a single element,
+ * which is the original string.
+ *
+ * @param s - The string to split.
+ * @param find - The substring to search for.
+ * @returns An array containing the split parts of the string.
+ */
 export function splitOnLast(
   s: string,
   find: string
@@ -761,6 +821,15 @@ export function splitOnLast(
   }
 }
 
+/**
+ * Splits a string into two parts based on the first occurrence of a specified substring.
+ * If the substring is found, returns an array with two elements: the part of the string before the substring and the part after the substring.
+ * If the substring is not found, returns an array with a single element: the original string.
+ *
+ * @param s - The string to split.
+ * @param find - The substring to search for.
+ * @returns An array containing the split parts of the string.
+ */
 export function splitOnFirst(
   s: string,
   find: string
