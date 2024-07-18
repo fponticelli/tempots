@@ -98,10 +98,10 @@ async function listAllMDFiles(src: string): Promise<string[]> {
 
 async function makeHtml(
   mdFile: string,
-  anchorMangler: (url: string) => string
+  { anchorMangler }: { anchorMangler?: (url: string) => string }
 ) {
   const content = await fsp.readFile(mdFile, 'utf8')
-  return markdownWithFM(content, anchorMangler)
+  return markdownWithFM(content, { anchorMangler })
 }
 
 function renameMd(file: string) {
@@ -119,7 +119,7 @@ async function createPages(src: string, dst: string) {
   const data = await Promise.all(
     mdFiles.map(async file => ({
       dest: renameMd(file),
-      ...(await makeHtml(path.join(src, file), manglePageHref)),
+      ...(await makeHtml(path.join(src, file), { anchorMangler: manglePageHref })),
     }))
   )
   await Promise.all(
@@ -170,7 +170,7 @@ async function collectLibrary(
   const packageJson = await fsp.readFile(p, 'utf8')
   const pack = JSON.parse(packageJson)
   const libraryPath = path.join(src, library, 'PROJECT.md')
-  const content = markdownToHTML(
+  const content = await markdownToHTML(
     fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : ''
   )
   return {
@@ -234,13 +234,20 @@ async function main() {
 
   // api
   await prepDir(apiFolderDst)
+  const api = {}
   for (const library of librariesData) {
-    const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/`)
-    console.log(library.name, apiDir)
+    const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/md/`)
     const dst = path.join(apiFolderDst, library.name)
-    console.log(dst)
-    await fse.copy(apiDir, dst)
+    const pages = await createPages(apiDir, dst)
+    console.log(pages)
+    api[library.name] = pages.pages
+      .map(({path}) => path)
+      .filter(v => v != 'index')
+    // console.log(library.name, apiDir)
+    // console.log(dst)
+    // await fse.copy(apiDir, dst)
   }
+  await fsp.writeFile(path.join(apiFolderDst, 'api.json'), JSON.stringify(api, null, 2))
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
 

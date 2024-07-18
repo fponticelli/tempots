@@ -1,14 +1,7 @@
-import showdown from 'showdown'
+import { marked } from 'marked'
 import fm from 'front-matter'
 import { highlightShell, highlightTS } from './highlight'
 import { Browser, IOptionalBrowserSettings } from 'happy-dom'
-
-const converter = new showdown.Converter({
-  parseImgDimensions: true,
-  strikethrough: true,
-  tables: true,
-  tasklists: true,
-})
 
 // const renameHtml = (path: string) => {
 //   const hasLeadingHash = path.startsWith('#')
@@ -46,11 +39,11 @@ const browserSettings: IOptionalBrowserSettings = {
   disableJavaScriptFileLoading: true,
 }
 
-export const markdownToHTML = (
+export const markdownToHTML = async (
   content: string,
-  anchorMangler?: (s: string) => string
+  { anchorMangler }: {anchorMangler?: (s: string) => string} = {}
 ) => {
-  const rawHtml = converter.makeHtml(content)
+  const rawHtml = await marked(content)
   const browser = new Browser({ settings: browserSettings })
   const page = browser.newPage()
   page.content = rawHtml
@@ -81,7 +74,7 @@ export const markdownToHTML = (
     let next: ChildNode | null = comment as ChildNode
     toDelete.push(next)
     while ((next = next.nextSibling)) {
-      if (next != null && next.nodeType === Node.TEXT_NODE) {
+      if (next != null && next.nodeType === 3) { // Node.TEXT_NODE
         toDelete.push(next)
       } else {
         break
@@ -101,12 +94,12 @@ export const markdownToHTML = (
   return el.innerHTML
 }
 
-export const markdownWithFM = (
+export const markdownWithFM = async (
   content: string,
-  anchorMangler: (s: string) => string
+  { anchorMangler }: { anchorMangler?: (s: string) => string }
 ) => {
   const parsed = fm(content)
-  const html = markdownToHTML(parsed.body, anchorMangler)
+  const html = await markdownToHTML(parsed.body, { anchorMangler })
   return {
     html,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
