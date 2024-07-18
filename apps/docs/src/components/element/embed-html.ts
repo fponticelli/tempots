@@ -11,10 +11,10 @@ import {
   Value,
   Ensure,
 } from '@tempots/dom'
-import { UseLocation, Location, setLocationFromUrl } from '@tempots/ui'
+import { UseLocation, LocationData, setLocationFromUrl } from '@tempots/ui'
 import { Styles } from '../styles'
 
-const updateAnchors = (location: Prop<Location>, el: HTMLElement) => {
+const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
   const anchors = el.querySelectorAll('a')
   for (const anchor of anchors) {
     anchor.addEventListener(

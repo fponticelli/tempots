@@ -8,10 +8,10 @@ import {
   clamp,
   clampInt,
   clampSym,
-  compare,
   interpolate,
   interpolateAngle,
-  toHex
+  toHex,
+  compareNumbers
 } from '../src/number'
 
 describe('numbers', () => {
@@ -82,10 +82,10 @@ describe('numbers', () => {
     expect(clampSym(-4, 2)).toBe(-2)
   })
 
-  test('compare', () => {
-    expect(compare(1, 2)).toBe(-1)
-    expect(compare(2, 1)).toBe(1)
-    expect(compare(1, 1)).toBe(0)
+  test('compareNumbers', () => {
+    expect(compareNumbers(1, 2)).toBe(-1)
+    expect(compareNumbers(2, 1)).toBe(1)
+    expect(compareNumbers(1, 1)).toBe(0)
   })
 
   test('interpolate', () => {

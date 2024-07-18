@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "docs:maketoc": "tsx ./scripts/build-docs.ts"
+    "docs:prep": "tsx ./scripts/prep-doc-contents.ts"
   },
   "dependencies": {
     "@tabler/icons": "^3.10.0",

@@ -1,7 +1,5 @@
 import { lpad } from './string'
 
-export const TOLERANCE = 10e-5
-
 /**
   Constant value employed to see if two `number` values are very close.
 **/
@@ -121,7 +119,7 @@ export function clampSym(v: number, max: number): number {
  * compare(5, 5) // returns 0
  * ```
  **/
-export function compare(a: number, b: number): number {
+export function compareNumbers(a: number, b: number): number {
   return a < b ? -1 : a > b ? 1 : 0
 }
 

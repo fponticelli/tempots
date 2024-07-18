@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 coverage
-**/docs/api.json
+packages/*/docs/
 
 # Editor directories and files
 .vscode/*

@@ -108,7 +108,7 @@ export function calculateBoundingLines(
   return [r0s, r0i, r1s, r1i, g0s, g0i, g1s, g1i, b0s, b0i, b1s, b1i]
 }
 
-export function calcMaxChromaHsluv(
+export function calculateMaxChromaHsluv(
   h: number,
   r0s: number,
   r0i: number,

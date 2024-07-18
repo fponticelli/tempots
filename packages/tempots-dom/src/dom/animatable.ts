@@ -1,4 +1,4 @@
-export interface Animatable {
+export interface AnimatableProps {
   width?: number
   maxWidth?: number
   minWidth?: number
@@ -187,8 +187,8 @@ export function interpolateShadow(
 
 export function getComputedAnimatableProp(
   styles: CSSStyleDeclaration,
-  key: keyof Animatable
-): Animatable[typeof key] {
+  key: keyof AnimatableProps
+): AnimatableProps[typeof key] {
   if (key === 'translateX') {
     return new WebKitCSSMatrix(styles.transform).m41
   } else if (key === 'translateY') {
@@ -233,12 +233,12 @@ export function getComputedAnimatableProp(
 
 export function getComputedAnimatable(
   el: HTMLElement,
-  styles: Animatable
-): Animatable {
-  const result: Animatable = {}
+  styles: AnimatableProps
+): AnimatableProps {
+  const result: AnimatableProps = {}
   const computedStyles = getComputedStyle(el)
   for (const [key, value] of Object.entries(styles)) {
-    const k = key as keyof Animatable
+    const k = key as keyof AnimatableProps
     if (value != null) {
       result[k] = getComputedAnimatableProp(computedStyles, k) as never
     }
@@ -248,8 +248,8 @@ export function getComputedAnimatable(
 
 export function applyAnimatableProp(
   el: HTMLElement,
-  key: keyof Animatable,
-  value: Animatable[typeof key]
+  key: keyof AnimatableProps,
+  value: AnimatableProps[typeof key]
 ): void {
   if (value == null) return
 
@@ -326,9 +326,9 @@ function getShadowInterpolation(
 
 export function applyInterpolatedAnimatableProp(
   el: HTMLElement,
-  key: keyof Animatable,
-  from: Animatable[typeof key],
-  to: Animatable[typeof key],
+  key: keyof AnimatableProps,
+  from: AnimatableProps[typeof key],
+  to: AnimatableProps[typeof key],
   progress: number
 ): void {
   if (from != null && to != null) {
@@ -358,24 +358,27 @@ export function applyInterpolatedAnimatableProp(
 
 export function applyInterpolatedAnimatable(
   el: HTMLElement,
-  from: Animatable,
-  to: Animatable,
+  from: AnimatableProps,
+  to: AnimatableProps,
   progress: number
 ): void {
   el.style.transform = ''
   el.style.filter = ''
   for (const [key, value] of Object.entries(to)) {
-    const k = key as keyof Animatable
+    const k = key as keyof AnimatableProps
     applyInterpolatedAnimatableProp(el, k, from[k], value, progress)
   }
 }
 
-export function applyAnimatable(el: HTMLElement, styles: Animatable): void {
+export function applyAnimatable(
+  el: HTMLElement,
+  styles: AnimatableProps
+): void {
   el.style.transform = ''
   el.style.filter = ''
   for (const [key, value] of Object.entries(styles)) {
     if (value != null) {
-      applyAnimatableProp(el, key as keyof Animatable, value)
+      applyAnimatableProp(el, key as keyof AnimatableProps, value)
     }
   }
 }

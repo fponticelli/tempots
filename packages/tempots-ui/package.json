@@ -49,6 +49,7 @@
     "test:coverage": "vitest --coverage",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "docs": "npx api-extractor run --local && npx api-documenter markdown -i ./docs/input -o docs/output/md && npx api-documenter yaml -i ./docs/input -o docs/output/yaml",
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
     "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
     "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",
@@ -70,6 +71,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
+    "@microsoft/api-documenter": "^7.25.6",
+    "@microsoft/api-extractor": "^7.47.1",
     "@tempots/dom": "*",
     "@tempots/std": "*",
     "@types/node": "^20.12.7",

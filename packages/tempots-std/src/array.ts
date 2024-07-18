@@ -13,7 +13,6 @@ import { objectKeys } from './object'
  * @param arr - The input array.
  * @param f - The function to apply to each element.
  * @returns The new array with the results of applying the function to each element.
- * @category manipulation
  * @public
  */
 export function mapArray<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
@@ -28,7 +27,6 @@ export function mapArray<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
  * @returns A new array with the flattened result of applying the mapping function to each element of the input array.
  * @typeParam A - The type of the elements in the input array.
  * @typeParam B - The type of the elements in the resulting flattened array.
- * @category manipulation
  * @public
  */
 export function flatMapArray<A, B>(arr: A[], f: (a: A) => B[]): B[] {
@@ -45,7 +43,6 @@ export function flatMapArray<A, B>(arr: A[], f: (a: A) => B[]): B[] {
  * @param arr - The input array.
  * @returns The first element of the array, or `undefined` if the array is empty.
  * @typeParam A - The type of elements in the array.
- * @category access
  * @public
  */
 export function arrayHead<A>(arr: A[]): Maybe<A> {
@@ -57,7 +54,6 @@ export function arrayHead<A>(arr: A[]): Maybe<A> {
  *
  * @param arr - The input array.
  * @returns A new array containing all elements of the input array except for the first element.
- * @category access
  * @public
  */
 export function arrayTail<A>(arr: A[]): A[] {
@@ -72,7 +68,6 @@ export function arrayTail<A>(arr: A[]): A[] {
  * @param b - The second array.
  * @param equality - The custom equality function to compare elements.
  * @returns Returns `true` if the arrays are equal, `false` otherwise.
- * @category comparison
  * @public
  */
 export function areArraysEqual<T>(
@@ -94,7 +89,6 @@ export function areArraysEqual<T>(
  *
  * @param arr - The array to check.
  * @returns `true` if the array is empty, `false` otherwise.
- * @category query
  * @public
  */
 export function isArrayEmpty<T>(arr: T[]): arr is [] {
@@ -106,7 +100,6 @@ export function isArrayEmpty<T>(arr: T[]): arr is [] {
  *
  * @param arr - The array to check.
  * @returns `true` if the array has values, `false` otherwise.
- * @category query
  * @public
  */
 export function arrayHasValues<T>(arr: T[]): arr is [T, ...T[]] {
@@ -120,7 +113,6 @@ export function arrayHasValues<T>(arr: T[]): arr is [T, ...T[]] {
  * @param arr - The array to filter.
  * @param predicate - The predicate function used to filter the elements.
  * @returns The filtered array.
- * @category manipulation
  * @public
  */
 export function filterArray<T>(arr: T[], predicate: (v: T) => boolean): T[] {
@@ -138,7 +130,6 @@ export function filterArray<T>(arr: T[], predicate: (v: T) => boolean): T[] {
  * @param arr - The input array.
  * @param f - The mapping function to apply to each element.
  * @returns The new array containing the mapped values.
- * @category manipulation
  * @public
  */
 export function filterMapArray<A, B>(
@@ -161,7 +152,6 @@ export function filterMapArray<A, B>(
  * @typeParam T - The type of elements in the array.
  * @param arr - The array to filter.
  * @returns The filtered array.
- * @category manipulation
  * @public
  */
 export function filterNullsFromArray<T>(arr: Array<T | Nothing>): T[] {
@@ -174,7 +164,6 @@ export function filterNullsFromArray<T>(arr: Array<T | Nothing>): T[] {
  * @param arr - The two-dimensional array to flatten.
  * @returns The flattened one-dimensional array.
  * @typeParam T - The type of elements in the array.
- * @category manipulation
  * @public
  */
 export function flattenArray<T>(arr: T[][]): T[] {
@@ -190,7 +179,6 @@ export function flattenArray<T>(arr: T[][]): T[] {
  * @param f - The function to apply to each element.
  * @param b - The initial value of the accumulator.
  * @returns The accumulated result.
- * @category manipulation
  * @public
  */
 export function foldLeftArray<T, B>(
@@ -211,7 +199,6 @@ export function foldLeftArray<T, B>(
  * @param predicate - The predicate function to apply to each element.
  * @returns `true` if all elements satisfy the predicate, `false` otherwise.
  * @typeParam T - The type of elements in the array.
- * @category query
  * @public
  */
 export function allElements<T>(
@@ -233,7 +220,6 @@ export function allElements<T>(
  * @param predicate - The predicate function to apply to each element.
  * @returns `true` if any element satisfies the predicate, `false` otherwise.
  * @typeParam T - The type of elements in the array.
- * @category query
  * @public
  */
 export function anyElement<T>(arr: T[], predicate: (v: T) => boolean): boolean {
@@ -251,7 +237,6 @@ export function anyElement<T>(arr: T[], predicate: (v: T) => boolean): boolean {
  * @typeParam T - The type of elements in the array.
  * @param arr - The array to iterate over.
  * @param f - The function to apply to each element.
- * @category effect
  * @public
  */
 export function forEachElement<T>(arr: T[], f: (v: T) => void): void {
@@ -264,7 +249,6 @@ export function forEachElement<T>(arr: T[], f: (v: T) => void): void {
  * @param arrs - The arrays to concatenate.
  * @returns The concatenated array.
  * @typeParam A - The type of elements in the arrays.
- * @category manipulation
  * @public
  */
 export function concatArrays<A>(...arrs: A[][]): A[] {
@@ -280,7 +264,6 @@ export function concatArrays<A>(...arrs: A[][]): A[] {
  * @param comparef - The compare function to use for comparing the elements of the arrays.
  * @param shorterFirst - Optional. Specifies whether shorter arrays should be considered smaller. Defaults to true.
  * @returns A compare function that can be used to compare arrays.
- * @category comparison
  * @public
  */
 export function compareArrays<A>(
@@ -308,7 +291,6 @@ export function compareArrays<A>(
  * @param arr - The array to be sorted.
  * @param compare - The compare function used to determine the order of the elements.
  * @returns The sorted array.
- * @category manipulation
  * @public
  */
 export function sortArray<A>(arr: A[], compare: Compare<A>): A[] {
@@ -321,7 +303,6 @@ export function sortArray<A>(arr: A[], compare: Compare<A>): A[] {
  * @param length - The length of the resulting array.
  * @param f - The function to apply to each index. It takes the index as a parameter and returns the corresponding value.
  * @returns An array of values generated by applying the function to each index.
- * @category creation
  * @public
  */
 export function generateArray<A>(length: number, f: (index: number) => A): A[] {
@@ -334,7 +315,6 @@ export function generateArray<A>(length: number, f: (index: number) => A): A[] {
  * @param length - The length of the array to generate.
  * @param startAt - The starting value of the range. Default is 0.
  * @returns An array of numbers in the specified range.
- * @category creation
  * @public
  */
 export function generateSequenceArray(length: number, startAt = 0): number[] {
@@ -348,7 +328,6 @@ export function generateSequenceArray(length: number, startAt = 0): number[] {
  * @param length - The length of the new array.
  * @param value - The value to fill the array with.
  * @returns A new array filled with the specified value.
- * @category creation
  * @public
  */
 export function createFilledArray<A>(length: number, value: A): A[] {
@@ -361,7 +340,6 @@ export function createFilledArray<A>(length: number, value: A): A[] {
  * @typeParam T - The type of the input array elements.
  * @param values - The input array.
  * @returns An array containing only the distinct primitive values from the input array.
- * @category manipulation
  * @public
  */
 export function uniquePrimitives<T extends Primitive>(values: T[]): T[] {
@@ -375,7 +353,6 @@ export function uniquePrimitives<T extends Primitive>(values: T[]): T[] {
  * @param values - The input array.
  * @param predicate - The predicate function used to determine uniqueness.
  * @returns An array of distinct elements.
- * @category manipulation
  * @public
  */
 export function uniqueByPredicate<T>(
@@ -396,7 +373,6 @@ export function uniqueByPredicate<T>(
  * @param arr - The array from which to remove the item.
  * @param item - The item to remove from the array.
  * @returns `true` if the item was found and removed, `false` otherwise.
- * @category mutation
  * @public
  */
 export function removeOneFromArray<A>(arr: A[], item: A): boolean {
@@ -416,7 +392,6 @@ export function removeOneFromArray<A>(arr: A[], item: A): boolean {
  * @param arr - The array from which to remove the item.
  * @param item - The item to remove from the array.
  * @returns `true` if at least one occurrence was found and removed, `false` otherwise.
- * @category mutation
  * @public
  */
 export function removeAllFromArray<A>(arr: A[], item: A): boolean {
@@ -434,7 +409,6 @@ export function removeAllFromArray<A>(arr: A[], item: A): boolean {
  * @param arr - The array from which elements will be removed.
  * @param predicate - The predicate function used to determine which elements to remove.
  * @returns `true` if at least one element was removed, `false` otherwise.
- * @category mutation
  * @public
  */
 export function removeOneFromArrayByPredicate<A>(
@@ -457,7 +431,6 @@ export function removeOneFromArrayByPredicate<A>(
  * @param arr - The array from which elements will be removed.
  * @param predicate - The predicate function used to determine which elements to remove.
  * @returns `true` if at least one element was removed, `false` otherwise.
- * @category mutation
  * @public
  */
 export function removeAllFromArrayByPredicate<A>(
@@ -476,7 +449,6 @@ export function removeAllFromArrayByPredicate<A>(
  *
  * @param it - The IterableIterator to convert.
  * @returns An array containing the values from the IterableIterator.
- * @category creation
  * @public
  */
 export function arrayOfIterableIterator<A>(it: IterableIterator<A>): A[] {
@@ -507,7 +479,6 @@ export interface ArrayDiffOperations<T> {
  * @param to - The target array.
  * @param getKey - The key function used to compare elements.
  * @returns The difference operations between the two arrays.
- * @category manipulation
  * @public
  */
 export function arrayDiffOperations<T, K>(
@@ -583,7 +554,6 @@ export function arrayDiffOperations<T, K>(
  * @param operations - The operations to apply.
  * @param start - The initial array.
  * @returns The modified array after applying the operations.
- * @category manipulation
  * @public
  */
 export function applyArrayDiffOperations<T>(
@@ -612,7 +582,6 @@ export function applyArrayDiffOperations<T>(
  * @param conjunction - The conjunction to use between the second-to-last and last value. Default is ' and '.
  * @param separator - The separator to use between each value. Default is ', '.
  * @returns The joined string.
- * @category transformation
  * @public
  */
 export function joinArrayWithConjunction<A>(
@@ -635,7 +604,6 @@ export function joinArrayWithConjunction<A>(
  * @param compare - The compare function used to determine the order of elements.
  * @param incrementDuplicates - Whether to increment the rank of duplicate values.
  * @returns An array of ranks corresponding to the elements in the input array.
- * @category transformation
  * @public
  */
 export function rankArray<T>(

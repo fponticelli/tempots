@@ -6,7 +6,7 @@ import { LAB } from './lab'
 import { LCH } from './lch'
 import { LUV } from './luv'
 import {
-  calcMaxChromaHsluv,
+  calculateMaxChromaHsluv,
   calculateBoundingLines,
   epsilon,
   kappa,
@@ -227,7 +227,7 @@ export const Direct = {
       lchL = l
       const [r0s, r0i, r1s, r1i, g0s, g0i, g1s, g1i, b0s, b0i, b1s, b1i] =
         calculateBoundingLines(l)
-      const max = calcMaxChromaHsluv(
+      const max = calculateMaxChromaHsluv(
         h,
         r0s,
         r0i,
@@ -259,7 +259,7 @@ export const Direct = {
       hsluvL = l
       const [r0s, r0i, r1s, r1i, g0s, g0i, g1s, g1i, b0s, b0i, b1s, b1i] =
         calculateBoundingLines(l)
-      const max = calcMaxChromaHsluv(
+      const max = calculateMaxChromaHsluv(
         h,
         r0s,
         r0i,

@@ -11,16 +11,16 @@ import {
   WithProvider,
 } from '@tempots/dom'
 
-export interface Location {
+export interface LocationData {
   pathname: string
   search: Record<string, string>
   hash?: string
 }
 
 export const LocationProviderMarker =
-  makeProviderMark<Prop<Location>>('LocationProvider')
+  makeProviderMark<Prop<LocationData>>('LocationProvider')
 
-export function makeLocation(): Location {
+export function makeLocation(): LocationData {
   const hash =
     window?.location.hash === ''
       ? undefined
@@ -34,7 +34,7 @@ export function makeLocation(): Location {
   }
 }
 
-export function equalsLocation(a: Location, b: Location) {
+export function equalsLocation(a: LocationData, b: LocationData) {
   return (
     a.pathname === b.pathname &&
     JSON.stringify(a.search) === JSON.stringify(b.search) &&
@@ -42,7 +42,7 @@ export function equalsLocation(a: Location, b: Location) {
   )
 }
 
-export function locationFromURL(url: string): Location {
+export function locationFromURL(url: string): LocationData {
   const urlObj = new URL(url, window?.location.toString() ?? '')
   const search = Object.fromEntries(urlObj.searchParams.entries())
   return {
@@ -52,13 +52,13 @@ export function locationFromURL(url: string): Location {
   }
 }
 
-export function setLocationFromUrl(prop: Prop<Location>, url: string) {
+export function setLocationFromUrl(prop: Prop<LocationData>, url: string) {
   const location = locationFromURL(url)
   prop.set(location)
   return prop
 }
 
-export function getFullURL(location: Location) {
+export function getFullURL(location: LocationData) {
   const search = new URLSearchParams(location.search)
   const searchStr = search.toString()
   const hash = location.hash
@@ -67,7 +67,7 @@ export function getFullURL(location: Location) {
   }`
 }
 
-export function makeLocationProp(): Prop<Location> {
+export function makeLocationProp(): Prop<LocationData> {
   const location = prop(makeLocation(), equalsLocation)
 
   const handler = () => {
@@ -84,7 +84,7 @@ export function makeLocationProp(): Prop<Location> {
     window?.removeEventListener('popstate', handler)
   })
 
-  location.on((location: Location) => {
+  location.on((location: LocationData) => {
     const search = new URLSearchParams(location.search)
     const searchStr = search.toString()
     const hash = location.hash
@@ -106,8 +106,8 @@ export function ProvideLocation(child: TNode) {
   )
 }
 
-export function UseLocation(fn: (location: Prop<Location>) => TNode) {
-  return UseProvider(LocationProviderMarker, (location: Prop<Location>) => {
+export function UseLocation(fn: (location: Prop<LocationData>) => TNode) {
+  return UseProvider(LocationProviderMarker, (location: Prop<LocationData>) => {
     // prevents accidentally disposing of the source location prop
     return (ctx: DOMContext) => {
       const derived = prop(location.value, location.equals)
