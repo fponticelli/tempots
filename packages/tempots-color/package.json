@@ -2,7 +2,7 @@
   "name": "@tempots/color",
   "private": false,
   "priority": 10,
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Colors library for TypeScript.",
   "keywords": [
     "tempo",
@@ -38,6 +38,10 @@
     "dist"
   ],
   "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
     "./cmyk": {
       "import": "./dist/cmyk.js",
       "require": "./dist/cmyk.cjs"
@@ -137,6 +141,9 @@
   },
   "typesVersions": {
     "*": {
+      ".": [
+        "./dist/index.d.ts"
+      ],
       "cmyk": [
         "./dist/cmyk.d.ts"
       ],

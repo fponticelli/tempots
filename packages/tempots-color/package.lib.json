@@ -1,6 +1,6 @@
 {
   "name": "@tempots/color",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Colors library for TypeScript.",
   "keywords": [
@@ -33,6 +33,10 @@
     "url": "https://github.com/fponticelli"
   },
   "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
     "./cmyk": {
       "import": "./cmyk.js",
       "require": "./cmyk.cjs"
@@ -97,6 +101,9 @@
   },
   "typesVersions": {
     "*": {
+      ".": [
+        "./index.d.ts"
+      ],
       "cmyk": [
         "./cmyk.d.ts"
       ],
