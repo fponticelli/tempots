@@ -13,6 +13,7 @@ export const EPSILON = 1e-9
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The difference between the two angles.
  * @public
+ * @remarks
  * @example
  * ```ts
  * angleDifference(0, 90) // returns 90
@@ -35,6 +36,7 @@ export function angleDifference(a: number, b: number, turn = 360.0): number {
  * @param decimals - The number of decimals to round up to.
  * @returns The rounded up number.
  * @public
+ * @remarks
  * @example
  * ```ts
  * ceilTo(1.234, 2) // returns 1.24
@@ -55,6 +57,7 @@ export function ceilTo(v: number, decimals: number): number {
  * @param max - The maximum value.
  * @returns The clamped value.
  * @public
+ * @remarks
  * @example
  * ```ts
  * clamp(1.3, 0, 1) // returns 1
@@ -74,6 +77,7 @@ export function clamp(value: number, min: number, max: number): number {
  * @param max - The maximum value of the range.
  * @returns The clamped integer value.
  * @public
+ * @remarks
  * @example
  * ```ts
  * clampInt(5, 0, 10) // returns 5
@@ -93,6 +97,7 @@ export function clampInt(value: number, min: number, max: number): number {
  * @param max - The maximum value.
  * @returns The clamped value.
  * @public
+ * @remarks
  * @example
  * ```ts
  * clampSym(5, 10) // returns 5
@@ -112,6 +117,7 @@ export function clampSym(v: number, max: number): number {
  * @param b - The second value to compare.
  * @returns A number indicating the relative order of the two values.
  * @public
+ * @remarks
  * @example
  * ```ts
  * compare(5, 10) // returns -1
@@ -130,6 +136,7 @@ export function compareNumbers(a: number, b: number): number {
  * @param decimals - The number of decimals to round down to.
  * @returns The rounded down number.
  * @public
+ * @remarks
  * @example
  * ```ts
  * floorTo(1.234, 2) // returns 1.23
@@ -149,6 +156,7 @@ export function floorTo(v: number, decimals: number): number {
  * @param length - The desired length of the hexadecimal string. Defaults to 0.
  * @returns The hexadecimal representation of the number.
  * @public
+ * @remarks
  * @example
  * ```ts
  * toHex(255) // returns 'ff'
@@ -168,6 +176,7 @@ export function toHex(num: number, length = 0): string {
  * @param t - The interpolation value.
  * @returns The interpolated value.
  * @public
+ * @remarks
  * @example
  * ```ts
  * interpolate(0, 10, 0.5) // returns 5
@@ -189,6 +198,7 @@ export function interpolate(a: number, b: number, t: number): number {
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
+ * @remarks
  * @example
  * ```ts
  * interpolateAngle(0, 90, 0.5) // returns 45
@@ -214,6 +224,7 @@ export function interpolateAngle(
  * @param turn - The total angle of a full turn. Defaults to 360 degrees.
  * @returns The widest angle difference between `a` and `b`.
  * @public
+ * @remarks
  * @example
  * ```ts
  * widestAngleDifference(0, 90) // returns 90
@@ -243,6 +254,7 @@ export function widestAngleDifference(
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
+ * @remarks
  * @example
  * ```ts
  * interpolateWidestAngle(0, 90, 0.5) // returns 45
@@ -272,6 +284,7 @@ export function interpolateWidestAngle(
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
+ * @remarks
  * @example
  * ```ts
  * interpolateAngleCW(0, 90, 0.5) // returns 45
@@ -301,6 +314,7 @@ export function interpolateAngleCW(
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
+ * @remarks
  * @example
  * ```ts
  * interpolateAngleCCW(0, 90, 0.5) // returns 45
@@ -331,6 +345,7 @@ export function interpolateAngleCCW(
  * @param tollerance - The tollerance value. Default is `EPSILON`.
  * @returns `true` if the numbers are very close, `false` otherwise.
  * @public
+ * @remarks
  * @example
  * ```ts
  * nearEquals(5, 5.000000000000001) // returns true
@@ -366,6 +381,7 @@ export function nearEquals(
  * @param tollerance - The tollerance value. Default is `EPSILON`.
  * @returns `true` if the angles are very close, `false` otherwise.
  * @public
+ * @remarks
  * @example
  * ```ts
  * nearEqualAngles(0, 360) // returns true
@@ -391,6 +407,7 @@ export function nearEqualAngles(
  * @param tollerance - The tollerance value. Default is `EPSILON`.
  * @returns `true` if the number is zero or very close to it, `false` otherwise.
  * @public
+ * @remarks
  * @example
  * ```ts
  * nearZero(0.000000000000001) // returns true
@@ -409,6 +426,7 @@ export function nearZero(n: number, tollerance = EPSILON): boolean {
  * @param index - The index of the root.
  * @returns The nth root of the base number.
  * @public
+ * @remarks
  * @example
  * ```ts
  * root(8, 3) // returns 2
@@ -427,6 +445,7 @@ export function root(base: number, index: number): number {
  * @param decimals - The number of decimals to round to.
  * @returns The rounded number.
  * @public
+ * @remarks
  * @example
  * ```ts
  * roundTo(1.234, 2) // returns 1.23
@@ -445,6 +464,7 @@ export function roundTo(f: number, decimals: number): number {
  * @param value - The number to check.
  * @returns `-1` if the number is negative, `1` otherwise.
  * @public
+ * @remarks
  * @example
  * ```ts
  * sign(-5) // returns -1
@@ -466,6 +486,7 @@ export function sign<T extends number>(value: T): number {
  * @param max - The maximum value of the range.
  * @returns The wrapped value.
  * @public
+ * @remarks
  * @example
  * ```ts
  * wrap(5, 0, 10) // returns 5
@@ -486,6 +507,7 @@ export function wrap(v: number, min: number, max: number): number {
  * @param max - The maximum value of the range.
  * @returns The wrapped value.
  * @public
+ * @remarks
  * @example
  * ```ts
  * wrapCircular(5, 10) // returns 5
