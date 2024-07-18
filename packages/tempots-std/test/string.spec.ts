@@ -3,28 +3,27 @@ import { describe, expect, test } from "vitest";
 import {
   lowerCaseFirst,
   upperCaseFirst,
-  contains,
-  count,
-  containsAny,
-  containsAll,
-  hashCode,
+  textContains,
+  containsAnyText,
+  containsAllText,
+  stringHashCode,
   capitalizeWords,
-  diffIndex,
   ellipsis,
   ellipsisMiddle,
   isAlphaNum,
   humanize,
   wrapColumns,
-  repeat,
-  upTo,
-  from,
-  after,
+  repeatString,
+  afterText,
   trimCharsLeft,
   trimCharsRight,
   trimChars,
-  toArray,
-  toLines,
-  reverse
+  stringToChars,
+  stringToLines,
+  reverseString,
+  countTextOccurrences,
+  stringsDifferAtIndex,
+  beforeText
 } from '../src/string'
 
 describe('strings.ts', () => {
@@ -34,75 +33,75 @@ describe('strings.ts', () => {
   })
 
   test('Contains', () => {
-    expect(contains('test', '')).toBe(true)
-    expect(contains('test', 't')).toBe(true)
-    expect(contains('test', 'te')).toBe(true)
-    expect(contains('test', 'tes')).toBe(true)
-    expect(contains('test', 'test')).toBe(true)
-    expect(contains('one two three', 'one')).toBe(true)
-    expect(contains('one two three', 'two')).toBe(true)
-    expect(contains('one two three', 'three')).toBe(true)
-    expect(contains('test', 'test ')).toBe(false)
-    expect(contains('test', ' test')).toBe(false)
-    expect(contains('test', 'tes ')).toBe(false)
+    expect(textContains('test', '')).toBe(true)
+    expect(textContains('test', 't')).toBe(true)
+    expect(textContains('test', 'te')).toBe(true)
+    expect(textContains('test', 'tes')).toBe(true)
+    expect(textContains('test', 'test')).toBe(true)
+    expect(textContains('one two three', 'one')).toBe(true)
+    expect(textContains('one two three', 'two')).toBe(true)
+    expect(textContains('one two three', 'three')).toBe(true)
+    expect(textContains('test', 'test ')).toBe(false)
+    expect(textContains('test', ' test')).toBe(false)
+    expect(textContains('test', 'tes ')).toBe(false)
   })
 
-  test('Count', () => {
+  test('countTextOccurrences', () => {
     expect(3).toBe(
-      count('one two three four five six seven eight nine ten', 'o')
+      countTextOccurrences('one two three four five six seven eight nine ten', 'o')
     )
     expect(2).toBe(
-      count('one two three four five six seven eight nine ten', 'en')
+      countTextOccurrences('one two three four five six seven eight nine ten', 'en')
     )
     expect(3).toBe(
-      count('one two three four five six seven eight nine ten', ' t')
+      countTextOccurrences('one two three four five six seven eight nine ten', ' t')
     )
     expect(2).toBe(
-      count('one two three four five six seven eight nine ten', 've')
+      countTextOccurrences('one two three four five six seven eight nine ten', 've')
     )
-    expect(0).toBe(count('xxxxxx', 'y'))
-    expect(6).toBe(count('xxxxxx', 'x'))
-    expect(3).toBe(count('xxxxxx', 'xx'))
-    expect(2).toBe(count('xxxxxx', 'xxx'))
-    expect(1).toBe(count('xxxxxx', 'xxxx'))
-    expect(0).toBe(count('x', 'xx'))
+    expect(0).toBe(countTextOccurrences('xxxxxx', 'y'))
+    expect(6).toBe(countTextOccurrences('xxxxxx', 'x'))
+    expect(3).toBe(countTextOccurrences('xxxxxx', 'xx'))
+    expect(2).toBe(countTextOccurrences('xxxxxx', 'xxx'))
+    expect(1).toBe(countTextOccurrences('xxxxxx', 'xxxx'))
+    expect(0).toBe(countTextOccurrences('x', 'xx'))
   })
 
   test('ContainsAny', () => {
-    expect(containsAny('test', ['t', 'x', 'y'])).toBe(true)
-    expect(containsAny('test', ['e', 'x', 'y'])).toBe(true)
-    expect(containsAny('test', ['s', 'x', 'y'])).toBe(true)
-    expect(containsAny('test', ['x', 't', 'y'])).toBe(true)
-    expect(containsAny('test', ['x', 'e', 'y'])).toBe(true)
-    expect(containsAny('test', ['x', 's', 'y'])).toBe(true)
-    expect(containsAny('test', ['x', 'y', 't'])).toBe(true)
-    expect(containsAny('test', ['x', 'y', 'e'])).toBe(true)
-    expect(containsAny('test', ['x', 'y', 's'])).toBe(true)
-    expect(containsAny('one two three', ['zero', 'one', 'two'])).toBe(true)
-    expect(containsAny('one two three', ['one', 'two', 'three'])).toBe(true)
-    expect(containsAny('one two three', ['one two', 'x', 'three'])).toBe(true)
+    expect(containsAnyText('test', ['t', 'x', 'y'])).toBe(true)
+    expect(containsAnyText('test', ['e', 'x', 'y'])).toBe(true)
+    expect(containsAnyText('test', ['s', 'x', 'y'])).toBe(true)
+    expect(containsAnyText('test', ['x', 't', 'y'])).toBe(true)
+    expect(containsAnyText('test', ['x', 'e', 'y'])).toBe(true)
+    expect(containsAnyText('test', ['x', 's', 'y'])).toBe(true)
+    expect(containsAnyText('test', ['x', 'y', 't'])).toBe(true)
+    expect(containsAnyText('test', ['x', 'y', 'e'])).toBe(true)
+    expect(containsAnyText('test', ['x', 'y', 's'])).toBe(true)
+    expect(containsAnyText('one two three', ['zero', 'one', 'two'])).toBe(true)
+    expect(containsAnyText('one two three', ['one', 'two', 'three'])).toBe(true)
+    expect(containsAnyText('one two three', ['one two', 'x', 'three'])).toBe(true)
   })
 
   test('ContainsAll', () => {
-    expect(containsAll('test', ['t', 's', 'e'])).toBe(true)
-    expect(containsAll('test', ['e', 'x', 'y'])).toBe(false)
-    expect(containsAll('test', ['t'])).toBe(true)
-    expect(containsAll('test', ['e'])).toBe(true)
-    expect(containsAll('test', ['s', 't'])).toBe(true)
-    expect(containsAll('test', ['x', 't'])).toBe(false)
-    expect(containsAll('one two three', ['zero', 'one', 'two'])).toBe(false)
-    expect(containsAll('one two three', ['one', 'two', 'three'])).toBe(true)
-    expect(containsAll('one two three', ['one two', 'three'])).toBe(true)
+    expect(containsAllText('test', ['t', 's', 'e'])).toBe(true)
+    expect(containsAllText('test', ['e', 'x', 'y'])).toBe(false)
+    expect(containsAllText('test', ['t'])).toBe(true)
+    expect(containsAllText('test', ['e'])).toBe(true)
+    expect(containsAllText('test', ['s', 't'])).toBe(true)
+    expect(containsAllText('test', ['x', 't'])).toBe(false)
+    expect(containsAllText('one two three', ['zero', 'one', 'two'])).toBe(false)
+    expect(containsAllText('one two three', ['one', 'two', 'three'])).toBe(true)
+    expect(containsAllText('one two three', ['one two', 'three'])).toBe(true)
   })
 
   test('HashCode', () => {
-    expect(hashCode('a')).toBe(3826002220)
-    expect(hashCode('abc')).toBe(440920331)
-    expect(hashCode('abcdefghijklm')).toBe(998463208)
-    expect(hashCode('abcdefghijklM')).toBe(461579400)
-    expect(hashCode('Abcdefghijklm')).toBe(3054447752)
+    expect(stringHashCode('a')).toBe(3826002220)
+    expect(stringHashCode('abc')).toBe(440920331)
+    expect(stringHashCode('abcdefghijklm')).toBe(998463208)
+    expect(stringHashCode('abcdefghijklM')).toBe(461579400)
+    expect(stringHashCode('Abcdefghijklm')).toBe(3054447752)
     expect(
-      hashCode(
+      stringHashCode(
         'abcdefghijklmabcdefghijklmabcdefghijklmabcdefghijklmabcdefghijklm!!'
       )
     ).toBe(3846459698)
@@ -119,12 +118,12 @@ describe('strings.ts', () => {
     for (const item of tests) { expect(capitalizeWords(item.test, true)).toBe(item.expected) }
   })
 
-  test('diffIndex', () => {
-    expect(3).toBe(diffIndex('abcdef', 'abc123'))
-    expect(0).toBe(diffIndex('', 'abc123'))
-    expect(1).toBe(diffIndex('a', 'abc123'))
-    expect(0).toBe(diffIndex('abc123', ''))
-    expect(1).toBe(diffIndex('abc123', 'a'))
+  test('stringsDifferAtIndex', () => {
+    expect(3).toBe(stringsDifferAtIndex('abcdef', 'abc123'))
+    expect(0).toBe(stringsDifferAtIndex('', 'abc123'))
+    expect(1).toBe(stringsDifferAtIndex('a', 'abc123'))
+    expect(0).toBe(stringsDifferAtIndex('abc123', ''))
+    expect(1).toBe(stringsDifferAtIndex('abc123', 'a'))
   })
 
   test('Ellipsis', () => {
@@ -243,22 +242,17 @@ aaa aa`
   })
 
   test('Repeat', () => {
-    expect('XyXyXy').toBe(repeat('Xy', 3))
+    expect('XyXyXy').toBe(repeatString('Xy', 3))
   })
 
-  test('UpTo', () => {
-    expect('abcdef').toBe(upTo('abcdef', 'x'))
-    expect('ab').toBe(upTo('abcdef', 'cd'))
+  test('beforeText', () => {
+    expect('').toBe(beforeText('abcdef', 'x'))
+    expect('ab').toBe(beforeText('abcdef', 'cd'))
   })
 
-  test('From', () => {
-    expect('').toBe(from('abcdef', 'x'))
-    expect('cdef').toBe(from('abcdef', 'cd'))
-  })
-
-  test('After', () => {
-    expect('').toBe(after('abcdef', 'x'))
-    expect('ef').toBe(after('abcdef', 'cd'))
+  test('afterText', () => {
+    expect('').toBe(afterText('abcdef', 'x'))
+    expect('ef').toBe(afterText('abcdef', 'cd'))
   })
 
   test('Ltrim', () => {
@@ -288,19 +282,19 @@ aaa aa`
   test('ToArray', () => {
     const t = 'a☺b☺☺c☺☺☺'
     const e = ['a', '☺', 'b', '☺', '☺', 'c', '☺', '☺', '☺']
-    expect(e).toEqual(toArray(t))
+    expect(e).toEqual(stringToChars(t))
   })
 
   test('ToLines', () => {
     const text = `Split
 to
 lines`
-    expect(['Split', 'to', 'lines']).toEqual(toLines(text))
+    expect(['Split', 'to', 'lines']).toEqual(stringToLines(text))
   })
 
   test('Reverse', () => {
     const t = 'a☺b☺☺c☺☺☺'
     const e = '☺☺☺c☺☺b☺a'
-    expect(e).toEqual(reverse(t))
+    expect(e).toEqual(reverseString(t))
   })
 })

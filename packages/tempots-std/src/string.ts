@@ -8,17 +8,20 @@ import { mapRegExp as mapR } from './regexp'
 
 /**
  * Utility functions to manipulate string values.
+ *
+ * Use by importing the desired utility from "@tempots/std" or directly from "@tempots/std/string".
  * @public
  */
 
 /**
  * Replaces all occurrances of `placeholder` in `subject` with the value `replacement`.
- * @param subject -
- * @param placeholder -
- * @param replacement -
+ * @param subject - The string to search in.
+ * @param placeholder - The string to search for.
+ * @param replacement - The string to replace `placeholder` with.
+ * @returns The string with all occurrances of `placeholder` replaced by `replacement`.
  * @public
  */
-export function replace(
+export function replaceAll(
   subject: string,
   placeholder: string,
   replacement: string
@@ -27,18 +30,22 @@ export function replace(
 }
 
 /**
- * `after` searches for the first occurrance of `searchFor` and returns the text after that.
+ * `afterText` searches for the first occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
+ *
+ * @param value - The string to search in.
+ * @param searchFor - The string to search for.
+ * @returns The text after the first occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function after(value: string, searchFor: string): string {
+export function afterText(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(pos + searchFor.length)
 }
 
 /**
- * `afterLast` searches for the last occurrance of `searchFor` and returns the text after that.
+ * `afterLastText` searches for the last occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
  *
  * @param value - The string to search in.
@@ -46,29 +53,37 @@ export function after(value: string, searchFor: string): string {
  * @returns The text after the last occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function afterLast(value: string, searchFor: string): string {
+export function afterLastText(value: string, searchFor: string): string {
   const pos = value.lastIndexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(pos + searchFor.length)
 }
 
 /**
- * `before` searches for the first occurrance of `searchFor` and returns the text before that.
+ * `beforeText` searches for the first occurrance of `searchFor` and returns the text before that.
  * If `searchFor` is not found, an empty string is returned.
+ *
+ * @param value - The string to search in.
+ * @param searchFor - The string to search for.
+ * @returns The text before the first occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function before(value: string, searchFor: string): string {
+export function beforeText(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(0, pos)
 }
 
 /**
- * `beforeLast` searches for the last occurrance of `searchFor` and returns the text before that.
+ * `beforeLastText` searches for the last occurrance of `searchFor` and returns the text before that.
  * If `searchFor` is not found, an empty string is returned.
+ *
+ * @param value - The string to search in.
+ * @param searchFor - The string to search for.
+ * @returns The text before the last occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function beforeLast(value: string, searchFor: string): string {
+export function beforeLastText(value: string, searchFor: string): string {
   const pos = value.lastIndexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(0, pos)
@@ -76,6 +91,9 @@ export function beforeLast(value: string, searchFor: string): string {
 
 /**
  * `capitalize` returns a string with the first character convert to upper case.
+ *
+ * @param s - The string to capitalize.
+ * @returns The capitalized string.
  * @public
  */
 export function capitalize(s: string): string {
@@ -87,6 +105,10 @@ const upperMatch = (s: string): string => s.toUpperCase()
 /**
  * Capitalize the first letter of every word in `value`. If `whiteSpaceOnly` is set to `true`
  * the process is limited to whitespace separated words.
+ *
+ * @param value - The string to capitalize.
+ * @param whiteSpaceOnly - If `true`, only whitespace separated words will be capitalized.
+ * @returns The string with the first letter of each word capitalized.
  * @public
  */
 export function capitalizeWords(value: string, whiteSpaceOnly = false): string {
@@ -99,6 +121,9 @@ export function capitalizeWords(value: string, whiteSpaceOnly = false): string {
 
 /**
  * Replaces occurrances of `\r\n`, `\n\r`, `\r` with `\n`
+ *
+ * @param value - The string to normalize.
+ * @returns The string with normalized line endings.
  * @public
  */
 export function canonicalizeNewlines(value: string): string {
@@ -107,6 +132,10 @@ export function canonicalizeNewlines(value: string): string {
 
 /**
  * Compares two strings ignoring their case.
+ *
+ * @param a - The first string to compare.
+ * @param b - The second string to compare.
+ * @returns A negative number if `a` is less than `b`, zero if they are equal, or a positive number if `a` is greater than `b`.
  * @public
  */
 export function compareCaseInsensitive(a: string, b: string): number {
@@ -124,7 +153,7 @@ export function compareCaseInsensitive(a: string, b: string): number {
  * @returns `true` if the string ends with the specified suffix, `false` otherwise.
  * @public
  */
-export function endsWith(s: string, end: string): boolean {
+export function textEndsWith(s: string, end: string): boolean {
   return s.substring(0, s.length - end.length) === end
 }
 
@@ -136,7 +165,7 @@ export function endsWith(s: string, end: string): boolean {
  * @returns `true` if `s` ends with `end` (case-insensitive), otherwise `false`.
  * @public
  */
-export function endsWithCaseInsensitive(s: string, end: string): boolean {
+export function textEndsWithCaseInsensitive(s: string, end: string): boolean {
   return (
     s.substring(0, s.length - end.length).toLowerCase() === end.toLowerCase()
   )
@@ -150,7 +179,7 @@ export function endsWithCaseInsensitive(s: string, end: string): boolean {
  * @returns `true` if the string starts with the specified substring, `false` otherwise.
  * @public
  */
-export function startsWith(s: string, start: string): boolean {
+export function textStartsWith(s: string, start: string): boolean {
   return s.substring(0, start.length) === start
 }
 
@@ -162,19 +191,26 @@ export function startsWith(s: string, start: string): boolean {
  * @returns `true` if `s` starts with `start` (case-insensitive), `false` otherwise.
  * @public
  */
-export function startsWithCaseInsensitive(s: string, start: string): boolean {
+export function textStartsWithCaseInsensitive(
+  s: string,
+  start: string
+): boolean {
   return s.substring(0, start.length).toLowerCase() === start.toLowerCase()
 }
 
 /**
  * Compares a string `s` with many `values` and see if one of them matches its end ignoring their case.
+ *
+ * @param s - The string to compare.
+ * @param values - The values to compare with the end of `s`.
+ * @returns `true` if `s` ends with any of the values in `values` (case-insensitive), `false` otherwise.
  * @public
  */
-export function endsWithAnyCaseInsensitive(
+export function textEndsWithAnyCaseInsensitive(
   s: string,
   values: string[]
 ): boolean {
-  return endsWithAny(
+  return endsWithAnyText(
     s.toLowerCase(),
     values.map(v => v.toLowerCase())
   )
@@ -182,13 +218,17 @@ export function endsWithAnyCaseInsensitive(
 
 /**
  * Compares a string `s` with many `values` and see if one of them matches its beginning ignoring their case.
+ *
+ * @param s - The string to compare.
+ * @param values - The values to compare with the start of `s`.
+ * @returns `true` if `s` starts with any of the values in `values` (case-insensitive), `false` otherwise.
  * @public
  */
-export function startsWithAnyCaseInsensitive(
+export function textStartsWithAnyCaseInsensitive(
   s: string,
   values: string[]
 ): boolean {
-  return startsWithAny(
+  return textStartsWithAny(
     s.toLowerCase(),
     values.map(v => v.toLowerCase())
   )
@@ -199,15 +239,22 @@ export function startsWithAnyCaseInsensitive(
  * - remove trailing/leading whitespaces
  * - within the string, it collapses seqeunces of whitespaces into a single space character
  * For whitespaces in this description, it is intended to be anything that is matched by the regular expression `\s`.
+ *
+ * @param value - The string to collapse.
+ * @returns The string with all whitespaces collapsed.
  * @public
  */
-export function collapse(value: string): string {
+export function textCollapse(value: string): string {
   return value.trim().replace(WSG, ' ')
 }
 
 /**
  * It compares to string and it returns a negative number if `a` is inferior to `b`, zero if they are the same,
  * or otherwise a positive non-sero number.
+ *
+ * @param a - The first string to compare.
+ * @param b - The second string to compare.
+ * @returns A negative number if `a` is less than `b`, zero if they are equal, or a positive number if `a` is greater than `b`.
  * @public
  */
 export function compareStrings(a: string, b: string): number {
@@ -215,69 +262,100 @@ export function compareStrings(a: string, b: string): number {
 }
 
 /**
- * `contains` returns `true` if `s` contains one or more occurrences of `test` regardless of the text case.
+ * `textContainsCaseInsensitive` returns `true` if `s` contains one or more occurrences of `test` regardless of the text case.
+ *
+ * @param s - The string to search in.
+ * @param test - The string to search for.
+ * @returns `true` if `s` contains `test` (case-insensitive), `false` otherwise.
  * @public
  */
-export function containsCaseInsensitive(s: string, test: string): boolean {
+export function textContainsCaseInsensitive(s: string, test: string): boolean {
   return s.toLowerCase().includes(test.toLowerCase())
 }
 
 /**
- * `contains` returns `true` if `s` contains one or more occurrences of `test`.
+ * `textContains` returns `true` if `s` contains one or more occurrences of `test`.
+ *
+ * @param s - The string to search in.
+ * @param test - The string to search for.
+ * @returns `true` if `s` contains `test`, `false` otherwise.
  * @public
  */
-export function contains(s: string, test: string): boolean {
+export function textContains(s: string, test: string): boolean {
   return s.includes(test)
 }
 
 /**
- * Return the number of occurances of `test` in `s`.
+ * Return the number of occurrences of `test` in `s`.
+ *
+ * @param s - The string to search in.
+ * @param test - The string to search for.
+ * @returns The number of occurrences of `test` in `s`.
  * @public
  */
-export function count(s: string, test: string): number {
+export function countTextOccurrences(s: string, test: string): number {
   return s.split(test).length - 1
 }
 
 /**
- * `contains` returns `true` if `s` contains any of the strings in `tests` regardless of the text case
+ * `containsAnyTextCaseInsensitive` returns `true` if `s` contains any of the strings in `tests` regardless of the text case
+ *
+ * @param s - The string to search in.
+ * @param tests - The strings to search for.
+ * @returns `true` if `s` contains any of the strings in `tests` (case-insensitive), `false` otherwise.
  * @public
  */
-export function containsAnyCaseInsensitive(
+export function containsAnyTextCaseInsensitive(
   s: string,
   tests: string[]
 ): boolean {
-  return anyElement(tests, t => containsCaseInsensitive(s, t))
+  return anyElement(tests, t => textContainsCaseInsensitive(s, t))
 }
 
 /**
- * `contains` returns `true` if `s` contains any of the strings in `tests`
+ * `containsAnyText` returns `true` if `s` contains any of the strings in `tests`
+ *
+ * @param s - The string to search in.
+ * @param tests - The strings to search for.
+ * @returns `true` if `s` contains any of the strings in `tests`, `false` otherwise.
  * @public
  */
-export function containsAny(s: string, tests: string[]): boolean {
-  return anyElement(tests, t => contains(s, t))
+export function containsAnyText(s: string, tests: string[]): boolean {
+  return anyElement(tests, t => textContains(s, t))
 }
 
 /**
- * `contains` returns `true` if `s` contains all of the strings in `tests` regardless of the text case
+ * `containsAllTextCaseInsensitive` returns `true` if `s` contains all of the strings in `tests` regardless of the text case
+ *
+ * @param s - The string to search in.
+ * @param tests - The strings to search for.
+ * @returns `true` if `s` contains all of the strings in `tests` (case-insensitive), `false` otherwise.
  * @public
  */
-export function containsAllCaseInsensitive(
+export function containsAllTextCaseInsensitive(
   s: string,
   tests: string[]
 ): boolean {
-  return allElements(tests, t => containsCaseInsensitive(s, t))
+  return allElements(tests, t => textContainsCaseInsensitive(s, t))
 }
 
 /**
- * `contains` returns `true` if `s` contains all of the strings in `tests`
+ * `containsAllText` returns `true` if `s` contains all of the strings in `tests`
+ *
+ * @param s - The string to search in.
+ * @param tests - The strings to search for.
+ * @returns `true` if `s` contains all of the strings in `tests`, `false` otherwise.
  * @public
  */
-export function containsAll(s: string, tests: string[]): boolean {
-  return allElements(tests, t => contains(s, t))
+export function containsAllText(s: string, tests: string[]): boolean {
+  return allElements(tests, t => textContains(s, t))
 }
 
 /**
  * `dasherize` replaces all the occurrances of `_` with `-`
+ *
+ * @param s - The string to dasherize.
+ * @returns The dasherized string.
  * @public
  */
 export function dasherize(s: string): string {
@@ -288,12 +366,19 @@ export function dasherize(s: string): string {
  * Compares strings `a` and `b` and returns the position where they differ.
  * If the strings are equal, it returns `-1`.
  *
+ * @remarks
+ * @example
  * ```ts
- * diffIndex('abcdef', 'abc123') // returns 3
+ * stringsDifferAtIndex('abcdef', 'abc123') // returns 3
  * ```
  * @public
+ *
+ * @param a - The first string to compare.
+ * @param b - The second string to compare.
+ * @returns The position where the strings differ, or `-1` if they are equal.
+ *
  */
-export function diffIndex(a: string, b: string): number {
+export function stringsDifferAtIndex(a: string, b: string): number {
   if (a === b) return -1
   const min = Math.min(a.length, b.length)
   for (let i = 0; i < min; i++) {
@@ -305,9 +390,17 @@ export function diffIndex(a: string, b: string): number {
 /**
  * `ellipsis` truncates `s` at len `maxlen` replaces the last characters with the content
  * of `symbol`.
+ *
+ * @remarks
+ * @example
  * ```ts
  * ellipsis('tempo is a nice library', 9) // returns 'tempo is …'
  * ```
+ *
+ * @param s - The string to truncate.
+ * @param maxlen - The maximum length of the string.
+ * @param symbol - The symbol to replace the truncated characters with.
+ * @returns The truncated string.
  * @public
  */
 export function ellipsis(s: string, maxlen = 20, symbol = '…'): string {
@@ -324,9 +417,17 @@ export function ellipsis(s: string, maxlen = 20, symbol = '…'): string {
 
 /**
  * Same as `ellipsis` but puts the symbol in the middle of the string and not to the end.
+ *
+ * @remarks
+ * @example
  * ```ts
  * ellipsisMiddle('tempo is a nice library', 18) // returns 'tempo is … library'
  * ```
+ *
+ * @param s - The string to truncate.
+ * @param maxlen - The maximum length of the string.
+ * @param symbol - The symbol to replace the truncated characters with.
+ * @returns The truncated string.
  * @public
  */
 export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
@@ -344,42 +445,46 @@ export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
 
 /**
  * Returns `true` if `s` ends with any of the values in `values`.
+ *
+ * @param s - The string to compare.
+ * @param values - The values to compare with the end of `s`.
+ * @returns `true` if `s` ends with any of the values in `values`, `false` otherwise.
  * @public
  */
-export function endsWithAny(s: string, values: string[]): boolean {
-  return anyElement(values, end => endsWith(s, end))
+export function endsWithAnyText(s: string, values: string[]): boolean {
+  return anyElement(values, end => textEndsWith(s, end))
 }
 
 /**
- * `filter` applies `predicate` character by character to `s` and it returns a filtered
+ * `filterString` applies `predicate` character by character to `s` and it returns a filtered
  * version of the string.
+ *
+ * @param s - The string to filter.
+ * @param predicate - The function to apply to each character in the string.
+ * @returns The filtered string.
  * @public
  */
-export function filter(s: string, predicate: (s: string) => boolean): string {
-  return toArray(s).filter(predicate).join('')
+export function filterText(
+  s: string,
+  predicate: (s: string) => boolean
+): string {
+  return stringToChars(s).filter(predicate).join('')
 }
 
 /**
- * Same as `filter` but `predicate` operates on integer char codes instead of string characters.
+ * Same as `filterCharcode` but `predicate` operates on integer char codes instead of string characters.
+ *
+ * @param s - The string to filter.
+ * @param predicate - The function to apply to each character code in the string.
+ * @returns The filtered string.
  * @public
  */
 export function filterCharcode(
   s: string,
   predicate: (n: number) => boolean
 ): string {
-  const codes: number[] = toCharcodes(s).filter(predicate)
+  const codes: number[] = stringToCharcodes(s).filter(predicate)
   return codes.map((i: number) => String.fromCharCode(i)).join('')
-}
-
-/**
- * `from` searches for the first occurrance of `searchFor` and returns the text from that point on.
- * If `searchFor` is not found, an empty string is returned.
- * @public
- */
-export function from(value: string, searchFor: string): string {
-  const pos = value.indexOf(searchFor)
-  if (pos < 0) return ''
-  else return value.substring(pos)
 }
 
 /**
@@ -390,7 +495,7 @@ export function from(value: string, searchFor: string): string {
  * @returns The calculated hash code as a number.
  * @public
  */
-export function hashCode(value: string, seed = 0x811c9dc5): number {
+export function stringHashCode(value: string, seed = 0x811c9dc5): number {
   let hval = seed
   for (let i = 0, l = value.length; i < l; i++) {
     hval ^= value.charCodeAt(i)
@@ -401,22 +506,31 @@ export function hashCode(value: string, seed = 0x811c9dc5): number {
 
 /**
  * Returns `true` if `value` is not `null` and contains at least one character.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string is not `null` and contains at least one character, `false` otherwise.
  * @public
  */
-export function hasContent(value: string): boolean {
+export function stringHasContent(value: string): boolean {
   return value != null && value.length > 0
 }
 
 /**
  * Works the same as `underscore` but also replaces underscores with whitespaces.
+ *
+ * @param s - The string to convert.
+ * @returns The converted string.
  * @public
  */
 export function humanize(s: string): string {
-  return replace(underscore(s), '_', ' ')
+  return replaceAll(underscore(s), '_', ' ')
 }
 
 /**
  * Checks if `s` contains only (and at least one) alphabetical characters.
+ *
+ * @param s - The string to check.
+ * @returns `true` if the string contains only alphabetical characters, `false` otherwise.
  * @public
  */
 export function isAlpha(s: string): boolean {
@@ -425,6 +539,9 @@ export function isAlpha(s: string): boolean {
 
 /**
  * `isAlphaNum` returns `true` if the string only contains alpha-numeric characters.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string contains only alpha-numeric characters, `false` otherwise.
  * @public
  */
 export function isAlphaNum(value: string): boolean {
@@ -445,6 +562,9 @@ export function isBreakingWhitespace(value: string): boolean {
 /**
  * Returns `true` if the value string is composed of only lower cased characters
  * or case neutral characters.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string contains only lower case characters, `false` otherwise.
  * @public
  */
 export function isLowerCase(value: string): boolean {
@@ -454,6 +574,9 @@ export function isLowerCase(value: string): boolean {
 /**
  * Returns `true` if the value string is composed of only upper cased characters
  * or case neutral characters.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string contains only upper case characters, `false` otherwise.
  * @public
  */
 export function isUpperCase(value: string): boolean {
@@ -462,14 +585,21 @@ export function isUpperCase(value: string): boolean {
 
 /**
  * `ifEmpty` returns `value` if it is neither `null` or empty, otherwise it returns `alt`
+ *
+ * @param value - The string to check.
+ * @param alt - The alternative value to return if `value` is `null` or empty.
+ * @returns The original string if it is not `null` or empty, otherwise the alternative value.
  * @public
  */
-export function ifEmpty(value: string, alt: string): string {
+export function ifEmptyString(value: string, alt: string): string {
   return value != null && value !== '' ? value : alt
 }
 
 /**
  * `isDigitsOnly` returns `true` if the string only contains digits.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string contains only digits, `false` otherwise.
  * @public
  */
 export function isDigitsOnly(value: string): boolean {
@@ -478,14 +608,20 @@ export function isDigitsOnly(value: string): boolean {
 
 /**
  * `isEmpty` returns true if either `value` is null or is an empty string.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string is `null` or empty, `false` otherwise.
  * @public
  */
-export function isEmpty(value: string): boolean {
+export function isEmptyString(value: string): boolean {
   return value == null || value === ''
 }
 
 /**
  * Convert first letter in `value` to lower case.
+ *
+ * @param value - The string to convert.
+ * @returns The string with the first letter in lower case.
  * @public
  */
 export function lowerCaseFirst(value: string): string {
@@ -494,9 +630,13 @@ export function lowerCaseFirst(value: string): string {
 
 /**
  * Returns a random substring from the `value` argument. The length of such value is by default `1`.
+ *
+ * @param value - The string to extract the random substring from.
+ * @param length - The length of the random substring to extract.
+ * @returns The random substring.
  * @public
  */
-export function random(value: string, length = 1): string {
+export function randomString(value: string, length = 1): string {
   return value.substring(
     Math.floor((value.length - length + 1) * Math.random()),
     length
@@ -505,18 +645,25 @@ export function random(value: string, length = 1): string {
 
 /**
  * Returns a random sampling of the specified length from the seed string.
+ *
+ * @param alphabet - The seed string to sample from.
+ * @param length - The length of the random string to generate.
+ * @returns The random string.
  * @public
  */
-export function randomSequence(alphabet: string, length: number): string {
-  return generateArray(length, () => random(alphabet)).join('')
+export function randomStringSequence(alphabet: string, length: number): string {
+  return generateArray(length, () => randomString(alphabet)).join('')
 }
 
 /**
  * Like `randomSequence`, but automatically uses the base64 sequence as the seed string.
+ *
+ * @param length - The length of the random string to generate.
+ * @returns The random string.
  * @public
  */
-export function randomSequence64(length: number): string {
-  return randomSequence(BASE64_ALPHABET, length)
+export function randomStringSequenceBase64(length: number): string {
+  return randomStringSequence(BASE64_ALPHABET, length)
 }
 
 /**
@@ -527,88 +674,132 @@ export function randomSequence64(length: number): string {
  * @returns An array of the mapped characters.
  * @public
  */
-export function map<T>(callback: (c: string) => T, value: string): T[] {
-  return toArray(value).map(callback)
+export function mapChars<T>(callback: (c: string) => T, value: string): T[] {
+  return stringToChars(value).map(callback)
 }
 
 /**
  * If present, it removes all the occurrences of `toremove` from `value`.
+ *
+ * @param value - The string to remove the occurrences from.
+ * @param toremove - The string to remove from `value`.
+ * @returns The string with all occurrences of `toremove` removed.
  * @public
  */
-export function remove(value: string, toremove: string): string {
-  return replace(value, toremove, '')
+export function removeFromString(value: string, toremove: string): string {
+  return replaceAll(value, toremove, '')
 }
 
 /**
  * If present, it removes the `toremove` text from the end of `value`.
+ *
+ * @param value - The string to remove the text from.
+ * @param toremove - The text to remove from the end of `value`.
+ * @returns The string with the text removed.
  * @public
  */
-export function removeAfter(value: string, toremove: string): string {
-  return endsWith(value, toremove)
+export function removeFromStringAfter(value: string, toremove: string): string {
+  return textEndsWith(value, toremove)
     ? value.substring(0, value.length - toremove.length)
     : value
 }
 
 /**
  * Removes a slice from `index` to `index + length` from `value`.
+ *
+ * @param value - The string to remove the slice from.
+ * @param index - The starting index of the slice to remove.
+ * @param length - The length of the slice to remove.
+ * @returns The string with the slice removed.
  * @public
  */
-export function removeAt(value: string, index: number, length: number): string {
+export function removeSliceFromString(
+  value: string,
+  index: number,
+  length: number
+): string {
   return value.substring(0, index) + value.substring(index + length)
 }
 
 /**
  * If present, it removes the `toremove` text from the beginning of `value`.
+ *
+ * @param value - The string to remove the text from.
+ * @param toremove - The text to remove from the beginning of `value`.
+ * @returns The string with the text removed.
  * @public
  */
-export function removeBefore(value: string, toremove: string): string {
-  return startsWith(value, toremove) ? value.substring(toremove.length) : value
+export function removeFromStringBefore(
+  value: string,
+  toremove: string
+): string {
+  return textStartsWith(value, toremove)
+    ? value.substring(toremove.length)
+    : value
 }
 
 /**
  * If present, it removes the first occurrence of `toremove` from `value`.
+ *
+ * @param value - The string to remove the text from.
+ * @param toremove - The text to remove from `value`.
+ * @returns The string with the text removed.
  * @public
  */
-export function removeOne(value: string, toremove: string): string {
+export function removeFirstFromString(value: string, toremove: string): string {
   const pos = value.indexOf(toremove)
   if (pos < 0) return value
   return value.substring(0, pos) + value.substring(pos + toremove.length)
 }
 
 /**
- * `repeat` builds a new string by repeating the argument `s`, n `times`.
+ * `repeatString` builds a new string by repeating the argument `s`, n `times`.
+ *
+ * @remarks
+ * @example
  * ```ts
- * repeat('Xy', 3) // generates 'XyXyXy'
+ * repeatString('Xy', 3) // generates 'XyXyXy'
  * ```
+ *
+ * @param s - The string to repeat.
+ * @param times - The number of times to repeat the string.
+ * @returns The repeated string.
  * @public
  */
-export function repeat(s: string, times: number): string {
+export function repeatString(s: string, times: number): string {
   return createFilledArray(times, s).join('')
 }
 
 /**
  * Returns a new string whose characters are in reverse order.
+ *
+ * @param s - The string to reverse.
+ * @returns The reversed string.
  * @public
  */
-export function reverse(s: string): string {
-  const arr = toArray(s)
+export function reverseString(s: string): string {
+  const arr = stringToChars(s)
   arr.reverse()
   return arr.join('')
 }
 
 /**
  * Converts a string in a quoted string.
+ *
+ * @param s - The string to quote.
+ * @param prefer - The preferred quote character. Defaults to single quote (`'`).
+ * @returns The quoted string.
  * @public
  */
 export function smartQuote(s: string, prefer = "'"): string {
   if (prefer === "'") {
     if (!s.includes("'")) return "'" + s + "'"
     else if (!s.includes('"')) return '"' + s + '"'
-    else return "'" + replace(s, "'", "\\'") + "'"
+    else return "'" + replaceAll(s, "'", "\\'") + "'"
   } else {
     if (!s.includes('"')) return '"' + s + '"'
     else if (!s.includes("'")) return "'" + s + "'"
-    else return '"' + replace(s, '"', '\\"') + '"'
+    else return '"' + replaceAll(s, '"', '\\"') + '"'
   }
 }
 
@@ -621,7 +812,7 @@ export function smartQuote(s: string, prefer = "'"): string {
  * @public
  */
 export function quote(s: string, quoteChar = "'"): string {
-  return quoteChar + replace(s, quoteChar, '\\' + quoteChar) + quoteChar
+  return quoteChar + replaceAll(s, quoteChar, '\\' + quoteChar) + quoteChar
 }
 
 /**
@@ -644,9 +835,13 @@ export function jsQuote(s: string, prefer = "'"): string {
 
 /**
  * It only splits on the first occurrance of separator.
+ *
+ * @param s - The string to split.
+ * @param separator - The separator to split the string on.
+ * @returns An array with the split string.
  * @public
  */
-export function splitOnce(
+export function splitStringOnce(
   s: string,
   separator: string
 ): [string] | [string, string] {
@@ -657,43 +852,62 @@ export function splitOnce(
 
 /**
  * Returns `true` if `s` starts with any of the values in `values`.
+ *
+ * @param s - The string to compare.
+ * @param values - The values to compare with the start of `s`.
+ * @returns `true` if `s` starts with any of the values in `values`, `false` otherwise.
  * @public
  */
-export function startsWithAny(s: string, values: string[]): boolean {
+export function textStartsWithAny(s: string, values: string[]): boolean {
   return anyElement(values, start => s.startsWith(start))
 }
 
 /**
  * Surrounds a string with the contents of `left` and `right`. If `right` is omitted,
  * `left` will be used on both sides
+ *
+ * @param s - The string to surround.
+ * @param left - The left side of the surrounding text.
+ * @param right - The right side of the surrounding text. Defaults to `left`.
+ * @returns The surrounded string.
  * @public
  */
-export function surround(s: string, left: string, right = left): string {
+export function surroundText(s: string, left: string, right = left): string {
   return `${left}${s}${right}`
 }
 
 /**
  * It transforms a string into an `Array` of characters.
+ *
+ * @param s - The string to transform.
+ * @returns An array of characters.
  * @public
  */
-export function toArray(s: string): string[] {
+export function stringToChars(s: string): string[] {
   return s.split('')
 }
 
 /**
  * It transforms a string into an `Array` of char codes in integer format.
+ *
+ * @param s - The string to transform.
+ * @returns An array of char codes.
  * @public
  */
-export function toCharcodes(s: string): number[] {
+export function stringToCharcodes(s: string): number[] {
   return generateArray(s.length, i => s.charCodeAt(i))
 }
 
 /**
  * Returns an array of `string` whose elements are equally long (using `len`). If the string `s`
  * is not exactly divisible by `len` the last element of the array will be shorter.
+ *
+ * @param s - The string to chunk.
+ * @param len - The length of each chunk.
+ * @returns An array of chunks.
  * @public
  */
-export function toChunks(s: string, len: number): string[] {
+export function chunkText(s: string, len: number): string[] {
   const chunks: string[] = []
   while (s.length > 0) {
     chunks.push(s.substring(0, len))
@@ -704,14 +918,21 @@ export function toChunks(s: string, len: number): string[] {
 
 /**
  * Returns an array of `string` split by line breaks.
+ *
+ * @param s - The string to split.
+ * @returns An array of lines.
  * @public
  */
-export function toLines(s: string): string[] {
+export function stringToLines(s: string): string[] {
   return s.split(SPLIT_LINES)
 }
 
 /**
  * `trimChars` removes from the beginning and the end of the string any character that is present in `charlist`.
+ *
+ * @param value - The string to trim.
+ * @param charlist - The characters to remove from the beginning and end of the string.
+ * @returns The trimmed string.
  * @public
  */
 export function trimChars(value: string, charlist: string): string {
@@ -720,12 +941,16 @@ export function trimChars(value: string, charlist: string): string {
 
 /**
  * `trimCharsLeft` removes from the beginning of the string any character that is present in `charlist`.
+ *
+ * @param value - The string to trim.
+ * @param charlist - The characters to remove from the beginning of the string.
+ * @returns The trimmed string.
  * @public
  */
 export function trimCharsLeft(value: string, charlist: string): string {
   let pos = 0
   for (let i = 0; i < value.length; i++) {
-    if (contains(charlist, value.charAt(i))) pos++
+    if (textContains(charlist, value.charAt(i))) pos++
     else break
   }
   return value.substring(pos)
@@ -733,6 +958,10 @@ export function trimCharsLeft(value: string, charlist: string): string {
 
 /**
  * `trimCharsRight` removes from the end of the string any character that is present in `charlist`.
+ *
+ * @param value - The string to trim.
+ * @param charlist - The characters to remove from the end of the string.
+ * @returns The trimmed string.
  * @public
  */
 export function trimCharsRight(value: string, charlist: string): string {
@@ -741,7 +970,7 @@ export function trimCharsRight(value: string, charlist: string): string {
   let i
   for (let j = 0; j < len; j++) {
     i = len - j - 1
-    if (contains(charlist, value.charAt(i))) pos = i
+    if (textContains(charlist, value.charAt(i))) pos = i
     else break
   }
   return value.substring(0, pos)
@@ -750,6 +979,9 @@ export function trimCharsRight(value: string, charlist: string): string {
 /**
  * `underscore` finds UpperCase characters and turns them into LowerCase and prepends them with a whtiespace.
  * Sequences of more than one UpperCase character are left untouched.
+ *
+ * @param s - The string to underscore.
+ * @returns The underscored string.
  * @public
  */
 export function underscore(s: string): string {
@@ -762,6 +994,9 @@ export function underscore(s: string): string {
 
 /**
  * Convert first letter in `value` to upper case.
+ *
+ * @param value - The string to convert.
+ * @returns The string with the first letter in upper case.
  * @public
  */
 export function upperCaseFirst(value: string): string {
@@ -769,19 +1004,14 @@ export function upperCaseFirst(value: string): string {
 }
 
 /**
- * `upTo` searches for the first occurrance of `searchFor` and returns the text up to that point.
- * If `searchFor` is not found, the entire string is returned.
- * @public
- */
-export function upTo(value: string, searchFor: string): string {
-  const pos = value.indexOf(searchFor)
-  if (pos < 0) return value
-  else return value.substring(0, pos)
-}
-
-/**
  * `wrapColumns` splits a long string into lines that are at most `columns` long.
- * Words whose length exceeds `columns` are not split.
+ * Individual words whose length exceeds `columns` are not split.
+ *
+ * @param s - The string to wrap.
+ * @param columns - The number of columns per line.
+ * @param indent - The indentation string to prepend to each line.
+ * @param newline - The newline character to use for line breaks.
+ * @returns The wrapped string.
  * @public
  */
 export function wrapColumns(
@@ -914,7 +1144,7 @@ export function wrapLine(
 export function lpad(s: string, char: string, length: number): string {
   const diff = length - s.length
   if (diff > 0) {
-    return repeat(char, diff) + s
+    return repeatString(char, diff) + s
   } else {
     return s
   }
@@ -933,7 +1163,7 @@ export function lpad(s: string, char: string, length: number): string {
 export function rpad(s: string, char: string, length: number): string {
   const diff = length - s.length
   if (diff > 0) {
-    return s + repeat(char, diff)
+    return s + repeatString(char, diff)
   } else {
     return s
   }
