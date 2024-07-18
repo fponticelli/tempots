@@ -19,7 +19,6 @@ import {
   upTo,
   from,
   after,
-  stripTags,
   trimCharsLeft,
   trimCharsRight,
   trimChars,
@@ -260,12 +259,6 @@ aaa aa`
   test('After', () => {
     expect('').toBe(after('abcdef', 'x'))
     expect('ef').toBe(after('abcdef', 'cd'))
-  })
-
-  test('StripTags', () => {
-    expect('a code; x').toBe(
-      stripTags('a<br/> <script src="aaa">code;</script> x')
-    )
   })
 
   test('Ltrim', () => {

@@ -1,5 +1,5 @@
 import { TNode, Fragment, OnUnmount, oneof, Signal, Value } from '@tempots/dom'
-import { Result } from '@tempots/std/result'
+import { Result } from '@tempots/std'
 
 export function ResultView<T, E>(
   result: Value<Result<T, E>>,

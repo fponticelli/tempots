@@ -1,10 +1,15 @@
+import {
+  allElements,
+  anyElement,
+  createFilledArray,
+  generateArray,
+} from './array'
+import { mapRegExp as mapR } from './regexp'
+
 /**
  * Utility functions to manipulate string values.
  * @public
  */
-
-import { range, any, all, fill } from './array'
-import { map as mapR } from './regexp'
 
 /**
  * Replaces all occurrances of `placeholder` in `subject` with the value `replacement`.
@@ -104,23 +109,55 @@ export function compareCaseInsensitive(a: string, b: string): number {
   if (a == null && b == null) return 0
   if (a == null) return -1
   else if (b == null) return 1
-  return compare(a.toLowerCase(), b.toLowerCase())
+  return compareStrings(a.toLowerCase(), b.toLowerCase())
 }
 
+/**
+ * Checks if a string ends with a specified suffix.
+ *
+ * @param s - The string to check.
+ * @param end - The suffix to check against.
+ * @returns `true` if the string ends with the specified suffix, `false` otherwise.
+ * @public
+ */
 export function endsWith(s: string, end: string): boolean {
   return s.substring(0, s.length - end.length) === end
 }
 
+/**
+ * Checks if a string ends with another string in a case-insensitive manner.
+ *
+ * @param s - The string to check.
+ * @param end - The string to check if it is the ending of `s`.
+ * @returns `true` if `s` ends with `end` (case-insensitive), otherwise `false`.
+ * @public
+ */
 export function endsWithCaseInsensitive(s: string, end: string): boolean {
   return (
     s.substring(0, s.length - end.length).toLowerCase() === end.toLowerCase()
   )
 }
 
+/**
+ * Checks if a string starts with a specified substring.
+ *
+ * @param s - The string to check.
+ * @param start - The substring to check for at the beginning of the string.
+ * @returns `true` if the string starts with the specified substring, `false` otherwise.
+ * @public
+ */
 export function startsWith(s: string, start: string): boolean {
   return s.substring(0, start.length) === start
 }
 
+/**
+ * Checks if a string starts with another string in a case-insensitive manner.
+ *
+ * @param s - The string to check.
+ * @param start - The string to compare with the start of `s`.
+ * @returns `true` if `s` starts with `start` (case-insensitive), `false` otherwise.
+ * @public
+ */
 export function startsWithCaseInsensitive(s: string, start: string): boolean {
   return s.substring(0, start.length).toLowerCase() === start.toLowerCase()
 }
@@ -169,7 +206,7 @@ export function collapse(value: string): string {
  * or otherwise a positive non-sero number.
  * @public
  */
-export function compare(a: string, b: string): number {
+export function compareStrings(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0
 }
 
@@ -205,7 +242,7 @@ export function containsAnyCaseInsensitive(
   s: string,
   tests: string[]
 ): boolean {
-  return any(tests, t => containsCaseInsensitive(s, t))
+  return anyElement(tests, t => containsCaseInsensitive(s, t))
 }
 
 /**
@@ -213,7 +250,7 @@ export function containsAnyCaseInsensitive(
  * @public
  */
 export function containsAny(s: string, tests: string[]): boolean {
-  return any(tests, t => contains(s, t))
+  return anyElement(tests, t => contains(s, t))
 }
 
 /**
@@ -224,7 +261,7 @@ export function containsAllCaseInsensitive(
   s: string,
   tests: string[]
 ): boolean {
-  return all(tests, t => containsCaseInsensitive(s, t))
+  return allElements(tests, t => containsCaseInsensitive(s, t))
 }
 
 /**
@@ -232,7 +269,7 @@ export function containsAllCaseInsensitive(
  * @public
  */
 export function containsAll(s: string, tests: string[]): boolean {
-  return all(tests, t => contains(s, t))
+  return allElements(tests, t => contains(s, t))
 }
 
 /**
@@ -306,7 +343,7 @@ export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
  * @public
  */
 export function endsWithAny(s: string, values: string[]): boolean {
-  return any(values, end => endsWith(s, end))
+  return anyElement(values, end => endsWith(s, end))
 }
 
 /**
@@ -341,6 +378,14 @@ export function from(value: string, searchFor: string): string {
   else return value.substring(pos)
 }
 
+/**
+ * Calculates the hash code for a given string.
+ *
+ * @param value - The string to calculate the hash code for.
+ * @param seed - The seed value for the hash code calculation. Default is 0x811c9dc5.
+ * @returns The calculated hash code as a number.
+ * @public
+ */
 export function hashCode(value: string, seed = 0x811c9dc5): number {
   let hval = seed
   for (let i = 0, l = value.length; i < l; i++) {
@@ -382,6 +427,13 @@ export function isAlphaNum(value: string): boolean {
   return ALPHANUM.test(value)
 }
 
+/**
+ * Checks if a string contains any breaking whitespace characters.
+ *
+ * @param value - The string to check.
+ * @returns `true` if the string contains breaking whitespace characters, `false` otherwise.
+ * @public
+ */
 export function isBreakingWhitespace(value: string): boolean {
   return !IS_BREAKINGWHITESPACE.test(value)
 }
@@ -452,7 +504,7 @@ export function random(value: string, length = 1): string {
  * @public
  */
 export function randomSequence(alphabet: string, length: number): string {
-  return range(length, () => random(alphabet)).join('')
+  return generateArray(length, () => random(alphabet)).join('')
 }
 
 /**
@@ -465,6 +517,10 @@ export function randomSequence64(length: number): string {
 
 /**
  * It maps a string character by character using `callback`.
+ *
+ * @param callback - The function to apply to each character in the string.
+ * @param value - The string to map.
+ * @returns An array of the mapped characters.
  * @public
  */
 export function map<T>(callback: (c: string) => T, value: string): T[] {
@@ -523,7 +579,7 @@ export function removeOne(value: string, toremove: string): string {
  * @public
  */
 export function repeat(s: string, times: number): string {
-  return fill(times, s).join('')
+  return createFilledArray(times, s).join('')
 }
 
 /**
@@ -552,10 +608,28 @@ export function smartQuote(s: string, prefer = "'"): string {
   }
 }
 
+/**
+ * Returns a quoted version of the input string.
+ *
+ * @param s - The input string to be quoted.
+ * @param quoteChar - The character used for quoting. Defaults to single quote (').
+ * @returns The quoted string.
+ * @public
+ */
 export function quote(s: string, quoteChar = "'"): string {
   return quoteChar + replace(s, quoteChar, '\\' + quoteChar) + quoteChar
 }
 
+/**
+ * Quotes a string for use in JavaScript code.
+ * If the string contains a newline character, it will be quoted using backticks.
+ * Otherwise, it will be quoted using single quotes (`'`) or double quotes (`"`) based on the `prefer` parameter.
+ *
+ * @param s - The string to be quoted.
+ * @param prefer - The preferred quote character. Defaults to single quote (`'`).
+ * @returns The quoted string.
+ * @public
+ */
 export function jsQuote(s: string, prefer = "'"): string {
   if (s.indexOf('\n') >= 0) {
     return quote(s, '`')
@@ -582,16 +656,7 @@ export function splitOnce(
  * @public
  */
 export function startsWithAny(s: string, values: string[]): boolean {
-  return any(values, start => s.startsWith(start))
-}
-
-/**
- * `stripTags` removes any HTML/XML markup from the string leaving only the concatenation
- * of the existing text nodes.
- * @public
- */
-export function stripTags(s: string): string {
-  return s.replace(STRIPTAGS, '')
+  return anyElement(values, start => s.startsWith(start))
 }
 
 /**
@@ -616,7 +681,7 @@ export function toArray(s: string): string[] {
  * @public
  */
 export function toCharcodes(s: string): number[] {
-  return range(s.length, i => s.charCodeAt(i))
+  return generateArray(s.length, i => s.charCodeAt(i))
 }
 
 /**
@@ -924,7 +989,6 @@ const IS_ALPHA = /[^a-zA-Z]/
 const UCWORDSWS = /[ \t\r\n][a-z]/g
 const ALPHANUM = /^[a-z0-9]+$/i
 const DIGITS = /^[0-9]+$/
-const STRIPTAGS = /<\/?[a-z]+[^>]*>/gi
 const WSG = /[ \t\r\n]+/g
 const SPLIT_LINES = /\r\n|\n\r|\n|\r/g
 const CANONICALIZE_LINES = /\r\n|\n\r|\r/g

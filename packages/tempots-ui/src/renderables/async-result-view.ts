@@ -8,7 +8,7 @@ import {
   Signal,
   Value,
 } from '@tempots/dom'
-import { AsyncResult } from '@tempots/std/async-result'
+import { AsyncResult } from '@tempots/std'
 
 export function AsyncResultView<T, E>(
   result: Value<AsyncResult<T, E>>,
@@ -35,8 +35,8 @@ export function AsyncResultView<T, E>(
   const loading = options.loading ?? (() => Empty)
   const notAsked = options.notAsked ?? (() => Empty)
   return oneof.type(Signal.wrap(result), {
-    Success: s => success(s.$.value),
-    Failure: s => fail(s.$.error),
+    AsyncSuccess: s => success(s.$.value),
+    AsyncFailure: e => fail(e.$.error),
     Loading: s =>
       loading(s.$.previousValue ?? signal<T | undefined>(undefined)),
     NotAsked: notAsked,

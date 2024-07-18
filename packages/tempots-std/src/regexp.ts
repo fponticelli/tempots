@@ -9,7 +9,7 @@
  * @param subject - The string to search.
  * @public
  */
-export function map(
+export function mapRegExp(
   subject: string,
   pattern: RegExp,
   f: (...s: string[]) => string

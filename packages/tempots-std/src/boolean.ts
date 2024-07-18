@@ -10,7 +10,7 @@
  * @returns A comparison value.
  * @public
  */
-export function compare(a: boolean, b: boolean): number {
+export function compareBooleans(a: boolean, b: boolean): number {
   return a === b ? 0 : a ? -1 : 1
 }
 
@@ -21,7 +21,7 @@ export function compare(a: boolean, b: boolean): number {
  * @returns The integer value.
  * @public
  */
-export function toInt(v: boolean): number {
+export function booleanToInt(v: boolean): number {
   return v ? 1 : 0
 }
 
@@ -38,7 +38,7 @@ export function toInt(v: boolean): number {
  * @returns `true` if the value can be parsed; otherwise, `false`.
  * @public
  */
-export function canParse(v: string): boolean {
+export function canParseBoolean(v: string): boolean {
   if (v == null) return false
   switch (v.toLowerCase()) {
     case 'true':
@@ -64,7 +64,7 @@ export function canParse(v: string): boolean {
  * @returns The parsed boolean value.
  * @public
  */
-export function parse(v: string): boolean {
+export function parseBoolean(v: string): boolean {
   switch (v.toLowerCase()) {
     case 'true':
     case '1':
@@ -87,6 +87,6 @@ export function parse(v: string): boolean {
  * @returns The result of the XOR operation.
  * @public
  */
-export function xor(a: boolean, b: boolean): boolean {
+export function xorBoolean(a: boolean, b: boolean): boolean {
   return a !== b
 }

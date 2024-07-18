@@ -7,7 +7,7 @@ import { IndexKey, Merge, TupleToUnion } from './domain'
  * @returns An array of keys from the object.
  * @public
  */
-export function keys<T extends object>(obj: T): Array<keyof T> {
+export function objectKeys<T extends object>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof T>
 }
 
@@ -19,9 +19,9 @@ export function keys<T extends object>(obj: T): Array<keyof T> {
  * @returns `true` if both objects have the same keys, `false` otherwise.
  * @public
  */
-export function sameKeys<T extends object>(a: T, b: T): boolean {
-  const ak = keys(a)
-  const bk = keys(b)
+export function sameObjectKeys<T extends object>(a: T, b: T): boolean {
+  const ak = objectKeys(a)
+  const bk = objectKeys(b)
   if (ak.length !== bk.length) return false
   for (const k of ak) {
     if (!(k in b)) return false
@@ -48,11 +48,11 @@ export function isObject(obj: unknown): obj is Record<IndexKey, unknown> {
  * @returns A new object without the specified fields.
  * @public
  */
-export function removeFields<T extends object, F extends Array<keyof T>>(
+export function removeObjectFields<T extends object, F extends Array<keyof T>>(
   ob: T,
   ...fields: F
 ): Omit<T, TupleToUnion<F>> {
-  const ks = keys(ob)
+  const ks = objectKeys(ob)
   return ks.reduce((acc: Record<IndexKey, unknown>, key) => {
     if (!fields.includes(key)) acc[key] = ob[key]
     return acc
@@ -69,7 +69,7 @@ export function removeFields<T extends object, F extends Array<keyof T>>(
  * @returns The merged object.
  * @public
  */
-export function merge<
+export function mergeObjects<
   A extends Record<IndexKey, unknown>,
   B extends Record<IndexKey, unknown>,
 >(a: A, b: B): Merge<A, B> {
@@ -84,6 +84,6 @@ export function merge<
  * @returns `true` if the object is empty, `false` otherwise.
  * @public
  */
-export function isEmpty(obj: object): boolean {
+export function isEmptyObject(obj: object): boolean {
   return Object.keys(obj).length === 0
 }

@@ -6,7 +6,7 @@
  * @returns The result of dividing `x` by `y`, rounded up to the nearest whole number.
  * @public
  */
-export function ceilDiv(x: bigint, y: bigint): bigint {
+export function biCeilDiv(x: bigint, y: bigint): bigint {
   if (y < 0n) {
     x = -x
     y = -y
@@ -22,7 +22,7 @@ export function ceilDiv(x: bigint, y: bigint): bigint {
  * @returns The largest integer less than or equal to the quotient of `x` divided by `y`.
  * @public
  */
-export function floorDiv(x: bigint, y: bigint): bigint {
+export function biFloorDiv(x: bigint, y: bigint): bigint {
   if (y < 0n) {
     x = -x
     y = -y
@@ -38,7 +38,7 @@ export function floorDiv(x: bigint, y: bigint): bigint {
  * @public
  *          or zero if `x` is equal to `y`.
  */
-export function compare(x: bigint, y: bigint): number {
+export function biCompare(x: bigint, y: bigint): number {
   return x < y ? -1 : x > y ? 1 : 0
 }
 
@@ -49,7 +49,7 @@ export function compare(x: bigint, y: bigint): number {
  * @returns The absolute value of `x`.
  * @public
  */
-export function abs(x: bigint): bigint {
+export function biAbs(x: bigint): bigint {
   return x < 0n ? -x : x
 }
 
@@ -61,7 +61,7 @@ export function abs(x: bigint): bigint {
  * @returns The smaller of the two BigInt values.
  * @public
  */
-export function min(x: bigint, y: bigint): bigint {
+export function biMin(x: bigint, y: bigint): bigint {
   return x < y ? x : y
 }
 
@@ -73,7 +73,7 @@ export function min(x: bigint, y: bigint): bigint {
  * @returns The maximum of the two BigInt values.
  * @public
  */
-export function max(x: bigint, y: bigint): bigint {
+export function biMax(x: bigint, y: bigint): bigint {
   return x > y ? x : y
 }
 
@@ -84,9 +84,9 @@ export function max(x: bigint, y: bigint): bigint {
  * @param y - The exponent.
  * @returns The result of raising `x` to the power of `y`.
  * @public
- * @throws {Error} If the exponent `y` is negative.
+ * @throws Error If the exponent `y` is negative.
  */
-export function pow(x: bigint, y: bigint): bigint {
+export function biPow(x: bigint, y: bigint): bigint {
   if (y < 0n) throw new Error('negative exponent')
   let result = 1n
   while (y > 0n) {
@@ -105,9 +105,9 @@ export function pow(x: bigint, y: bigint): bigint {
  * @returns The GCD of `x` and `y`.
  * @public
  */
-export function gcd(x: bigint, y: bigint): bigint {
-  x = abs(x)
-  y = abs(y)
+export function biGcd(x: bigint, y: bigint): bigint {
+  x = biAbs(x)
+  y = biAbs(y)
   while (y > 0n) {
     const t = y
     y = x % y
@@ -124,8 +124,8 @@ export function gcd(x: bigint, y: bigint): bigint {
  * @returns The least common multiple of `x` and `y`.
  * @public
  */
-export function lcm(x: bigint, y: bigint): bigint {
-  return abs(x * y) / gcd(x, y)
+export function biLcm(x: bigint, y: bigint): bigint {
+  return biAbs(x * y) / biGcd(x, y)
 }
 
 /**
@@ -135,7 +135,7 @@ export function lcm(x: bigint, y: bigint): bigint {
  * @returns `true` if the number is prime, `false` otherwise.
  * @public
  */
-export function isPrime(x: bigint): boolean {
+export function biIsPrime(x: bigint): boolean {
   if (x < 2n) return false
   if (x === 2n || x === 3n) return true
   if (x % 2n === 0n || x % 3n === 0n) return false
@@ -154,12 +154,12 @@ export function isPrime(x: bigint): boolean {
  * @returns The next prime number greater than `x`.
  * @public
  */
-export function nextPrime(x: bigint): bigint {
+export function biNextPrime(x: bigint): bigint {
   if (x < 2n) return 2n
   if (x === 2n) return 3n
   if (x % 2n === 0n) x++
   else x += 2n
-  while (!isPrime(x)) x += 2n
+  while (!biIsPrime(x)) x += 2n
   return x
 }
 
@@ -172,12 +172,12 @@ export function nextPrime(x: bigint): bigint {
  * @public
  * @throws Error if there is no previous prime.
  */
-export function prevPrime(x: bigint): bigint {
+export function biPrevPrime(x: bigint): bigint {
   if (x <= 2n) throw new Error('no previous prime')
   if (x === 3n) return 2n
   if (x % 2n === 0n) x--
   else x -= 2n
-  while (!isPrime(x)) x -= 2n
+  while (!biIsPrime(x)) x -= 2n
   return x
 }
 
@@ -188,7 +188,7 @@ export function prevPrime(x: bigint): bigint {
  * @returns `true` if the bigint is even, `false` otherwise.
  * @public
  */
-export function isEven(x: bigint): boolean {
+export function biIsEven(x: bigint): boolean {
   return x % 2n === 0n
 }
 
@@ -199,7 +199,7 @@ export function isEven(x: bigint): boolean {
  * @returns `true` if the bigint is odd, `false` otherwise.
  * @public
  */
-export function isOdd(x: bigint): boolean {
+export function biIsOdd(x: bigint): boolean {
   return x % 2n !== 0n
 }
 
@@ -210,7 +210,7 @@ export function isOdd(x: bigint): boolean {
  * @returns `true` if the bigint is zero, `false` otherwise.
  * @public
  */
-export function isZero(x: bigint): boolean {
+export function biIsZero(x: bigint): boolean {
   return x === 0n
 }
 
@@ -221,7 +221,7 @@ export function isZero(x: bigint): boolean {
  * @returns `true` if the bigint is equal to 1n, `false` otherwise.
  * @public
  */
-export function isOne(x: bigint): boolean {
+export function biIsOne(x: bigint): boolean {
   return x === 1n
 }
 
@@ -232,7 +232,7 @@ export function isOne(x: bigint): boolean {
  * @returns `true` if the bigint is negative, `false` otherwise.
  * @public
  */
-export function isNegative(x: bigint): boolean {
+export function biIsNegative(x: bigint): boolean {
   return x < 0n
 }
 
@@ -243,6 +243,6 @@ export function isNegative(x: bigint): boolean {
  * @returns `true` if the bigint is positive, `false` otherwise.
  * @public
  */
-export function isPositive(x: bigint): boolean {
+export function biIsPositive(x: bigint): boolean {
   return x > 0n
 }

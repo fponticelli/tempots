@@ -1,4 +1,4 @@
-import { SplitLiteral, TupleToUnion } from '@tempots/std/domain'
+import { SplitLiteral, TupleToUnion } from '@tempots/std'
 
 export interface RouteInfo<P, R = string> {
   params: P

@@ -20,8 +20,8 @@ export interface Loading<V> {
  * @typeParam V - The type of the value.
  * @public
  */
-export interface Success<V> {
-  type: 'Success'
+export interface AsyncSuccess<V> {
+  type: 'AsyncSuccess'
   value: V
 }
 /**
@@ -29,8 +29,8 @@ export interface Success<V> {
  * @typeParam E - - The type of the error.
  * @public
  */
-export interface Failure<E> {
-  type: 'Failure'
+export interface AsyncFailure<E> {
+  type: 'AsyncFailure'
   error: E
 }
 
@@ -45,7 +45,11 @@ export interface Failure<E> {
  * @typeParam E - The type of the error on failure.
  * @public
  */
-export type AsyncResult<V, E> = NotAsked | Loading<V> | Success<V> | Failure<E>
+export type AsyncResult<V, E> =
+  | NotAsked
+  | Loading<V>
+  | AsyncSuccess<V>
+  | AsyncFailure<E>
 
 /**
  * A set of utility functions for working with `AsyncResult`.
@@ -75,7 +79,7 @@ export const AsyncResult = {
    * @public
    */
   success<V>(value: V): AsyncResult<V, never> {
-    return { type: 'Success', value }
+    return { type: 'AsyncSuccess', value }
   },
   /**
    * Creates a failure state.
@@ -84,7 +88,7 @@ export const AsyncResult = {
    * @public
    */
   failure<E>(error: E): AsyncResult<never, E> {
-    return { type: 'Failure', error }
+    return { type: 'AsyncFailure', error }
   },
   /**
    * Checks if the result is a success.
@@ -92,8 +96,8 @@ export const AsyncResult = {
    * @returns `true` if the result is a success; otherwise, `false`.
    * @public
    */
-  isSuccess<V, E>(r: AsyncResult<V, E>): r is Success<V> {
-    return r.type === 'Success'
+  isSuccess<V, E>(r: AsyncResult<V, E>): r is AsyncSuccess<V> {
+    return r.type === 'AsyncSuccess'
   },
   /**
    * Checks if the result is a failure.
@@ -101,8 +105,8 @@ export const AsyncResult = {
    * @returns `true` if the result is a failure; otherwise, `false`.
    * @public
    */
-  isFailure<V, E>(r: AsyncResult<V, E>): r is Failure<E> {
-    return r.type === 'Failure'
+  isFailure<V, E>(r: AsyncResult<V, E>): r is AsyncFailure<E> {
+    return r.type === 'AsyncFailure'
   },
   /**
    * Checks if the result is a not-asked.

@@ -7,9 +7,19 @@ import { resolve } from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 function updateExportsAndTypesVersions(packageFile, names, prefix = null) {
-  const exports = {}
-  const types = {}
+  const exports = {
+    '.': {
+      import: prefix ? `./${prefix}/index.js` : './index.js',
+      require: prefix ? `./${prefix}/index.cjs` : './index.cjs',
+    },
+  }
+  const types = {
+    '.': [prefix ? `./${prefix}/index.d.ts` : './index.d.ts'],
+  }
   for (const name of names) {
+    if (name === 'index') {
+      continue
+    }
     const value = prefix ? `${prefix}/${name}` : name
     exports[`./${name}`] = {
       import: `./${value}.js`,
@@ -40,7 +50,10 @@ const names = fs.readdirSync(resolve(__dirname, 'src'))
 
 writeExports(names)
 
-const files = names.map((file) => resolve(__dirname, 'src', `${file}.ts`))
+const files = [
+  resolve(__dirname, 'src', 'index.ts'),
+  ...names.map((file) => resolve(__dirname, 'src', `${file}.ts`))
+]
 
 export default defineConfig({
   plugins: [tsconfigPaths(), dts({ include: ['src'] })],

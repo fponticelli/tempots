@@ -3,7 +3,7 @@
  */
 
 import type { Compare, Maybe, Nothing, Primitive } from './domain'
-import { keys } from './object'
+import { objectKeys } from './object'
 
 /**
  * Applies a function to each element of an array and returns a new array with the results.
@@ -16,7 +16,7 @@ import { keys } from './object'
  * @category manipulation
  * @public
  */
-export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
+export function mapArray<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
   return Array.from({ length: arr.length }, (_, i) => f(arr[i], i))
 }
 
@@ -31,7 +31,7 @@ export function map<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
  * @category manipulation
  * @public
  */
-export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
+export function flatMapArray<A, B>(arr: A[], f: (a: A) => B[]): B[] {
   const buff: B[] = []
   for (const el of arr) {
     buff.push(...f(el))
@@ -48,7 +48,7 @@ export function flatMap<A, B>(arr: A[], f: (a: A) => B[]): B[] {
  * @category access
  * @public
  */
-export function head<A>(arr: A[]): Maybe<A> {
+export function arrayHead<A>(arr: A[]): Maybe<A> {
   return arr.length > 0 ? arr[0] : undefined
 }
 
@@ -60,7 +60,7 @@ export function head<A>(arr: A[]): Maybe<A> {
  * @category access
  * @public
  */
-export function tail<A>(arr: A[]): A[] {
+export function arrayTail<A>(arr: A[]): A[] {
   return arr.slice(1)
 }
 
@@ -75,7 +75,7 @@ export function tail<A>(arr: A[]): A[] {
  * @category comparison
  * @public
  */
-export function equals<T>(
+export function areArraysEqual<T>(
   a: T[],
   b: T[],
   equality: (a: T, b: T) => boolean
@@ -90,21 +90,6 @@ export function equals<T>(
 }
 
 /**
- * Creates a function that checks if two arrays are equal using the provided equality function.
- *
- * @typeParam T - The type of elements in the arrays.
- * @param equality - The equality function to use for comparing elements.
- * @returns A function that takes two arrays and returns a boolean indicating whether they are equal.
- * @category comparison
- * @public
- */
-export function makeEquals<T>(equality: (a: T, b: T) => boolean) {
-  return function (a: T[], b: T[]) {
-    return equals(a, b, equality)
-  }
-}
-
-/**
  * Checks if an array is empty.
  *
  * @param arr - The array to check.
@@ -112,7 +97,7 @@ export function makeEquals<T>(equality: (a: T, b: T) => boolean) {
  * @category query
  * @public
  */
-export function isEmpty<T>(arr: T[]): arr is [] {
+export function isArrayEmpty<T>(arr: T[]): arr is [] {
   return arr.length === 0
 }
 
@@ -124,7 +109,7 @@ export function isEmpty<T>(arr: T[]): arr is [] {
  * @category query
  * @public
  */
-export function hasValues<T>(arr: T[]): arr is [T, ...T[]] {
+export function arrayHasValues<T>(arr: T[]): arr is [T, ...T[]] {
   return arr.length > 0
 }
 
@@ -138,7 +123,7 @@ export function hasValues<T>(arr: T[]): arr is [T, ...T[]] {
  * @category manipulation
  * @public
  */
-export function filter<T>(arr: T[], predicate: (v: T) => boolean): T[] {
+export function filterArray<T>(arr: T[], predicate: (v: T) => boolean): T[] {
   const buff = [] as T[]
   for (const a of arr) if (predicate(a)) buff.push(a)
   return buff
@@ -156,7 +141,7 @@ export function filter<T>(arr: T[], predicate: (v: T) => boolean): T[] {
  * @category manipulation
  * @public
  */
-export function filterMap<A, B>(
+export function filterMapArray<A, B>(
   arr: A[],
   f: (a: A, index: number) => Maybe<B>
 ): B[] {
@@ -179,8 +164,8 @@ export function filterMap<A, B>(
  * @category manipulation
  * @public
  */
-export function filterNulls<T>(arr: Array<T | Nothing>): T[] {
-  return filter(arr, v => v != null) as T[]
+export function filterNullsFromArray<T>(arr: Array<T | Nothing>): T[] {
+  return filterArray(arr, v => v != null) as T[]
 }
 
 /**
@@ -192,7 +177,7 @@ export function filterNulls<T>(arr: Array<T | Nothing>): T[] {
  * @category manipulation
  * @public
  */
-export function flatten<T>(arr: T[][]): T[] {
+export function flattenArray<T>(arr: T[][]): T[] {
   return ([] as T[]).concat(...arr)
 }
 
@@ -208,7 +193,11 @@ export function flatten<T>(arr: T[][]): T[] {
  * @category manipulation
  * @public
  */
-export function foldLeft<T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B {
+export function foldLeftArray<T, B>(
+  arr: T[],
+  f: (acc: B, curr: T) => B,
+  b: B
+): B {
   for (const a of arr) {
     b = f(b, a)
   }
@@ -225,7 +214,10 @@ export function foldLeft<T, B>(arr: T[], f: (acc: B, curr: T) => B, b: B): B {
  * @category query
  * @public
  */
-export function all<T>(arr: T[], predicate: (v: T) => boolean): boolean {
+export function allElements<T>(
+  arr: T[],
+  predicate: (v: T) => boolean
+): boolean {
   for (const a of arr) {
     if (!predicate(a)) {
       return false
@@ -244,7 +236,7 @@ export function all<T>(arr: T[], predicate: (v: T) => boolean): boolean {
  * @category query
  * @public
  */
-export function any<T>(arr: T[], predicate: (v: T) => boolean): boolean {
+export function anyElement<T>(arr: T[], predicate: (v: T) => boolean): boolean {
   for (const a of arr) {
     if (predicate(a)) {
       return true
@@ -262,7 +254,7 @@ export function any<T>(arr: T[], predicate: (v: T) => boolean): boolean {
  * @category effect
  * @public
  */
-export function each<T>(arr: T[], f: (v: T) => void): void {
+export function forEachElement<T>(arr: T[], f: (v: T) => void): void {
   for (const a of arr) f(a)
 }
 
@@ -275,45 +267,51 @@ export function each<T>(arr: T[], f: (v: T) => void): void {
  * @category manipulation
  * @public
  */
-export function concat<A>(...arrs: A[][]): A[] {
+export function concatArrays<A>(...arrs: A[][]): A[] {
   return ([] as A[]).concat(...arrs)
 }
 
 /**
- * Creates a compare function that compares two arrays based on their lengths and element values.
+ * Compares two arrays based on their lengths and element values.
  *
+ * @typeParam A - The type of elements in the arrays.
+ * @param a - The first array to compare.
+ * @param b - The second array to compare.
  * @param comparef - The compare function to use for comparing the elements of the arrays.
  * @param shorterFirst - Optional. Specifies whether shorter arrays should be considered smaller. Defaults to true.
  * @returns A compare function that can be used to compare arrays.
  * @category comparison
  * @public
  */
-export function makeCompare<A>(comparef: Compare<A>, shorterFirst = true) {
-  return function (a: A[], b: A[]) {
-    if (a.length < b.length) {
-      return -1 * (shorterFirst ? 1 : -1)
-    } else if (a.length > b.length) {
-      return 1 * (shorterFirst ? 1 : -1)
-    }
-    for (let i = 0; i < a.length; i++) {
-      const ord = comparef(a[i], b[i])
-      if (ord !== 0) return ord
-    }
-    return 0
+export function compareArrays<A>(
+  a: A[],
+  b: A[],
+  comparef: Compare<A>,
+  shorterFirst = true
+) {
+  if (a.length < b.length) {
+    return -1 * (shorterFirst ? 1 : -1)
+  } else if (a.length > b.length) {
+    return 1 * (shorterFirst ? 1 : -1)
   }
+  for (let i = 0; i < a.length; i++) {
+    const ord = comparef(a[i], b[i])
+    if (ord !== 0) return ord
+  }
+  return 0
 }
 
 /**
  * Sorts an array in place using the provided compare function.
  *
  * @typeParam A - The type of elements in the array.
- * @param compare - The compare function used to determine the order of the elements.
  * @param arr - The array to be sorted.
+ * @param compare - The compare function used to determine the order of the elements.
  * @returns The sorted array.
  * @category manipulation
  * @public
  */
-export function sort<A>(compare: Compare<A>, arr: A[]): A[] {
+export function sortArray<A>(arr: A[], compare: Compare<A>): A[] {
   return arr.slice().sort(compare)
 }
 
@@ -326,7 +324,7 @@ export function sort<A>(compare: Compare<A>, arr: A[]): A[] {
  * @category creation
  * @public
  */
-export function range<A>(length: number, f: (index: number) => A): A[] {
+export function generateArray<A>(length: number, f: (index: number) => A): A[] {
   return Array.from({ length }, (_, i) => f(i))
 }
 
@@ -339,8 +337,8 @@ export function range<A>(length: number, f: (index: number) => A): A[] {
  * @category creation
  * @public
  */
-export function numbersRange(length: number, startAt = 0): number[] {
-  return range(length, i => startAt + i)
+export function generateSequenceArray(length: number, startAt = 0): number[] {
+  return generateArray(length, i => startAt + i)
 }
 
 /**
@@ -353,8 +351,8 @@ export function numbersRange(length: number, startAt = 0): number[] {
  * @category creation
  * @public
  */
-export function fill<A>(length: number, value: A): A[] {
-  return range(length, () => value)
+export function createFilledArray<A>(length: number, value: A): A[] {
+  return generateArray(length, () => value)
 }
 
 /**
@@ -366,7 +364,7 @@ export function fill<A>(length: number, value: A): A[] {
  * @category manipulation
  * @public
  */
-export function distinctPrimitive<T extends Primitive>(values: T[]): T[] {
+export function uniquePrimitives<T extends Primitive>(values: T[]): T[] {
   return Array.from(new Set(values))
 }
 
@@ -380,7 +378,7 @@ export function distinctPrimitive<T extends Primitive>(values: T[]): T[] {
  * @category manipulation
  * @public
  */
-export function distinctByPredicate<T>(
+export function uniqueByPredicate<T>(
   values: T[],
   predicate: (a: T) => string
 ): T[] {
@@ -388,7 +386,7 @@ export function distinctByPredicate<T>(
   values.forEach(v => {
     map[predicate(v)] = v
   })
-  return keys(map).map(k => map[k])
+  return objectKeys(map).map(k => map[k])
 }
 
 /**
@@ -401,7 +399,7 @@ export function distinctByPredicate<T>(
  * @category mutation
  * @public
  */
-export function remove<A>(arr: A[], item: A): boolean {
+export function removeOneFromArray<A>(arr: A[], item: A): boolean {
   const index = arr.indexOf(item)
   if (index < 0) {
     return false
@@ -412,7 +410,25 @@ export function remove<A>(arr: A[], item: A): boolean {
 }
 
 /**
- * Removes the elements from an array that satisfy the given predicate.
+ * Removes all occurrences of an item from an array.
+ *
+ * @typeParam A - The type of the array elements.
+ * @param arr - The array from which to remove the item.
+ * @param item - The item to remove from the array.
+ * @returns `true` if at least one occurrence was found and removed, `false` otherwise.
+ * @category mutation
+ * @public
+ */
+export function removeAllFromArray<A>(arr: A[], item: A): boolean {
+  let removed = false
+  while (removeOneFromArray(arr, item)) {
+    removed = true
+  }
+  return removed
+}
+
+/**
+ * Removes the first occurrence in an array that satisfy the given predicate.
  *
  * @typeParam A - The type of elements in the array.
  * @param arr - The array from which elements will be removed.
@@ -421,7 +437,7 @@ export function remove<A>(arr: A[], item: A): boolean {
  * @category mutation
  * @public
  */
-export function removeByPredicate<A>(
+export function removeOneFromArrayByPredicate<A>(
   arr: A[],
   predicate: (a: A) => boolean
 ): boolean {
@@ -435,6 +451,27 @@ export function removeByPredicate<A>(
 }
 
 /**
+ * Removes all occurrences in an array that satisfy the given predicate.
+ *
+ * @typeParam A - The type of elements in the array.
+ * @param arr - The array from which elements will be removed.
+ * @param predicate - The predicate function used to determine which elements to remove.
+ * @returns `true` if at least one element was removed, `false` otherwise.
+ * @category mutation
+ * @public
+ */
+export function removeAllFromArrayByPredicate<A>(
+  arr: A[],
+  predicate: (a: A) => boolean
+): boolean {
+  let removed = false
+  while (removeOneFromArrayByPredicate(arr, predicate)) {
+    removed = true
+  }
+  return removed
+}
+
+/**
  * Converts an IterableIterator to an array.
  *
  * @param it - The IterableIterator to convert.
@@ -442,7 +479,7 @@ export function removeByPredicate<A>(
  * @category creation
  * @public
  */
-export function ofIterableIterator<A>(it: IterableIterator<A>): A[] {
+export function arrayOfIterableIterator<A>(it: IterableIterator<A>): A[] {
   const buff = [] as A[]
   for (let r = it.next(); !(r.done ?? false); r = it.next()) {
     buff.push(r.value)
@@ -455,7 +492,7 @@ export function ofIterableIterator<A>(it: IterableIterator<A>): A[] {
  *
  * @public
  */
-export interface DiffOperations<T> {
+export interface ArrayDiffOperations<T> {
   removals: Array<{ at: number; qt: number }>
   swaps: Array<{ from: number; to: number }>
   inserts: Array<{ at: number; values: T[] }>
@@ -473,12 +510,12 @@ export interface DiffOperations<T> {
  * @category manipulation
  * @public
  */
-export function diffOperations<T, K>(
+export function arrayDiffOperations<T, K>(
   from: T[],
   to: T[],
   getKey: (v: T) => K
-): DiffOperations<T> {
-  const ops: DiffOperations<T> = {
+): ArrayDiffOperations<T> {
+  const ops: ArrayDiffOperations<T> = {
     removals: [],
     swaps: [],
     inserts: [],
@@ -549,8 +586,8 @@ export function diffOperations<T, K>(
  * @category manipulation
  * @public
  */
-export function applyOperations<T>(
-  operations: DiffOperations<T>,
+export function applyArrayDiffOperations<T>(
+  operations: ArrayDiffOperations<T>,
   start: T[]
 ): T[] {
   const buff = [...start]
@@ -578,7 +615,7 @@ export function applyOperations<T>(
  * @category transformation
  * @public
  */
-export function joinWithConjunction<A>(
+export function joinArrayWithConjunction<A>(
   arr: A[],
   conjunction = ' and ',
   separator = ', '
@@ -601,7 +638,7 @@ export function joinWithConjunction<A>(
  * @category transformation
  * @public
  */
-export function rank<T>(
+export function rankArray<T>(
   array: T[],
   compare: (a: T, b: T) => number,
   incrementDuplicates: boolean = true

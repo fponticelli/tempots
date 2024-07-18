@@ -1,14 +1,13 @@
 import { describe, expect, test } from "vitest";
-
-import { sameKeys, isObject } from '../src/object'
+import { isObject, sameObjectKeys } from "../src/object";
 
 describe('objects helpers', () => {
-  test('sameKeys works as expected', () => {
-    expect(sameKeys({}, {})).toBe(true)
-    expect(sameKeys({ a: 1 }, { a: 2 })).toBe(true)
-    expect(sameKeys({ a: 1, b: 'c' }, { a: 2, b: true })).toBe(true)
-    expect(sameKeys({ a: 1 }, { a: 2, b: true })).toBe(false)
-    expect(sameKeys({ a: 1 }, { b: true })).toBe(false)
+  test('sameObjectKeys works as expected', () => {
+    expect(sameObjectKeys({}, {})).toBe(true)
+    expect(sameObjectKeys({ a: 1 }, { a: 2 })).toBe(true)
+    expect(sameObjectKeys({ a: 1, b: 'c' }, { a: 2, b: true })).toBe(true)
+    expect(sameObjectKeys({ a: 1 }, { a: 2, b: true })).toBe(false)
+    expect(sameObjectKeys({ a: 1 }, { b: true })).toBe(false)
   })
 
   test('isObject behaves as expected', () => {

@@ -175,7 +175,7 @@ export class DOMContext {
    *
    * @param mark - The provider mark to retrieve the provider for.
    * @returns The provider for the given mark.
-   * @throws {Error} If the provider for the given mark is not found.
+   * @throws Error If the provider for the given mark is not found.
    */
   readonly getProvider = <T>(mark: ProviderMark<T>): T => {
     if (this.providers[mark] === undefined) {

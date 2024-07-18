@@ -1,215 +1,204 @@
 import { describe, expect, test } from "vitest";
-import { applyOperations, type DiffOperations, diffOperations, map, head, isEmpty, tail, numbersRange, fill, makeCompare, filterMap, flatMap, equals, makeEquals, hasValues, filter, filterNulls, flatten, joinWithConjunction, remove, removeByPredicate, foldLeft, any, each, concat, sort, distinctPrimitive, distinctByPredicate, ofIterableIterator, rank } from '../src/array'
-import { compare as compareString } from '../src/string'
+import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPredicate, uniquePrimitives } from "../src/array";
+import { compareStrings } from "../src/string";
 
-describe('arrays:map', () => {
+describe('arrays:mapArray', () => {
   test('should work with empty arrays', () => {
-    expect(map([], a => a)).toEqual([])
+    expect(mapArray([], a => a)).toEqual([])
   })
 
   test('should work with any array', () => {
-    expect(map([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
+    expect(mapArray([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
   })
 })
 
-describe('arrays:filterMap', () => {
+describe('arrays:filterMapArray', () => {
   test('should work with empty arrays', () => {
-    expect(filterMap([], a => a)).toEqual([])
+    expect(filterMapArray([], a => a)).toEqual([])
   })
   test('should work with any array', () => {
-    expect(filterMap([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
+    expect(filterMapArray([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
   })
   test('should work with null values', () => {
-    expect(filterMap([1, 2, 3], a => a === 2 ? null : a + 1)).toEqual([2, 4])
+    expect(filterMapArray([1, 2, 3], a => a === 2 ? null : a + 1)).toEqual([2, 4])
   })
 })
 
-describe('arrays:flatMap', () => {
+describe('arrays:flatMapArray', () => {
   test('should work with empty arrays', () => {
-    expect(flatMap([], a => a)).toEqual([])
+    expect(flatMapArray([], a => a)).toEqual([])
   })
   test('should work with any array', () => {
-    expect(flatMap([1, 2, 3], a => [a, a + 1])).toEqual([1, 2, 2, 3, 3, 4])
+    expect(flatMapArray([1, 2, 3], a => [a, a + 1])).toEqual([1, 2, 2, 3, 3, 4])
   })
 })
 
-describe('arrays:equals', () => {
+describe('arrays:areArraysEqual', () => {
   test('should work with empty arrays', () => {
-    expect(equals([], [], (a, b) => a === b)).toBe(true)
+    expect(areArraysEqual([], [], (a, b) => a === b)).toBe(true)
   })
   test('should work with any array', () => {
-    expect(equals([1, 2, 3], [1, 2], (a, b) => a === b)).toBe(false)
-    expect(equals([1, 2, 3], [1, 2, 3], (a, b) => a === b)).toBe(true)
-    expect(equals([1, 2, 3], [1, 2, 4], (a, b) => a === b)).toBe(false)
+    expect(areArraysEqual([1, 2, 3], [1, 2], (a, b) => a === b)).toBe(false)
+    expect(areArraysEqual([1, 2, 3], [1, 2, 3], (a, b) => a === b)).toBe(true)
+    expect(areArraysEqual([1, 2, 3], [1, 2, 4], (a, b) => a === b)).toBe(false)
   })
 })
 
-describe('arrays:makeEquals', () => {
+describe('arrays:isArrayEmpty', () => {
   test('should work with empty arrays', () => {
-    expect(makeEquals((a, b) => a === b)([], [])).toBe(true)
+    expect(isArrayEmpty([])).toBe(true)
   })
   test('should work with any array', () => {
-    expect(makeEquals((a, b) => a === b)([1, 2, 3], [1, 2])).toBe(false)
-    expect(makeEquals((a, b) => a === b)([1, 2, 3], [1, 2, 3])).toBe(true)
-    expect(makeEquals((a, b) => a === b)([1, 2, 3], [1, 2, 4])).toBe(false)
+    expect(isArrayEmpty([1, 2, 3])).toBe(false)
   })
 })
 
-describe('arrays:isEmpty', () => {
+describe('arrays:arrayHasValues', () => {
   test('should work with empty arrays', () => {
-    expect(isEmpty([])).toBe(true)
+    expect(arrayHasValues([])).toBe(false)
   })
   test('should work with any array', () => {
-    expect(isEmpty([1, 2, 3])).toBe(false)
+    expect(arrayHasValues([1, 2, 3])).toBe(true)
   })
 })
 
-describe('arrays:hasValues', () => {
+describe('arrays:filterArray', () => {
   test('should work with empty arrays', () => {
-    expect(hasValues([])).toBe(false)
+    expect(filterArray([], a => a != 1)).toEqual([])
   })
   test('should work with any array', () => {
-    expect(hasValues([1, 2, 3])).toBe(true)
+    expect(filterArray([1, 2, 3], a => a != 1)).toEqual([2, 3])
   })
 })
 
-describe('arrays:filter', () => {
+describe('arrays:filterNullsFromArray', () => {
   test('should work with empty arrays', () => {
-    expect(filter([], a => a != 1)).toEqual([])
+    expect(filterNullsFromArray([])).toEqual([])
   })
   test('should work with any array', () => {
-    expect(filter([1, 2, 3], a => a != 1)).toEqual([2, 3])
+    expect(filterNullsFromArray([1, 2, 3])).toEqual([1, 2, 3])
+    expect(filterNullsFromArray([1, null, 3])).toEqual([1, 3])
   })
 })
 
-describe('arrays:filterNulls', () => {
+describe('arrays:flattenArray', () => {
   test('should work with empty arrays', () => {
-    expect(filterNulls([])).toEqual([])
+    expect(flattenArray([])).toEqual([])
+    expect(flattenArray([[], []])).toEqual([])
   })
   test('should work with any array', () => {
-    expect(filterNulls([1, 2, 3])).toEqual([1, 2, 3])
-    expect(filterNulls([1, null, 3])).toEqual([1, 3])
+    expect(flattenArray([[1, 2], [3]])).toEqual([1, 2, 3])
+    expect(flattenArray([[1], [2, 3]])).toEqual([1, 2, 3])
   })
 })
 
-describe('arrays:flatten', () => {
-  test('should work with empty arrays', () => {
-    expect(flatten([])).toEqual([])
-    expect(flatten([[], []])).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(flatten([[1, 2], [3]])).toEqual([1, 2, 3])
-    expect(flatten([[1], [2, 3]])).toEqual([1, 2, 3])
-  })
-})
-
-describe('arrays:head', () => {
+describe('arrays:arrayHead', () => {
   test('should return nothing if the array is empy', () => {
-    expect(head([])).not.toBeDefined()
+    expect(arrayHead([])).not.toBeDefined()
   })
 
   test('should return the first element', () => {
-    expect(head([1])).toEqual(1)
-    expect(head([1, 2])).toEqual(1)
-    expect(head([1, 2, 3])).toEqual(1)
+    expect(arrayHead([1])).toEqual(1)
+    expect(arrayHead([1, 2])).toEqual(1)
+    expect(arrayHead([1, 2, 3])).toEqual(1)
   })
 })
 
-describe('arrays:tail', () => {
+describe('arrays:arrayTail', () => {
   test('should return nothing if the array is empy', () => {
-    expect(tail([])).toEqual([])
+    expect(arrayTail([])).toEqual([])
   })
 
   test('should return all the elements except for the first', () => {
-    expect(tail([1])).toEqual([])
-    expect(tail([1, 2])).toEqual([2])
-    expect(tail([1, 2, 3])).toEqual([2, 3])
+    expect(arrayTail([1])).toEqual([])
+    expect(arrayTail([1, 2])).toEqual([2])
+    expect(arrayTail([1, 2, 3])).toEqual([2, 3])
   })
 })
 
 describe('arrays', () => {
-  test('numberRange', () => {
-    expect(numbersRange(4)).toEqual([0, 1, 2, 3])
-    expect(numbersRange(4, 1)).toEqual([1, 2, 3, 4])
+  test('generateSequenceArray', () => {
+    expect(generateSequenceArray(4)).toEqual([0, 1, 2, 3])
+    expect(generateSequenceArray(4, 1)).toEqual([1, 2, 3, 4])
   })
 
-  test('fill', () => {
-    expect(fill(4, 'x')).toEqual(['x', 'x', 'x', 'x'])
+  test('createFilledArray', () => {
+    expect(createFilledArray(4, 'x')).toEqual(['x', 'x', 'x', 'x'])
   })
 })
 
-describe('arrays:joinWithConjuction', () => {
+describe('arrays:joinArrayWithConjunction', () => {
   test('should work with empty arrays', () => {
-    expect(joinWithConjunction([], 'and')).toEqual('')
+    expect(joinArrayWithConjunction([], 'and')).toEqual('')
   })
   test('should work with arrays with one element', () => {
-    expect(joinWithConjunction(['a'])).toEqual('a')
+    expect(joinArrayWithConjunction(['a'])).toEqual('a')
   })
   test('should work with arrays with two elements', () => {
-    expect(joinWithConjunction(['a', 'b'])).toEqual('a and b')
+    expect(joinArrayWithConjunction(['a', 'b'])).toEqual('a and b')
   })
   test('should work with arrays with more than two elements', () => {
-    expect(joinWithConjunction(['a', 'b', 'c'])).toEqual('a, b and c')
+    expect(joinArrayWithConjunction(['a', 'b', 'c'])).toEqual('a, b and c')
   })
 
   test('should work with arrays with one element (or)', () => {
-    expect(joinWithConjunction(['a'], ' or ')).toEqual('a')
+    expect(joinArrayWithConjunction(['a'], ' or ')).toEqual('a')
   })
   test('should work with arrays with two elements (or)', () => {
-    expect(joinWithConjunction(['a', 'b'], ' or ')).toEqual('a or b')
+    expect(joinArrayWithConjunction(['a', 'b'], ' or ')).toEqual('a or b')
   })
   test('should work with arrays with more than two elements (or)', () => {
-    expect(joinWithConjunction(['a', 'b', 'c'], ' or ')).toEqual('a, b or c')
+    expect(joinArrayWithConjunction(['a', 'b', 'c'], ' or ')).toEqual('a, b or c')
   })
 })
 
-describe('arrays:remove', () => {
+describe('arrays:removeOneFromArray', () => {
   test('should work with empty arrays', () => {
     const arr: number[] = []
-    expect(remove(arr, 1)).toEqual(false)
+    expect(removeOneFromArray(arr, 1)).toEqual(false)
     expect(arr).toEqual([])
   })
   test('should work with any array', () => {
     const arr = [1, 2, 3]
-    expect(remove(arr, 1)).toEqual(true)
+    expect(removeOneFromArray(arr, 1)).toEqual(true)
     expect(arr).toEqual([2, 3])
   })
   test('should work with any array (not found)', () => {
     const arr = [1, 2, 3]
-    expect(remove(arr, 4)).toEqual(false)
+    expect(removeOneFromArray(arr, 4)).toEqual(false)
     expect(arr).toEqual([1, 2, 3])
   })
   test('should work with any array (multiple)', () => {
     const arr = [1, 2, 3, 2]
-    expect(remove(arr, 2)).toEqual(true)
+    expect(removeOneFromArray(arr, 2)).toEqual(true)
     expect(arr).toEqual([1, 3, 2])
   })
 })
 
-describe('arrays:removeByPredicate', () => {
+describe('arrays:removeOneFromArrayByPredicate', () => {
   test('should work with empty arrays', () => {
     const arr: number[] = []
-    expect(removeByPredicate(arr, a => a == 1)).toEqual(false)
+    expect(removeOneFromArrayByPredicate(arr, a => a == 1)).toEqual(false)
     expect(arr).toEqual([])
   })
   test('should work with any array', () => {
     const arr = [1, 2, 3]
-    expect(removeByPredicate(arr, a => a == 1)).toEqual(true)
+    expect(removeOneFromArrayByPredicate(arr, a => a == 1)).toEqual(true)
     expect(arr).toEqual([2, 3])
   })
   test('should work with any array (not found)', () => {
     const arr = [1, 2, 3]
-    expect(removeByPredicate(arr, a => a == 4)).toEqual(false)
+    expect(removeOneFromArrayByPredicate(arr, a => a == 4)).toEqual(false)
     expect(arr).toEqual([1, 2, 3])
   })
   test('should work with any array (multiple)', () => {
     const arr = [1, 2, 3, 2]
-    expect(removeByPredicate(arr, a => a == 2)).toEqual(true)
+    expect(removeOneFromArrayByPredicate(arr, a => a == 2)).toEqual(true)
     expect(arr).toEqual([1, 3, 2])
   })
 })
 
-describe('arrays:makeCompare', () => {
+describe('arrays:compareArrays', () => {
   test('should compare arrays of the same length', () => {
     const tests = [
       { a: ['a'], b: ['b'], r: -1 },
@@ -218,9 +207,8 @@ describe('arrays:makeCompare', () => {
       { a: ['a', 'b'], b: ['a', 'b'], r: 0 }
     ]
 
-    const compare = makeCompare(compareString, true)
     tests.forEach(test => {
-      expect(compare(test.a, test.b)).toBe(test.r)
+      expect(compareArrays(test.a, test.b, compareStrings)).toBe(test.r)
     })
   })
 
@@ -233,111 +221,108 @@ describe('arrays:makeCompare', () => {
       { a: ['b', 'b'], b: ['a', 'b', 'c'], r: -1 }
     ]
 
-    let compare = makeCompare(compareString, true)
     tests.forEach(test => {
-      expect(compare(test.a, test.b)).toBe(test.r)
+      expect(compareArrays(test.a, test.b, compareStrings, true)).toBe(test.r)
     })
 
-    compare = makeCompare(compareString, false)
     tests.forEach(test => {
-      expect(compare(test.a, test.b)).toBe(test.r * -1)
+      expect(compareArrays(test.a, test.b, compareStrings, false)).toBe(test.r * -1)
     })
   })
 
   test('should compare arrays with different lengths (empty)', () => {
     const tests = [
       { a: [], b: [], r: 0 },
-      { a: [], b: ['a'], r: 1 },
-      { a: ['a'], b: [], r: -1 }
+      { a: [], b: ['a'], r: -1 },
+      { a: ['a'], b: [], r: 1 }
     ]
 
-    let compare = makeCompare(compareString, false)
     tests.forEach(test => {
-      expect(compare(test.a, test.b)).toBe(test.r)
+      expect(compareArrays(test.a, test.b, compareStrings)).toBe(test.r)
     })
   })
 })
 
 describe('arrays:sort', () => {
   test('should sort arrays', () => {
-    expect(sort(compareString, ["3", "2", "1"])).toEqual(["1", "2", "3"])
+    expect(sortArray(["3", "2", "1"], compareStrings)).toEqual(["1", "2", "3"])
   })
 })
 
-describe('arrays:distinctPrimitive', () => {
+describe('arrays:uniquePrimitives', () => {
   test('should work with empty arrays', () => {
-    expect(distinctPrimitive([])).toEqual([])
+    expect(uniquePrimitives([])).toEqual([])
   })
   test('should work with any array', () => {
-    expect(distinctPrimitive([1, 2, 3, 2])).toEqual([1, 2, 3])
+    expect(uniquePrimitives([1, 2, 3, 2])).toEqual([1, 2, 3])
   })
 })
 
-describe('arrays:distinctByPredicate', () => {
+describe('arrays:uniqueByPredicate', () => {
   test('should work with empty arrays', () => {
-    expect(distinctByPredicate([], a => a)).toEqual([])
+    expect(uniqueByPredicate([], a => a)).toEqual([])
   })
   test('should work with any array', () => {
-    expect(distinctByPredicate([1, 2, 3, 2], String)).toEqual([1, 2, 3])
+    expect(uniqueByPredicate([1, 2, 3, 2], String)).toEqual([1, 2, 3])
   })
 })
 
-describe('arrays:ofIterableIterator', () => {
+describe('arrays:arrayOfIterableIterator', () => {
   test('should work with empty arrays', () => {
-    expect(ofIterableIterator(new Set().entries())).toEqual([])
+    expect(arrayOfIterableIterator(new Set().entries())).toEqual([])
   })
   test('should work with any array', () => {
-    expect(ofIterableIterator(new Set([1, 2, 3]).entries())).toEqual([[1, 1], [2, 2], [3, 3]])
+    expect(arrayOfIterableIterator(new Set([1, 2, 3]).entries())).toEqual([[1, 1], [2, 2], [3, 3]])
   })
 })
 
-describe('arrays:foldLeft', () => {
+describe('arrays:foldLeftArray', () => {
   test('should work with empty arrays', () => {
-    expect(foldLeft([], (a, b) => a + b, 0)).toBe(0)
+    expect(foldLeftArray([], (a, b) => a + b, 0)).toBe(0)
   })
   test('should work with any array', () => {
-    expect(foldLeft([1, 2, 3], (a, b) => a + b, 0)).toBe(6)
+    expect(foldLeftArray([1, 2, 3], (a, b) => a + b, 0)).toBe(6)
   })
 })
 
-describe('arrays:any', () => {
+describe('arrays:anyElement', () => {
   test('should work with empty arrays', () => {
-    expect(any([], a => a == 1)).toBe(false)
+    expect(anyElement([], a => a == 1)).toBe(false)
   })
   test('should work with any array', () => {
-    expect(any([1, 2, 3], a => a == 1)).toBe(true)
+    expect(anyElement([1, 2, 3], a => a == 1)).toBe(true)
   })
   test('should work with any array (not found)', () => {
-    expect(any([1, 2, 3], a => a == 4)).toBe(false)
+    expect(anyElement([1, 2, 3], a => a == 4)).toBe(false)
   })
 })
 
-describe('arrays:each', () => {
+describe('arrays:forEachElement', () => {
   test('should work with empty arrays', () => {
     const arr: number[] = []
-    each(arr, a => a + 1)
+    forEachElement(arr, a => a + 1)
     expect(arr).toEqual([])
   })
   test('should work with any array', () => {
     const arr = [1, 2, 3]
-    each(arr, a => a + 1)
+    forEachElement(arr, a => a + 1)
     expect(arr).toEqual([1, 2, 3])
   })
 })
 
-describe('arrays:concat', () => {
+describe('arrays:concatArrays', () => {
   test('should work with empty arrays', () => {
-    expect(concat([], [])).toEqual([])
+    expect(concatArrays([], [])).toEqual([])
   })
   test('should work with any array', () => {
-    expect(concat([1, 2, 3], [4, 5, 6])).toEqual([1, 2, 3, 4, 5, 6])
+    expect(concatArrays([1, 2, 3], [4, 5, 6])).toEqual([1, 2, 3, 4, 5, 6])
   })
 })
 
 const cases: Array<{
   a: string[]
   b: string[]
-  operations: DiffOperations<string>
+  operations: ArrayDiffOperations<string>
 }> = [
   {
     a: [],
@@ -541,9 +526,9 @@ const cases: Array<{
 const js = JSON.stringify
 
 describe('array helpers', () => {
-  test('diffOperations', () => {
+  test('arrayDiffOperations', () => {
     for (const { a, b, operations } of cases) {
-      const res = diffOperations(a, b, v => v)
+      const res = arrayDiffOperations(a, b, v => v)
       try {
         expect(res).toEqual(operations)
       } catch {
@@ -556,9 +541,9 @@ describe('array helpers', () => {
     }
   })
 
-  test('applyOperations', () => {
+  test('applyArrayDiffOperations', () => {
     for (const { a, b, operations } of cases) {
-      const res = applyOperations(operations, a)
+      const res = applyArrayDiffOperations(operations, a)
       try {
         expect(res).toEqual(b)
       } catch {
@@ -618,10 +603,10 @@ describe('array helpers', () => {
     ]
   ]
 
-  test('diffOperations and applyOperations roundtrips', () => {
+  test('arrayDiffOperations and applyArrayDiffOperations roundtrips', () => {
     for (const [a, b] of roundtrips) {
-      const ops = diffOperations(a, b, v => v)
-      const res = applyOperations(ops, a)
+      const ops = arrayDiffOperations(a, b, v => v)
+      const res = applyArrayDiffOperations(ops, a)
       try {
         expect(res).toEqual(b)
       } catch {
@@ -632,8 +617,8 @@ describe('array helpers', () => {
     }
 
     for (const [b, a] of roundtrips) {
-      const ops = diffOperations(a, b, v => v)
-      const res = applyOperations(ops, a)
+      const ops = arrayDiffOperations(a, b, v => v)
+      const res = applyArrayDiffOperations(ops, a)
       try {
         expect(res).toEqual(b)
       } catch {
@@ -646,9 +631,9 @@ describe('array helpers', () => {
     }
   })
 
-  test('rank', () => {
+  test('rankArray', () => {
     const a = ['c', 'a', 'b']
-    const ranked = rank(a, (a, b) => a > b ? 1 : a < b ? -1 : 0)
+    const ranked = rankArray(a, (a, b) => a > b ? 1 : a < b ? -1 : 0)
     expect(ranked).toEqual([2, 0, 1])
   })
 })

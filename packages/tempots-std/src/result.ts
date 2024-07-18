@@ -1,5 +1,6 @@
-import { type AsyncResult } from './async-result'
+import { AsyncResult } from './async-result'
 import { Maybe } from './domain'
+import { Validation } from './validation'
 
 /**
  * Represents a successful result.
@@ -99,7 +100,24 @@ export const Result = {
    * @public
    */
   toAsync<V, E>(r: Result<V, E>): AsyncResult<V, E> {
-    return r
+    return Result.match<V, AsyncResult<V, E>, E>(
+      r,
+      (v: V) => AsyncResult.success(v),
+      (e: E) => AsyncResult.failure(e)
+    )
+  },
+  /**
+   * Converts a `Result` to a `Validation`.
+   * @param r - The `Result` to convert.
+   * @returns A `Validation` that is equivalent to the input `Result`.
+   * @public
+   */
+  toValidation<V, E>(r: Result<V, E>): Validation<E> {
+    return Result.match<V, Validation<E>, E>(
+      r,
+      () => Validation.valid,
+      (e: E) => Validation.invalid(e)
+    )
   },
   /**
    * Checks if a `Result` is a success.
