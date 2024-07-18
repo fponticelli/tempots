@@ -45,10 +45,14 @@ export function equalsLocation(a: LocationData, b: LocationData) {
 export function locationFromURL(url: string): LocationData {
   const urlObj = new URL(url, window?.location.toString() ?? '')
   const search = Object.fromEntries(urlObj.searchParams.entries())
+  let hash = urlObj.hash
+  if (hash.startsWith('#')) {
+    hash = hash.substring(1)
+  }
   return {
     pathname: urlObj.pathname,
     search,
-    hash: urlObj.hash,
+    hash: hash === '' ? undefined : hash,
   }
 }
 
@@ -71,9 +75,16 @@ export function makeLocationProp(): Prop<LocationData> {
   const location = prop(makeLocation(), equalsLocation)
 
   const handler = () => {
+    let hash = window?.location.hash ?? ''
+    if (hash.startsWith('#')) {
+      hash = hash.substring(1)
+    }
     const newLocation = {
-      ...location.value,
       pathname: window?.location.pathname ?? '',
+      search: Object.fromEntries(
+        new URLSearchParams(window?.location.search ?? '').entries()
+      ),
+      hash: hash === '' ? undefined : hash,
     }
     location.set(newLocation)
   }
@@ -85,13 +96,7 @@ export function makeLocationProp(): Prop<LocationData> {
   })
 
   location.on((location: LocationData) => {
-    const search = new URLSearchParams(location.search)
-    const searchStr = search.toString()
-    const hash = location.hash
-    const url = `${location.pathname}${searchStr ? `?${searchStr}` : ''}${
-      hash ? `#${hash}` : ''
-    }`
-    window?.history.pushState({}, '', url)
+    window?.history.pushState({}, '', getFullURL(location))
   })
 
   return location

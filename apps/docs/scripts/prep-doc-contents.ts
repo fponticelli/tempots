@@ -2,7 +2,7 @@ import { promises as fsp } from 'fs'
 import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
-import { markdownToHTML, markdownWithFM } from './utils/markdown'
+import { ManglerOptions, markdownToHTML, markdownWithFM } from './utils/markdown'
 import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
 
 const rootFolder = '../..'
@@ -98,10 +98,10 @@ async function listAllMDFiles(src: string): Promise<string[]> {
 
 async function makeHtml(
   mdFile: string,
-  { anchorMangler }: { anchorMangler?: (url: string) => string }
+  options?: ManglerOptions
 ) {
   const content = await fsp.readFile(mdFile, 'utf8')
-  return markdownWithFM(content, { anchorMangler })
+  return markdownWithFM(content, options)
 }
 
 function renameMd(file: string) {
@@ -114,12 +114,16 @@ function manglePageHref(url: string) {
   return `/${url}`
 }
 
-async function createPages(src: string, dst: string) {
+async function createPages(src: string, dst: string, options: ManglerOptions = {}) {
   const mdFiles = await listAllMDFiles(src)
   const data = await Promise.all(
     mdFiles.map(async file => ({
       dest: renameMd(file),
-      ...(await makeHtml(path.join(src, file), { anchorMangler: manglePageHref })),
+      ...(await makeHtml(path.join(src, file), {
+        anchorMangler: options.anchorMangler ?? manglePageHref,
+        mdMangler: options.mdMangler,
+        domMangler: options.domMangler,
+      })),
     }))
   )
   await Promise.all(
@@ -152,7 +156,6 @@ async function createPages(src: string, dst: string) {
         }
         sect = sect.sections[sub]
       }
-      // console.log(d)
       sect.pages.push({
         path: d.dest.substring(0, d.dest.length - 5), // remove .html
         title: d.data.title,
@@ -198,6 +201,23 @@ async function collectLibraries(libraries: string[], src: string) {
     .map(a => a.data.data)
 }
 
+function replaceAll(value: string, search: string, replace: string) {
+  return value.split(search).join(replace)
+}
+
+function transformCodeBlocks(content: string, fn: (content: string) => string) {
+  const parts = content.split('```')
+  const buff = [] as string[]
+  for (let i = 0; i < parts.length; i++) {
+    if ((i + 1) % 2 === 0) {
+      buff.push(fn(parts[i]))
+    } else {
+      buff.push(parts[i])
+    }
+  }
+  return buff.join('```')
+}
+
 async function main() {
   console.time('main')
 
@@ -238,14 +258,58 @@ async function main() {
   for (const library of librariesData) {
     const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/md/`)
     const dst = path.join(apiFolderDst, library.name)
-    const pages = await createPages(apiDir, dst)
-    console.log(pages)
+    const pages = await createPages(apiDir, dst, {
+      mdMangler: content => {
+        const pos = content.indexOf('&gt;')
+        if (pos >= 0) {
+          content = content.substring(pos + 5)
+        }
+        content = replaceAll(content, '\r', '')
+        content = replaceAll(content, '\n**Returns:**\n\n', '\n\n**Returns:** ')
+        content = transformCodeBlocks(content, code =>
+          replaceAll(replaceAll(code, '<', '&lt;'), '>', '&gt;')
+        )
+        return content
+      },
+      domMangler: doc => {
+        // find breadcrumbs
+        const breadcrumbs = Array.from( doc.querySelectorAll('p')).filter(p => {
+          return p.firstElementChild?.tagName === 'A' &&
+                 (p.firstElementChild as HTMLElement)?.innerText.indexOf('@tempots/') >= 0
+        })
+        if (breadcrumbs.length > 0) {
+          const bc = breadcrumbs[0]
+          bc.classList.add('breadcrumbs')
+          // console.log(bc.childNodes)
+          for (let i = 0; i < bc.childNodes.length; i++) {
+            if (bc.childNodes[i].nodeType === 3 && bc.childNodes[i].nodeValue === ' > ') { // text node
+              bc.childNodes[i].nodeValue = ' › '
+            }
+          }
+          const last = bc.lastElementChild as HTMLElement | undefined
+          if (last != null && last.tagName === 'A') {
+            const span = doc.createElement('span')
+            span.classList.add('current')
+            span.innerText = last.innerText
+            last.replaceWith(span)
+          }
+        }
+        // fix anchor hrefs
+        for (const anchor of Array.from(doc.querySelectorAll('a'))) {
+          const parts = anchor.href.split('.')
+          if (parts.length === 2) {
+            anchor.href = `#`
+          } else if (parts.length === 3) {
+            anchor.href = `#${parts[1]}`
+          } else if (parts.length === 4) {
+            anchor.href = `#${parts[1]}.${parts[2]}`
+          }
+        }
+      }
+    })
     api[library.name] = pages.pages
       .map(({path}) => path)
       .filter(v => v != 'index')
-    // console.log(library.name, apiDir)
-    // console.log(dst)
-    // await fse.copy(apiDir, dst)
   }
   await fsp.writeFile(path.join(apiFolderDst, 'api.json'), JSON.stringify(api, null, 2))
 

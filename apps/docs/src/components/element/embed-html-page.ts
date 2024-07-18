@@ -103,7 +103,7 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
   return []
 }
 
-export function EmbedHTML(content: Value<string>) {
+export function EmbedHTMLPage(content: Value<string>) {
   const htmlSignal = Signal.wrap(content)
   const toc = prop<TOCItem[]>([])
   return html.div(

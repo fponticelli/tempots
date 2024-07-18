@@ -40,6 +40,10 @@ export function after(value: string, searchFor: string): string {
 /**
  * `afterLast` searches for the last occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
+ *
+ * @param value - The string to search in.
+ * @param searchFor - The string to search for.
+ * @returns The text after the last occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
 export function afterLast(value: string, searchFor: string): string {

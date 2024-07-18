@@ -1,7 +1,7 @@
 import { attr, html, Signal } from '@tempots/dom'
 import { Page } from '../../model/domain'
 import { fetchPage } from '../../services/page-service'
-import { EmbedHTML } from './embed-html'
+import { EmbedHTMLPage } from './embed-html-page'
 import { HTMLTitle } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
 
@@ -30,7 +30,7 @@ export function PageView(page: Signal<Page>) {
     ),
     html.div(
       attr.class('px-4'),
-      html.div(EmbedHTML(page.$.path.mapAsync(fetchPage, 'loading...')))
+      html.div(EmbedHTMLPage(page.$.path.mapAsync(fetchPage, 'loading...')))
     )
   )
 }

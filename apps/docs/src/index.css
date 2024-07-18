@@ -1,3 +1,65 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .typography {
+    h1 {
+      @apply text-4xl font-bold my-3;
+    }
+    h2 {
+      @apply text-3xl font-bold my-2;
+    }
+    h3 {
+      @apply text-2xl font-bold my-2;
+    }
+    h4 {
+      @apply text-xl font-bold my-1;
+    }
+    h5 {
+      @apply text-lg font-bold my-1;
+    }
+
+
+    :not(pre)>code {
+      @apply font-mono px-1 bg-gray-900 text-white rounded text-sm;
+    }
+
+    pre {
+      @apply my-4 p-4 bg-gray-900 text-white rounded-lg overflow-x-auto;
+    }
+
+    p {
+      @apply my-2;
+    }
+
+    ul {
+      @apply list-disc my-2 pl-4;
+    }
+
+    a {
+      @apply text-blue-700 hover:underline;
+    }
+
+    table {
+      @apply w-full my-4 border-collapse;
+
+      td, th {
+        @apply border border-gray-200 px-2 py-0;
+      }
+    }
+
+    .breadcrumbs::before {
+      content: " 🏠 ";
+      @apply text-gray-600;
+    }
+
+    .breadcrumbs {
+      @apply flex flex-row items-center gap-1.5 text-sm text-gray-400 border px-1 rounded bg-gray-100;
+
+      span {
+        @apply text-gray-700;
+      }
+    }
+  }
+}

@@ -41,7 +41,7 @@ const browserSettings: IOptionalBrowserSettings = {
 
 export const markdownToHTML = async (
   content: string,
-  { anchorMangler }: {anchorMangler?: (s: string) => string} = {}
+  { anchorMangler, domMangler }: ManglerOptions = {}
 ) => {
   const rawHtml = await marked(content)
   const browser = new Browser({ settings: browserSettings })
@@ -85,6 +85,10 @@ export const markdownToHTML = async (
     n.parentElement?.removeChild(n)
   })
 
+  if (domMangler != null) {
+    domMangler(document as any)
+  }
+
   const el = document.body
   // while (el.childNodes.length === 1) {
   //   if (!el.firstElementTNode) break
@@ -94,12 +98,24 @@ export const markdownToHTML = async (
   return el.innerHTML
 }
 
+export type ManglerOptions = {
+  anchorMangler?: (s: string) => string
+  mdMangler?: (s: string) => string
+  domMangler?: (doc: Document) => void
+}
+
+function removeComments(md: string) {
+  return md.replace(/<!--[\s\S]*?-->/g, '')
+}
+
 export const markdownWithFM = async (
   content: string,
-  { anchorMangler }: { anchorMangler?: (s: string) => string }
+  { anchorMangler, mdMangler, domMangler }: ManglerOptions = {}
 ) => {
-  const parsed = fm(content)
-  const html = await markdownToHTML(parsed.body, { anchorMangler })
+  content = removeComments(content)
+  const parsed = fm(mdMangler != null ? mdMangler(content) : content)
+  const html = await markdownToHTML(parsed.body, { anchorMangler, domMangler })
+
   return {
     html,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

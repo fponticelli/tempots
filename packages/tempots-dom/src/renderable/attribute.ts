@@ -75,7 +75,7 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
  * or `Signal<?>` can be passed as a value. The type of the value is inferred
  * from the attribute name.
  *
- * Example
+ * @example
  * ```ts
  * const button = html.button(
  *   attr.type('button'),
@@ -144,7 +144,7 @@ export const dataAttr = new Proxy(
 /**
  * An object that provides a convenient way to create mountable attributes for ARIA properties.
  *
- * Example
+ * @example
  * ```ts
  * const button = html.button(
  *   aria.label('Click me!'),
@@ -216,7 +216,7 @@ export const svgAttr = new Proxy(
 /**
  * An object that provides attribute functions for MathML tags.
  *
- * Example
+ * @example
  * ```ts
  * const math = html.math(
  *  mathAttr.mathvariant('bold'),

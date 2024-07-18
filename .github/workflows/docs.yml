@@ -29,8 +29,7 @@ jobs:
       - name: Build Demos
         run: yarn build:demos
       - name: Assemble Docs
-        working-directory: apps/docs
-        run: yarn docs:maketoc
+        run: yarn docs
       - name: Build Docs
         run: yarn build --filter=@tempos/docs
       - name: Setup Pages

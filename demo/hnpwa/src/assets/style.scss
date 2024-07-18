@@ -1,12 +1,12 @@
-$w1:    #f7f7f7;
-$w2:    #e7e7e7;
-$w3:    #CCC;
-$g1:    #666;
-$g2:    #444;
-$b1:    #111;
-$b2:    #333;
+$w1: #f7f7f7;
+$w2: #e7e7e7;
+$w3: #CCC;
+$g1: #666;
+$g2: #444;
+$b1: #111;
+$b2: #333;
 $green: #3cdb91;
-$yellow:#f7dc64;
+$yellow: #f7dc64;
 
 
 html {
@@ -35,7 +35,7 @@ main {
     overflow: hidden;
 }
 
-main > section {
+main>section {
     height: 100%;
     overflow: auto;
 }
@@ -92,7 +92,8 @@ header {
     nav {
         margin-left: 4.5rem;
 
-        a, span {
+        a,
+        span {
             margin-right: .5rem;
             padding-bottom: 0.25rem;
 
@@ -258,7 +259,8 @@ article {
         margin-left: -1.5rem;
     }
 
-    pre, code {
+    pre,
+    code {
         word-wrap: break-word;
     }
 }
@@ -301,12 +303,25 @@ article {
 }
 
 @keyframes spin {
-    to {transform: rotate(360deg);}
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes fly {
-    0% {transform: translateX(0);}
-    50% {transform: translateX(3rem);}
-    50.1% {transform: translateX(-3rem);}
-    100% {transform: translateX(0);}
+    0% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(3rem);
+    }
+
+    50.1% {
+        transform: translateX(-3rem);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
 }

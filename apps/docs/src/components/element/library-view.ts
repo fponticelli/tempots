@@ -1,12 +1,23 @@
-import { attr, Ensure, ForEach, html, Signal, Value } from '@tempots/dom'
+import {
+  attr,
+  computed,
+  Ensure,
+  ForEach,
+  Fragment,
+  html,
+  Signal,
+  Value,
+  When,
+} from '@tempots/dom'
 import { Library } from '../../model/domain'
 import { Styles } from '../styles'
 import { NPMShield } from './npm-shield'
 import { Tag } from './tag'
-import { EmbedHTML } from './embed-html'
+import { EmbedHTMLPage } from './embed-html-page'
 import { CheckCode } from './check-code'
-import { HTMLTitle } from '@tempots/ui'
+import { HTMLTitle, UseLocation } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
+import { EmbedHTMLFragmentFromURL } from './embed-html-fragment'
 
 export function LibraryInfo(library: Value<Library>) {
   return html.div(
@@ -39,22 +50,40 @@ export function LibraryInfo(library: Value<Library>) {
 }
 
 export function LibraryView(data: Signal<Library>) {
-  return html.div(
-    HTMLTitle(data.map(({ title }) => `Tempo • ${title}`)),
-    OpenGraph({
-      title: data.map(({ title }) => `${title} • Tempo`),
-      description: data.$.description,
-      keywords: data.$.keywords as Value<string[] | undefined>,
-    }),
-    attr.class(
-      'w-full h-full print:overflow-visible overflow-auto p-2 flex flex-col gap-2'
-    ),
-    html.h1(attr.class(Styles.heading.large), data.$.title),
-    LibraryInfo(data),
-    Ensure(
-      data.map(v => (v.content === '' ? null : v.content)),
-      content =>
-        html.div(attr.class('p-4 border rounded-md'), EmbedHTML(content))
+  return UseLocation(location => {
+    const isRoot = location.map(v => v.hash == null)
+    const apiUrl = computed(() => {
+      const base = data.value.name.split('-').pop()
+      const path =
+        location.value.hash != null ? `${base}.${location.value.hash}` : base
+      return `/api/${data.value.name}/${path}.html`
+    }, [data, location])
+    return html.div(
+      HTMLTitle(data.map(({ title }) => `Tempo • ${title}`)),
+      OpenGraph({
+        title: data.map(({ title }) => `${title} • Tempo`),
+        description: data.$.description,
+        keywords: data.$.keywords as Value<string[] | undefined>,
+      }),
+      attr.class(
+        'w-full h-full print:overflow-visible overflow-auto p-2 flex flex-col gap-2'
+      ),
+      html.h1(attr.class(Styles.heading.large), data.$.title),
+      When(
+        isRoot,
+        Fragment(
+          LibraryInfo(data),
+          Ensure(
+            data.map(v => (v.content === '' ? null : v.content)),
+            content =>
+              html.div(
+                attr.class('p-4 border rounded-md'),
+                EmbedHTMLPage(content)
+              )
+          )
+        )
+      ),
+      EmbedHTMLFragmentFromURL(apiUrl)
     )
-  )
+  })
 }

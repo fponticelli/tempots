@@ -30,6 +30,11 @@ export class LCH {
     return new LCH(this.luminance, c, this.hue)
   }
 
+  /**
+   * Sets the hue value of the LCH color and returns a new LCH color instance.
+   * @param h - The hue value to set.
+   * @returns A new LCH color instance with the specified hue value.
+   */
   withHue(h: number): LCH {
     return new LCH(this.luminance, this.chroma, h)
   }

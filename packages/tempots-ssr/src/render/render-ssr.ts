@@ -46,6 +46,14 @@ const browserSettings: IOptionalBrowserSettings = {
   disableJavaScriptFileLoading: true,
 }
 
+/**
+ * Renders a DOM tree to a string using a fake dom implementation.
+ *
+ * @param html - The static HTML where to render the app.
+ * @param url - The URL to use for the fake window.
+ * @param selector - The selector to use find the parent element for the app.
+ * @param makeApp - A function that creates the app to render.
+ */
 export async function renderSSR({
   html,
   url,
