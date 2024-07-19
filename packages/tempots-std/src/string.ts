@@ -30,7 +30,7 @@ export function replaceAll(
 }
 
 /**
- * `afterText` searches for the first occurrance of `searchFor` and returns the text after that.
+ * `substringAfter` searches for the first occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
  *
  * @param value - The string to search in.
@@ -38,14 +38,14 @@ export function replaceAll(
  * @returns The text after the first occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function afterText(value: string, searchFor: string): string {
+export function substringAfter(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(pos + searchFor.length)
 }
 
 /**
- * `afterLastText` searches for the last occurrance of `searchFor` and returns the text after that.
+ * `substringAfterLast` searches for the last occurrance of `searchFor` and returns the text after that.
  * If `searchFor` is not found, an empty string is returned.
  *
  * @param value - The string to search in.
@@ -53,14 +53,14 @@ export function afterText(value: string, searchFor: string): string {
  * @returns The text after the last occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function afterLastText(value: string, searchFor: string): string {
+export function substringAfterLast(value: string, searchFor: string): string {
   const pos = value.lastIndexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(pos + searchFor.length)
 }
 
 /**
- * `beforeText` searches for the first occurrance of `searchFor` and returns the text before that.
+ * `substringBefore` searches for the first occurrance of `searchFor` and returns the text before that.
  * If `searchFor` is not found, an empty string is returned.
  *
  * @param value - The string to search in.
@@ -68,14 +68,14 @@ export function afterLastText(value: string, searchFor: string): string {
  * @returns The text before the first occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function beforeText(value: string, searchFor: string): string {
+export function substringBefore(value: string, searchFor: string): string {
   const pos = value.indexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(0, pos)
 }
 
 /**
- * `beforeLastText` searches for the last occurrance of `searchFor` and returns the text before that.
+ * `substringBeforeLast` searches for the last occurrance of `searchFor` and returns the text before that.
  * If `searchFor` is not found, an empty string is returned.
  *
  * @param value - The string to search in.
@@ -83,7 +83,7 @@ export function beforeText(value: string, searchFor: string): string {
  * @returns The text before the last occurrance of `searchFor` or an empty string if `searchFor` is not found.
  * @public
  */
-export function beforeLastText(value: string, searchFor: string): string {
+export function substringBeforeLast(value: string, searchFor: string): string {
   const pos = value.lastIndexOf(searchFor)
   if (pos < 0) return ''
   else return value.substring(0, pos)
@@ -153,7 +153,7 @@ export function compareCaseInsensitive(a: string, b: string): number {
  * @returns `true` if the string ends with the specified suffix, `false` otherwise.
  * @public
  */
-export function textEndsWith(s: string, end: string): boolean {
+export function stringEndsWith(s: string, end: string): boolean {
   return s.substring(0, s.length - end.length) === end
 }
 
@@ -179,7 +179,7 @@ export function textEndsWithCaseInsensitive(s: string, end: string): boolean {
  * @returns `true` if the string starts with the specified substring, `false` otherwise.
  * @public
  */
-export function textStartsWith(s: string, start: string): boolean {
+export function stringStartsWith(s: string, start: string): boolean {
   return s.substring(0, start.length) === start
 }
 
@@ -210,7 +210,7 @@ export function textEndsWithAnyCaseInsensitive(
   s: string,
   values: string[]
 ): boolean {
-  return endsWithAnyText(
+  return stringEndsWithAny(
     s.toLowerCase(),
     values.map(v => v.toLowerCase())
   )
@@ -228,7 +228,7 @@ export function textStartsWithAnyCaseInsensitive(
   s: string,
   values: string[]
 ): boolean {
-  return textStartsWithAny(
+  return stringStartsWithAny(
     s.toLowerCase(),
     values.map(v => v.toLowerCase())
   )
@@ -244,7 +244,7 @@ export function textStartsWithAnyCaseInsensitive(
  * @returns The string with all whitespaces collapsed.
  * @public
  */
-export function textCollapse(value: string): string {
+export function collapseText(value: string): string {
   return value.trim().replace(WSG, ' ')
 }
 
@@ -281,7 +281,7 @@ export function textContainsCaseInsensitive(s: string, test: string): boolean {
  * @returns `true` if `s` contains `test`, `false` otherwise.
  * @public
  */
-export function textContains(s: string, test: string): boolean {
+export function stringContains(s: string, test: string): boolean {
   return s.includes(test)
 }
 
@@ -293,7 +293,7 @@ export function textContains(s: string, test: string): boolean {
  * @returns The number of occurrences of `test` in `s`.
  * @public
  */
-export function countTextOccurrences(s: string, test: string): number {
+export function countStringOccurrences(s: string, test: string): number {
   return s.split(test).length - 1
 }
 
@@ -321,7 +321,7 @@ export function containsAnyTextCaseInsensitive(
  * @public
  */
 export function containsAnyText(s: string, tests: string[]): boolean {
-  return anyElement(tests, t => textContains(s, t))
+  return anyElement(tests, t => stringContains(s, t))
 }
 
 /**
@@ -348,7 +348,7 @@ export function containsAllTextCaseInsensitive(
  * @public
  */
 export function containsAllText(s: string, tests: string[]): boolean {
-  return allElements(tests, t => textContains(s, t))
+  return allElements(tests, t => stringContains(s, t))
 }
 
 /**
@@ -408,9 +408,9 @@ export function ellipsis(s: string, maxlen = 20, symbol = '…'): string {
   const symboll = symbol.length
   if (sl > maxlen) {
     if (maxlen < symboll) {
-      return symbol.substr(symboll - maxlen, maxlen)
+      return symbol.slice(symboll - maxlen, maxlen)
     } else {
-      return s.substr(0, maxlen - symboll) + symbol
+      return s.slice(0, maxlen - symboll) + symbol
     }
   } else return s
 }
@@ -439,7 +439,7 @@ export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
     }
     const hll = Math.ceil((maxlen - symboll) / 2)
     const hlr = Math.floor((maxlen - symboll) / 2)
-    return s.substr(0, hll) + symbol + s.substr(sl - hlr, hlr)
+    return s.slice(0, hll) + symbol + s.slice(sl - hlr)
   } else return s
 }
 
@@ -451,8 +451,8 @@ export function ellipsisMiddle(s: string, maxlen = 20, symbol = '…'): string {
  * @returns `true` if `s` ends with any of the values in `values`, `false` otherwise.
  * @public
  */
-export function endsWithAnyText(s: string, values: string[]): boolean {
-  return anyElement(values, end => textEndsWith(s, end))
+export function stringEndsWithAny(s: string, values: string[]): boolean {
+  return anyElement(values, end => stringEndsWith(s, end))
 }
 
 /**
@@ -464,7 +464,7 @@ export function endsWithAnyText(s: string, values: string[]): boolean {
  * @returns The filtered string.
  * @public
  */
-export function filterText(
+export function filterChars(
   s: string,
   predicate: (s: string) => boolean
 ): string {
@@ -472,14 +472,14 @@ export function filterText(
 }
 
 /**
- * Same as `filterCharcode` but `predicate` operates on integer char codes instead of string characters.
+ * Same as `filterCharcodes` but `predicate` operates on integer char codes instead of string characters.
  *
  * @param s - The string to filter.
  * @param predicate - The function to apply to each character code in the string.
  * @returns The filtered string.
  * @public
  */
-export function filterCharcode(
+export function filterCharcodes(
   s: string,
   predicate: (n: number) => boolean
 ): string {
@@ -686,7 +686,7 @@ export function mapChars<T>(callback: (c: string) => T, value: string): T[] {
  * @returns The string with all occurrences of `toremove` removed.
  * @public
  */
-export function removeFromString(value: string, toremove: string): string {
+export function deleteSubstring(value: string, toremove: string): string {
   return replaceAll(value, toremove, '')
 }
 
@@ -698,8 +698,8 @@ export function removeFromString(value: string, toremove: string): string {
  * @returns The string with the text removed.
  * @public
  */
-export function removeFromStringAfter(value: string, toremove: string): string {
-  return textEndsWith(value, toremove)
+export function deleteStringAfter(value: string, toremove: string): string {
+  return stringEndsWith(value, toremove)
     ? value.substring(0, value.length - toremove.length)
     : value
 }
@@ -713,7 +713,7 @@ export function removeFromStringAfter(value: string, toremove: string): string {
  * @returns The string with the slice removed.
  * @public
  */
-export function removeSliceFromString(
+export function trimStringSlice(
   value: string,
   index: number,
   length: number
@@ -729,11 +729,8 @@ export function removeSliceFromString(
  * @returns The string with the text removed.
  * @public
  */
-export function removeFromStringBefore(
-  value: string,
-  toremove: string
-): string {
-  return textStartsWith(value, toremove)
+export function deleteStringBefore(value: string, toremove: string): string {
+  return stringStartsWith(value, toremove)
     ? value.substring(toremove.length)
     : value
 }
@@ -746,7 +743,7 @@ export function removeFromStringBefore(
  * @returns The string with the text removed.
  * @public
  */
-export function removeFirstFromString(value: string, toremove: string): string {
+export function deleteFirstFromString(value: string, toremove: string): string {
   const pos = value.indexOf(toremove)
   if (pos < 0) return value
   return value.substring(0, pos) + value.substring(pos + toremove.length)
@@ -858,7 +855,7 @@ export function splitStringOnce(
  * @returns `true` if `s` starts with any of the values in `values`, `false` otherwise.
  * @public
  */
-export function textStartsWithAny(s: string, values: string[]): boolean {
+export function stringStartsWithAny(s: string, values: string[]): boolean {
   return anyElement(values, start => s.startsWith(start))
 }
 
@@ -872,7 +869,7 @@ export function textStartsWithAny(s: string, values: string[]): boolean {
  * @returns The surrounded string.
  * @public
  */
-export function surroundText(s: string, left: string, right = left): string {
+export function surroundString(s: string, left: string, right = left): string {
   return `${left}${s}${right}`
 }
 
@@ -907,11 +904,11 @@ export function stringToCharcodes(s: string): number[] {
  * @returns An array of chunks.
  * @public
  */
-export function chunkText(s: string, len: number): string[] {
+export function chunkString(s: string, len: number): string[] {
   const chunks: string[] = []
   while (s.length > 0) {
     chunks.push(s.substring(0, len))
-    s = s.substr(len, s.length - len)
+    s = s.substring(len, s.length - len)
   }
   return chunks
 }
@@ -923,7 +920,7 @@ export function chunkText(s: string, len: number): string[] {
  * @returns An array of lines.
  * @public
  */
-export function stringToLines(s: string): string[] {
+export function textToLines(s: string): string[] {
   return s.split(SPLIT_LINES)
 }
 
@@ -950,7 +947,7 @@ export function trimChars(value: string, charlist: string): string {
 export function trimCharsLeft(value: string, charlist: string): string {
   let pos = 0
   for (let i = 0; i < value.length; i++) {
-    if (textContains(charlist, value.charAt(i))) pos++
+    if (stringContains(charlist, value.charAt(i))) pos++
     else break
   }
   return value.substring(pos)
@@ -970,7 +967,7 @@ export function trimCharsRight(value: string, charlist: string): string {
   let i
   for (let j = 0; j < len; j++) {
     i = len - j - 1
-    if (textContains(charlist, value.charAt(i))) pos = i
+    if (stringContains(charlist, value.charAt(i))) pos = i
     else break
   }
   return value.substring(0, pos)
@@ -1181,7 +1178,7 @@ export function rpad(s: string, char: string, length: number): string {
  * @returns An array containing the split parts of the string.
  * @public
  */
-export function splitOnLast(
+export function splitStringOnLast(
   s: string,
   find: string
 ): [string] | [string, string] {
@@ -1203,7 +1200,7 @@ export function splitOnLast(
  * @returns An array containing the split parts of the string.
  * @public
  */
-export function splitOnFirst(
+export function splitStringOnFirst(
   s: string,
   find: string
 ): [string] | [string, string] {

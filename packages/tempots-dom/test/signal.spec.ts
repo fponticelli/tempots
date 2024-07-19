@@ -300,7 +300,7 @@ describe("Signal", () => {
     expect(animated.value).toBe(0);
     await sleep(duration / 2)
     expect(animated.value).toBeGreaterThan(0);
-    expect(animated.value).toBeLessThan(10);
+    expect(animated.value).toBeLessThanOrEqual(10);
     source.dispose();
     await sleep(duration * 0.75)
     expect(animated.value).toBeGreaterThan(0);

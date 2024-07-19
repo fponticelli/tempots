@@ -184,7 +184,8 @@ export const aria = new Proxy(
  * An object that provides a convenient way to create mountable attributes for
  * SVG elements.
  *
- * Example
+ * @remarks
+ * @example
  * ```ts
  * const svg = html.svg(
  *  svgAttr.width(100),
