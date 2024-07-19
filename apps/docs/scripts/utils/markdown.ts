@@ -105,7 +105,7 @@ export type ManglerOptions = {
 }
 
 function removeComments(md: string) {
-  return md.replace(/<!--[\s\S]*?-->/g, '')
+  return md.replace(/<!--[\s\S]*?-->/g, '').replace(/<!--[\s\S]*?$/, '').replace(/^[\s\S]*?-->/, '')
 }
 
 export const markdownWithFM = async (
