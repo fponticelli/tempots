@@ -5,9 +5,9 @@ import {
   Fragment,
   html,
   on,
-  prop,
   svg,
   svgAttr,
+  propOfLocalStorage,
 } from '@tempots/dom'
 import { TopBar } from './top-bar'
 
@@ -56,7 +56,10 @@ export function OpenButton(onClick: () => void) {
 }
 
 export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
-  const sidebarOpen = prop(true)
+  const sidebarOpen = propOfLocalStorage({
+    key: 'td:sidebarOpen',
+    defaultValue: true,
+  })
   return Fragment(
     html.div(
       attr.class('relative z-50 lg:hidden print:hidden'),
