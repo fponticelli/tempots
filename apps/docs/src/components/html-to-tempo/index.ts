@@ -1,4 +1,4 @@
-import { attr, html, OnUnmount, prop, TNode, Value } from '@tempots/dom'
+import { attr, html, OnUnmount, useProp, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -19,10 +19,10 @@ export function EditorContainer(
 }
 
 export function HtmlToTempo() {
-  const content = prop(
+  const content = useProp(
     '<div class="message">\n  Hello World!\n  <br/>\n  How are <b>you</b>?\n</div>'
   )
-  const tempo = prop('')
+  const tempo = useProp('')
   return html.div(
     HTMLTitle('Tempo • HTML to Tempo'),
     OpenGraph({

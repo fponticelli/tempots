@@ -2,7 +2,7 @@ import {
   ssr,
   Prop,
   Signal,
-  prop,
+  useProp,
   TNode,
   Renderable,
   renderableOfTNode,
@@ -54,7 +54,7 @@ export function InViewport(
   mode: InViewportMode,
   fn: (value: Signal<boolean>) => TNode
 ): Renderable {
-  const signal = prop(ssr.isSSR())
+  const signal = useProp(ssr.isSSR())
   return Fragment(
     OnMount((el: HTMLElement) => {
       const observer =

@@ -4,7 +4,7 @@ import {
   Fragment,
   OnUnmount,
   oneof,
-  signal,
+  useSignal,
   Signal,
   Value,
 } from '@tempots/dom'
@@ -38,7 +38,7 @@ export function AsyncResultView<T, E>(
     AsyncSuccess: s => success(s.$.value),
     AsyncFailure: e => fail(e.$.error),
     Loading: s =>
-      loading(s.$.previousValue ?? signal<T | undefined>(undefined)),
+      loading(s.$.previousValue ?? useSignal<T | undefined>(undefined)),
     NotAsked: notAsked,
   })
 }

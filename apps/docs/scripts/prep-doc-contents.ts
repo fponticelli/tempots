@@ -256,7 +256,7 @@ async function main() {
   await prepDir(apiFolderDst)
   const api = {}
   for (const library of librariesData) {
-    const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/md/`)
+    const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/`)
     const dst = path.join(apiFolderDst, library.name)
     const pages = await createPages(apiDir, dst, {
       mdMangler: content => {

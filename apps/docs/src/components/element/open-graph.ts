@@ -1,4 +1,4 @@
-import { Fragment, Portal, Signal, Value, attr, signal } from '@tempots/dom'
+import { Fragment, Portal, Signal, Value, attr, useSignal } from '@tempots/dom'
 import { UseLocation, getFullURL } from '@tempots/ui'
 
 export interface OpenGraphProps {
@@ -12,7 +12,7 @@ export function OpenGraph(props: OpenGraphProps) {
   const { title, description, image, keywords } = props
   const imageSignal =
     Signal.maybeWrap<string | undefined>(image) ??
-    signal(undefined as string | undefined)
+    useSignal(undefined as string | undefined)
   const card = Signal.map<string | undefined, string>(
     imageSignal,
     (image): string => {

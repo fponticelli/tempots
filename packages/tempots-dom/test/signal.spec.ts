@@ -1,9 +1,9 @@
 import { describe, expect, test, vi } from "vitest";
 import {
-  computed,
-  effect,
-  signal,
-  prop,
+  useComputed,
+  useEffect,
+  useSignal,
+  useProp,
   Signal,
   Prop,
   Computed,
@@ -15,13 +15,13 @@ import { sleep } from "./helper";
 
 describe("Signal", () => {
   test("signal basics", () => {
-    const s = signal(1);
+    const s = useSignal(1);
     expect(s.value).toBe(1);
     expect(s.get()).toBe(1);
   });
   test("is", () => {
-    const p = prop(1);
-    const s = signal(1);
+    const p = useProp(1);
+    const s = useSignal(1);
     const c = s.map(v => v + 1);
 
     expect(Prop.is(p)).toBe(true);
@@ -37,7 +37,7 @@ describe("Signal", () => {
     expect(Computed.is(c)).toBe(true);
   });
   test("hasListeners", () => {
-    const s = signal(1);
+    const s = useSignal(1);
     expect(s.hasListeners()).toBe(false);
     const cancel = s.on(() => {});
     expect(s.hasListeners()).toBe(true);
@@ -45,7 +45,7 @@ describe("Signal", () => {
     expect(s.hasListeners()).toBe(false);
   });
   test("hasListeners with computed", () => {
-    const s = signal(1);
+    const s = useSignal(1);
     const c = s.map(v => v + 1);
     expect(s.hasListeners()).toBe(true);
     expect(c.hasListeners()).toBe(false);
@@ -53,14 +53,14 @@ describe("Signal", () => {
     expect(s.hasListeners()).toBe(false);
   });
   test("map", () => {
-    const p = prop(1);
+    const p = useProp(1);
     const c = p.map(v => v + 1);
     expect(c.value).toBe(2);
     p.set(2);
     expect(c.value).toBe(3);
   });
   test("filter", () => {
-    const p = prop(1);
+    const p = useProp(1);
     const c1 = p.filter(v => v % 2 === 0, 0);
     expect(c1.value).toBe(0);
     p.set(2);
@@ -75,8 +75,8 @@ describe("Signal", () => {
     expect(c2.value).toBe(4);
   });
   test("maybeWrap", () => {
-    const p = prop(1);
-    const s = signal(1);
+    const p = useProp(1);
+    const s = useSignal(1);
     const c = p.map(v => v + 1);
     expect(Signal.maybeWrap(p)).toBe(p);
     expect(Signal.maybeWrap(s)).toBe(s);
@@ -87,8 +87,8 @@ describe("Signal", () => {
     expect(Signal.maybeWrap(undefined)).toBeUndefined();
   });
   test("wrap", () => {
-    const p = prop(1);
-    const s = signal(1);
+    const p = useProp(1);
+    const s = useSignal(1);
     const c = p.map(v => v + 1);
     expect(Signal.wrap(p)).toBe(p);
     expect(Signal.wrap(s)).toBe(s);
@@ -97,14 +97,14 @@ describe("Signal", () => {
     expect(Signal.wrap(v)).toBeInstanceOf(Signal);
   });
   test("flatMap", () => {
-    const p = prop(1);
-    const c = p.flatMap(v => signal(v + 1));
+    const p = useProp(1);
+    const c = p.flatMap(v => useSignal(v + 1));
     expect(c.value).toBe(2);
     p.set(2);
     expect(c.value).toBe(3);
   });
   test("tap", async () => {
-    const p = prop(1);
+    const p = useProp(1);
     const spy = vi.fn();
     const c = p.tap(spy);
     await sleep()
@@ -119,10 +119,10 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
   test("computed", async () => {
-    const p1 = prop(1);
-    const p2 = prop(2);
-    const p3 = prop(3);
-    const c = computed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
+    const p1 = useProp(1);
+    const p2 = useProp(2);
+    const p3 = useProp(3);
+    const c = useComputed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
     const spy = vi.fn();
     expect(c.value).toBe(6);
     c.on(spy);
@@ -138,10 +138,10 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledWith(9);
   });
   test("computed with forced get", async () => {
-    const p1 = prop(1);
-    const p2 = prop(2);
-    const p3 = prop(3);
-    const c = computed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
+    const p1 = useProp(1);
+    const p2 = useProp(2);
+    const p3 = useProp(3);
+    const c = useComputed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
     const spy = vi.fn();
     expect(c.value).toBe(6);
     c.on(spy);
@@ -159,14 +159,14 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledWith(9);
   });
   test("at", () => {
-    const p = prop([1, 2, 3]);
+    const p = useProp([1, 2, 3]);
     const c = p.at(1);
     expect(c.value).toBe(2);
     p.set([4, 5, 6]);
     expect(c.value).toBe(5);
   });
   test("filterMap", () => {
-    const p = prop(1);
+    const p = useProp(1);
     const c = p.filterMap(
       v => (Math.trunc(v) === v ? (v % 2 === 0 ? "even" : "odd") : undefined),
       "odd"
@@ -180,7 +180,7 @@ describe("Signal", () => {
     expect(c.value).toBe("odd");
   });
   test("mapAsync", async () => {
-    const p = prop(1);
+    const p = useProp(1);
     const c = p.mapAsync(v => Promise.resolve(v + 1), 0);
     expect(c.value).toBe(0);
     p.set(2);
@@ -189,14 +189,14 @@ describe("Signal", () => {
     expect(c.value).toBe(3);
   });
   test("mapAsync with error", async () => {
-    const p = prop(1);
+    const p = useProp(1);
     const c = p.mapAsync(v => Promise.reject("error"), 0, _ => 2);
     expect(c.value).toBe(0);
     await sleep()
     expect(c.value).toBe(2);
   });
   test("deriveProp", () => {
-    const p1 = prop(1);
+    const p1 = useProp(1);
     const p2 = p1.deriveProp();
     expect(p2.value).toBe(1);
     p1.set(2);
@@ -208,7 +208,7 @@ describe("Signal", () => {
     expect(p2.value).toBe(4);
   });
   test("count", async () => {
-    const p = prop("a");
+    const p = useProp("a");
     const c = p.count();
     expect(c.value).toBe(1);
     p.set("b");
@@ -217,10 +217,10 @@ describe("Signal", () => {
     expect(c.value).toBe(3);
   });
   test("effect", async () => {
-    const p1 = prop(1);
-    const p2 = prop(2);
+    const p1 = useProp(1);
+    const p2 = useProp(2);
     let value = 0;
-    const clear = effect(
+    const clear = useEffect(
       () => {
         value = p1.value + p2.value;
       },
@@ -274,7 +274,7 @@ describe("Signal", () => {
   // Disabling because it is flaky
   // test("animateSignal", async () => {
   //   const duration = 40
-  //   const source = prop(10);
+  //   const source = useProp(10);
   //   const animated = animateSignal(
   //     source, {
   //       initialValue: 0,
@@ -290,7 +290,7 @@ describe("Signal", () => {
   // })
   test("interrupt animateSignal", async () => {
     const duration = 40
-    const source = prop(10);
+    const source = useProp(10);
     const animated = animateSignal(
       source, {
         initialValue: 0,
@@ -307,7 +307,7 @@ describe("Signal", () => {
     expect(animated.value).toBeLessThan(10);
   })
   test("Signal.mapAsync", async() => {
-    const p = prop(1)
+    const p = useProp(1)
     const spy = vi.fn()
     const s = p.mapAsync(v => {
       spy(v)

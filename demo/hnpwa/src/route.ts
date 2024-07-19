@@ -6,7 +6,7 @@ import { Result } from './utils/result'
 import { Request } from './utils/request'
 import { getCurrentPath } from './config'
 import { deepEqual } from './utils/equals'
-import { prop, Prop } from '@tempots/dom'
+import { useProp, Prop } from '@tempots/dom'
 
 export enum Feed {
   top = 'top',
@@ -201,7 +201,7 @@ const urlDecoder = decodeText<Route>(
 export const getCurrentRoute = () => Route.fromUrl(getCurrentPath())
 
 export const makeRouteFlow = (): Prop<Route> => {
-  const route = prop(getCurrentRoute(), deepEqual)
+  const route = useProp(getCurrentRoute(), deepEqual)
   window.addEventListener('popstate', () => {
     route.set(getCurrentRoute())
   })

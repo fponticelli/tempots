@@ -1,6 +1,13 @@
 import { RemoveSignals, Value } from '../types/domain'
 import { guessInterpolate } from './interpolate'
-import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
+import {
+  AnySignal,
+  useComputed,
+  Computed,
+  useProp,
+  Prop,
+  Signal,
+} from './signal'
 
 export class MemoryStore {
   private readonly _store: Map<string, string> = new Map()
@@ -114,7 +121,7 @@ export function animateSignals<T>(
   let animationFrame: number | null = null
   let done = true
   const computed = new Computed(fn, equals)
-  const animated = prop(initialValue, equals)
+  const animated = useProp(initialValue, equals)
   animated.onDispose(() => {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame)
   })
@@ -198,7 +205,7 @@ export function computedRecord<T extends Record<string, Value<unknown>>, U>(
     { signals: [], literals: {} as RemoveSignals<T> } as R
   )
   const signalsArray = signals.map(([, s]) => s)
-  return computed(() => {
+  return useComputed(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     signals.forEach(([key, sig]) => ((literals as any)[key] = sig.value))
     return fn(literals)

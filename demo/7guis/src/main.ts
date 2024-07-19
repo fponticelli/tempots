@@ -6,7 +6,7 @@ import {
   type Renderable,
   on,
   oneof,
-  prop,
+  useProp,
   render,
   Fragment,
   Portal,
@@ -45,16 +45,16 @@ const demos: Demo[] = [
   'For Each',
 ]
 
-function demoButton(demo: Demo, $demo: Prop<Demo>): Renderable {
+function demoButton(demo: Demo, currentDemo: Prop<Demo>): Renderable {
   return Button(
-    attr.disabled($demo.map(v => v === demo)),
-    on.click(() => $demo.set(demo)),
+    attr.disabled(currentDemo.map(v => v === demo)),
+    on.click(() => currentDemo.set(demo)),
     demo
   )
 }
 
 export function App(): Renderable {
-  const $demo = prop<Demo>('Temperature')
+  const currentDemo = useProp<Demo>('Temperature')
   return Fragment(
     Portal(
       'body',
@@ -66,9 +66,9 @@ export function App(): Renderable {
       attr.class('p-4 gap-8 items-center'),
       flex.row(
         attr.class('gap-4 justify-center flex-wrap'),
-        ...demos.map(demo => demoButton(demo, $demo))
+        ...demos.map(demo => demoButton(demo, currentDemo))
       ),
-      oneof.value($demo, {
+      oneof.value(currentDemo, {
         Counter: Counter,
         Temperature: Temperature,
         'Flight Booker': FlightBooker,

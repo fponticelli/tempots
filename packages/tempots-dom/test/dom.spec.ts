@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { attr, html, style, render, prop, OnUnmount, Ensure, OnMount } from "../src";
+import { attr, html, style, render, useProp, OnUnmount, Ensure, OnMount } from "../src";
 const { div } = html;
 
 describe("render", () => {
@@ -15,7 +15,7 @@ describe("render", () => {
   });
 
   test("div reactive", () => {
-    const cls = prop("test");
+    const cls = useProp("test");
     const node = div(attr.class(cls));
     const clear = render(node, document.body);
     expect(document.body.innerHTML).toBe('<div class="test"></div>');
@@ -40,7 +40,7 @@ describe("render", () => {
   });
 
   test("add signal text", () => {
-    const txt = prop("test");
+    const txt = useProp("test");
     const clear = render(div(txt), document.body);
     expect(document.body.innerText).toBe("test");
     txt.value = "test2";
@@ -56,7 +56,7 @@ describe("render", () => {
   });
 
   test("when", () => {
-    const cls = prop("test" as string | null);
+    const cls = useProp("test" as string | null);
     const spyMount = vi.fn();
     const spyDispose = vi.fn();
     render(

@@ -197,7 +197,7 @@ export class Signal<T> {
     recover?: (error: unknown) => U,
     equals: (a: U, b: U) => boolean = (a, b) => a === b
   ) => {
-    const p = prop(alt, equals)
+    const p = useProp(alt, equals)
     let count = 0
     p.onDispose(
       this.on(v => {
@@ -244,7 +244,7 @@ export class Signal<T> {
   }
 
   readonly deriveProp = (autoDisposeProp = true) => {
-    return this.feedProp(prop(this.get()), autoDisposeProp)
+    return this.feedProp(useProp(this.get()), autoDisposeProp)
   }
 
   readonly count = () => {
@@ -387,7 +387,7 @@ export class Prop<T> extends Signal<T> {
   }
 }
 
-export function computed<T>(
+export function useComputed<T>(
   fn: () => T,
   dependencies: Array<AnySignal>,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
@@ -397,18 +397,18 @@ export function computed<T>(
   return computed
 }
 
-export function effect(fn: () => void, signals: Array<AnySignal>) {
-  return computed(fn, signals).dispose
+export function useEffect(fn: () => void, signals: Array<AnySignal>) {
+  return useComputed(fn, signals).dispose
 }
 
-export function prop<T>(
+export function useProp<T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Prop<T> {
   return new Prop(value, equals)
 }
 
-export function signal<T>(
+export function useSignal<T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Signal<T> {

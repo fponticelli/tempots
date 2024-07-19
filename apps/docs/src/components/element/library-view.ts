@@ -1,6 +1,6 @@
 import {
   attr,
-  computed,
+  useComputed,
   Ensure,
   ForEach,
   Fragment,
@@ -52,7 +52,7 @@ export function LibraryInfo(library: Value<Library>) {
 export function LibraryView(data: Signal<Library>) {
   return UseLocation(location => {
     const isRoot = location.map(v => v.hash == null)
-    const apiUrl = computed(() => {
+    const apiUrl = useComputed(() => {
       const base = data.value.name.split('-').pop()
       const path =
         location.value.hash != null ? `${base}.${location.value.hash}` : base

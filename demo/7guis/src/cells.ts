@@ -6,12 +6,12 @@ import {
   on,
   emit,
   Signal,
-  prop,
+  useProp,
   Prop,
   TNode,
   When,
-  signal,
-  computed,
+  useSignal,
+  useComputed,
   Fragment,
 } from '@tempots/dom'
 import { bmiData } from './cell-sample'
@@ -134,13 +134,13 @@ function extractCellReferences(formula: string): string[] {
 
 class CellValue {
   readonly value: Signal<string>
-  _value: Signal<string> = signal('')
+  _value: Signal<string> = useSignal('')
   constructor(
     readonly key: string,
     readonly ctx: Map<string, CellValue>,
-    readonly formula: Prop<string> = prop('')
+    readonly formula: Prop<string> = useProp('')
   ) {
-    const value = prop('')
+    const value = useProp('')
     // Timeout is needed because ctx is not fully populated yet
     setTimeout(() => {
       this.formula.on(formula => {
@@ -148,7 +148,7 @@ class CellValue {
         const references = extractCellReferences(formula)
           .map(ref => ctx.get(ref)?.value)
           .filter(v => v != null) as Signal<string>[]
-        this._value = computed(
+        this._value = useComputed(
           () => evalFormula(formula, this.ctx),
           [...references]
         )
@@ -176,7 +176,7 @@ export function Cells(): Renderable {
     }
   }
 
-  const $editing = prop<string | null>(null)
+  const editing = useProp<string | null>(null)
   return html.div(
     attr.class('max-w-full max-h-[calc(100dvh-98px)] overflow-auto'),
     html.table(
@@ -198,7 +198,7 @@ export function Cells(): Renderable {
               return html.td(
                 Cell(
                   When(
-                    $editing.map(editing => editing === key),
+                    editing.map(editing => editing === key),
                     InputText(
                       AutoSelect(),
                       attr.class('w-full min-w-20 h-7'),
@@ -208,12 +208,12 @@ export function Cells(): Renderable {
                           if (text !== cellValue.formula.value) {
                             cellValue.formula.set(text)
                           }
-                          $editing.set(null)
+                          editing.set(null)
                         })
                       ),
                       on.keydown((e: KeyboardEvent) => {
                         if (e.key === 'Enter') {
-                          $editing.set(null)
+                          editing.set(null)
                         }
                       })
                     ),
@@ -222,7 +222,7 @@ export function Cells(): Renderable {
                         'w-full h-full min-h-7 p-0.5 overflow-hidden whitespace-nowrap'
                       ),
                       on.dblclick(() => {
-                        $editing.set(key)
+                        editing.set(key)
                       }),
                       Txt(cellValue.value)
                     )

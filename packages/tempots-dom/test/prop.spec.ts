@@ -1,9 +1,9 @@
 import { describe, expect, test, vi } from "vitest";
-import { prop } from "../src";
+import { useProp } from "../src";
 
 describe("Prop", () => {
   test("should get and set value", () => {
-    const p = prop(1);
+    const p = useProp(1);
     expect(p.get()).toBe(1);
     expect(p.value).toBe(1);
     p.set(2);
@@ -12,7 +12,7 @@ describe("Prop", () => {
     expect(p.value).toBe(3);
   });
   test("Should call listeners and cancel correctly", () => {
-    const p = prop(1);
+    const p = useProp(1);
     const spy = vi.fn();
     const cancel = p.on(spy);
     expect(spy).toHaveBeenCalledTimes(1);
@@ -25,7 +25,7 @@ describe("Prop", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
   test('update will set value and call listeners', () => {
-    const p = prop(1);
+    const p = useProp(1);
     const spy = vi.fn();
     p.on(spy);
     p.update(v => v + 1);
@@ -33,7 +33,7 @@ describe("Prop", () => {
     expect(p.value).toBe(2);
   });
   test('reducer will set value and call listeners', () => {
-    const p = prop(1);
+    const p = useProp(1);
     const spy = vi.fn();
     p.on(spy);
     const reduce = p.reducer((v: number, a: number) => v + a);
@@ -42,7 +42,7 @@ describe("Prop", () => {
     expect(p.value).toBe(3);
   });
   test('atProp should return a prop with the value at the given index', () => {
-    const p = prop([1, 2, 3]);
+    const p = useProp([1, 2, 3]);
     const at = p.atProp(1);
     expect(at.value).toBe(2);
     at.set(4);

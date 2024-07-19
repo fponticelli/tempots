@@ -108,7 +108,7 @@
     "test:coverage": "vitest --coverage",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "docs": "npx api-extractor run --local && npx api-documenter markdown -i ./docs/input -o docs/output/md && npx api-documenter yaml -i ./docs/input -o docs/output/yaml",
+    "docs": "npx api-extractor run --local && npx api-documenter markdown -i ./docs/input -o docs/output",
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
     "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
     "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",

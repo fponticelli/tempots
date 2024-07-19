@@ -3,7 +3,7 @@ import {
   attr,
   type Renderable,
   on,
-  prop,
+  useProp,
   html,
   ForEach,
   OnUnmount,
@@ -51,29 +51,29 @@ function easeOutCubic(p: number) {
 }
 
 export function ForEachDemo(): Renderable {
-  const $accounts = prop(makeAccounts(10))
-  const $count = $accounts.map(v => v.length)
-  const $deleteDisabled = $count.map(c => c === 0)
+  const accounts = useProp(makeAccounts(10))
+  const count = accounts.map(v => v.length)
+  const deleteDisabled = count.map(c => c === 0)
 
   function addAccounts(qt: number) {
-    $accounts.update(a => [...a, ...makeAccounts(qt)])
+    accounts.update(a => [...a, ...makeAccounts(qt)])
   }
 
   function deleteAccounts(qt: number) {
-    $accounts.update(a => a.slice(0, -qt))
+    accounts.update(a => a.slice(0, -qt))
   }
 
   function removeAccount(id: string) {
-    $accounts.update(a => a.filter(i => i.name !== id))
+    accounts.update(a => a.filter(i => i.name !== id))
   }
 
   function updateBalance(id: string, balance: number) {
-    $accounts.update(a => a.map(i => (i.name === id ? { ...i, balance } : i)))
+    accounts.update(a => a.map(i => (i.name === id ? { ...i, balance } : i)))
   }
 
   return flex.col(
     attr.class('gap-2 items-center'),
-    flex.row(Txt($count.map(count => `Count: ${count}`))),
+    flex.row(Txt(count.map(count => `Count: ${count}`))),
     flex.row(
       attr.class('gap-2'),
       Button(
@@ -89,14 +89,14 @@ export function ForEachDemo(): Renderable {
         })
       ),
       Button(
-        attr.disabled($deleteDisabled),
+        attr.disabled(deleteDisabled),
         'Delete 1',
         on.click(() => {
           deleteAccounts(1)
         })
       ),
       Button(
-        attr.disabled($deleteDisabled),
+        attr.disabled(deleteDisabled),
         'Delete 10',
         on.click(() => {
           deleteAccounts(10)
@@ -106,7 +106,7 @@ export function ForEachDemo(): Renderable {
     flex.col(
       attr.class('gap-2'),
       ForEach(
-        $accounts,
+        accounts,
         $account => {
           const duration = Math.random() * 2000 + 1000
           const newBalance = animateSignals(

@@ -1,9 +1,9 @@
-import { attr, computed, html, Signal, Value } from '@tempots/dom'
+import { attr, useComputed, html, Signal, Value } from '@tempots/dom'
 
 export function CommitsShield(user: Value<string>, repo: Value<string>) {
   const userSignal = Signal.wrap(user)
   const repoSignal = Signal.wrap(repo)
-  const fullRepo = computed(
+  const fullRepo = useComputed(
     () => `${userSignal.value}/${repoSignal.value}`,
     [userSignal, repoSignal]
   )

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { prop, render, html, oneof, OnMount } from "../src";
+import { useProp, render, html, oneof, OnMount } from "../src";
 import { sleep } from "./helper";
 const { div } = html
 
@@ -18,7 +18,7 @@ export type Letter = A | B
 
 describe("oneof", () => {
   test("type", async () => {
-    const p = prop<Letter>({ type: "A", text: "a" });
+    const p = useProp<Letter>({ type: "A", text: "a" });
     const spyMountA = vi.fn()
     const spyMountB = vi.fn()
     render(

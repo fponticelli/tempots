@@ -5,7 +5,7 @@ import {
   Fragment,
   makeProviderMark,
   OnUnmount,
-  prop,
+  useProp,
   Prop,
   UseProvider,
   WithProvider,
@@ -72,7 +72,7 @@ export function getFullURL(location: LocationData) {
 }
 
 export function makeLocationProp(): Prop<LocationData> {
-  const location = prop(makeLocation(), equalsLocation)
+  const location = useProp(makeLocation(), equalsLocation)
 
   const handler = () => {
     let hash = window?.location.hash ?? ''
@@ -115,7 +115,7 @@ export function UseLocation(fn: (location: Prop<LocationData>) => TNode) {
   return UseProvider(LocationProviderMarker, (location: Prop<LocationData>) => {
     // prevents accidentally disposing of the source location prop
     return (ctx: DOMContext) => {
-      const derived = prop(location.value, location.equals)
+      const derived = useProp(location.value, location.equals)
       location.feedProp(derived)
       derived.on(location.set)
       const clear = renderableOfTNode(fn(derived))(ctx)
