@@ -7,7 +7,7 @@ import {
   on,
   svg,
   svgAttr,
-  propOfLocalStorage,
+  localStorageProp,
 } from '@tempots/dom'
 import { TopBar } from './top-bar'
 
@@ -56,7 +56,7 @@ export function OpenButton(onClick: () => void) {
 }
 
 export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
-  const sidebarOpen = propOfLocalStorage({
+  const sidebarOpen = localStorageProp({
     key: 'td:sidebarOpen',
     defaultValue: true,
   })

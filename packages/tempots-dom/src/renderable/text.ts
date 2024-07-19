@@ -1,7 +1,7 @@
-import type { Renderable } from '../types/domain'
+import type { Renderable, Value } from '../types/domain'
 import { removeDOMNode } from '../dom/dom-utils'
 import { DOMContext } from '../dom/dom-context'
-import { Signal, Value } from '../std/signal'
+import { Signal } from '../std/signal'
 import { maybeAddTextTracker } from '../dom/ssr'
 
 export const staticText =

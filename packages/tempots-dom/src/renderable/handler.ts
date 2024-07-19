@@ -25,6 +25,9 @@ export const OnChecked = (fn: (event: boolean) => void) =>
     }, 0)
   })
 
+/**
+ * Represents a collection of HTML event handlers that can be attached to an element.
+ */
 export const on = new Proxy(
   {} as {
     [EN in keyof HTMLEvents]: (
@@ -32,6 +35,11 @@ export const on = new Proxy(
     ) => Renderable
   },
   {
+    /**
+     * @param name - The name of the event handler.
+     * @param fn - The function to call when the event is triggered.
+     * @returns A `Renderable` function that adds the event listener to the element.
+     */
     get: (_, name: keyof HTMLEvents) => {
       return (fn: (event: HTMLEvents[typeof name]) => void) => handler(name, fn)
     },

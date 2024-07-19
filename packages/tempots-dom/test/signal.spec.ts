@@ -7,9 +7,9 @@ import {
   Signal,
   Prop,
   Computed,
-  propOfSessionStorage,
-  propOfLocalStorage,
-  animateOne
+  sessionStorageProp,
+  localStorageProp,
+  animateSignal,
 } from "../src";
 import { sleep } from "./helper";
 
@@ -236,10 +236,10 @@ describe("Signal", () => {
     await sleep()
     expect(value).toBe(4);
   });
-  test("propOfSessionStorage", () => {
+  test("sessionStorageProp", () => {
     const key = Math.random().toString().split(".")[1];
     sleep()
-    const p1 = propOfSessionStorage({
+    const p1 = sessionStorageProp({
       key,
       defaultValue: 1
     });
@@ -248,15 +248,15 @@ describe("Signal", () => {
     expect(p1.value).toBe(2);
     p1.dispose();
     expect(p1.value).toBe(2);
-    const p2 = propOfSessionStorage({
+    const p2 = sessionStorageProp({
       key,
       defaultValue: 1
     });
     expect(p2.value).toBe(2);
   });
-  test("propOfLocalStorage", () => {
+  test("localStorageProp", () => {
     const key = Math.random().toString().split(".")[1];
-    const p1 = propOfLocalStorage({
+    const p1 = localStorageProp({
       key,
       defaultValue: 1
     });
@@ -265,17 +265,17 @@ describe("Signal", () => {
     expect(p1.value).toBe(2);
     p1.dispose();
     expect(p1.value).toBe(2);
-    const p2 = propOfLocalStorage({
+    const p2 = localStorageProp({
       key,
       defaultValue: 1
     });
     expect(p2.value).toBe(2);
   });
   // Disabling because it is flaky
-  // test("animateOne", async () => {
+  // test("animateSignal", async () => {
   //   const duration = 40
   //   const source = prop(10);
-  //   const animated = animateOne(
+  //   const animated = animateSignal(
   //     source, {
   //       initialValue: 0,
   //       duration
@@ -288,10 +288,10 @@ describe("Signal", () => {
   //   await sleep(duration * 0.75)
   //   expect(animated.value).toBe(10);
   // })
-  test("interrupt animateOne", async () => {
+  test("interrupt animateSignal", async () => {
     const duration = 40
     const source = prop(10);
-    const animated = animateOne(
+    const animated = animateSignal(
       source, {
         initialValue: 0,
         duration

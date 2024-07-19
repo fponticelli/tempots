@@ -3,11 +3,11 @@ import {
   attr,
   type Renderable,
   on,
-  animate,
   prop,
   html,
   ForEach,
   OnUnmount,
+  animateSignals,
 } from '@tempots/dom'
 import { Button } from './ui'
 import { flex } from './components/flex'
@@ -109,7 +109,7 @@ export function ForEachDemo(): Renderable {
         $accounts,
         $account => {
           const duration = Math.random() * 2000 + 1000
-          const newBalance = animate(
+          const newBalance = animateSignals(
             10000,
             $account.at('balance').get,
             [$account],

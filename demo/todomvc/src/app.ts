@@ -6,11 +6,11 @@ import {
   Fragment,
   html,
   input,
+  localStorageProp,
   on,
   OnChecked,
   prop,
   Prop,
-  propOfLocalStorage,
   Signal,
   When,
 } from '@tempots/dom'
@@ -41,7 +41,7 @@ const FilterLink = ({
 const STORE_KEY = 'todomvc-tempo'
 
 export const App = () => {
-  const state = propOfLocalStorage<State>({
+  const state = localStorageProp<State>({
     defaultValue: { filter: Filter.All, todos: [] },
     key: STORE_KEY,
   })
