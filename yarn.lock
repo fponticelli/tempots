@@ -615,23 +615,6 @@
     lodash.merge "^4.6.2"
     postcss-selector-parser "6.0.10"
 
-"@tempots/dom@17.0.0":
-  version "17.0.0"
-  resolved "https://registry.yarnpkg.com/@tempots/dom/-/dom-17.0.0.tgz#6e453a70c0084b269024df73f8af0127cbeff03a"
-  integrity sha512-ndFdHIy4lXdQ2QFbpEEUQQ/ezXbT3uKYZ/44hEqln6GMGFtc2OI4X9feCxnUbTQJJryLllo/avLRr+JOnbGkng==
-
-"@tempots/std@0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@tempots/std/-/std-0.12.0.tgz#a4bca60ceb9a2261f83adb696b67118f3edc27f8"
-  integrity sha512-vzNHF0vq5Kt8nuiF6SBnk8Gi6hAwyZJgHSieKrCIKnnEBI7atLneq5QyX4wDqqK4NzB5UZWvoWnt8HMgxVCEnQ==
-
-"@tempots/ui@0.11.0":
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/@tempots/ui/-/ui-0.11.0.tgz#69727ad2787f185792a4089076093d931765384f"
-  integrity sha512-SR8kuvesvZXoTQteiXGEbW2aJPB6M3zdvxyfpoZlP45PemfBnkznT1ddzv1xRBYZPqzDZEPGu7lhR3nV83ngxQ==
-  dependencies:
-    "@floating-ui/dom" "^1.6.7"
-
 "@ts-morph/common@~0.24.0":
   version "0.24.0"
   resolved "https://registry.yarnpkg.com/@ts-morph/common/-/common-0.24.0.tgz#9125b3d5ef9e2633cd6a54296b420b89366599c1"

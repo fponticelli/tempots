@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@tabler/icons": "^3.10.0",
-    "@tempots/dom": "17.0.0",
-    "@tempots/std": "0.12.0",
-    "@tempots/ui": "0.11.0",
+    "@tempots/dom": "*",
+    "@tempots/std": "*",
+    "@tempots/ui": "*",
     "happy-dom": "^14.12.3"
   },
   "devDependencies": {
