@@ -1,13 +1,20 @@
 /**
-  Constant value employed to see if two `number` values are very close.
-**/
+ * Constant value employed to see if two `number` values are very close.
+ * @public
+ **/
 export const EPSILON = 1e-9
 
 /**
-number numbers can sometime introduce tiny errors even for simple operations.
-`nearEquals` compares two floats using a tiny tollerance (last optional
-argument). By default it is defined as `EPSILON`.
-**/
+ * number numbers can sometime introduce tiny errors even for simple operations.
+ * `nearEquals` compares two floats using a tiny tollerance (last optional
+ * argument). By default it is defined as `EPSILON`.
+ *
+ * @param a - The first number to compare.
+ * @param b - The second number to compare.
+ * @param tollerance - The tollerance value for comparing the two numbers.
+ * @returns `true` if the two numbers are very close, `false` otherwise.
+ * @public
+ **/
 export function nearEquals(
   a: number,
   b: number,
@@ -25,21 +32,47 @@ export function nearEquals(
 }
 
 /**
-`clamp` restricts a value within the specified range.
-```ts
-log(clamp(1.3, 0, 1)) // prints 1
-log(clamp(0.8, 0, 1)) // prints 0.8
-log(clamp(-0.5, 0, 1)) // prints 0.0
-```
-**/
+ * `clamp` restricts a value within the specified range.
+ *
+ * @remarks
+ * @example
+ * ```ts
+ * log(clamp(1.3, 0, 1)) // prints 1
+ * log(clamp(0.8, 0, 1)) // prints 0.8
+ * log(clamp(-0.5, 0, 1)) // prints 0.0
+ * ```
+ * @param value - The value to clamp.
+ * @param min - The minimum value.
+ * @param max - The maximum value.
+ * @returns The clamped value.
+ * @public
+ **/
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
+/**
+ * `clampInt` restricts a value within the specified range and returns an integer.
+ *
+ * @param value - The value to clamp.
+ * @param min - The minimum value.
+ * @param max - The maximum value.
+ * @returns The clamped value as an integer.
+ * @public
+ **/
 export function clampInt(value: number, min: number, max: number): number {
   return Math.trunc(clamp(value, min, max))
 }
 
+/**
+ * `lerp` performs a linear interpolation between two values.
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param t - The interpolation factor.
+ * @returns The interpolated value.
+ * @public
+ **/
 export function distanceFromOriginAngle(
   slope: number,
   intercept: number,
@@ -53,8 +86,14 @@ export function distanceFromOriginAngle(
   }
 }
 
-export const kappa = 24389 / 27
-export const epsilon = 216 / 24389
+/**
+ * @internal
+ */
+export const _kappa = 24389 / 27
+/**
+ * @internal
+ */
+export const _epsilon = 216 / 24389
 
 const mR0 = 3.240969941904521
 const mR1 = -1.537383177570093
@@ -66,7 +105,10 @@ const mB0 = 0.055630079696993
 const mB1 = -0.20397695888897
 const mB2 = 1.056971514242878
 
-export function calculateBoundingLines(
+/**
+ * @internal
+ */
+export function _calculateBoundingLines(
   l: number
 ): [
   number,
@@ -83,7 +125,7 @@ export function calculateBoundingLines(
   number,
 ] {
   const sub1 = (l + 16) ** 3 / 1560896
-  const sub2 = sub1 > epsilon ? sub1 : l / kappa
+  const sub2 = sub1 > _epsilon ? sub1 : l / _kappa
   const s1r = sub2 * (284517 * mR0 - 94839 * mR2)
   const s2r = sub2 * (838422 * mR2 + 769860 * mR1 + 731718 * mR0)
   const s3r = sub2 * (632260 * mR2 - 126452 * mR1)
@@ -108,7 +150,10 @@ export function calculateBoundingLines(
   return [r0s, r0i, r1s, r1i, g0s, g0i, g1s, g1i, b0s, b0i, b1s, b1i]
 }
 
-export function calculateMaxChromaHsluv(
+/**
+ * @internal
+ */
+export function _calculateMaxChromaHsluv(
   h: number,
   r0s: number,
   r0i: number,
@@ -133,4 +178,7 @@ export function calculateMaxChromaHsluv(
   return Math.min(r0, r1, g0, g1, b0, b1)
 }
 
+/**
+ * @public
+ */
 export const WHITE_REFERENCE: [number, number, number] = [0.95047, 1, 1.08883]

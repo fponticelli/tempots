@@ -2,19 +2,36 @@ import { nearEquals } from './math'
 
 const TOLLERANCE = 0.0001
 
+/**
+ * Represents a color in the LCH color space.
+ *
+ * @public
+ */
 export class LCH {
-  static ofChannels([l, c, h]: [l: number, c: number, h: number]): LCH {
-    return new LCH(l, c, h)
-  }
+  static readonly ofChannels = ([l, c, h]: [
+    l: number,
+    c: number,
+    h: number,
+  ]): LCH => new LCH(l, c, h)
 
-  readonly luminance: number
-  readonly chroma: number
-  readonly hue: number
   /**
-   *
+   * The luminance value of the color in the LCH color space.
+   */
+  readonly luminance: number
+  /**
+   * The chroma value of the LCH color.
+   */
+  readonly chroma: number
+  /**
+   * The hue value of the LCH color.
+   */
+  readonly hue: number
+
+  /**
+   * Creates a new instance of the LCH color.
    * @param luminance - Luminance in cd/m^2
-   * @param chroma -
-   * @param hue - Angle in degrees (0-360)
+   * @param chroma - Chroma value
+   * @param hue - Hue angle in degrees (0-360)
    */
   constructor(luminance: number, chroma: number, hue: number) {
     this.luminance = luminance < 0 ? 0 : luminance
@@ -22,32 +39,53 @@ export class LCH {
     this.hue = hue % 360
   }
 
-  withLightness(l: number): LCH {
-    return new LCH(l, this.chroma, this.hue)
-  }
+  /**
+   * Returns a new LCH color with the specified lightness value.
+   *
+   * @param l - The lightness value for the new color.
+   * @returns A new LCH color with the specified lightness value.
+   */
+  readonly withLightness = (l: number): LCH => new LCH(l, this.chroma, this.hue)
 
-  withChroma(c: number): LCH {
-    return new LCH(this.luminance, c, this.hue)
-  }
+  /**
+   * Creates a new LCH color with the specified chroma value.
+   *
+   * @param c - The chroma value for the new LCH color.
+   * @returns A new LCH color with the specified chroma value.
+   */
+  readonly withChroma = (c: number): LCH => new LCH(this.luminance, c, this.hue)
 
   /**
    * Sets the hue value of the LCH color and returns a new LCH color instance.
    * @param h - The hue value to set.
    * @returns A new LCH color instance with the specified hue value.
    */
-  withHue(h: number): LCH {
-    return new LCH(this.luminance, this.chroma, h)
-  }
+  readonly withHue = (h: number): LCH => new LCH(this.luminance, this.chroma, h)
 
-  toChannels(): [number, number, number] {
-    return [this.luminance, this.chroma, this.hue]
-  }
+  /**
+   * Converts the LCH color to an array of channels.
+   * @returns An array of channels [luminance, chroma, hue].
+   */
+  readonly toChannels = (): [number, number, number] => [
+    this.luminance,
+    this.chroma,
+    this.hue,
+  ]
 
-  toString(): string {
-    return `lch(${this.luminance}, ${this.chroma}, ${this.hue})`
-  }
+  /**
+   * Returns a string representation of the LCH color.
+   * @returns A string in the format "lch(luminance, chroma, hue)".
+   */
+  readonly toString = (): string =>
+    `lch(${this.luminance}, ${this.chroma}, ${this.hue})`
 
-  equals(other: LCH, tollerance = TOLLERANCE): boolean {
+  /**
+   * Checks if the LCH color is equal to another LCH color.
+   * @param other - The other LCH color to compare.
+   * @param tollerance - The tolerance value for comparison (default: TOLLERANCE).
+   * @returns True if the colors are equal within the specified tolerance, false otherwise.
+   */
+  readonly equals = (other: LCH, tollerance = TOLLERANCE): boolean => {
     if (
       nearEquals(this.luminance, other.luminance, tollerance) &&
       (nearEquals(this.luminance, 100, tollerance) ||
