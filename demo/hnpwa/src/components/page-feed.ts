@@ -4,7 +4,7 @@ import {
   Signal,
   html,
   attr,
-  Position,
+  ElementPosition,
   useComputed,
   When,
   Fragment,
@@ -53,22 +53,24 @@ export function PageFeedView(page: Signal<PageFeed>) {
     ),
     attr.class('list-view'),
     html.ul(
-      ForEach(page.at('items'), (item: Signal<Item>, pos: Signal<Position>) =>
-        html.li(
-          html.aside(
-            useComputed(
-              () => String((page.value.page - 1) * 30 + pos.value.index + 1),
-              [page, pos]
-            )
-          ),
-          html.div(
-            ItemLink(item),
-            Ensure(item.at('domain'), domain =>
-              html.span(attr.class('domain'), domain)
+      ForEach(
+        page.at('items'),
+        (item: Signal<Item>, pos: Signal<ElementPosition>) =>
+          html.li(
+            html.aside(
+              useComputed(
+                () => String((page.value.page - 1) * 30 + pos.value.index + 1),
+                [page, pos]
+              )
             ),
-            ItemFooter(item)
+            html.div(
+              ItemLink(item),
+              Ensure(item.at('domain'), domain =>
+                html.span(attr.class('domain'), domain)
+              ),
+              ItemFooter(item)
+            )
           )
-        )
       )
     ),
     Pagination({ feed: page.at('feed'), page: page.at('page') })

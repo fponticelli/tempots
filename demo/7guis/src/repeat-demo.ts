@@ -5,7 +5,7 @@ import {
   on,
   useProp,
   html,
-  Position,
+  ElementPosition,
   Signal,
   Repeat,
   When,
@@ -63,8 +63,8 @@ export function RepeatDemo(): Renderable {
             )
           )
         },
-        (pos: Signal<Position>) => {
-          const cls = pos.map((p: Position) => {
+        (pos: Signal<ElementPosition>) => {
+          const cls = pos.map((p: ElementPosition) => {
             const classes = []
             if (p.isFirst) {
               classes.push('border-2')

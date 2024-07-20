@@ -16,7 +16,7 @@ import { RGB } from './rgb'
 import { SRGB } from './srgb'
 import { XYZ } from './xyz'
 
-const Direct = {
+export const Direct = {
   cmyk2rgb([c, m, y, k]: [c: number, m: number, y: number, k: number]): [
     number,
     number,
@@ -281,7 +281,7 @@ const Direct = {
   },
 }
 
-const Channel = {
+export const Channel = {
   ...Direct,
   cmyk2hsl: (cmyk: [number, number, number, number]) => {
     const rgb = Channel.cmyk2rgb(cmyk)
