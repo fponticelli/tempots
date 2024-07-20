@@ -1,3 +1,8 @@
+/**
+ * Represents a mapping of HTML event names to their corresponding event types.
+ *
+ * @public
+ */
 export type HTMLEvents = {
   abort: Event
   animationcancel: AnimationEvent

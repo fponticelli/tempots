@@ -1,3 +1,8 @@
+/**
+ * Represents a mapping of SVG tag names to their corresponding SVG element types.
+ *
+ * @public
+ */
 export type SVGTags = {
   a: SVGAElement
   animate: SVGAnimateElement

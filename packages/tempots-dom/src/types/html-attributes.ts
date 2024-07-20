@@ -1,3 +1,8 @@
+/**
+ * Represents the HTML attributes that can be used in an HTML element.
+ *
+ * @public
+ */
 export type HTMLAttributes = {
   accept: string
   'accept-charset': string
@@ -114,6 +119,11 @@ export type HTMLAttributes = {
   outerHTML: string
 }
 
+/**
+ * Represents the possible input types for HTML input elements.
+ *
+ * @public
+ */
 export type InputTypes =
   | 'text'
   | 'number'

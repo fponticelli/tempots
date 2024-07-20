@@ -1,3 +1,8 @@
+/**
+ * Represents a collection of ARIA attributes and their corresponding types.
+ *
+ * @public
+ */
 export type AriaAttributes = {
   activedescendant: string
   atomic: boolean

@@ -1,3 +1,8 @@
+/**
+ * Represents a mapping of HTML tag names to their corresponding element types.
+ *
+ * @public
+ */
 export type HTMLTags = {
   a: HTMLAnchorElement
   abbr: HTMLElement

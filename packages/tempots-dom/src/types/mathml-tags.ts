@@ -1,3 +1,7 @@
+/**
+ * Represents a collection of MathML tags.
+ * @public
+ */
 export type MathMLTags = {
   maction: MathMLElement
   math: MathMLElement

@@ -1,3 +1,8 @@
+/**
+ * Represents the attributes used in MathML elements.
+ *
+ * @public
+ */
 export type MathMLAttributes = {
   accent: string
   accentunder: string

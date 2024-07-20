@@ -1,3 +1,8 @@
+/**
+ * Represents the attributes that can be used in SVG elements.
+ *
+ * @public
+ */
 export type SVGAttributes = {
   accentHeight: number
   accumulate: 'none' | 'sum'

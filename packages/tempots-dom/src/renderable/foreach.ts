@@ -1,7 +1,7 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, useComputed } from '../std/signal'
-import { Position } from '../std/position'
+import { ElementPosition } from '../std/position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
@@ -11,8 +11,8 @@ import { OnUnmount } from './onunmount'
 
 export const ForEach = <T>(
   signal: Signal<T[]>,
-  item: (value: Signal<T>, position: Signal<Position>) => TNode,
-  separator?: (pos: Signal<Position>) => TNode
+  item: (value: Signal<T>, position: Signal<ElementPosition>) => TNode,
+  separator?: (pos: Signal<ElementPosition>) => TNode
 ): Renderable => {
   if (separator != null) {
     return ForEach(signal, (v, p) => {

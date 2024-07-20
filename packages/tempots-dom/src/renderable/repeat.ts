@@ -1,6 +1,6 @@
 import { DOMContext } from '../dom/dom-context'
 import { removeDOMNode } from '../dom/dom-utils'
-import { Position } from '../std/position'
+import { ElementPosition } from '../std/position'
 import { Prop, Signal, useProp } from '../std/signal'
 import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
@@ -11,8 +11,8 @@ import { oneof } from './oneof'
 
 export const Repeat = (
   times: Signal<number>,
-  element: (index: Signal<Position>) => TNode,
-  separator?: (pos: Signal<Position>) => TNode
+  element: (index: Signal<ElementPosition>) => TNode,
+  separator?: (pos: Signal<ElementPosition>) => TNode
 ): Renderable => {
   if (separator != null) {
     return Repeat(times, p => {
@@ -31,11 +31,11 @@ export const Repeat = (
       ctx = ctx.makeRef()
       const elementSignals = times.map(times =>
         Array.from({ length: times }, (_, i) => i).map(
-          i => new Position(i, times)
+          i => new ElementPosition(i, times)
         )
       )
       const clears: Clear[] = []
-      const existings: Prop<Position>[] = []
+      const existings: Prop<ElementPosition>[] = []
       const clear = elementSignals.on(elements => {
         const newLength = elements.length
         while (newLength < clears.length) {
