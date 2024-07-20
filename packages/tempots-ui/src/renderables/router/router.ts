@@ -3,7 +3,15 @@ import { ExtractParams, MakeParams, RouteInfo } from './route-info'
 import { UseLocation } from './location'
 import { makeRouteMatcher } from './match'
 
-export function Router<
+/**
+ * Creates a router that maps routes to corresponding renderable components.
+ *
+ * @typeParam T - The type of the routes object.
+ * @param routes - An object containing route handlers.
+ * @returns - The router renderable.
+ * @public
+ */
+export const Router = <
   T extends {
     [K in keyof T]: (
       info: K extends string
@@ -11,7 +19,9 @@ export function Router<
         : never
     ) => TNode
   },
->(routes: T): Renderable {
+>(
+  routes: T
+): Renderable => {
   const matchRoute = makeRouteMatcher(Object.keys(routes))
   return UseLocation(location => {
     const route = location.map(location => {

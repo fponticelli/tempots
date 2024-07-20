@@ -7,7 +7,14 @@ import {
   renderableOfTNode,
 } from '@tempots/dom'
 
-const elementSizeMonitor =
+/**
+ * Creates a renderable function that monitors the size of an element and provides it as a signal.
+ *
+ * @param fn - The renderable function that receives the size signal and returns a TNode.
+ * @returns A function that takes a DOMContext and returns a renderable function.
+ * @public
+ */
+export const ElementSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
     const el = ctx.element
     const size = useProp({ width: el.clientWidth, height: el.clientHeight })
@@ -26,7 +33,13 @@ const elementSizeMonitor =
     }
   }
 
-const windowSizeMonitor =
+/**
+ * Creates a renderable function that monitors the window size and invokes the provided function with the current size.
+ * @param fn - The function to be invoked with the current window size.
+ * @returns A renderable function that monitors the window size.
+ * @public
+ */
+export const WindowSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
     const size = useProp({
       width: window?.innerWidth ?? 0,
@@ -45,8 +58,3 @@ const windowSizeMonitor =
       clear(removeTree)
     }
   }
-
-export const size = {
-  element: elementSizeMonitor,
-  window: windowSizeMonitor,
-}

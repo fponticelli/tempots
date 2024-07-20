@@ -16,6 +16,11 @@ import {
   shift,
 } from '@floating-ui/dom'
 
+/**
+ * Represents the placement options for a pop-over.
+ *
+ * @public
+ */
 export type Placement =
   | 'top'
   | 'top-start'
@@ -30,16 +35,53 @@ export type Placement =
   | 'left-start'
   | 'left-end'
 
+/**
+ * Represents the properties for a PopOver component.
+ *
+ * @public
+ */
 export interface PopOverProps {
+  /**
+   * Specifies whether the PopOver is open or closed.
+   */
   open: Value<boolean>
+
+  /**
+   * Specifies the content of the PopOver.
+   * This should be a function that returns a TNode.
+   */
   content: () => TNode
+
+  /**
+   * Specifies the placement of the PopOver.
+   * This is an optional property.
+   */
   placement?: Placement
+
+  /**
+   * Specifies the offset of the PopOver.
+   * This is an optional property.
+   */
   offset?: {
+    /**
+     * Specifies the offset on the main axis.
+     */
     mainAxis?: number
+
+    /**
+     * Specifies the offset on the cross axis.
+     */
     crossAxis?: number
   }
 }
 
+/**
+ * Renders a PopOver component.
+ *
+ * @param props - The properties for the PopOver component.
+ * @returns The rendered PopOver component.
+ * @public
+ */
 export function PopOver({
   content,
   open,

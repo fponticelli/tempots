@@ -1,5 +1,10 @@
 import { on } from '@tempots/dom'
 
-export function SelectOnFocus() {
-  return on.focus(e => (e.target as HTMLInputElement)?.select())
-}
+/**
+ * Selects the text inside an input element when it receives focus.
+ *
+ * @returns A renderable function that selects the text inside an input element when it receives focus.
+ * @public
+ */
+export const SelectOnFocus = () =>
+  on.focus(e => (e.target as HTMLInputElement)?.select())

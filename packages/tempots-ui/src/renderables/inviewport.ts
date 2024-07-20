@@ -13,6 +13,13 @@ import {
   When,
 } from '@tempots/dom'
 
+/**
+ * Represents the mode for determining if an element is in the viewport.
+ * - `'partial'`: Indicates that the element is considered in the viewport if any part of it is visible.
+ * - `'full'`: Indicates that the element is considered in the viewport only if it is fully visible.
+ *
+ * @public
+ */
 export type InViewportMode = 'partial' | 'full'
 
 const options = {
@@ -50,6 +57,14 @@ function ensureObserver(mode: InViewportMode): IntersectionObserver {
   return observers[mode]!
 }
 
+/**
+ * Creates a renderable component that tracks whether the element is in the viewport.
+ *
+ * @param mode - The mode for tracking the element's visibility in the viewport.
+ * @param fn - A function that returns the renderable component based on the visibility signal.
+ * @returns The renderable component that tracks the element's visibility in the viewport.
+ * @public
+ */
 export function InViewport(
   mode: InViewportMode,
   fn: (value: Signal<boolean>) => TNode
@@ -78,6 +93,16 @@ export function InViewport(
   )
 }
 
+/**
+ * Executes the provided `then` function when the element is in the viewport.
+ * Optionally, executes the `otherwise` function when the element is not in the viewport.
+ *
+ * @param mode - The mode to determine when the element is considered in the viewport.
+ * @param then - The function to execute when the element is in the viewport.
+ * @param otherwise - The function to execute when the element is not in the viewport.
+ * @returns The result of executing the `then` function or the `otherwise` function.
+ * @public
+ */
 export const WhenInViewport = (
   mode: InViewportMode,
   then: TNode,

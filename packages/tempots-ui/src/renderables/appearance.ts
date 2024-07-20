@@ -11,12 +11,14 @@ import {
 
 /**
  * Defines the possible appearance types for the application.
- * @type AppearanceType
+ *
+ * @public
  */
 export type AppearanceType = 'light' | 'dark'
 
 /**
  * A provider mark for a signal representing the current appearance type.
+ * @public
  */
 export const appearanceMarker =
   makeProviderMark<Signal<AppearanceType>>('Appearance')
@@ -31,6 +33,7 @@ export const appearanceMarker =
  *
  * @param child - The child component to be provided with the appearance context.
  * @returns The child component with the appearance context.
+ * @public
  */
 export const ProvideAppearance = (child: TNode): TNode => {
   const isDark =
@@ -57,6 +60,7 @@ export const ProvideAppearance = (child: TNode): TNode => {
  *
  * @param fn - A function that accepts the `AppearanceType` signal and returns a `TNode` element.
  * @returns The `TNode` element returned by the provided function.
+ * @public
  */
 export const UseAppearance = (
   fn: (appearance: Signal<AppearanceType>) => TNode
