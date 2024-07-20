@@ -27,11 +27,23 @@ const signalStyle =
     }
   }
 
+/**
+ * A collection of functions to create style renderables.
+ * @public
+ */
 export const style = new Proxy(
   {} as {
     [AN in keyof CSSStyles]: (value: NValue<string>) => Renderable
   },
   {
+    /**
+     * Creates a renderable component for the specified `style` property.
+     *
+     * @param _ - The target object.
+     * @param name - The name of the CSS style property.
+     * @returns The renderable component for the specified attribute.
+     *
+     */
     get: (_, name: keyof CSSStyles) => {
       return (value: NValue<string>) => {
         if (Signal.is(value)) {

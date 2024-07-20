@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { useProp, render, html, oneof, OnMount } from "../src";
+import { useProp, render, html, OnMount, OneOfType } from "../src";
 import { sleep } from "./helper";
 const { div } = html
 
@@ -22,7 +22,7 @@ describe("oneof", () => {
     const spyMountA = vi.fn()
     const spyMountB = vi.fn()
     render(
-      oneof.type(
+      OneOfType(
         p,
         {
           'A': (s) => div(

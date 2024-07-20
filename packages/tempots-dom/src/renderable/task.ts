@@ -4,15 +4,30 @@ import { removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
+/**
+ * Represents the options for a task.
+ *
+ * @typeParam T - The type of the task value.
+ * @public
+ */
+export type TaskOptions<T> = {
+  pending?: TNode
+  then: (value: T) => TNode
+  error?: (error: unknown) => TNode
+}
+
+/**
+ * Represents a renderable task that can be executed asynchronously.
+ *
+ * @typeParam T - The type of the value returned by the task.
+ * @param task - The asynchronous task to be executed.
+ * @param options - The options for the task or a function that transforms the task result into a renderable node.
+ * @returns - A function that renders the task and returns a cleanup function.
+ * @public
+ */
 export const Task = <T>(
   task: () => Promise<T>,
-  options:
-    | {
-        pending?: TNode
-        then: (value: T) => TNode
-        error?: (error: unknown) => TNode
-      }
-    | ((value: T) => TNode)
+  options: TaskOptions<T> | ((value: T) => TNode)
 ): Renderable => {
   if (typeof options === 'function') {
     return Task(task, { then: options })

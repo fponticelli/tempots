@@ -2,10 +2,10 @@ import {
   TNode,
   Fragment,
   OnUnmount,
-  oneof,
   Signal,
   Value,
   Renderable,
+  OneOfType,
 } from '@tempots/dom'
 import { Result } from '@tempots/std'
 
@@ -56,7 +56,7 @@ export const ResultView = <T, E>(
         error.map(error => `Error: ${error}`)
       ))
   const success = options.success
-  return oneof.type(Signal.wrap(result), {
+  return OneOfType(Signal.wrap(result), {
     Success: signal => success(signal.$.value),
     Failure: signal => fail(signal.$.error),
   })

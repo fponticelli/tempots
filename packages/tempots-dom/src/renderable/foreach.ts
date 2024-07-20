@@ -5,10 +5,20 @@ import { ElementPosition } from '../std/position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
-import { oneof } from './oneof'
 import { Empty } from './empty'
 import { OnUnmount } from './onunmount'
+import { OneOfValue } from './oneof'
 
+/**
+ * Renders a list of items based on a signal of arrays.
+ *
+ * @typeParam T - The type of items in the array.
+ * @param signal - The signal of arrays to iterate over.
+ * @param item - The function that renders each item in the array.
+ * @param separator - Optional. The function that renders the separator between items.
+ * @returns - The renderable function that renders the list of items.
+ * @public
+ */
 export const ForEach = <T>(
   signal: Signal<T[]>,
   item: (value: Signal<T>, position: Signal<ElementPosition>) => TNode,
@@ -20,7 +30,7 @@ export const ForEach = <T>(
       return Fragment([
         OnUnmount(() => last.dispose()),
         renderableOfTNode(item(v, p)),
-        oneof.value(last, {
+        OneOfValue(last, {
           last: () => Empty,
           other: () => separator(p),
         }),

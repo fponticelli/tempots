@@ -5,7 +5,16 @@ import { removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
-// TODO, rename to Show?
+/**
+ * Represents a function that ensures a signal has a value before rendering a TNode.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param signal - The signal to ensure has a value.
+ * @param then - The function that returns a TNode when the signal has a value. It takes a signal of the non-nullable type of T.
+ * @param otherwise - The function that returns a TNode when the signal does not have a value.
+ * @returns A renderable function that ensures the signal has a value before rendering a TNode.
+ * @public
+ */
 export const Ensure =
   <T>(
     signal:

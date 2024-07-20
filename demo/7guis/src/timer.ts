@@ -1,12 +1,12 @@
 import { Txt } from './components/txt'
 import {
   attr,
-  emit,
   on,
   type Renderable,
   useComputed,
   useProp,
   OnUnmount,
+  EmitValueAsNumber,
 } from '@tempots/dom'
 import { Button, Progress, Range } from './ui'
 import { flex } from './components/flex'
@@ -55,7 +55,7 @@ export function Timer(): Renderable {
         attr.min(MIN),
         attr.max(MAX),
         attr.valueAsNumber(duration),
-        on.input(emit.valueAsNumber(duration.set))
+        on.input(EmitValueAsNumber(duration.set))
       ),
       Txt(duration.map(duration => formatSecond(duration)))
     ),

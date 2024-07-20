@@ -1,30 +1,75 @@
 import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { getSelfOrParentElement, isElement } from '../dom/dom-utils'
-import { clearSSR } from '../dom/ssr'
+import { _clearSSR } from '../dom/ssr'
 
-export function renderWithContext(node: Renderable, ctx: DOMContext) {
-  const clear = node(ctx)
+/**
+ * Renders the given `renderable` with the provided `ctx` DOM context.
+ *
+ * @param renderable - The renderable node to be rendered.
+ * @param ctx - The DOM context to be used for rendering.
+ * @returns A function that can be called to clear the rendered node.
+ * @public
+ */
+export function renderWithContext(renderable: Renderable, ctx: DOMContext) {
+  const clear = renderable(ctx)
   return () => clear(true)
 }
 
+/**
+ * Options for rendering.
+ * @public
+ */
+export type RenderOptions = {
+  /**
+   * The document to render to. It is inferred from the parent element if not provided.
+   */
+  doc?: Document
+  /**
+   * Whether to clear the document before rendering. This is useful when the page has been pre-rendered on the server.
+   */
+  clear?: boolean
+}
+
+/**
+ * Renders a `Renderable` node into a specified parent element or selector.
+ *
+ * @param node - The `Renderable` node to render.
+ * @param parent - The parent element or selector where the node should be rendered.
+ * @param options - Optional rendering options.
+ * @returns The result of rendering the `Renderable` node.
+ * @throws An error if the parent element cannot be found by the provided selector.
+ * @public
+ */
 export function render(
   node: Renderable,
   parent: Node | string,
-  { doc, clear }: { doc?: Document; clear?: boolean } = {}
+  { doc, clear }: RenderOptions = {}
 ) {
   const el =
     typeof parent === 'string'
       ? (doc ?? document).querySelector(parent)
       : parent
   if (el === null) {
-    throw new Error(`Cannot find element by selector for render: ${parent}`)
+    throw new RenderingError(
+      `Cannot find element by selector for render: ${parent}`
+    )
   }
   if (clear && (doc ?? el.ownerDocument) != null) {
-    clearSSR((doc ?? el.ownerDocument)!)
+    _clearSSR((doc ?? el.ownerDocument)!)
   }
   const element = getSelfOrParentElement(el)
   const ref = isElement(el) ? undefined : el
   const ctx = DOMContext.of(element, ref)
   return renderWithContext(node, ctx)
+}
+
+/**
+ * Represents an error that occurs during rendering.
+ * @public
+ */
+export class RenderingError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
 }

@@ -2,12 +2,12 @@ import {
   aria,
   Fragment,
   html,
-  oneof,
   useSignal,
   Signal,
   svg,
   svgAttr,
   When,
+  OneOfType,
 } from '@tempots/dom'
 import { Feed, Route, toTitle } from '../route'
 import { LinkRoute } from './link-route'
@@ -89,7 +89,7 @@ export function App(route: Signal<Route>, page: Signal<Page>) {
       )
     ),
     html.section(
-      oneof.type(page, {
+      OneOfType(page, {
         Article: p => Article(p.at('item')),
         PageFeed: PageFeedView,
         Profile: e => ProfileView({ user: e.at('user') }),

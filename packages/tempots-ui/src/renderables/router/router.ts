@@ -1,4 +1,4 @@
-import { TNode, Renderable, oneof, Signal } from '@tempots/dom'
+import { TNode, Renderable, Signal, OneOfTuple } from '@tempots/dom'
 import { ExtractParams, MakeParams, RouteInfo } from './route-info'
 import { UseLocation } from './location'
 import { makeRouteMatcher } from './match'
@@ -38,7 +38,7 @@ export const Router = <
         hash: location.hash,
       } as RouteInfo<MakeParams<typeof match.params>, typeof match.route>
     })
-    return oneof.tuple(
+    return OneOfTuple(
       route.map(route => [route.route, route]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       routes as any

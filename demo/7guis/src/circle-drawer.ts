@@ -5,11 +5,11 @@ import {
   svgAttr,
   on,
   type Renderable,
-  emit,
   useProp,
   Signal,
   useComputed,
   ForEach,
+  EmitValueAsNumber,
 } from '@tempots/dom'
 import { Button, Range } from './ui'
 import { flex } from './components/flex'
@@ -161,7 +161,7 @@ export function CircleDrawer(): Renderable {
         attr.min(1),
         attr.max(100),
         attr.valueAsNumber(radius),
-        on.change(emit.valueAsNumber(changeRadius))
+        on.change(EmitValueAsNumber(changeRadius))
       )
     ),
     flex.row(

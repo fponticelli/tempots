@@ -4,7 +4,7 @@ import {
   IOptionalBrowserSettings,
   PropertySymbol,
 } from 'happy-dom'
-import { Renderable, startSSR, render } from '@tempots/dom'
+import { Renderable, prepareSSR, render } from '@tempots/dom'
 
 const transfer = [
   'setTimeout',
@@ -53,6 +53,7 @@ const browserSettings: IOptionalBrowserSettings = {
  * @param url - The URL to use for the fake window.
  * @param selector - The selector to use find the parent element for the app.
  * @param makeApp - A function that creates the app to render.
+ * @public
  */
 export async function renderSSR({
   html,
@@ -73,7 +74,7 @@ export async function renderSSR({
   const browserWindow = page.mainFrame.document[PropertySymbol.ownerWindow]
   const unsetGlobals = setGlobals(browserWindow)
 
-  const wait = startSSR()
+  const wait = prepareSSR()
   const App = makeApp()
 
   const clear = render(App, selector, {

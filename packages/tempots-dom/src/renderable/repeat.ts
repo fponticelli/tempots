@@ -6,9 +6,18 @@ import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
+import { OneOfValue } from './oneof'
 import { OnUnmount } from './onunmount'
-import { oneof } from './oneof'
 
+/**
+ * Creates a renderable function that repeats a given element a specified number of times.
+ *
+ * @param times - A signal representing the number of times the element should be repeated.
+ * @param element - A function that returns the element to be repeated, based on the current index.
+ * @param separator - (Optional) A function that returns the separator element to be inserted between repeated elements.
+ * @returns A renderable function that renders the repeated elements.
+ * @public
+ */
 export const Repeat = (
   times: Signal<number>,
   element: (index: Signal<ElementPosition>) => TNode,
@@ -20,7 +29,7 @@ export const Repeat = (
       return Fragment(
         OnUnmount(() => last.dispose()),
         renderableOfTNode(element(p)),
-        oneof.value(last, {
+        OneOfValue(last, {
           last: () => Empty,
           other: () => separator(p),
         })

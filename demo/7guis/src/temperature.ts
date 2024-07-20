@@ -1,9 +1,9 @@
 import { Txt } from './components/txt'
 import {
+  EmitValue,
   OnUnmount,
   Signal,
   attr,
-  emit,
   on,
   useProp,
   type Renderable,
@@ -44,12 +44,12 @@ export function Temperature(): Renderable {
       attr.class('gap-2 items-center'),
       InputText(
         attr.value(celsius as Signal<string>),
-        on.input(emit.value(v => tchange.set({ unit: 'c', value: v })))
+        on.input(EmitValue(v => tchange.set({ unit: 'c', value: v })))
       ),
       Txt('°C'),
       InputText(
         attr.value(fahrenheit as Signal<string>),
-        on.input(emit.value(v => tchange.set({ unit: 'f', value: v })))
+        on.input(EmitValue(v => tchange.set({ unit: 'f', value: v })))
       ),
       Txt('°F')
     )

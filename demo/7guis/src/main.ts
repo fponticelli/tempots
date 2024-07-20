@@ -5,11 +5,11 @@ import {
   attr,
   type Renderable,
   on,
-  oneof,
   useProp,
   render,
   Fragment,
   Portal,
+  OneOfValue,
 } from '@tempots/dom'
 import { Button } from './ui'
 import { Counter } from './counter'
@@ -68,7 +68,7 @@ export function App(): Renderable {
         attr.class('gap-4 justify-center flex-wrap'),
         ...demos.map(demo => demoButton(demo, currentDemo))
       ),
-      oneof.value(currentDemo, {
+      OneOfValue(currentDemo, {
         Counter: Counter,
         Temperature: Temperature,
         'Flight Booker': FlightBooker,

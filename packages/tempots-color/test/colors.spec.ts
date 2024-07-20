@@ -1,6 +1,19 @@
 import { describe, expect, test } from "vitest";
 import {
-  Channel,
+  _cmyk2rgb,
+  _hsl2hsv,
+  _hsl2rgb,
+  _hsv2hsl,
+  _lab2lch,
+  _lab2xyz,
+  _lch2lab,
+  _luv2xyz,
+  _rgb2cmyk,
+  _rgb2hsl,
+  _rgb2xyz,
+  _xyz2lab,
+  _xyz2luv,
+  _xyz2rgb,
   hsl2hsluv,
   hsl2hsv,
   hsl2lab,
@@ -125,79 +138,79 @@ expect.extend({
 
 describe('Channel conversion', () => {
   test('cmyk2rgb', () => {
-    (expect(Channel.cmyk2rgb([0.6, 0.0, 0.08, 0.07])) as any).toNearEqualArray([
+    (expect(_cmyk2rgb([0.6, 0.0, 0.08, 0.07])) as any).toNearEqualArray([
       0.372, 0.93, 0.8556
     ])
   })
   test('hsl2hsv', () => {
-    (expect(Channel.hsl2hsv([172, 0.8, 0.65])) as any).toNearEqualArray([
+    (expect(_hsl2hsv([172, 0.8, 0.65])) as any).toNearEqualArray([
       172, 0.60215, 0.93
     ])
   })
   test('hsv2hsl', () => {
-    (expect(Channel.hsv2hsl([172, 0.60215, 0.93])) as any).toNearEqualArray([
+    (expect(_hsv2hsl([172, 0.60215, 0.93])) as any).toNearEqualArray([
       172, 0.8, 0.65
     ])
   })
   test('hsl2lab', () => {
-    (expect(Channel.lch2lab([86.07, 42.79865, 183.0])) as any).toNearEqualArray([
+    (expect(_lch2lab([86.07, 42.79865, 183.0])) as any).toNearEqualArray([
       86.07, -42.74, -2.24
     ])
   })
   test('hsl2rgb', () => {
-    (expect(Channel.hsl2rgb([172, 0.8, 0.65])) as any).toNearEqualArray([
+    (expect(_hsl2rgb([172, 0.8, 0.65])) as any).toNearEqualArray([
       0.37, 0.9299, 0.8553
     ])
   })
   test('lab2lch', () => {
-    (expect(Channel.lab2lch([86.07, -42.74, -2.24])) as any).toNearEqualArray([
+    (expect(_lab2lch([86.07, -42.74, -2.24])) as any).toNearEqualArray([
       86.07, 42.79865, 183.0
     ])
   })
   test('lab2xyz', () => {
     (expect(
-      Channel.lab2xyz([86.07, -42.74, -2.24], WHITE_REFERENCE)
+      _lab2xyz([86.07, -42.74, -2.24], WHITE_REFERENCE)
     ) as any).toNearEqualArray([
       47.65533671728852, 68.12717437567908, 77.04768177230773
     ])
   })
   test('lch2lab', () => {
-    (expect(Channel.lch2lab([86, 42.699, 183.024])) as any).toNearEqualArray([
+    (expect(_lch2lab([86, 42.699, 183.024])) as any).toNearEqualArray([
       86.0, -42.64, -2.25
     ])
   })
   test('luv2xyz', () => {
     (expect(
-      Channel.luv2xyz([81.495, -60.109, 95.919], WHITE_REFERENCE)
+      _luv2xyz([81.495, -60.109, 95.919], WHITE_REFERENCE)
     ) as any).toNearEqualArray([33.727, 59.37, 10.602])
   })
   test('rgb2cmyk', () => {
-    (expect(Channel.rgb2cmyk([0.372, 0.93, 0.8556])) as any).toNearEqualArray([
+    (expect(_rgb2cmyk([0.372, 0.93, 0.8556])) as any).toNearEqualArray([
       0.6, 0.0, 0.08, 0.07
     ])
   })
   test('rgb2hsl', () => {
-    (expect(Channel.rgb2hsl([0.37, 0.9299, 0.8553])) as any).toNearEqualArray([
+    (expect(_rgb2hsl([0.37, 0.9299, 0.8553])) as any).toNearEqualArray([
       172, 0.8, 0.65
     ])
   })
   test('rgb2xyz', () => {
-    (expect(Channel.rgb2xyz([100 / 255, 230 / 255, 25 / 255])) as any).toNearEqualArray([
+    (expect(_rgb2xyz([100 / 255, 230 / 255, 25 / 255])) as any).toNearEqualArray([
       33.727, 59.37, 10.602
     ])
   })
   test('xyz2lab', () => {
     (expect(
-      Channel.xyz2lab([47.6553, 68.1272, 77.0477], WHITE_REFERENCE)
+      _xyz2lab([47.6553, 68.1272, 77.0477], WHITE_REFERENCE)
     ) as any).toNearEqualArray([86.07001279, -42.74015717, -2.2399919])
   })
   test('xyz2luv', () => {
     (expect(
-      Channel.xyz2luv([33.727, 59.37, 10.602], WHITE_REFERENCE)
+      _xyz2luv([33.727, 59.37, 10.602], WHITE_REFERENCE)
     ) as any).toNearEqualArray([81.495, -60.109, 95.919])
   })
   test('xyz2rgb', () => {
-    (expect(Channel.xyz2rgb([33.727, 59.37, 10.602])) as any).toNearEqualArray([
+    (expect(_xyz2rgb([33.727, 59.37, 10.602])) as any).toNearEqualArray([
       100 / 255,
       230 / 255,
       25 / 255

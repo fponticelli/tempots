@@ -5,8 +5,8 @@ import {
   Signal,
   Value,
   html,
-  oneof,
   Portal,
+  When,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -92,34 +92,33 @@ export function PopOver({
     const target = ctx.element
     const isOpen = Signal.wrap(open)
 
-    return oneof.bool(isOpen, {
-      true: () =>
-        Portal(
-          'body',
-          html.div(
-            OnMount((element: HTMLElement) => {
-              const floatingEl = element
-              floatingEl.style.position = 'absolute'
-              return autoUpdate(target, floatingEl, () => {
-                computePosition(target, floatingEl, {
-                  placement,
-                  strategy: 'absolute',
-                  middleware: [
-                    flip(),
-                    fuiOffset({ mainAxis, crossAxis }),
-                    shift(),
-                    flip(),
-                  ],
-                }).then(({ x, y }) => {
-                  floatingEl.style.top = `${y}px`
-                  floatingEl.style.left = `${x}px`
-                })
+    return When(
+      isOpen,
+      Portal(
+        'body',
+        html.div(
+          OnMount((element: HTMLElement) => {
+            const floatingEl = element
+            floatingEl.style.position = 'absolute'
+            return autoUpdate(target, floatingEl, () => {
+              computePosition(target, floatingEl, {
+                placement,
+                strategy: 'absolute',
+                middleware: [
+                  flip(),
+                  fuiOffset({ mainAxis, crossAxis }),
+                  shift(),
+                  flip(),
+                ],
+              }).then(({ x, y }) => {
+                floatingEl.style.top = `${y}px`
+                floatingEl.style.left = `${x}px`
               })
-            }),
-            content()
-          )
-        ),
-      false: () => null,
-    })(ctx)
+            })
+          }),
+          content()
+        )
+      )
+    )(ctx)
   }
 }

@@ -3,10 +3,10 @@ import {
   Empty,
   Fragment,
   OnUnmount,
-  oneof,
   useSignal,
   Signal,
   Value,
+  OneOfType,
 } from '@tempots/dom'
 import { AsyncResult } from '@tempots/std'
 
@@ -74,7 +74,7 @@ export function AsyncResultView<T, E>(
   const success = options.success
   const loading = options.loading ?? (() => Empty)
   const notAsked = options.notAsked ?? (() => Empty)
-  return oneof.type(Signal.wrap(result), {
+  return OneOfType(Signal.wrap(result), {
     AsyncSuccess: s => success(s.$.value),
     AsyncFailure: e => fail(e.$.error),
     Loading: s =>

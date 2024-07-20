@@ -2,7 +2,15 @@ import { TNode } from '../types/domain'
 import { Signal } from '../std/signal'
 import { Ensure } from './ensure'
 
-// TODO, rename to If?
+/**
+ * Renders the `then` node if the `condition` is true, otherwise renders the `otherwise` node.
+ *
+ * @param condition - The condition to evaluate.
+ * @param then - The node to render if the condition is true.
+ * @param otherwise - The node to render if the condition is false. Optional.
+ * @returns The rendered node.
+ * @public
+ */
 export const When = (
   condition: Signal<boolean>,
   then: TNode,
@@ -15,6 +23,15 @@ export const When = (
   )
 }
 
+/**
+ * Executes the `then` TNode if the `condition` Signal evaluates to `false`, otherwise executes the `otherwise` TNode.
+ *
+ * @param condition - The Signal representing the condition to evaluate.
+ * @param then - The TNode to execute if the condition is `false`.
+ * @param otherwise - The optional TNode to execute if the condition is `true`.
+ * @returns The result of executing the `then` or `otherwise` TNode based on the condition.
+ * @public
+ */
 export const Unless = (
   condition: Signal<boolean>,
   then: TNode,

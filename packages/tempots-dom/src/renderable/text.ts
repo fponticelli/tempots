@@ -2,12 +2,15 @@ import type { Renderable, Value } from '../types/domain'
 import { removeDOMNode } from '../dom/dom-utils'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
-import { maybeAddTextTracker } from '../dom/ssr'
+import { _maybeAddTextTracker } from '../dom/ssr'
 
-export const staticText =
+/**
+ * @internal
+ */
+export const _staticText =
   (text: string): Renderable =>
   (ctx: DOMContext) => {
-    maybeAddTextTracker(ctx)
+    _maybeAddTextTracker(ctx)
     const node = ctx.createText(text)
     ctx.appendOrInsert(node)
     return (removeTree: boolean) => {
@@ -17,10 +20,13 @@ export const staticText =
     }
   }
 
-export const signalText =
+/**
+ * @internal
+ */
+export const _signalText =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
-    maybeAddTextTracker(ctx)
+    _maybeAddTextTracker(ctx)
     const node = ctx.createText(signal.value)
     ctx.appendOrInsert(node)
     const clear = signal.on(v => (node.data = v))
@@ -32,10 +38,17 @@ export const signalText =
     }
   }
 
+/**
+ * Creates a renderable text node.
+ *
+ * @param value - The value of the text node.
+ * @returns A renderable text node.
+ * @public
+ */
 export function Text(value: Value<string>): Renderable {
   if (Signal.is(value)) {
-    return signalText(value as Signal<string>)
+    return _signalText(value as Signal<string>)
   } else {
-    return staticText(value as string)
+    return _staticText(value as string)
   }
 }

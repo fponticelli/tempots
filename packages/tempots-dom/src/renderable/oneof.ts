@@ -4,10 +4,30 @@ import { Computed, Signal } from '../std/signal'
 import { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 
-const oneOfRenderable =
+/**
+ * Represents a set of options for a one-of type.
+ * @typeParam T - The type of the options.
+ * @public
+ */
+export type OneOfOptions<T extends Record<string, unknown>> = {
+  [KK in keyof T]: (value: Signal<T[KK]>) => TNode
+}
+
+/**
+ * Creates a renderable function that renders different components based on the value of a signal.
+ *
+ * The signal value should be an object with a single key that matches one of the keys in the `cases` object.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param match - The signal to match against.
+ * @param cases - An object containing the different cases to render based on the signal value.
+ * @returns A renderable function that renders the appropriate component based on the signal value.
+ * @public
+ */
+export const OneOf =
   <T extends Record<string, unknown>>(
     match: Signal<T>,
-    cases: { [KK in keyof T]: (value: Signal<T[KK]>) => TNode }
+    cases: OneOfOptions<T>
   ): Renderable =>
   (ctx: DOMContext) => {
     ctx = ctx.makeRef()
@@ -37,60 +57,187 @@ const oneOfRenderable =
     }
   }
 
-export const oneof = {
-  bool: (
-    match: Signal<boolean>,
-    cases: { true: () => TNode; false: () => TNode }
-  ) =>
-    oneOfRenderable(
-      match.map(v => (v ? { true: true } : { false: true })),
-      cases
-    ),
-  field: <T extends { [_ in K]: string }, K extends string>(
-    match: Signal<T>,
-    field: K,
-    cases: {
-      [KK in T[K]]: (
-        value: Signal<T extends { [_ in K]: KK } ? T : never>
-      ) => TNode
-    }
-  ) =>
-    oneOfRenderable(
-      match.map(v => ({ [v[field]]: v })),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cases as any
-    ),
-  kind: <T extends { kind: string }>(
-    match: Signal<T>,
-    cases: {
-      [KK in T['kind']]: (
-        value: Signal<T extends { kind: KK } ? T : never>
-      ) => TNode
-    }
-  ) => oneof.field(match, 'kind', cases),
-  tuple: <T extends string, V>(
-    match: Signal<[T, V]>,
-    cases: {
-      [KK in T]: (value: Signal<V>) => TNode
-    }
-  ) => {
-    const matchRecord = match.map(([key, value]) => ({ [key]: value }))
-    return oneOfRenderable(matchRecord, cases)
+/**
+ * Represents the options for a one-of field.
+ *
+ * @typeParam T - The type containing the one-of field.
+ * @typeParam K - The key of the one-of field in the type.
+ * @public
+ */
+export type OneOfFieldOptions<
+  T extends {
+    [_ in K]: string
   },
-  type: <T extends { type: string }>(
-    match: Signal<T>,
-    cases: {
-      [KK in T['type']]: (
-        value: Signal<T extends { type: KK } ? T : never>
-      ) => TNode
-    }
-  ) => oneof.field(match, 'type', cases),
-  value: <T extends symbol | number | string>(
-    match: Signal<T>,
-    cases: { [KK in T]: () => TNode }
-  ) =>
-    oneOfRenderable(
-      match.map(v => ({ [v]: true })),
-      cases
-    ),
+  K extends string,
+> = {
+  [KK in T[K]]: (
+    value: Signal<
+      T extends {
+        [_ in K]: KK
+      }
+        ? T
+        : never
+    >
+  ) => TNode
 }
+
+/**
+ * Creates a renderable that renders different components based on the value of the specified field.
+ *
+ * @typeParam T - The type containing the one-of field.
+ * @typeParam K - The type of the one-of field key.
+ * @param match - The signal that emits the object containing the one-of field.
+ * @param field - The key of the one-of field.
+ * @param cases - The options for the different cases of rendering based on the one-of field value.
+ * @returns - The renderable field representing the one-of field.
+ * @public
+ */
+export const OneOfField = <T extends { [_ in K]: string }, K extends string>(
+  match: Signal<T>,
+  field: K,
+  cases: OneOfFieldOptions<T, K>
+) =>
+  OneOf(
+    match.map(v => ({ [v[field]]: v })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    cases as any
+  )
+
+/**
+ * The options for a one-of kind field.
+ *
+ * @typeParam T - The type that contains the `kind` property.
+ * @public
+ */
+export type OneOfKindOptions<
+  T extends {
+    kind: string
+  },
+> = {
+  [KK in T['kind']]: (
+    value: Signal<
+      T extends {
+        kind: KK
+      }
+        ? T
+        : never
+    >
+  ) => TNode
+}
+
+/**
+ * Creates a renderable field that matches the value of the `kind` property in the provided `match` signal.
+ *
+ * It uses the `cases` object to determine the appropriate field to render based on the value of `kind`.
+ *
+ * @typeParam T - The type of the object with a `kind` property.
+ * @param match - The signal containing the object to match against.
+ * @param cases - The object containing the cases to match against.
+ * @returns - The renderable field that matches the value of `kind`.
+ * @public
+ */
+export const OneOfKind = <T extends { kind: string }>(
+  match: Signal<T>,
+  cases: OneOfKindOptions<T>
+) => OneOfField(match, 'kind', cases)
+
+/**
+ * Represents a mapping of keys to functions that accept a value of type `Signal<V>`
+ * and return a `TNode`.
+ *
+ * @typeParam T - The union type of keys.
+ * @typeParam V - The type of the value accepted by the functions.
+ * @public
+ */
+export type OneOfTupleOptions<T extends string, V> = {
+  [KK in T]: (value: Signal<V>) => TNode
+}
+
+/**
+ * Creates a tuple-based one-of component that matches a signal value with a set of cases.
+ *
+ * The signal value should be a tuple with the first element being the key to match against.
+ *
+ * @param match - The signal containing the value to match.
+ * @param cases - The options for the one-of component.
+ * @returns The result of matching the signal value with the cases.
+ * @public
+ */
+export const OneOfTuple = <T extends string, V>(
+  match: Signal<[T, V]>,
+  cases: OneOfTupleOptions<T, V>
+) => {
+  const matchRecord = match.map(([key, value]) => ({ [key]: value }))
+  return OneOf(matchRecord, cases)
+}
+
+/**
+ * Represents a mapping of types to rendering functions.
+ * @typeParam T - The type that contains a `type` property.
+ * @public
+ */
+export type OneOfTypeOptions<
+  T extends {
+    type: string
+  },
+> = {
+  /**
+   * Represents a rendering function for a specific type.
+   * @param value - The value of type `T` or `never` if the type doesn't match.
+   * @returns The rendered node.
+   */
+  [KK in T['type']]: (
+    value: Signal<
+      T extends {
+        type: KK
+      }
+        ? T
+        : never
+    >
+  ) => TNode
+}
+
+/**
+ * Creates a field that renders one of the provided cases based on the value of the `type` property.
+ *
+ * It uses the `cases` object to determine the appropriate field to render based on the value of `type`.
+ *
+ * @typeParam T - The type of the object with a `type` property.
+ * @param match - The signal that contains the object with the `type` property.
+ * @param cases - The options for rendering each case based on the `type` property.
+ * @returns - The rendered field.
+ * @public
+ */
+export const OneOfType = <T extends { type: string }>(
+  match: Signal<T>,
+  cases: OneOfTypeOptions<T>
+) => OneOfField(match, 'type', cases)
+
+/**
+ * Represents a set of options for a one-of value.
+ * @typeParam T - The type of the one-of value.
+ * @public
+ */
+export type OneOfValueOptions<T extends symbol | number | string> = {
+  [KK in T]: () => TNode
+}
+
+/**
+ * Creates a renderable value that represents one of the provided cases based on the given match signal.
+ *
+ * The match signal should emit a value that matches one of the keys in the `cases` object.
+ *
+ * @typeParam T - The type of the match signal value.
+ * @param match - The match signal.
+ * @param cases - The options for the one-of value.
+ * @returns - The renderable value representing one of the cases.
+ * @public
+ */
+export const OneOfValue = <T extends symbol | number | string>(
+  match: Signal<T>,
+  cases: OneOfValueOptions<T>
+) =>
+  OneOf(
+    match.map(v => ({ [v]: true })),
+    cases
+  )

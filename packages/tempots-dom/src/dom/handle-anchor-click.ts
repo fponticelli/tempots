@@ -45,6 +45,7 @@ function shouldNotApplyCallback(
 
 /**
  * Options for handling anchor click events.
+ * @public
  */
 export type HandleAnchorClickOptions = {
   /**

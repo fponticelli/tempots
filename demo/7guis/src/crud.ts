@@ -4,10 +4,10 @@ import {
   attr,
   type Renderable,
   on,
-  emit,
   useComputed,
   useProp,
   ForEach,
+  EmitValue,
 } from '@tempots/dom'
 import { Button, InputText, Select } from './ui'
 import { flex } from './components/flex'
@@ -49,7 +49,7 @@ export function Crud(): Renderable {
         html.span(attr.class('w-20'), Txt('Name: ')),
         InputText(
           on.input(
-            emit.value((value: string) =>
+            EmitValue((value: string) =>
               person.update(curr => ({
                 ...(curr ?? { id: 0, surname: surname.value }),
                 name: value,
@@ -64,7 +64,7 @@ export function Crud(): Renderable {
         html.span(attr.class('w-20'), Txt('Surname: ')),
         InputText(
           on.input(
-            emit.value((value: string) =>
+            EmitValue((value: string) =>
               person.update(curr => ({
                 ...(curr ?? { id: 0, name: name.value }),
                 surname: value,
@@ -133,7 +133,7 @@ export function Crud(): Renderable {
         Txt('Filter prefix: '),
         InputText(
           attr.value(filter),
-          on.input(emit.value((value: string) => filter.set(value)))
+          on.input(EmitValue((value: string) => filter.set(value)))
         ),
         Button(
           'Clear',
@@ -145,7 +145,7 @@ export function Crud(): Renderable {
           attr.class('w-full'),
           attr.size(5),
           on.change(
-            emit.value((value: string) => {
+            EmitValue((value: string) => {
               currentId.set(value)
               person.set(db.value[value])
             })

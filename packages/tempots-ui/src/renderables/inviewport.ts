@@ -1,5 +1,4 @@
 import {
-  ssr,
   Prop,
   Signal,
   useProp,
@@ -11,6 +10,7 @@ import {
   OnUnmount,
   OnMount,
   When,
+  isSSR,
 } from '@tempots/dom'
 
 /**
@@ -69,7 +69,7 @@ export function InViewport(
   mode: InViewportMode,
   fn: (value: Signal<boolean>) => TNode
 ): Renderable {
-  const signal = useProp(ssr.isSSR())
+  const signal = useProp(isSSR())
   return Fragment(
     OnMount((el: HTMLElement) => {
       const observer =
