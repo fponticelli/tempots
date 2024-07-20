@@ -4,6 +4,7 @@ import {
   createFilledArray,
   generateArray,
 } from './array'
+import { MissingImplementationError } from './error'
 import { mapRegExp as mapR } from './regexp'
 
 /**
@@ -1060,7 +1061,9 @@ export function encodeBase64(s: string): string {
   } else if (typeof btoa !== 'undefined') {
     return btoa(s)
   } else {
-    throw new Error('no implementation found for base64 encoding')
+    throw new MissingImplementationError(
+      'No implementation found for base64 encoding'
+    )
   }
 }
 
@@ -1078,7 +1081,9 @@ export function decodeBase64(s: string): string {
   } else if (typeof atob !== 'undefined') {
     return atob(s)
   } else {
-    throw new Error('no implementation found for base64 decoding')
+    throw new MissingImplementationError(
+      'No implementation found for base64 decoding'
+    )
   }
 }
 

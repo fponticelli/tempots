@@ -1,3 +1,5 @@
+import { ArgumentError } from './error'
+
 /**
  * Calculates the ceiling division of two BigInt numbers.
  *
@@ -87,7 +89,8 @@ export function biMax(x: bigint, y: bigint): bigint {
  * @throws Error If the exponent `y` is negative.
  */
 export function biPow(x: bigint, y: bigint): bigint {
-  if (y < 0n) throw new Error('negative exponent')
+  if (y < 0n)
+    throw new ArgumentError('negative exponent for parameter y of biPow')
   let result = 1n
   while (y > 0n) {
     if ((y & 1n) !== 0n) result *= x
@@ -173,7 +176,7 @@ export function biNextPrime(x: bigint): bigint {
  * @throws Error if there is no previous prime.
  */
 export function biPrevPrime(x: bigint): bigint {
-  if (x <= 2n) throw new Error('no previous prime')
+  if (x <= 2n) throw new ArgumentError(`no previous prime ${x} for biPrevPrime`)
   if (x === 3n) return 2n
   if (x % 2n === 0n) x--
   else x -= 2n

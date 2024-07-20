@@ -2,6 +2,8 @@
  * Utility functions to manipulate `boolean` values.
  */
 
+import { ParsingError } from './error'
+
 /**
  * Returns a comparison value (`Int`) from two boolean values.
  *
@@ -75,7 +77,7 @@ export function parseBoolean(v: string): boolean {
     case 'off':
       return false
     default:
-      throw new Error(`unable to parse '${v}'`)
+      throw new ParsingError(`unable to parse '${v}' to boolean`)
   }
 }
 

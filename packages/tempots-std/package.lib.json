@@ -49,6 +49,10 @@
       "import": "./equal.js",
       "require": "./equal.cjs"
     },
+    "./error": {
+      "import": "./error.js",
+      "require": "./error.cjs"
+    },
     "./function": {
       "import": "./function.js",
       "require": "./function.cjs"
@@ -64,6 +68,10 @@
     "./object": {
       "import": "./object.js",
       "require": "./object.cjs"
+    },
+    "./promise": {
+      "import": "./promise.js",
+      "require": "./promise.cjs"
     },
     "./regexp": {
       "import": "./regexp.js",
@@ -110,6 +118,9 @@
       "equal": [
         "./equal.d.ts"
       ],
+      "error": [
+        "./error.d.ts"
+      ],
       "function": [
         "./function.d.ts"
       ],
@@ -121,6 +132,9 @@
       ],
       "object": [
         "./object.d.ts"
+      ],
+      "promise": [
+        "./promise.d.ts"
       ],
       "regexp": [
         "./regexp.d.ts"
