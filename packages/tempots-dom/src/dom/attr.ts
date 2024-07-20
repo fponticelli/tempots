@@ -18,10 +18,10 @@ const stringProperties = new Set([
 
 const cache = new Map<string, (element: Element, value: unknown) => void>()
 
-function getOrCreate(
+const getOrCreate = (
   attributeName: string,
   make: (attributeName: string) => (element: Element, value: unknown) => void
-): (element: Element, value: unknown) => void {
+): ((element: Element, value: unknown) => void) => {
   if (cache.has(attributeName)) {
     return cache.get(attributeName)!
   } else {
@@ -40,9 +40,10 @@ function getOrCreate(
  * @param attributeName - The name of the boolean property to set.
  * @returns A function that takes an `Element` and a `value` and sets the
  * boolean property on the element.
+ * @public
  */
-export function setBooleanProperty(attributeName: string) {
-  return (element: Element, value: unknown) => {
+export const setBooleanProperty =
+  (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(element as any)[attributeName] = null
@@ -51,7 +52,6 @@ export function setBooleanProperty(attributeName: string) {
       ;(element as any)[attributeName] = Boolean(value)
     }
   }
-}
 
 /**
  * Sets a numeric property on an HTML element.
@@ -61,9 +61,10 @@ export function setBooleanProperty(attributeName: string) {
  *
  * @param attributeName - The name of the property to set on the element.
  * @returns A function that takes an `Element` and a `value` and sets the property.
+ * @public
  */
-export function setNumberProperty(attributeName: string) {
-  return (element: Element, value: unknown) => {
+export const setNumberProperty =
+  (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(element as any)[attributeName] = null
@@ -72,7 +73,6 @@ export function setNumberProperty(attributeName: string) {
       ;(element as any)[attributeName] = Number(value)
     }
   }
-}
 
 /**
  * Sets a date property on an element.
@@ -83,9 +83,10 @@ export function setNumberProperty(attributeName: string) {
  * @param attributeName - The name of the date property to set on the element.
  * @returns A function that takes an element and a value, and sets the date
  * property on the element.
+ * @public
  */
-export function setDateProperty(attributeName: string) {
-  return (element: Element, value: unknown) => {
+export const setDateProperty =
+  (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(element as any)[attributeName] = null
@@ -94,7 +95,6 @@ export function setDateProperty(attributeName: string) {
       ;(element as any)[attributeName] = value
     }
   }
-}
 
 /**
  * Sets a string property on an `Element` object.
@@ -104,9 +104,10 @@ export function setDateProperty(attributeName: string) {
  *
  * @param attributeName - The name of the property to set on the `Element`.
  * @returns A function that takes an `Element` and a `value` and sets the property.
+ * @public
  */
-export function setStringProperty(attributeName: string) {
-  return (element: Element, value: unknown) => {
+export const setStringProperty =
+  (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(element as any)[attributeName] = null
@@ -115,7 +116,6 @@ export function setStringProperty(attributeName: string) {
       ;(element as any)[attributeName] = String(value)
     }
   }
-}
 
 /**
  * Sets the specified attribute on the given element to the provided value.
@@ -123,16 +123,16 @@ export function setStringProperty(attributeName: string) {
  *
  * @param attributeName - The name of the attribute to set.
  * @returns A function that takes an element and a value, and sets the attribute on the element.
+ * @public
  */
-export function setAttribute(attributeName: string) {
-  return (element: Element, value: unknown) => {
+export const setAttribute =
+  (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       element.removeAttribute(attributeName)
     } else {
       element.setAttribute(attributeName, value as string)
     }
   }
-}
 
 /**
  * Creates a setter function for an element attribute based on the attribute's type.
@@ -143,10 +143,11 @@ export function setAttribute(attributeName: string) {
  *
  * @param attributeName - The name of the attribute to create a setter for.
  * @returns A function that sets the attribute value on an element.
+ * @public
  */
-export function makeSetter(
+export const makeSetter = (
   attributeName: string
-): (element: Element, value: unknown) => void {
+): ((element: Element, value: unknown) => void) => {
   if (boolProperties.has(attributeName)) {
     return getOrCreate(attributeName, setBooleanProperty)
   } else if (numberProperties.has(attributeName)) {
@@ -170,9 +171,11 @@ export function makeSetter(
  * @param attributeName - The name of the HTML element attribute to get.
  * @returns A function that takes an `Element` and returns the value of the
  * specified attribute.
+ * @public
  */
-export function makeGetter<T>(attributeName: string): (element: Element) => T {
-  return (element: Element) => {
+export const makeGetter =
+  <T>(attributeName: string): ((element: Element) => T) =>
+  (element: Element) => {
     if (boolProperties.has(attributeName)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return Boolean((element as any)[attributeName])
@@ -189,4 +192,3 @@ export function makeGetter<T>(attributeName: string): (element: Element) => T {
       return element.getAttribute(attributeName)
     }
   }
-}

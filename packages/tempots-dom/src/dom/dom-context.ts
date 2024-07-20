@@ -6,6 +6,8 @@ import type { ProviderMark, Providers } from '../types/domain'
  *
  * A reference in a DOMContext is to mark a position within a set of sibblings.
  * It is used to insert new elements before the reference.
+ *
+ * @public
  */
 export class DOMContext {
   /**

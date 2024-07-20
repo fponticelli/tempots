@@ -2,8 +2,9 @@
  * Removes the specified node from the DOM.
  *
  * @param node - The node to be removed from the DOM.
+ * @public
  */
-export function removeDOMNode(node: Node) {
+export const removeDOMNode = (node: Node) => {
   const el = node as HTMLElement
   if (el && el.onblur) {
     el.onblur = null
@@ -20,17 +21,16 @@ export function removeDOMNode(node: Node) {
  *
  * @param node - The `Node` to get the `Element` for.
  * @returns The `Element` for the given `node`.
+ * @public
  */
-export function getSelfOrParentElement(node: Node): Element {
-  return isElement(node) ? node : node.parentElement!
-}
+export const getSelfOrParentElement = (node: Node): Element =>
+  isElement(node) ? node : node.parentElement!
 
 /**
  * Determines if the given `Node` is an `Element`.
  *
  * @param node - The `Node` to check.
  * @returns `true` if the `node` is an `Element`, `false` otherwise.
+ * @public
  */
-export function isElement(node: Node): node is Element {
-  return node.nodeType === 1 // Node.ELEMENT_NODE
-}
+export const isElement = (node: Node): node is Element => node.nodeType === 1 // Node.ELEMENT_NODE

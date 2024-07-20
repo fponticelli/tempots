@@ -43,8 +43,17 @@ function shouldNotApplyCallback(
   return false
 }
 
+/**
+ * Options for handling anchor click events.
+ */
 export type HandleAnchorClickOptions = {
+  /**
+   * A boolean indicating whether to check the anchor's href for a file extension.
+   */
   checkExtension?: boolean
+  /**
+   * A boolean indicating whether to check if the anchor's href points to an external URL.
+   */
   checkExternalUrl?: boolean
 }
 
@@ -56,6 +65,7 @@ export type HandleAnchorClickOptions = {
  *   - `checkExtension`: A boolean indicating whether to check the anchor's href for a file extension. Defaults to `true`.
  *   - `checkExternalUrl`: A boolean indicating whether to check if the anchor's href points to an external URL. Defaults to `true`.
  * @returns A function that handles the anchor click event, calling the provided callback and preventing the default behavior if the callback returns `true`.
+ * @public
  */
 export const handleAnchorClick =
   (
