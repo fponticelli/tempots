@@ -5,313 +5,75 @@ description: Signals are the reactive data stores. They are used to manage state
 ---
 # Signals
 
+Signals are the reactive data stores. They are used to manage state and notify state changes.
+
 ## Create signals
 
-```ts
-function computed&lt;T&gt;(
-  fn: () =&gt; T,
-  signals: Array&lt;AnySignal&gt;,
-  equals: (a: T, b: T) =&gt; boolean = (a, b) =&gt; a === b
-): Computed&lt;T&gt;
+There are three types of signals: `Signal`, `Prop`, and `Computed`. A `Signal` is a readonly object that can be observed but not updated. A `Prop` is a writable object that can be updated. A `Computed` is a readonly object that is derived from other signals.
+
+To create a signal, use the `useSignal()`, `useProp()`, and `useComputed()` functions.
+
+```tsx
+// create a signal that cannot be updated
+const signal = useSignal(0)
+
+// create a signal that can be updated
+const prop = useProp(0)
+prop.value = 1
+console.log(prop.value) // 1
+
+// create a computed signal
+const computed = useComputed(() => signal.value + prop.value, [signal, prop])
 ```
 
-```ts
-function effect(fn: () =&gt; void, signals: Array&lt;AnySignal&gt;) =&gt; () =&gt; void
-```
+When you create a Computed signal, you need to provide a function that returns the value of the signal. The function will be called whenever the dependency signals in the second argument change. There is no magic here, if you don't provide the dependency signals, the computed signal will not update.
+
+Signals can also be created from promises using the `Signal.ofPromise()` static method.
 
 ```ts
-function prop&lt;T&gt;(
-  value: T,
-  equals: (a: T, b: T) =&gt; boolean = (a, b) =&gt; a === b
-): Prop&lt;T&gt;
+const signal = Signal.ofPromise(fetchRemoteData(), [])
 ```
+
+The first argument is a promise that resolves to the value of the signal. The second argument is a default value that is used until the promise resolves.
+
+## Read signals
+
+Once you have a signal, you can read its value using the `value` property (or `get()` function). You generally don't access the `value` property directly unless you are referring it within an event handler or a computed signal.
+
+Since signals are reactive, you can listen to changes using the `on()` method. The method returns a function that you can call to stop listening to changes.
+
+This is how tempo monitors changes and updates the DOM.
+
+When you add a callback to a signal, the callback is called immediately with the current value of the signal.
+
+## Modify props
+
+You can update a prop using the `set()` method or using the `value` setter. They both take a new value and update the signal. You can also update a prop using the `update()` method. The method takes a function that receives the current value and returns the new value.
 
 ```ts
-function signal&lt;T&gt;(
-  value: T,
-  equals: (a: T, b: T) =&gt; boolean = (a, b) =&gt; a === b
-): Signal&lt;T&gt;
+const prop = useProp(0)
+prop.set(1)
+prop.value = 2
+prop.update(v => v + 1)
 ```
 
-## The Signal class
+## Effects
+
+You can also create side effects using the `useEffect()` function. The function takes a function that performs the side effect and an array of signals that the side effect depends on. The function is called immediately and whenever the dependency signals change. The function returns a function that you can call to stop the side effect.
+
+## Transform signals
+
+You can transform signals using the `map()`, `filter()`, `flatMap()`, and other functions. These functions create a new signal that is derived from the original signal.
+
+Since you will often work with signals of objects, you might find the `$` property useful. `$` is an object that contains signals for each property of the object. This makes it easy to work with signals of objects.
 
 ```ts
-static ofPromise&lt;T&gt;(
-  promise: Promise&lt;T&gt;,
-  init: T,
-  recover?: (error: unknown) =&gt; T,
-  equals: (a: T, b: T) =&gt; boolean = (a, b) =&gt; a === b
-): Signal&lt;T&gt;
+const prop = useProp({ name: 'John', age: 30 })
+console.log(prop.$.name.value) // John
 ```
 
-```ts
-static is&lt;T = unknown&gt;(value: unknown): value is Signal&lt;T&gt;
-```
+The `at()` function is equivalent to `$` but it takes a key as an argument.
 
-```ts
-static wrap&lt;T&gt;(
-  value: T | Signal&lt;T&gt;,
-  equals: (a: T, b: T) =&gt; boolean = (a, b) =&gt; a === b
-): Signal&lt;T&gt;
-```
+## Next Steps
 
-```ts
-static maybeWrap&lt;T&gt;(
-  value: T | Signal&lt;T&gt; | null | undefined
-): Signal&lt;T&gt; | undefined | null
-```
-
-```ts
-static unwrap&lt;T&gt;(value: Signal&lt;T&gt; | T): T
-```
-
-```ts
-static map&lt;T, U&gt;(value: Value&lt;T&gt;, fn: (value: T) =&gt; U): Value&lt;U&gt;
-```
-
-```ts
-get value(): T
-```
-
-```ts
-readonly hasListeners: () =&gt; boolean
-```
-
-```ts
-readonly on: (listener: (value: T) =&gt; void) =&gt; () =&gt; void
-```
-
-```ts
-readonly isDisposed: () =&gt; boolean
-```
-
-```ts
-readonly onDispose: (listener: () =&gt; void) =&gt; void
-```
-
-```ts
-readonly dispose: () =&gt; void
-```
-
-```ts
-readonly map: &lt;U&gt;(
-  fn: (value: T) =&gt; U,
-  equals: (a: U, b: U) =&gt; boolean = (a, b) =&gt; a === b
-) =&gt; Computed&lt;U&gt;
-```
-
-```ts
-readonly flatMap: &lt;U&gt;(
-  fn: (value: T) =&gt; Signal&lt;U&gt;,
-  equals: (a: U, b: U) =&gt; boolean = (a, b) =&gt; a === b
-) =&gt; Computed&lt;U&gt;
-```
-
-```ts
-readonly tap: (fn: (value: T) =&gt; void) =&gt; void
-```
-
-```ts
-readonly at: &lt;K extends keyof T&gt;(key: K) =&gt; Signal&lt;T[K]&gt;
-```
-
-```ts
-readonly $: { [K in keyof T]: Signal&lt;T[K]&gt; }
-```
-
-```ts
-readonly filter: (fn: (value: T) =&gt; boolean, startValue?: T) =&gt; Computed&lt;T&gt;
-```
-
-```ts
-readonly filterMap: &lt;U&gt;(
-  fn: (value: T) =&gt; U | undefined | null,
-  startValue: U,
-  equals: (a: U, b: U) =&gt; boolean = (a, b) =&gt; a === b
-) =&gt; Computed&lt;U&gt;
-```
-
-```ts
-readonly mapAsync: &lt;U&gt;(
-  fn: (value: T) =&gt; Promise&lt;U&gt;,
-  alt: U,
-  recover?: (error: unknown) =&gt; U,
-  equals: (a: U, b: U) =&gt; boolean = (a, b) =&gt; a === b
-) =&gt; Computed&lt;U&gt;
-```
-
-```ts
-readonly mapMaybe: &lt;U&gt;(fn: (value: T) =&gt; U | undefined | null, alt: U) =&gt; Computed&lt;U&gt;
-```
-
-```ts
-readonly deriveProp: (autoDisposeProp = true) =&gt; Prop&lt;T&gt;
-```
-
-```ts
-readonly count: () =&gt; Computed&lt;number&gt;
-```
-
-```ts
-readonly setDerivative: &lt;U&gt;(computed: Computed&lt;U&gt;) =&gt; void
-```
-
-## The Computed class
-
-```ts
-class Computed&lt;T&gt; extends Signal&lt;T&gt;
-```
-
-```ts
-static is&lt;T = unknown&gt;(value: unknown): value is Computed&lt;T&gt;
-```
-
-```ts
-type ReducerEffect&lt;S, A&gt; = (data: {
-  previousState: S
-  state: S
-  action: A
-  dispatch: (action: A) =&gt; void
-}) =&gt; void
-```
-
-## The Prop class
-
-```ts
-class Prop&lt;T&gt; extends Signal&lt;T&gt;
-```
-
-```ts
-static is&lt;T = unknown&gt;(value: unknown): value is Prop&lt;T&gt;
-```
-
-```ts
-readonly set: (value: T) =&gt; void
-```
-
-```ts
-readonly update: (fn: (value: T) =&gt; T) =&gt; void
-```
-
-```ts
-readonly reducer = &lt;A&gt;(
-  fn: (acc: T, value: A) =&gt; T,
-  ...effects: ReducerEffect&lt;T, A&gt;[]
-) =&gt; (action: A) =&gt; void
-```
-
-```ts
-readonly iso: &lt;U&gt;(
-  to: (value: T) =&gt; U,
-  from: (value: U) =&gt; T,
-  equals: (a: U, b: U) =&gt; boolean = (a, b) =&gt; a === b
-) =&gt; Prop&lt;U&gt;
-```
-
-```ts
-readonly atProp: &lt;K extends keyof T&gt;(key: K): Prop&lt;T[K]&gt; =&gt; Prop&lt;T[K]&gt;
-```
-
-```ts
-get value(): T
-```
-
-```ts
-set value(value: T): T
-```
-
-## Utility functions
-
-```ts
-function propOfStorage&lt;T&gt;({
-  key,
-  defaultValue,
-  store,
-  serialize = JSON.stringify,
-  deserialize = JSON.parse,
-  equals = (a, b) =&gt; a === b,
-  onLoad = value =&gt; value,
-}: {
-  key: string
-  defaultValue: T | (() =&gt; T)
-  store: {
-    getItem: (key: string) =&gt; string | null
-    setItem: (key: string, value: string) =&gt; void
-  }
-  serialize?: (v: T) =&gt; string
-  deserialize?: (v: string) =&gt; T
-  equals?: (a: T, b: T) =&gt; boolean
-  onLoad?: (value: T) =&gt; T
-}): Prop&lt;T&gt;
-```
-
-```ts
-function propOfLocalStorage&lt;T&gt;(options: {
-  key: string
-  defaultValue: T | (() =&gt; T)
-  serialize?: (v: T) =&gt; string
-  deserialize?: (v: string) =&gt; T
-  equals?: (a: T, b: T) =&gt; boolean
-  onLoad?: (value: T) =&gt; T
-}): Prop&lt;T&gt;
-```
-
-```ts
-function propOfSessionStorage&lt;T&gt;(options: {
-  key: string
-  defaultValue: T | (() =&gt; T)
-  serialize?: (v: T) =&gt; string
-  deserialize?: (v: string) =&gt; T
-  equals?: (a: T, b: T) =&gt; boolean
-  onLoad?: (value: T) =&gt; T
-}): Prop&lt;T&gt;
-```
-
-```ts
-function animate&lt;T&gt;(
-  initialValue: T,
-  fn: () =&gt; T,
-  signals: Array&lt;AnySignal&gt;,
-  options?: {
-    interpolate?: (start: T, end: T, delta: number) =&gt; T
-    duration?: Value&lt;number&gt;
-    easing?: (t: number) =&gt; number
-    equals?: (a: T, b: T) =&gt; boolean
-  }
-): Prop&lt;T&gt;
-```
-
-```ts
-function animateOne&lt;T&gt;(
-  signal: Signal&lt;T&gt;,
-  options?: {
-    initialValue?: T
-    interpolate?: (start: T, end: T, delta: number) =&gt; T
-    duration?: number
-    easing?: (t: number) =&gt; number
-    equals?: (a: T, b: T) =&gt; boolean
-  }
-): Prop&lt;T&gt;
-```
-
-```ts
-type Value&lt;T&gt; = Signal&lt;T&gt; | T
-type NValue&lt;T&gt; =
-  | Value&lt;T&gt;
-  | Value&lt;T | null&gt;
-  | Value&lt;T | undefined&gt;
-  | Value&lt;T | null | undefined&gt;
-  | null
-  | undefined
-```
-
-```ts
-type GetValueType&lt;T&gt; = T extends Signal&lt;infer V&gt; ? V : T
-```
-
-```ts
-function computedRecord&lt;T extends Record&lt;string, Value&lt;unknown&gt;&gt;, U&gt;(
-  record: T,
-  fn: (value: RemoveSignals&lt;T&gt;) =&gt; U
-): Computed&lt;U&gt;
-```
+- [Learn more about render](/page/render)

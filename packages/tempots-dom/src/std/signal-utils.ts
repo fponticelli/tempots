@@ -361,7 +361,7 @@ export const animateSignal = <T>(
  * @returns - The computed value as a signal.
  * @public
  */
-export const computedRecord = <T extends Record<string, Value<unknown>>, O>(
+export const useComputedRecord = <T extends Record<string, Value<unknown>>, O>(
   record: T,
   fn: (value: RemoveSignals<T>) => O
 ) => {

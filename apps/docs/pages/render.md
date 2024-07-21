@@ -31,3 +31,13 @@ function render(
 ```ts
 function renderWithContext(node: Renderable, ctx: DOMContext): () =&gt; void
 ```
+
+## Next Steps
+
+Check the API documentation for the Tempo libraries:
+
+- [@tempots/dom](/library/tempots-dom)
+- [@tempots/std](/library/tempots-std)
+- [@tempots/ui](/library/tempots-ui)
+- [@tempots/ssr](/library/tempots-ssr)
+- [@tempots/color](/library/tempots-color)

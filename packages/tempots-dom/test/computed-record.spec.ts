@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { GetValueType, computedRecord, useProp } from "../src";
+import { GetValueType, useComputedRecord, useProp } from "../src";
 import { sleep } from "./helper";
 
 describe("computedRecord", () => {
   test("literals only", () => {
-    const s = computedRecord({
+    const s = useComputedRecord({
       a: "A",
       n: 1
     }, ({ a, n }) => `${a}:${n * 2}`);
@@ -13,7 +13,7 @@ describe("computedRecord", () => {
   test("signls only", async () => {
     const a = useProp("A")
     const n = useProp(1)
-    const s = computedRecord(
+    const s = useComputedRecord(
       { a, n },
       ({ a, n }) => `${a}:${n * 2}`
     );
@@ -29,7 +29,7 @@ describe("computedRecord", () => {
   });
   test("mixes", async () => {
     const a = useProp("A")
-    const s = computedRecord(
+    const s = useComputedRecord(
       { a, n: 1 },
       ({ a, n }) => `${a}:${n * 2}`
     );

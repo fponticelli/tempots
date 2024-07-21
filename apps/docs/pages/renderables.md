@@ -41,49 +41,41 @@ const OnChecked = (fn: (event: boolean) =&gt; void) =&gt; Renderable
 
 ### emit
 
-#### emit.value
+#### EmitValue
 
-#### emit.valueAsNumber
+#### EmitValueAsNumber
 
-#### emit.valueAsDate
+#### EmitValueAsDate
 
-#### emit.valueAsDateTime
+#### EmitValueAsDateTime
 
-#### emit.checked
+#### EmitChecked
 
-#### emit.preventDefault
+#### EmitPreventDefault
 
-#### emit.stopPropagation
+#### EmitStopPropagation
 
-#### emit.stopImmediatePropagation
+#### EmitStopImmediatePropagation
 
 ## input elements
 
 ### input.*
 
-### bind.*
+### bind
 
-#### bind.date
+#### BindDate
 
-#### bind.dateTime
+#### BindDateTime
 
-#### bind.number
+#### BindNumber
 
-#### bind.text
+#### BindText
 
-#### bind.checked
+#### BindChecked
 
 ## Conditionals
 
 ### When/Unless
-
-```ts
-const When = (
-  condition: Signal&lt;boolean&gt;,
-  then: TNode,
-  otherwise?: TNode
-) =&gt; Renderable
-```
 
 ### Empty
 
@@ -93,83 +85,39 @@ const When = (
 
 ### oneof
 
-### oneof.bool
+### OneofBool
 
-### oneof.field
+### OneofField
 
-### oneof.kind
+### OneofKind
 
-### oneof.tuple
+### OneofTuple
 
-### oneof.type
+### OneofType
 
-### oneof.value
+### OneofValue
 
 ## Loops
 
 ### Repeat
 
-```ts
-const Repeat = (
-  times: Signal&lt;number&gt;,
-  element: (index: Signal&lt;Position&gt;) =&gt; TNode,
-  separator?: (pos: Signal&lt;Position&gt;) =&gt; TNode
-): Renderable
-```
-
 ### ForEach
-
-```ts
-const ForEach = &lt;T&gt;(
-  signal: Signal&lt;T[]&gt;,
-  item: (value: Signal&lt;T&gt;, position: Signal&lt;Position&gt;) =&gt; TNode,
-  separator?: (pos: Signal&lt;Position&gt;) =&gt; TNode
-): Renderable
-```
 
 ### Conjunction
 
 ### NotEmpty
 
-```ts
-function NotEmpty&lt;T&gt;(
-  signal: Signal&lt;T[]&gt;,
-  display: Renderable,
-  whenEmpty: Renderable = Empty
-): Renderable
-```
-
 ## Lifecycle
 
 ### OnMount
 
-```ts
-const OnMount =
-  &lt;T extends Element&gt;(
-    fn: (element: T) =&gt; Clear | undefined | void
-  ): Renderable
-```
-
 ### OnUnmount
 
-```ts
-const OnUnmount =
-  (fn: (removeTree: boolean, ctx: DOMContext) =&gt; void): Renderable
-```
-
 ### OnCtx
-
-```ts
-const OnCtx = (fn: (ctx: DOMContext) =&gt; Clear) =&gt; Renderable
-```
 
 ## Other
 
 ### Fragment
-
-```ts
-const Fragment = (...children: TNode[]) =&gt; Renderable
-```
 
 ### MapSignal
 
@@ -193,37 +141,17 @@ const Fragment = (...children: TNode[]) =&gt; Renderable
 
 ### Task
 
-```ts
-const Task = &lt;T&gt;(
-  task: () =&gt; Promise&lt;T&gt;,
-  options:
-    | {
-        pending?: TNode
-        then: (value: T) =&gt; TNode
-        error?: (error: unknown) =&gt; TNode
-      }
-    | ((value: T) =&gt; TNode)
-) =&gt; Renderable
-```
-
 ### Async
 
 ## MapSignal
-
-```ts
-const MapSignal = &lt;T&gt;(
-  signal: Signal&lt;T&gt;,
-  fn: (value: T) =&gt; Renderable
-): Renderable
-```
 
 ## DOM
 
 ### Portal
 
-```ts
-const Portal = (selector: string, node: TNode) =&gt; Renderable
-```
-
 ### DomEl
 
+## Next Steps
+
+- [Learn more about Signals](/page/signals)
+- [Learn more about render](/page/render)

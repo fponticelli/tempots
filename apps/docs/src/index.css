@@ -7,24 +7,24 @@
     max-width: 60rem;
 
     h1 {
-      @apply text-4xl font-bold my-3;
+      @apply text-4xl font-bold my-4;
     }
     h2 {
-      @apply text-3xl font-bold my-2;
+      @apply text-2xl font-bold my-4;
     }
     h3 {
-      @apply text-2xl font-bold my-2;
+      @apply text-xl font-bold my-4;
     }
     h4 {
-      @apply text-xl font-bold my-1;
+      @apply text-lg font-bold my-4;
     }
     h5 {
-      @apply text-lg font-bold my-1;
+      @apply font-bold my-4;
     }
 
 
     :not(pre) > code {
-      @apply font-mono px-1 bg-gray-800 text-gray-200 rounded text-sm;
+      @apply font-mono mx-0.5 px-1 bg-gray-800 text-gray-200 rounded text-sm;
     }
 
     pre {

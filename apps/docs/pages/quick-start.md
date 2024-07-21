@@ -74,4 +74,6 @@ Note that differently from other frameworks, Tempo does not make a distinction b
 
 - [Installation](/page/installation)
 - Learn more about [how Tempo works](/page/how-it-works)
-
+- [Renderables](/page/renderables), the building blocks of Tempo applications
+- [Signals](/page/signals), the reactive core of Tempo
+- [Render](/page/render), the function to apply Renderables to the DOM

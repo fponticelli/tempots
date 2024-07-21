@@ -63,3 +63,9 @@ The `DOMContext` object, passed to the Renderable function, provides access to t
 The reference node, `TextNode` with an empty string, acts as a placeholder when elements are added or removed between siblings. It’s useful for `Renderables` like `ForEach` or `When`, which need to track element positions in the DOM.
 
 Additionally, `DOMContext` contains a collection of providers for shared state between Renderables, avoiding prop drilling and keeping the API clean. The `isFirstLevel` property, still experimental, marks nodes for server-side rendering and hydration.
+
+## Next Steps
+
+- [Learn more about Renderables](/page/renderables)
+- [Learn more about Signals](/page/signals)
+- [Learn more about render](/page/render)
