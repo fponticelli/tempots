@@ -11,7 +11,7 @@ const pubFolder = path.join(docsFolder, 'public')
 const assetsFolderSrc = path.join(docsFolder, 'assets')
 const assetsFolderDst = path.join(pubFolder, 'assets')
 const demoFolderSrc = path.join(rootFolder, 'demo')
-const demoFolderDst = path.join(pubFolder, 'demo')
+const demoFolderDst = path.join(pubFolder, 'demos')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
 const librariesFolderSrc = path.join(rootFolder, 'packages')
@@ -21,22 +21,6 @@ const apiFolderDst = path.join(pubFolder, 'api')
 const tocFile = path.join(pubFolder, 'toc.json')
 const cnameFile = path.join(pubFolder, 'CNAME')
 const nojekyll = path.join(pubFolder, '.nojekyll')
-
-// const renameHtml = (path: string) => {
-//   const hasLeadingHash = path.startsWith('#')
-//   const parts = path.split('#').filter(a => !!a)
-//   if (!parts[0].endsWith('.html')) return path
-//   function processPart(part: string) {
-//     return part
-//       .split('.')
-//       .map(p => p.replace(/^_+|_+$/g, ''))
-//       .join('.')
-//   }
-//   const res = parts[0].split('/').map(processPart).join('/')
-//   return (hasLeadingHash ? [''] : [])
-//     .concat([res].concat(parts.slice(1)))
-//     .join('#')
-// }
 
 async function getDemos(folder: string): Promise<Demo[]> {
   const dirs = filterDirectories(await fsp.readdir(folder))
@@ -98,10 +82,11 @@ async function listAllMDFiles(src: string): Promise<string[]> {
 
 async function makeHtml(
   mdFile: string,
+  currentPath: string,
   options?: ManglerOptions
 ) {
   const content = await fsp.readFile(mdFile, 'utf8')
-  return markdownWithFM(content, options)
+  return markdownWithFM(content, currentPath, options)
 }
 
 function renameMd(file: string) {
@@ -119,7 +104,7 @@ async function createPages(src: string, dst: string, options: ManglerOptions = {
   const data = await Promise.all(
     mdFiles.map(async file => ({
       dest: renameMd(file),
-      ...(await makeHtml(path.join(src, file), {
+      ...(await makeHtml(path.join(src, file), file, {
         anchorMangler: options.anchorMangler ?? manglePageHref,
         mdMangler: options.mdMangler,
         domMangler: options.domMangler,
@@ -174,7 +159,8 @@ async function collectLibrary(
   const pack = JSON.parse(packageJson)
   const libraryPath = path.join(src, library, 'PROJECT.md')
   const content = await markdownToHTML(
-    fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : ''
+    fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : '',
+    library
   )
   return {
     priority: pack.priority ?? 0,
@@ -271,7 +257,7 @@ async function main() {
         )
         return content
       },
-      domMangler: doc => {
+      domMangler: (doc, currentPath) => {
         // find breadcrumbs
         const breadcrumbs = Array.from( doc.querySelectorAll('p')).filter(p => {
           return p.firstElementChild?.tagName === 'A' &&
@@ -296,13 +282,12 @@ async function main() {
         }
         // fix anchor hrefs
         for (const anchor of Array.from(doc.querySelectorAll('a'))) {
-          const parts = anchor.href.split('.')
-          if (parts.length === 2) {
-            anchor.href = `#`
-          } else if (parts.length === 3) {
-            anchor.href = `#${parts[1]}`
-          } else if (parts.length === 4) {
-            anchor.href = `#${parts[1]}.${parts[2]}`
+          const parts = anchor.href.substring(1).slice(0, -3).split('.')
+          const lib = `/library/tempots-${parts.shift()}`
+          if (parts.length === 0) {
+            anchor.href = lib
+          } else {
+            anchor.href = `${lib}/${parts.join('/')}`
           }
         }
       }

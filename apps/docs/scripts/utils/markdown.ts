@@ -52,6 +52,7 @@ const browserSettings: IOptionalBrowserSettings = {
 
 export const markdownToHTML = async (
   content: string,
+  currentPath: string,
   { anchorMangler, domMangler }: ManglerOptions = {}
 ) => {
   content = content.replace(/export declare/g, 'declare')
@@ -93,7 +94,7 @@ export const markdownToHTML = async (
   })
 
   if (domMangler != null) {
-    domMangler(document as any)
+    domMangler(document as any, currentPath)
   }
 
   const el = document.body
@@ -107,7 +108,7 @@ export const markdownToHTML = async (
 export type ManglerOptions = {
   anchorMangler?: (s: string) => string
   mdMangler?: (s: string) => string
-  domMangler?: (doc: Document) => void
+  domMangler?: (doc: Document, currentPath: string) => void
 }
 
 const COMMENTS_PATTERN = /<!--[\s\S]*?--[!]?>|<!--[\s\S]*?$|^[\s\S]*?--[!]?>/g
@@ -117,11 +118,12 @@ const removeComments = (md: string) =>
 
 export const markdownWithFM = async (
   content: string,
+  currentPath: string,
   { anchorMangler, mdMangler, domMangler }: ManglerOptions = {}
 ) => {
   content = removeComments(content)
   const parsed = fm(mdMangler != null ? mdMangler(content) : content)
-  const html = await markdownToHTML(parsed.body, { anchorMangler, domMangler })
+  const html = await markdownToHTML(parsed.body, currentPath, { anchorMangler, domMangler })
 
   return {
     html,

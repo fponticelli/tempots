@@ -25,7 +25,7 @@ export function DemoView(demo: Signal<Demo & { id: string }>) {
     html.h2(attr.class(Styles.heading.subSmall), demo.$.description),
     html.iframe(
       attr.class('w-full h-full border rounded-md'),
-      attr.src(demo.map(({ id }) => `/demo/${id}/index.html`))
+      attr.src(demo.map(({ id }) => `/demos/${id}/index.html`))
     )
   )
 }

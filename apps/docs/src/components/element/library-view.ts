@@ -49,32 +49,34 @@ export function LibraryInfo(library: Value<Library>) {
   )
 }
 
-export function LibraryView(data: Signal<Library>) {
+export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
   return UseLocation(location => {
-    const isRoot = location.map(v => v.hash == null)
+    const library = data.$.library
+    const path = data.$.path
+    const isRoot = path.map(v => v == null)
     const apiUrl = useComputed(() => {
-      const base = data.value.name.split('-').pop()
-      const path =
-        location.value.hash != null ? `${base}.${location.value.hash}` : base
-      return `/api/${data.value.name}/${path}.html`
+      const prefix = library.value.name.split('-').pop()
+      return path.value == null
+        ? `/api/${library.value.name}/${prefix}.html`
+        : `/api/${library.value.name}/${prefix}.${path.value}.html`
     }, [data, location])
     return html.div(
-      HTMLTitle(data.map(({ title }) => `Tempo • ${title}`)),
+      HTMLTitle(library.map(({ title }) => `Tempo • ${title}`)),
       OpenGraph({
-        title: data.map(({ title }) => `${title} • Tempo`),
-        description: data.$.description,
-        keywords: data.$.keywords as Value<string[] | undefined>,
+        title: library.map(({ title }) => `${title} • Tempo`),
+        description: library.$.description,
+        keywords: library.$.keywords as Value<string[] | undefined>,
       }),
       attr.class(
         'w-full h-full print:overflow-visible overflow-auto p-2 flex flex-col gap-2'
       ),
-      html.h1(attr.class(Styles.heading.large), data.$.title),
+      html.h1(attr.class(Styles.heading.large), library.$.title),
       When(
         isRoot,
         Fragment(
-          LibraryInfo(data),
+          LibraryInfo(library),
           Ensure(
-            data.map(v => (v.content === '' ? null : v.content)),
+            library.map(v => (v.content === '' ? null : v.content)),
             content =>
               html.div(
                 attr.class('p-4 border rounded-md'),

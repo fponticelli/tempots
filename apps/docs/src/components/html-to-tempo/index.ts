@@ -1,4 +1,12 @@
-import { attr, html, OnUnmount, useProp, TNode, Value } from '@tempots/dom'
+import {
+  attr,
+  html,
+  OnUnmount,
+  useProp,
+  TNode,
+  Value,
+  isSSR,
+} from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -35,7 +43,7 @@ export function HtmlToTempo() {
     OnUnmount(
       content.on(html => {
         try {
-          const tempoStr = htmlToTempo(html)
+          const tempoStr = isSSR() ? '' : htmlToTempo(html)
           tempo.set(tempoStr)
         } catch (e) {
           console.warn('Failed to parse HTML', e)

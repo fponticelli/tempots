@@ -61,7 +61,8 @@
     "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
   },
   "dependencies": {
-    "happy-dom": "^14.12.3"
+    "happy-dom": "^14.12.3",
+    "jsdom": "^24.1.1"
   },
   "peerDependencies": {
     "@tempots/dom": "*"
@@ -71,6 +72,7 @@
     "@microsoft/api-documenter": "^7.25.6",
     "@microsoft/api-extractor": "^7.47.1",
     "@tempots/dom": "*",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@vitest/coverage-v8": "^1.5.0",

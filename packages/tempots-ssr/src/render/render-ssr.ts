@@ -5,8 +5,10 @@ import {
   PropertySymbol,
 } from 'happy-dom'
 import { Renderable, prepareSSR, render } from '@tempots/dom'
+import { FetchFunction } from './fetch'
 
 const transfer = [
+  'fetch',
   'setTimeout',
   'clearTimeout',
   'setInterval',
@@ -70,6 +72,16 @@ export type RenderSSROptions = {
    * A function that returns the renderable app component.
    */
   makeApp: () => Renderable
+
+  /**
+   * Make a fetch function to use for the app.
+   */
+  makeFetch?: (originalFetch: FetchFunction) => FetchFunction
+
+  /**
+   * If true, the rendering will wait for the fetch to complete before completing.
+   */
+  waitFetch?: boolean
 }
 
 /**
@@ -86,6 +98,8 @@ export async function renderSSR({
   url,
   selector,
   makeApp,
+  makeFetch,
+  waitFetch,
 }: RenderSSROptions) {
   const browser = new Browser({ settings: browserSettings })
   const page = browser.newPage()
@@ -93,6 +107,41 @@ export async function renderSSR({
   page.url = url
 
   const browserWindow = page.mainFrame.document[PropertySymbol.ownerWindow]
+  const originalFetch: BrowserWindow['fetch'] =
+    makeFetch != null
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (makeFetch(browserWindow.fetch as any) as any)
+      : browserWindow.fetch
+
+  let fetchPromise: Promise<void> = Promise.resolve()
+  let fetch = originalFetch
+
+  if (waitFetch) {
+    let counter = 0
+    fetchPromise = new Promise((resolve, reject) => {
+      fetch = (async (input: RequestInfo, init?: RequestInit) => {
+        counter++
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return await originalFetch(input as any, init as any)
+        } catch (error) {
+          console.error('Error fetching', input, error)
+          reject(error)
+        } finally {
+          counter--
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any
+      const interval = setInterval(() => {
+        if (counter === 0) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 10)
+    })
+  }
+  browserWindow.fetch = fetch
+
   const unsetGlobals = setGlobals(browserWindow)
 
   const wait = prepareSSR()
@@ -102,11 +151,13 @@ export async function renderSSR({
     doc: page.mainFrame.document as never,
     clear: false,
   })
-  await wait
+
+  await Promise.all([wait, fetchPromise])
+
   const rendered = page.content
   clear()
 
-  await browser.close()
+  browser.close() // not awaiting
   unsetGlobals()
 
   return rendered

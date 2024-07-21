@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "docs:prep": "tsx ./scripts/prep-doc-contents.ts"
+    "docs:prep": "tsx ./scripts/prep-doc-contents.ts",
+    "docs:static": "tsx ./scripts/create-static-pages.ts"
   },
   "dependencies": {
     "@tabler/icons": "^3.10.0",
@@ -51,6 +52,7 @@
   },
   "resolutions": {
     "@tempots/dom": "*",
+    "@tempots/ssr": "*",
     "@tempots/std": "*",
     "@tempots/ui": "*"
   }

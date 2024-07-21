@@ -21,7 +21,7 @@ Tempo is written in TypeScript so types are generated and included in the packag
 
 ## Next Steps
 
-- [How does Tempo work?](/page/how-it-work)
+- [How does Tempo work?](/page/how-it-works)
 - [Learn more about Renderables](/page/renderables)
 - [Learn more about Signals](/page/signals)
 - [Learn more about render](/page/render)

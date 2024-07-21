@@ -16,7 +16,7 @@ export type AnySignal<T = any> = Signal<T> | Prop<T> | Computed<T>
  * @public
  */
 export type AtGetter<T> = {
-  [K in keyof T]: Signal<T[K]>
+  [K in keyof T]-?: Signal<T[K]>
 }
 
 /**
@@ -326,7 +326,7 @@ export class Signal<T> {
      * @returns The signal associated with the key.
      */
     get: (_, key) => this.at(key as keyof T),
-  }) as AtGetter<T>
+  }) as unknown as AtGetter<T>
   readonly filter = (fn: (value: T) => boolean, startValue?: T) => {
     let latestValue = startValue ?? this.get()
     const computed = new Computed(() => {

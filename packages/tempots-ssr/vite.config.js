@@ -20,7 +20,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['happy-dom'],
+      external: ['jsdom', 'happy-dom'],
       output: {
         extend: true
       }
