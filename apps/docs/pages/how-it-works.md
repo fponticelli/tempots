@@ -29,7 +29,7 @@ export const Fragment =
   }
 ```
 
-In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Signal&lt;string&gt;`, `Prop&lt;string&gt;`, `Computed&lt;string&gt;`, `string`, `undefined`, `null`, or an `Array&lt;Renderable&gt;`. The renderableOfTNode function helps convert a TNode to a Renderable.
+In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Signal&lt;string&gt;`, `Prop&lt;string&gt;`, `Computed&lt;string&gt;`, `string`, `undefined`, `null`, or an `Array&lt;Renderable&gt;`. The `renderableOfTNode` function helps convert a `TNode` to a `Renderable`.
 
 Using `TNode` makes the API more flexible and allows for a more declarative syntax.
 
@@ -41,7 +41,7 @@ html.div(TextNode('Hello World'))
 
 ### Clear
 
-The `Clear` function removes the rendered template from the DOM. Its argument, removeTree, indicates whether to remove all DOM modifications and side effects such as clearing an interval or timeout (`true`) or only side effects (`false`).
+The `Clear` function removes the rendered template from the DOM. Its argument, `removeTree`, indicates whether to remove all DOM modifications and side effects such as clearing an interval or timeout (`true`) or only side effects (`false`).
 
 ### TNode
 
