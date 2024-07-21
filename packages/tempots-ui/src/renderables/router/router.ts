@@ -1,7 +1,7 @@
 import { TNode, Renderable, Signal, OneOfTuple } from '@tempots/dom'
 import { ExtractParams, MakeParams, RouteInfo } from './route-info'
 import { UseLocation } from './location'
-import { makeRouteMatcher } from './match'
+import { _makeRouteMatcher } from './match'
 
 /**
  * Creates a router that maps routes to corresponding renderable components.
@@ -22,7 +22,7 @@ export const Router = <
 >(
   routes: T
 ): Renderable => {
-  const matchRoute = makeRouteMatcher(Object.keys(routes))
+  const matchRoute = _makeRouteMatcher(Object.keys(routes))
   return UseLocation(location => {
     const route = location.map(location => {
       const match = matchRoute(location.pathname)

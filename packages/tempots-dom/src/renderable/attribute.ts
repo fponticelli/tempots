@@ -3,7 +3,7 @@ import type { MathMLTags } from '../types/mathml-tags'
 import type { NValue, Renderable, Value } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal } from '../std/signal'
-import { makeGetter, makeSetter } from '../dom/attr'
+import { _makeGetter, _makeSetter } from '../dom/attr'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
 import { _maybeAddAttributeTracker, _maybeAddClassTracker } from '../dom/ssr'
@@ -41,8 +41,8 @@ const signalClassName =
   }
 
 const staticAttributeRenderable = <T>(name: string, value: T) => {
-  const setter = makeSetter(name)
-  const getter = makeGetter(name)
+  const setter = _makeSetter(name)
+  const getter = _makeGetter(name)
   return (ctx: DOMContext) => {
     _maybeAddAttributeTracker(ctx, name)
     const original = getter(ctx.element)
@@ -56,8 +56,8 @@ const staticAttributeRenderable = <T>(name: string, value: T) => {
 }
 
 const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
-  const setter = makeSetter(name)
-  const getter = makeGetter(name)
+  const setter = _makeSetter(name)
+  const getter = _makeGetter(name)
   return (ctx: DOMContext) => {
     _maybeAddAttributeTracker(ctx, name)
     const original = getter(ctx.element)
@@ -75,7 +75,6 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
  * or `Signal<?>` can be passed as a value. The type of the value is inferred
  * from the attribute name.
  *
- * @remarks
  * @example
  * ```ts
  * const button = html.button(
@@ -138,7 +137,6 @@ export const attr = new Proxy(
  * The `data` object allows to create any `data-` attributes. Either a literal value
  * or `Signal<string>` can be passed as a value.
  *
- * @remarks
  * @example
  * ```ts
  * const button = html.button(
@@ -180,7 +178,6 @@ export const dataAttr = new Proxy(
  *
  * The type of the value is inferred from the attribute name.
  *
- * @remarks
  * @example
  * ```ts
  * const button = html.button(
@@ -228,7 +225,6 @@ export const aria = new Proxy(
  * An object that provides a convenient way to create mountable attributes for
  * SVG elements.
  *
- * @remarks
  * @example
  * ```ts
  * const svg = html.svg(
@@ -273,7 +269,6 @@ export const svgAttr = new Proxy(
 /**
  * An object that provides attribute functions for MathML tags.
  *
- * @remarks
  * @example
  * ```ts
  * const math = html.math(

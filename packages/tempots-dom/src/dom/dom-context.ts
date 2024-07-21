@@ -31,10 +31,25 @@ export class DOMContext {
    * @param isFirstLevel - A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated DOM.
    */
   constructor(
+    /**
+     * The `Document` instance associated with this context.
+     */
     readonly document: Document,
+    /**
+     * The `Element` instance associated with this context.
+     */
     readonly element: Element,
+    /**
+     * An optional `Node` instance that serves as a reference for this context.
+     */
     readonly reference: Node | undefined,
+    /**
+     * The `Providers` instance associated with this context.
+     */
     readonly providers: Providers,
+    /**
+     * A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated
+     */
     readonly isFirstLevel: boolean
   ) {}
 
@@ -177,13 +192,24 @@ export class DOMContext {
    *
    * @param mark - The provider mark to retrieve the provider for.
    * @returns The provider for the given mark.
-   * @throws Error If the provider for the given mark is not found.
+   * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
   readonly getProvider = <T>(mark: ProviderMark<T>): T => {
     if (this.providers[mark] === undefined) {
-      throw new Error(`Provider not found: ${mark.description}`)
+      throw new ProviderNotFoundError(mark)
     }
 
     return this.providers[mark]! as T
+  }
+}
+
+/**
+ * Error thrown when a provider is not found.
+ *
+ * @public
+ */
+export class ProviderNotFoundError extends Error {
+  constructor(mark: ProviderMark<unknown>) {
+    super(`Provider not found: ${mark.description}`)
   }
 }

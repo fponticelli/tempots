@@ -2,9 +2,9 @@
  * Removes the specified node from the DOM.
  *
  * @param node - The node to be removed from the DOM.
- * @public
+ * @internal
  */
-export const removeDOMNode = (node: Node) => {
+export const _removeDOMNode = (node: Node) => {
   const el = node as HTMLElement
   if (el && el.onblur) {
     el.onblur = null
@@ -21,16 +21,16 @@ export const removeDOMNode = (node: Node) => {
  *
  * @param node - The `Node` to get the `Element` for.
  * @returns The `Element` for the given `node`.
- * @public
+ * @internal
  */
-export const getSelfOrParentElement = (node: Node): Element =>
-  isElement(node) ? node : node.parentElement!
+export const _getSelfOrParentElement = (node: Node): Element =>
+  _isElement(node) ? node : node.parentElement!
 
 /**
  * Determines if the given `Node` is an `Element`.
  *
  * @param node - The `Node` to check.
  * @returns `true` if the `node` is an `Element`, `false` otherwise.
- * @public
+ * @internal
  */
-export const isElement = (node: Node): node is Element => node.nodeType === 1 // Node.ELEMENT_NODE
+export const _isElement = (node: Node): node is Element => node.nodeType === 1 // Node.ELEMENT_NODE

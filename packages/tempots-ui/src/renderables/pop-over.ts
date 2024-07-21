@@ -40,38 +40,38 @@ export type Placement =
  *
  * @public
  */
-export interface PopOverProps {
+export type PopOverOptions = {
   /**
    * Specifies whether the PopOver is open or closed.
    */
-  open: Value<boolean>
+  readonly open: Value<boolean>
 
   /**
    * Specifies the content of the PopOver.
    * This should be a function that returns a TNode.
    */
-  content: () => TNode
+  readonly content: () => TNode
 
   /**
    * Specifies the placement of the PopOver.
    * This is an optional property.
    */
-  placement?: Placement
+  readonly placement?: Placement
 
   /**
    * Specifies the offset of the PopOver.
    * This is an optional property.
    */
-  offset?: {
+  readonly offset?: {
     /**
      * Specifies the offset on the main axis.
      */
-    mainAxis?: number
+    readonly mainAxis?: number
 
     /**
      * Specifies the offset on the cross axis.
      */
-    crossAxis?: number
+    readonly crossAxis?: number
   }
 }
 
@@ -82,13 +82,14 @@ export interface PopOverProps {
  * @returns The rendered PopOver component.
  * @public
  */
-export function PopOver({
-  content,
-  open,
-  placement,
-  offset: { mainAxis, crossAxis } = { mainAxis: 0, crossAxis: 0 },
-}: PopOverProps) {
-  return (ctx: DOMContext) => {
+export const PopOver =
+  ({
+    content,
+    open,
+    placement,
+    offset: { mainAxis, crossAxis } = { mainAxis: 0, crossAxis: 0 },
+  }: PopOverOptions) =>
+  (ctx: DOMContext) => {
     const target = ctx.element
     const isOpen = Signal.wrap(open)
 
@@ -121,4 +122,3 @@ export function PopOver({
       )
     )(ctx)
   }
-}

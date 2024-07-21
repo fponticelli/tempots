@@ -7,27 +7,27 @@ import { SplitLiteral, TupleToUnion } from '@tempots/std'
  * @typeParam R - The type of the route.
  * @public
  */
-export interface RouteInfo<P, R = string> {
+export type RouteInfo<P, R = string> = {
   /**
    * The parameters of the route.
    */
-  params: P
+  readonly params: P
   /**
    * The route that was matched.
    */
-  route: R
+  readonly route: R
   /**
    * The path that was matched.
    */
-  path: string
+  readonly path: string
   /**
    * The search parameters of the route.
    */
-  search: Record<string, string>
+  readonly search: Record<string, string>
   /**
    * The hash of the route.
    */
-  hash?: string
+  readonly hash?: string
 }
 
 /**

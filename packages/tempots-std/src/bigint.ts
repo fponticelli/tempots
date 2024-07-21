@@ -8,7 +8,7 @@ import { ArgumentError } from './error'
  * @returns The result of dividing `x` by `y`, rounded up to the nearest whole number.
  * @public
  */
-export function biCeilDiv(x: bigint, y: bigint): bigint {
+export const biCeilDiv = (x: bigint, y: bigint): bigint => {
   if (y < 0n) {
     x = -x
     y = -y
@@ -24,7 +24,7 @@ export function biCeilDiv(x: bigint, y: bigint): bigint {
  * @returns The largest integer less than or equal to the quotient of `x` divided by `y`.
  * @public
  */
-export function biFloorDiv(x: bigint, y: bigint): bigint {
+export const biFloorDiv = (x: bigint, y: bigint): bigint => {
   if (y < 0n) {
     x = -x
     y = -y
@@ -40,9 +40,8 @@ export function biFloorDiv(x: bigint, y: bigint): bigint {
  * @public
  *          or zero if `x` is equal to `y`.
  */
-export function biCompare(x: bigint, y: bigint): number {
-  return x < y ? -1 : x > y ? 1 : 0
-}
+export const biCompare = (x: bigint, y: bigint): number =>
+  x < y ? -1 : x > y ? 1 : 0
 
 /**
  * Returns the absolute value of a bigint.
@@ -51,9 +50,7 @@ export function biCompare(x: bigint, y: bigint): number {
  * @returns The absolute value of `x`.
  * @public
  */
-export function biAbs(x: bigint): bigint {
-  return x < 0n ? -x : x
-}
+export const biAbs = (x: bigint): bigint => (x < 0n ? -x : x)
 
 /**
  * Returns the minimum of two BigInt values.
@@ -63,9 +60,7 @@ export function biAbs(x: bigint): bigint {
  * @returns The smaller of the two BigInt values.
  * @public
  */
-export function biMin(x: bigint, y: bigint): bigint {
-  return x < y ? x : y
-}
+export const biMin = (x: bigint, y: bigint): bigint => (x < y ? x : y)
 
 /**
  * Returns the maximum of two BigInt values.
@@ -75,9 +70,7 @@ export function biMin(x: bigint, y: bigint): bigint {
  * @returns The maximum of the two BigInt values.
  * @public
  */
-export function biMax(x: bigint, y: bigint): bigint {
-  return x > y ? x : y
-}
+export const biMax = (x: bigint, y: bigint): bigint => (x > y ? x : y)
 
 /**
  * Calculates the power of a bigint number.
@@ -86,9 +79,9 @@ export function biMax(x: bigint, y: bigint): bigint {
  * @param y - The exponent.
  * @returns The result of raising `x` to the power of `y`.
  * @public
- * @throws Error If the exponent `y` is negative.
+ * @throws Throws `ArgumentError` if the exponent `y` is negative.
  */
-export function biPow(x: bigint, y: bigint): bigint {
+export const biPow = (x: bigint, y: bigint): bigint => {
   if (y < 0n)
     throw new ArgumentError('negative exponent for parameter y of biPow')
   let result = 1n
@@ -108,7 +101,7 @@ export function biPow(x: bigint, y: bigint): bigint {
  * @returns The GCD of `x` and `y`.
  * @public
  */
-export function biGcd(x: bigint, y: bigint): bigint {
+export const biGcd = (x: bigint, y: bigint): bigint => {
   x = biAbs(x)
   y = biAbs(y)
   while (y > 0n) {
@@ -127,9 +120,8 @@ export function biGcd(x: bigint, y: bigint): bigint {
  * @returns The least common multiple of `x` and `y`.
  * @public
  */
-export function biLcm(x: bigint, y: bigint): bigint {
-  return biAbs(x * y) / biGcd(x, y)
-}
+export const biLcm = (x: bigint, y: bigint): bigint =>
+  biAbs(x * y) / biGcd(x, y)
 
 /**
  * Checks if a given number is prime.
@@ -138,7 +130,7 @@ export function biLcm(x: bigint, y: bigint): bigint {
  * @returns `true` if the number is prime, `false` otherwise.
  * @public
  */
-export function biIsPrime(x: bigint): boolean {
+export const biIsPrime = (x: bigint): boolean => {
   if (x < 2n) return false
   if (x === 2n || x === 3n) return true
   if (x % 2n === 0n || x % 3n === 0n) return false
@@ -157,7 +149,7 @@ export function biIsPrime(x: bigint): boolean {
  * @returns The next prime number greater than `x`.
  * @public
  */
-export function biNextPrime(x: bigint): bigint {
+export const biNextPrime = (x: bigint): bigint => {
   if (x < 2n) return 2n
   if (x === 2n) return 3n
   if (x % 2n === 0n) x++
@@ -173,9 +165,9 @@ export function biNextPrime(x: bigint): bigint {
  * @param x - The number to find the previous prime for.
  * @returns The previous prime number less than `x`.
  * @public
- * @throws Error if there is no previous prime.
+ * @throws Throws `ArgumentError` if there is no previous prime.
  */
-export function biPrevPrime(x: bigint): bigint {
+export const biPrevPrime = (x: bigint): bigint => {
   if (x <= 2n) throw new ArgumentError(`no previous prime ${x} for biPrevPrime`)
   if (x === 3n) return 2n
   if (x % 2n === 0n) x--
@@ -191,9 +183,7 @@ export function biPrevPrime(x: bigint): bigint {
  * @returns `true` if the bigint is even, `false` otherwise.
  * @public
  */
-export function biIsEven(x: bigint): boolean {
-  return x % 2n === 0n
-}
+export const biIsEven = (x: bigint): boolean => x % 2n === 0n
 
 /**
  * Checks if a given bigint is odd.
@@ -202,9 +192,7 @@ export function biIsEven(x: bigint): boolean {
  * @returns `true` if the bigint is odd, `false` otherwise.
  * @public
  */
-export function biIsOdd(x: bigint): boolean {
-  return x % 2n !== 0n
-}
+export const biIsOdd = (x: bigint): boolean => x % 2n !== 0n
 
 /**
  * Checks if a given bigint is zero.
@@ -213,9 +201,7 @@ export function biIsOdd(x: bigint): boolean {
  * @returns `true` if the bigint is zero, `false` otherwise.
  * @public
  */
-export function biIsZero(x: bigint): boolean {
-  return x === 0n
-}
+export const biIsZero = (x: bigint): boolean => x === 0n
 
 /**
  * Checks if a given bigint is equal to 1n.
@@ -224,9 +210,7 @@ export function biIsZero(x: bigint): boolean {
  * @returns `true` if the bigint is equal to 1n, `false` otherwise.
  * @public
  */
-export function biIsOne(x: bigint): boolean {
-  return x === 1n
-}
+export const biIsOne = (x: bigint): boolean => x === 1n
 
 /**
  * Checks if a given bigint is negative.
@@ -235,9 +219,7 @@ export function biIsOne(x: bigint): boolean {
  * @returns `true` if the bigint is negative, `false` otherwise.
  * @public
  */
-export function biIsNegative(x: bigint): boolean {
-  return x < 0n
-}
+export const biIsNegative = (x: bigint): boolean => x < 0n
 
 /**
  * Checks if a bigint is positive.
@@ -246,6 +228,4 @@ export function biIsNegative(x: bigint): boolean {
  * @returns `true` if the bigint is positive, `false` otherwise.
  * @public
  */
-export function biIsPositive(x: bigint): boolean {
-  return x > 0n
-}
+export const biIsPositive = (x: bigint): boolean => x > 0n

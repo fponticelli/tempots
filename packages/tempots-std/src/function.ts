@@ -8,9 +8,7 @@ import { Maybe } from './domain'
  * @typeParam T - The type of the input value.
  * @public
  */
-export function identity<T>(v: T): T {
-  return v
-}
+export const identity = <T>(v: T): T => v
 
 /**
  * Curries a function from left to right.
@@ -19,14 +17,11 @@ export function identity<T>(v: T): T {
  * @returns A curried function.
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function curryLeft<A, Rest extends any[], Ret>(
-  f: (a: A, ...rest: Rest) => Ret
-) {
-  return (a: A) =>
-    (...rest: Rest): Ret =>
-      f(a, ...rest)
-}
+export const curryLeft =
+  <A, Rest extends unknown[], Ret>(f: (a: A, ...rest: Rest) => Ret) =>
+  (a: A) =>
+  (...rest: Rest): Ret =>
+    f(a, ...rest)
 
 /**
  * Memoizes the result of a function and returns a new function that caches the result.
@@ -37,7 +32,7 @@ export function curryLeft<A, Rest extends any[], Ret>(
  * @returns A new function that caches the result of the original function.
  * @public
  */
-export function memoize<T>(f: () => NonNullable<T>): () => NonNullable<T> {
+export const memoize = <T>(f: () => NonNullable<T>): (() => NonNullable<T>) => {
   let value: Maybe<T>
   return () => {
     if (value === undefined) {

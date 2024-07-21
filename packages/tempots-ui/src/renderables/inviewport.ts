@@ -15,8 +15,9 @@ import {
 
 /**
  * Represents the mode for determining if an element is in the viewport.
- * - `'partial'`: Indicates that the element is considered in the viewport if any part of it is visible.
- * - `'full'`: Indicates that the element is considered in the viewport only if it is fully visible.
+ *
+ * - `partial`: Indicates that the element is considered in the viewport if any part of it is visible.
+ * - `full`: Indicates that the element is considered in the viewport only if it is fully visible.
  *
  * @public
  */
@@ -65,10 +66,10 @@ function ensureObserver(mode: InViewportMode): IntersectionObserver {
  * @returns The renderable component that tracks the element's visibility in the viewport.
  * @public
  */
-export function InViewport(
+export const InViewport = (
   mode: InViewportMode,
   fn: (value: Signal<boolean>) => TNode
-): Renderable {
+): Renderable => {
   const signal = useProp(isSSR())
   return Fragment(
     OnMount((el: HTMLElement) => {

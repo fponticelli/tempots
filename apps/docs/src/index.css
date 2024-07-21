@@ -23,12 +23,12 @@
     }
 
 
-    :not(pre)>code {
-      @apply font-mono px-1 bg-gray-900 text-white rounded text-sm;
+    :not(pre) > code {
+      @apply font-mono px-1 bg-gray-800 text-gray-200 rounded text-sm;
     }
 
     pre {
-      @apply my-4 p-4 bg-gray-900 text-white rounded-lg overflow-x-auto;
+      @apply my-4 p-4 bg-[#282c34] text-white rounded-lg overflow-x-auto;
     }
 
     p {
@@ -48,6 +48,18 @@
 
       td, th {
         @apply border border-gray-200 px-2 py-0;
+      }
+
+      th {
+        @apply bg-gray-200;
+      }
+
+      td {
+        @apply font-mono text-sm;
+      }
+
+      td:last-child {
+        @apply font-sans text-sm bg-gray-100 text-gray-600;
       }
     }
 

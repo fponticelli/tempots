@@ -1,5 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
-import { removeDOMNode } from '../dom/dom-utils'
+import { _removeDOMNode } from '../dom/dom-utils'
 import { ElementPosition } from '../std/position'
 import { Prop, Signal, useProp } from '../std/signal'
 import { TNode, Clear, Renderable } from '../types/domain'
@@ -65,7 +65,7 @@ export const Repeat = (
       return (removeTree: boolean) => {
         clear()
         if (removeTree && ctx.reference) {
-          removeDOMNode(ctx.reference)
+          _removeDOMNode(ctx.reference)
         }
       }
     }

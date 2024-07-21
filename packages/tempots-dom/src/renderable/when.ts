@@ -1,4 +1,4 @@
-import { TNode } from '../types/domain'
+import { Renderable, TNode } from '../types/domain'
 import { Signal } from '../std/signal'
 import { Ensure } from './ensure'
 
@@ -7,7 +7,7 @@ import { Ensure } from './ensure'
  *
  * @param condition - The condition to evaluate.
  * @param then - The node to render if the condition is true.
- * @param otherwise - The node to render if the condition is false. Optional.
+ * @param otherwise - The node to render if the condition is false.
  * @returns The rendered node.
  * @public
  */
@@ -15,7 +15,7 @@ export const When = (
   condition: Signal<boolean>,
   then: TNode,
   otherwise?: TNode
-) => {
+): Renderable => {
   return Ensure(
     condition.map(v => (v ? true : null)) as Signal<true | null>,
     () => then,
@@ -36,7 +36,7 @@ export const Unless = (
   condition: Signal<boolean>,
   then: TNode,
   otherwise?: TNode
-) => {
+): Renderable => {
   return When(
     condition.map(v => !v),
     then,

@@ -1,4 +1,4 @@
-import { Signal, Value, attr, El, Text } from '@tempots/dom'
+import { Signal, Value, attr, El } from '@tempots/dom'
 
 export type TextSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
 
@@ -43,7 +43,7 @@ export function Txt(value: Value<string>, options: TextOptions = {}) {
 
   classes.push(getTextSize(size))
 
-  return El(as, attr.class(classes.join(' ')), Text(value))
+  return El(as, attr.class(classes.join(' ')), value)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

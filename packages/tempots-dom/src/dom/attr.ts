@@ -40,9 +40,9 @@ const getOrCreate = (
  * @param attributeName - The name of the boolean property to set.
  * @returns A function that takes an `Element` and a `value` and sets the
  * boolean property on the element.
- * @public
+ * @internal
  */
-export const setBooleanProperty =
+export const _setBooleanProperty =
   (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,9 +61,9 @@ export const setBooleanProperty =
  *
  * @param attributeName - The name of the property to set on the element.
  * @returns A function that takes an `Element` and a `value` and sets the property.
- * @public
+ * @internal
  */
-export const setNumberProperty =
+export const _setNumberProperty =
   (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,9 +83,9 @@ export const setNumberProperty =
  * @param attributeName - The name of the date property to set on the element.
  * @returns A function that takes an element and a value, and sets the date
  * property on the element.
- * @public
+ * @internal
  */
-export const setDateProperty =
+export const _setDateProperty =
   (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,9 +104,9 @@ export const setDateProperty =
  *
  * @param attributeName - The name of the property to set on the `Element`.
  * @returns A function that takes an `Element` and a `value` and sets the property.
- * @public
+ * @internal
  */
-export const setStringProperty =
+export const _setStringProperty =
   (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,9 +123,9 @@ export const setStringProperty =
  *
  * @param attributeName - The name of the attribute to set.
  * @returns A function that takes an element and a value, and sets the attribute on the element.
- * @public
+ * @internal
  */
-export const setAttribute =
+export const _setAttribute =
   (attributeName: string) => (element: Element, value: unknown) => {
     if (value == null) {
       element.removeAttribute(attributeName)
@@ -143,21 +143,21 @@ export const setAttribute =
  *
  * @param attributeName - The name of the attribute to create a setter for.
  * @returns A function that sets the attribute value on an element.
- * @public
+ * @internal
  */
-export const makeSetter = (
+export const _makeSetter = (
   attributeName: string
 ): ((element: Element, value: unknown) => void) => {
   if (boolProperties.has(attributeName)) {
-    return getOrCreate(attributeName, setBooleanProperty)
+    return getOrCreate(attributeName, _setBooleanProperty)
   } else if (numberProperties.has(attributeName)) {
-    return getOrCreate(attributeName, setNumberProperty)
+    return getOrCreate(attributeName, _setNumberProperty)
   } else if (dateProperties.has(attributeName)) {
-    return getOrCreate(attributeName, setDateProperty)
+    return getOrCreate(attributeName, _setDateProperty)
   } else if (stringProperties.has(attributeName)) {
-    return getOrCreate(attributeName, setStringProperty)
+    return getOrCreate(attributeName, _setStringProperty)
   } else {
-    return getOrCreate(attributeName, setAttribute)
+    return getOrCreate(attributeName, _setAttribute)
   }
 }
 
@@ -171,9 +171,9 @@ export const makeSetter = (
  * @param attributeName - The name of the HTML element attribute to get.
  * @returns A function that takes an `Element` and returns the value of the
  * specified attribute.
- * @public
+ * @internal
  */
-export const makeGetter =
+export const _makeGetter =
   <T>(attributeName: string): ((element: Element) => T) =>
   (element: Element) => {
     if (boolProperties.has(attributeName)) {

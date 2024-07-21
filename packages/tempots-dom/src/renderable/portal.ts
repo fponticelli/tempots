@@ -1,5 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
-import { TNode } from '../types/domain'
+import { Renderable, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { renderWithContext } from './render'
 
@@ -13,13 +13,15 @@ import { renderWithContext } from './render'
  * @returns The result of rendering the `node` into the selected DOM element.
  * @public
  */
-export const Portal = (selector: string, node: TNode) => (ctx: DOMContext) => {
-  const element = ctx.document.querySelector(selector)
-  if (element === null) {
-    throw new Error(`Cannot find element by selector for portal: ${selector}`)
+export const Portal =
+  (selector: string, node: TNode): Renderable =>
+  (ctx: DOMContext) => {
+    const element = ctx.document.querySelector(selector)
+    if (element === null) {
+      throw new Error(`Cannot find element by selector for portal: ${selector}`)
+    }
+    return renderWithContext(
+      renderableOfTNode(node),
+      ctx.withElement(element).withFirstLevel()
+    )
   }
-  return renderWithContext(
-    renderableOfTNode(node),
-    ctx.withElement(element).withFirstLevel()
-  )
-}

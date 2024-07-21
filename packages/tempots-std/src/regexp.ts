@@ -9,11 +9,11 @@
  * @param subject - The string to search.
  * @public
  */
-export function mapRegExp(
+export const mapRegExp = (
   subject: string,
   pattern: RegExp,
   f: (...s: string[]) => string
-): string {
+): string => {
   const buff = [] as string[]
   let pos = 0
   let result: RegExpExecArray | null

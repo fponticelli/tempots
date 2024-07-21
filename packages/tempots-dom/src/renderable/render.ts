@@ -1,6 +1,6 @@
 import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { getSelfOrParentElement, isElement } from '../dom/dom-utils'
+import { _getSelfOrParentElement, _isElement } from '../dom/dom-utils'
 import { _clearSSR } from '../dom/ssr'
 
 /**
@@ -11,7 +11,7 @@ import { _clearSSR } from '../dom/ssr'
  * @returns A function that can be called to clear the rendered node.
  * @public
  */
-export function renderWithContext(renderable: Renderable, ctx: DOMContext) {
+export const renderWithContext = (renderable: Renderable, ctx: DOMContext) => {
   const clear = renderable(ctx)
   return () => clear(true)
 }
@@ -38,14 +38,14 @@ export type RenderOptions = {
  * @param parent - The parent element or selector where the node should be rendered.
  * @param options - Optional rendering options.
  * @returns The result of rendering the `Renderable` node.
- * @throws An error if the parent element cannot be found by the provided selector.
+ * @throws Throws a `RenderingError` if the parent element cannot be found by the provided selector.
  * @public
  */
-export function render(
+export const render = (
   node: Renderable,
   parent: Node | string,
   { doc, clear }: RenderOptions = {}
-) {
+) => {
   const el =
     typeof parent === 'string'
       ? (doc ?? document).querySelector(parent)
@@ -58,8 +58,8 @@ export function render(
   if (clear && (doc ?? el.ownerDocument) != null) {
     _clearSSR((doc ?? el.ownerDocument)!)
   }
-  const element = getSelfOrParentElement(el)
-  const ref = isElement(el) ? undefined : el
+  const element = _getSelfOrParentElement(el)
+  const ref = _isElement(el) ? undefined : el
   const ctx = DOMContext.of(element, ref)
   return renderWithContext(node, ctx)
 }

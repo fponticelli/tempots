@@ -1,5 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
-import { removeDOMNode } from '../dom/dom-utils'
+import { _removeDOMNode } from '../dom/dom-utils'
 import { Computed, Signal } from '../std/signal'
 import { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
@@ -51,7 +51,7 @@ export const OneOf =
     return (removeTree: boolean) => {
       clearSignal()
       if (removeTree && ctx.reference != null) {
-        removeDOMNode(ctx.reference)
+        _removeDOMNode(ctx.reference)
       }
       clearRenderable?.(true)
     }

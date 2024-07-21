@@ -39,7 +39,7 @@ export type Providers = Record<ProviderMark<unknown>, unknown>
  * Represents the size of an object with width and height.
  * @public
  */
-export interface Size {
+export type Size = {
   /**
    * The width of the object.
    */

@@ -12,9 +12,8 @@ import { ParsingError } from './error'
  * @returns A comparison value.
  * @public
  */
-export function compareBooleans(a: boolean, b: boolean): number {
-  return a === b ? 0 : a ? -1 : 1
-}
+export const compareBooleans = (a: boolean, b: boolean): number =>
+  a === b ? 0 : a ? -1 : 1
 
 /**
  * Converts a boolean to an integer value (`true` => `1`, `false` => `0`).
@@ -23,9 +22,7 @@ export function compareBooleans(a: boolean, b: boolean): number {
  * @returns The integer value.
  * @public
  */
-export function booleanToInt(v: boolean): number {
-  return v ? 1 : 0
-}
+export const booleanToInt = (v: boolean): number => (v ? 1 : 0)
 
 /**
  * Returns `true` if the passed value can be parsed as a boolean. The following values are considered parsable:
@@ -40,7 +37,7 @@ export function booleanToInt(v: boolean): number {
  * @returns `true` if the value can be parsed; otherwise, `false`.
  * @public
  */
-export function canParseBoolean(v: string): boolean {
+export const canParseBoolean = (v: string): boolean => {
   if (v == null) return false
   switch (v.toLowerCase()) {
     case 'true':
@@ -66,7 +63,7 @@ export function canParseBoolean(v: string): boolean {
  * @returns The parsed boolean value.
  * @public
  */
-export function parseBoolean(v: string): boolean {
+export const parseBoolean = (v: string): boolean => {
   switch (v.toLowerCase()) {
     case 'true':
     case '1':
@@ -89,6 +86,4 @@ export function parseBoolean(v: string): boolean {
  * @returns The result of the XOR operation.
  * @public
  */
-export function xorBoolean(a: boolean, b: boolean): boolean {
-  return a !== b
-}
+export const xorBoolean = (a: boolean, b: boolean): boolean => a !== b

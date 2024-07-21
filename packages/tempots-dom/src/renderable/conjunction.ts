@@ -1,6 +1,6 @@
 import { Empty } from './empty'
 import { Signal } from '../std/signal'
-import { TNode } from '../types/domain'
+import { Renderable, TNode } from '../types/domain'
 import { ElementPosition } from '../std/position'
 import { OneOfValue } from './oneof'
 
@@ -27,11 +27,9 @@ export type ConjunctionOptions = {
  * @returns A function that returns the appropriate separator based on the element position.
  * @public
  */
-export const Conjunction = (
-  separator: TNode,
-  options: ConjunctionOptions = {}
-) => {
-  return (pos: Signal<ElementPosition>) => {
+export const Conjunction =
+  (separator: TNode, options: ConjunctionOptions = {}) =>
+  (pos: Signal<ElementPosition>): Renderable => {
     const firstSeparator = options?.firstSeparator ?? Empty
     const lastSeparator = options?.lastSeparator ?? Empty
     return OneOfValue(
@@ -51,4 +49,3 @@ export const Conjunction = (
       }
     )
   }
-}

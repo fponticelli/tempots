@@ -7,6 +7,7 @@ import {
   Signal,
   Value,
   OneOfType,
+  Renderable,
 } from '@tempots/dom'
 import { AsyncResult } from '@tempots/std'
 
@@ -57,10 +58,10 @@ export type AsyncResultViewOptions<T, E> = {
  * @returns The rendered view.
  * @public
  */
-export function AsyncResultView<T, E>(
+export const AsyncResultView = <T, E>(
   result: Value<AsyncResult<T, E>>,
   options: AsyncResultViewOptions<T, E> | ((value: Signal<T>) => TNode)
-) {
+): Renderable => {
   if (typeof options === 'function') {
     return AsyncResultView(result, { success: options })
   }

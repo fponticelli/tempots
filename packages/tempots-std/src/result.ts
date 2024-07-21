@@ -7,18 +7,18 @@ import { Validation } from './validation'
  * @typeParam V - The type of the value.
  * @public
  */
-export interface Success<V> {
-  type: 'Success'
-  value: V
+export type Success<V> = {
+  readonly type: 'Success'
+  readonly value: V
 }
 /**
  * Represents a failure result.
  * @typeParam E - The type of the error.
  * @public
  */
-export interface Failure<E> {
-  type: 'Failure'
-  error: E
+export type Failure<E> = {
+  readonly type: 'Failure'
+  readonly error: E
 }
 
 /**

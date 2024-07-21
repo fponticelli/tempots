@@ -29,10 +29,10 @@ export type MatchResultWithRoute<P extends string, R extends string> = {
  * @returns The match result.
  * @public
  */
-export function matchesRoute<P extends string>(
+export const matchesRoute = <P extends string>(
   route: Route,
   path: P
-): MatchResult<P> {
+): MatchResult<P> => {
   type Params = ExtractParams<P>
   const pathSegments = path.split('/').filter(segment => segment !== '')
 
@@ -70,10 +70,10 @@ export function matchesRoute<P extends string>(
  *
  * @param route - The route string to parse.
  * @returns An array of route segments.
- * @public
+ * @internal
  */
-export function parseRouteSegments(route: string): Route {
-  return route
+export const _parseRouteSegments = (route: string): Route =>
+  route
     .split('/')
     .map((segment): RouteSegment => {
       if (segment.startsWith(':')) {
@@ -87,18 +87,17 @@ export function parseRouteSegments(route: string): Route {
     .filter(segment => {
       return segment.type !== 'literal' || segment.value !== ''
     })
-}
 
 /**
  * Creates a route matcher function that can be used to match paths against a list of routes.
  *
  * @param routes - An array of route strings.
  * @returns A function that can be used to match paths against the provided routes.
- * @public
+ * @internal
  */
-export function makeRouteMatcher<Routes extends string[]>(routes: Routes) {
+export const _makeRouteMatcher = <Routes extends string[]>(routes: Routes) => {
   const routeEntries = routes.map((route: Routes[number]) => {
-    const segments = parseRouteSegments(route)
+    const segments = _parseRouteSegments(route)
     return { route, segments }
   })
 

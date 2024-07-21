@@ -1,7 +1,7 @@
 import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, useProp } from '../std/signal'
-import { removeDOMNode } from '../dom/dom-utils'
+import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
@@ -47,7 +47,7 @@ export const Ensure =
       clearSignal()
       clear?.(removeTree)
       if (removeTree && ctx.reference) {
-        removeDOMNode(ctx.reference)
+        _removeDOMNode(ctx.reference)
       }
     }
   }

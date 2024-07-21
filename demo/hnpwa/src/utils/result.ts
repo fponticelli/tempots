@@ -1,10 +1,10 @@
-export interface Success<V> {
-  type: 'success'
-  value: V
+export type Success<V> = {
+  readonly type: 'success'
+  readonly value: V
 }
-export interface Failure<E> {
-  type: 'failure'
-  error: E
+export type Failure<E> = {
+  readonly type: 'failure'
+  readonly error: E
 }
 
 export type Result<V, E> = Success<V> | Failure<E>

@@ -18,12 +18,14 @@ export type Provider = (node: TNode) => Renderable
  * @returns A unique symbol that can be used as a provider mark.
  * @public
  */
-export function makeProviderMark<T>(identifier: string): ProviderMark<T> {
-  return Symbol(identifier) as ProviderMark<T>
-}
+export const makeProviderMark = <T>(identifier: string): ProviderMark<T> =>
+  Symbol(identifier) as ProviderMark<T>
 
 const providersRenderable =
-  (providers: { [K in ProviderMark<unknown>]: unknown }, node: TNode) =>
+  (
+    providers: { [K in ProviderMark<unknown>]: unknown },
+    node: TNode
+  ): Renderable =>
   (ctx: DOMContext) => {
     return renderableOfTNode(node)(ctx.withProviders(providers))
   }
@@ -35,11 +37,10 @@ const providersRenderable =
  * @returns A new provider function that applies the composed providers in reverse order.
  * @public
  */
-export const Provide = <T extends Provider[]>(...providerFns: T) => {
-  return providerFns.length > 0
+export const Provide = <T extends Provider[]>(...providerFns: T): Provider =>
+  providerFns.length > 0
     ? providerFns.reduceRight((acc, fn) => c => acc(fn(c)))
     : renderableOfTNode
-}
 
 /**
  * Creates a renderable with a provider mark and value.
@@ -57,7 +58,8 @@ export const WithProvider = <T>(
   mark: ProviderMark<T>,
   value: T,
   child: TNode
-) => providersRenderable({ [mark]: value }, renderableOfTNode(child))
+): Renderable =>
+  providersRenderable({ [mark]: value }, renderableOfTNode(child))
 
 /**
  * Renders the given child with the specified providers.
@@ -71,4 +73,4 @@ export const WithProvider = <T>(
 export const WithProviders = <T extends unknown[]>(
   providers: { [K in ProviderMark<T[number]>]: T[number] },
   child: TNode
-) => providersRenderable(providers, renderableOfTNode(child))
+): Renderable => providersRenderable(providers, renderableOfTNode(child))

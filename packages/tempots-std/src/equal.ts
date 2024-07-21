@@ -7,9 +7,8 @@
  * @returns `true` if the values are strictly equal, `false` otherwise.
  * @public
  */
-export function strictEqual<A>(a: A, b: A): boolean {
-  return a === b || (a !== a && b !== b)
-}
+export const strictEqual = <A>(a: A, b: A): boolean =>
+  a === b || (a !== a && b !== b)
 
 /**
  * Checks if two values are equal by comparing their contents.
@@ -20,7 +19,7 @@ export function strictEqual<A>(a: A, b: A): boolean {
  * @returns `true` if the values are deeply equal, `false` otherwise.
  * @public
  */
-export function deepEqual<A>(a: A, b: A): boolean {
+export const deepEqual = <A>(a: A, b: A): boolean => {
   if (strictEqual(a, b)) return true
   if (a == null || b == null) return false
   const aIsArr = Array.isArray(a)
@@ -122,6 +121,4 @@ export function deepEqual<A>(a: A, b: A): boolean {
  * @returns `true` if the values are loosely equal, `false` otherwise.
  * @public
  */
-export function looseEqual<T>(a: T, b: T): boolean {
-  return a == b
-}
+export const looseEqual = <T>(a: T, b: T): boolean => a == b

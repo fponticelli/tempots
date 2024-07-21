@@ -1,4 +1,4 @@
-import { TNode } from '../types/domain'
+import { Renderable, TNode } from '../types/domain'
 import { Task } from './task'
 
 /**
@@ -39,4 +39,4 @@ export type AsyncOptions<T> = {
 export const Async = <T>(
   promise: Promise<T>,
   options: AsyncOptions<T> | ((value: T) => TNode)
-) => Task(() => promise, options)
+): Renderable => Task(() => promise, options)

@@ -4,34 +4,34 @@ import { Maybe } from './domain'
  * Represents the state when a result has not been requested yet.
  * @public
  */
-export interface NotAsked {
-  type: 'NotAsked'
+export type NotAsked = {
+  readonly type: 'NotAsked'
 }
 /**
  * Represents a loading state in an asynchronous result.
  * @public
  */
-export interface Loading<V> {
-  type: 'Loading'
-  previousValue?: V
+export type Loading<V> = {
+  readonly type: 'Loading'
+  readonly previousValue?: V
 }
 /**
  * Represents a successful result.
  * @typeParam V - The type of the value.
  * @public
  */
-export interface AsyncSuccess<V> {
-  type: 'AsyncSuccess'
-  value: V
+export type AsyncSuccess<V> = {
+  readonly type: 'AsyncSuccess'
+  readonly value: V
 }
 /**
  * Represents a failure result.
  * @typeParam E - - The type of the error.
  * @public
  */
-export interface AsyncFailure<E> {
-  type: 'AsyncFailure'
-  error: E
+export type AsyncFailure<E> = {
+  readonly type: 'AsyncFailure'
+  readonly error: E
 }
 
 /**

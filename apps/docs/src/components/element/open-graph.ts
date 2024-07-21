@@ -1,11 +1,11 @@
 import { Fragment, Portal, Signal, Value, attr, useSignal } from '@tempots/dom'
-import { UseLocation, getFullURL } from '@tempots/ui'
+import { UseLocation, urlFromLocation } from '@tempots/ui'
 
-export interface OpenGraphProps {
-  title: Value<string>
-  description?: Value<string | undefined>
-  image?: Value<string | undefined>
-  keywords?: Value<string[] | undefined>
+export type OpenGraphProps = {
+  readonly title: Value<string>
+  readonly description?: Value<string | undefined>
+  readonly image?: Value<string | undefined>
+  readonly keywords?: Value<string[] | undefined>
 }
 
 export function OpenGraph(props: OpenGraphProps) {
@@ -22,7 +22,10 @@ export function OpenGraph(props: OpenGraphProps) {
 
   return UseLocation(location =>
     Fragment(
-      Portal('meta[property="og:url"]', attr.content(location.map(getFullURL))),
+      Portal(
+        'meta[property="og:url"]',
+        attr.content(location.map(urlFromLocation))
+      ),
       Portal('meta[property="og:title"]', attr.content(title)),
       Portal('meta[property="og:description"]', attr.content(description)),
       Portal('meta[property="og:image"]', attr.content(image)),

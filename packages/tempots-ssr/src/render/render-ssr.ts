@@ -47,6 +47,32 @@ const browserSettings: IOptionalBrowserSettings = {
 }
 
 /**
+ * Options for server-side rendering.
+ * @public
+ */
+export type RenderSSROptions = {
+  /**
+   * The HTML content to be rendered.
+   */
+  html: string
+
+  /**
+   * The URL of the page being rendered.
+   */
+  url: string
+
+  /**
+   * The selector for the root element where the app will be mounted.
+   */
+  selector: string
+
+  /**
+   * A function that returns the renderable app component.
+   */
+  makeApp: () => Renderable
+}
+
+/**
  * Renders a DOM tree to a string using a fake dom implementation.
  *
  * @param html - The static HTML where to render the app.
@@ -60,12 +86,7 @@ export async function renderSSR({
   url,
   selector,
   makeApp,
-}: {
-  html: string
-  url: string
-  selector: string
-  makeApp: () => Renderable
-}) {
+}: RenderSSROptions) {
   const browser = new Browser({ settings: browserSettings })
   const page = browser.newPage()
   page.content = html

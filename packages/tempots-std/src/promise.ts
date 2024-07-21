@@ -3,14 +3,14 @@
  *
  * @param ms - The number of milliseconds to sleep.
  * @param options - The options for the sleep function.
- * @param options.abortSignal - The signal to abort the sleep.
  * @returns A promise that resolves after the given number of milliseconds.
+ * @public
  */
-export function sleep(
+export const sleep = (
   ms: number,
   { abortSignal }: { abortSignal?: AbortSignal } = {}
-): Promise<void> {
-  return new Promise((resolve, reject) => {
+): Promise<void> =>
+  new Promise((resolve, reject) => {
     const timeout = setTimeout(resolve, ms)
     if (abortSignal) {
       abortSignal.addEventListener('abort', () => {
@@ -19,4 +19,3 @@ export function sleep(
       })
     }
   })
-}

@@ -11,6 +11,15 @@ import { Value } from '../types/domain'
 export type AnySignal<T = any> = Signal<T> | Prop<T> | Computed<T>
 
 /**
+ * Represents a type that maps each property of `T` to a `Signal` of its corresponding type.
+ * @typeParam T - The type of the object.
+ * @public
+ */
+export type AtGetter<T> = {
+  [K in keyof T]: Signal<T[K]>
+}
+
+/**
  * Represents a signal that holds a value and notifies its listeners when the value changes.
  * @typeParam T - The type of the value held by the signal.
  * @public
@@ -19,19 +28,19 @@ export class Signal<T> {
   /**
    * Creates a Signal that holds the result of a Promise.
    *
-   * @typeParam T - The type of the value returned by the Promise.
+   * @typeParam O - The type of the value returned by the Promise.
    * @param promise - The Promise to use to feed the Signal.
    * @param init - The initial value of the Signal before the Promise resolves.
    * @param recover - A function to recover from Promise rejection and provide an alternative value for the Signal.
-   * @param equals - A function to compare two values of type T for equality. Defaults to strict equality (===).
+   * @param equals - A function to compare two values of type O for equality. Defaults to strict equality (===).
    * @returns - A Signal that represents the result of the Promise.
    */
-  static readonly ofPromise = <T>(
-    promise: Promise<T>,
-    init: T,
-    recover?: (error: unknown) => T,
-    equals: (a: T, b: T) => boolean = (a, b) => a === b
-  ): Signal<T> => {
+  static readonly ofPromise = <O>(
+    promise: Promise<O>,
+    init: O,
+    recover?: (error: unknown) => O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
+  ): Signal<O> => {
     const signal = new Signal(init, equals)
     promise
       .then(value => signal._setAndNotify(value, false))
@@ -54,7 +63,7 @@ export class Signal<T> {
    * @param value - The value to check.
    * @returns `true` if the value is a Signal, `false` otherwise.
    */
-  static readonly is = <T = unknown>(value: unknown): value is Signal<T> =>
+  static readonly is = <O = unknown>(value: unknown): value is Signal<O> =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value != null && (value as any).$__signal__ === true
 
@@ -63,16 +72,16 @@ export class Signal<T> {
    * If the value is already a Signal, it returns the value itself.
    * If the value is not a Signal, it creates a new Signal instance with the given value.
    *
-   * @typeParam T - The type of the value.
+   * @typeParam O - The type of the value.
    * @param value - The value or Signal instance to wrap.
-   * @param equals - Optional. A function that determines if two values are equal. Defaults to strict equality (===).
+   * @param equals - A function that determines if two values are equal. Defaults to strict equality (===).
    * @returns A Signal instance.
    */
-  static readonly wrap = <T>(
-    value: T | Signal<T>,
+  static readonly wrap = <O>(
+    value: O | Signal<O>,
     // istanbul ignore next
-    equals: (a: T, b: T) => boolean = (a, b) => a === b
-  ): Signal<T> => (Signal.is<T>(value) ? value : new Signal(value, equals))
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
+  ): Signal<O> => (Signal.is<O>(value) ? value : new Signal(value, equals))
 
   /**
    * Wraps a value in a `Signal` if it is not already a `Signal`.
@@ -80,9 +89,9 @@ export class Signal<T> {
    * @param value - The value to wrap or check.
    * @returns The wrapped value if it is not `null` or `undefined`, otherwise `null` or `undefined`.
    */
-  static readonly maybeWrap = <T>(
-    value: T | Signal<T> | null | undefined
-  ): Signal<T> | undefined | null =>
+  static readonly maybeWrap = <O>(
+    value: O | Signal<O> | null | undefined
+  ): Signal<O> | undefined | null =>
     value == null ? (value as null | undefined) : Signal.wrap(value)
 
   /**
@@ -91,8 +100,8 @@ export class Signal<T> {
    * @param value - The value to unwrap.
    * @returns The unwrapped value.
    */
-  static readonly unwrap = <T>(value: Signal<T> | T): T =>
-    Signal.is<T>(value) ? value.get() : value
+  static readonly unwrap = <O>(value: Signal<O> | O): O =>
+    Signal.is<O>(value) ? value.get() : value
 
   /**
    * Maps the value of a `Signal` or a regular value using the provided mapping function.
@@ -104,24 +113,39 @@ export class Signal<T> {
    * @returns A new `Signal` with the mapped value if the input value is a `Signal`,
    * otherwise, the result of applying the mapping function to the value.
    *
-   * @typeParam T - The type of the input value.
-   * @typeParam U - The type of the mapped value.
+   * @typeParam N - The type of the input value.
+   * @typeParam O - The type of the mapped value.
    */
-  static readonly map = <T, U>(
-    value: Value<T>,
-    fn: (value: T) => U
-  ): Value<U> => {
-    if (Signal.is<T>(value)) {
+  static readonly map = <N, O>(
+    value: Value<N>,
+    fn: (value: N) => O
+  ): Value<O> => {
+    if (Signal.is<N>(value)) {
       return value.map(fn)
     } else {
       return fn(value)
     }
   }
 
+  /**
+   * @internal
+   */
   protected readonly $__signal__ = true
+  /**
+   * @internal
+   */
   protected _value: T
+  /**
+   * @internal
+   */
   protected readonly _derivatives: Array<Computed<unknown>> = []
+  /**
+   * @internal
+   */
   protected readonly _onValueListeners: Array<(value: T) => void> = []
+  /**
+   * @internal
+   */
   protected readonly _onDisposeListeners: Array<() => void> = []
 
   /**
@@ -173,6 +197,9 @@ export class Signal<T> {
     }
   }
 
+  /**
+   * @internal
+   */
   protected readonly _setAndNotify = (newV: T, forceNotifications: boolean) => {
     const same = this.equals(this._value, newV)
     if (!same) {
@@ -183,6 +210,9 @@ export class Signal<T> {
     }
   }
 
+  /**
+   * @internal
+   */
   protected _disposed = false
 
   /**
@@ -215,14 +245,14 @@ export class Signal<T> {
    * Returns a new Computed instance that applies the given mapping function to the value of this Signal.
    * The mapping function is called whenever the value of this Signal changes.
    *
-   * @typeParam U - The type of the mapped value.
+   * @typeParam O - The type of the mapped value.
    * @param fn - The mapping function to apply to the value of this Signal.
    * @param equals - Optional equality function to determine if two mapped values are equal.
    * @returns - A new Computed instance with the mapped value.
    */
-  readonly map = <U>(
-    fn: (value: T) => U,
-    equals: (a: U, b: U) => boolean = (a, b) => a === b
+  readonly map = <O>(
+    fn: (value: T) => O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     const comp = new Computed(() => {
       try {
@@ -240,15 +270,15 @@ export class Signal<T> {
    * Returns a new Signal that applies the given function to the value of the current Signal,
    * and then flattens the resulting Signal.
    *
-   * @typeParam U - The type of the value emitted by the resulting Signal.
+   * @typeParam O - The type of the value emitted by the resulting Signal.
    * @param fn - The function to apply to the value of the current Signal.
-   * @param equals - Optional. A function that determines whether two values of type U are equal.
+   * @param equals - A function that determines whether two values of type O are equal.
    *               Defaults to a strict equality check (===).
    * @returns A new Signal that emits the values of the resulting Signal.
    */
-  readonly flatMap = <U>(
-    fn: (value: T) => Signal<U>,
-    equals: (a: U, b: U) => boolean = (a, b) => a === b
+  readonly flatMap = <O>(
+    fn: (value: T) => Signal<O>,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     const computed = new Computed(() => {
       try {
@@ -296,16 +326,7 @@ export class Signal<T> {
      * @returns The signal associated with the key.
      */
     get: (_, key) => this.at(key as keyof T),
-  }) as { [K in keyof T]: Signal<T[K]> }
-
-  /**
-   * Returns a new Computed signal that applies the provided filter function to the current value of the signal.
-   * The filter function determines whether the value should be included in the computed signal or not.
-   *
-   * @param fn - The filter function that takes a value of type T and returns a boolean.
-   * @param startValue - Optional. The initial value to use if the signal has no value yet.
-   * @returns A new Computed signal that represents the filtered values of the original signal.
-   */
+  }) as AtGetter<T>
   readonly filter = (fn: (value: T) => boolean, startValue?: T) => {
     let latestValue = startValue ?? this.get()
     const computed = new Computed(() => {
@@ -325,16 +346,16 @@ export class Signal<T> {
    * Returns a new Computed object that applies the provided mapping function to the value of this Signal,
    * and filters out values that are `undefined` or `null`.
    *
-   * @typeParam U - The type of the mapped value.
+   * @typeParam O - The type of the mapped value.
    * @param fn - The mapping function to apply to the value of this Signal.
    * @param startValue - The initial value for the Computed object.
    * @param equals - Optional equality function to determine if two values are equal.
    * @returns - A new Computed object with the mapped and filtered values.
    */
-  readonly filterMap = <U>(
-    fn: (value: T) => U | undefined | null,
-    startValue: U,
-    equals: (a: U, b: U) => boolean = (a, b) => a === b
+  readonly filterMap = <O>(
+    fn: (value: T) => O | undefined | null,
+    startValue: O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     let latestValue = startValue
     const computed = new Computed(() => {
@@ -357,18 +378,18 @@ export class Signal<T> {
    * If a recovery function is provided, it will be called with the error and its return value will be used as the mapped value.
    * If no recovery function is provided, the error will be logged as an unhandled promise rejection.
    *
-   * @typeParam U - The type of the mapped value.
+   * @typeParam O - The type of the mapped value.
    * @param fn - The function to map the values emitted by the signal.
    * @param alt - The alternate value to use if the signal is disposed or the mapping function throws an error.
-   * @param recover - Optional. The recovery function to handle errors thrown by the mapping function.
-   * @param equals - Optional. The equality function to compare the mapped values for equality.
+   * @param recover - The recovery function to handle errors thrown by the mapping function.
+   * @param equals - The equality function to compare the mapped values for equality.
    * @returns A property that holds the mapped value and can be observed for changes.
    */
-  readonly mapAsync = <U>(
-    fn: (value: T) => Promise<U>,
-    alt: U,
-    recover?: (error: unknown) => U,
-    equals: (a: U, b: U) => boolean = (a, b) => a === b
+  readonly mapAsync = <O>(
+    fn: (value: T) => Promise<O>,
+    alt: O,
+    recover?: (error: unknown) => O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     const p = useProp(alt, equals)
     let count = 0
@@ -406,11 +427,12 @@ export class Signal<T> {
    * containing the mapped values. If the mapped value is `undefined` or `null`, it is replaced
    * with the provided `alt` value.
    *
+   * @typeParam O - The type of the mapped value.
    * @param fn - The function used to map the values of the signal.
    * @param alt - The alternative value to use when the mapped value is `undefined` or `null`.
    * @returns A new signal containing the mapped values.
    */
-  readonly mapMaybe = <U>(fn: (value: T) => U | undefined | null, alt: U) =>
+  readonly mapMaybe = <O>(fn: (value: T) => O | undefined | null, alt: O) =>
     this.map(value => fn(value) ?? alt)
 
   /**
@@ -454,7 +476,7 @@ export class Signal<T> {
    * Additionally, when the computed value is disposed, it sets the signal as dirty.
    * @param computed - The computed value to add as a derivative.
    */
-  readonly setDerivative = <U>(computed: Computed<U>) => {
+  readonly setDerivative = <O>(computed: Computed<O>) => {
     this._derivatives.push(computed as Computed<unknown>)
     computed.onDispose(() => {
       this._derivatives.splice(
@@ -491,7 +513,13 @@ export class Computed<T> extends Signal<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return value != null && (value as any).$__computed__ === true
   }
+  /**
+   * @internal
+   */
   protected readonly $__computed__ = true
+  /**
+   * @internal
+   */
   protected _isDirty = false
 
   /**
@@ -517,15 +545,19 @@ export class Computed<T> extends Signal<T> {
     if (this._isDirty || this._disposed) return
     this._isDirty = true
     this._derivatives.forEach(d => d.setDirty())
-    this.scheduleNotify()
+    this._scheduleNotify()
   }
 
+  /**
+   * @internal
+   */
   protected _scheduleCount = 0
   /**
    * Schedules a notification to be executed asynchronously.
    * If the signal is dirty, it will be updated and notified.
+   * @internal
    */
-  protected readonly scheduleNotify = () => {
+  protected readonly _scheduleNotify = () => {
     const count = ++this._scheduleCount
     queue(() => {
       if (this._scheduleCount !== count || this._disposed !== false) return
@@ -607,8 +639,16 @@ export class Prop<T> extends Signal<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value != null && (value as any).$__prop__ === true
 
+  /**
+   * @internal
+   */
   protected readonly $__prop__ = true
 
+  /**
+   * Changes the value of the property and notifies its listeners.
+   *
+   * @param value - The new value of the property.
+   */
   readonly set = (value: T) => {
     this._setAndNotify(value, false)
   }
@@ -653,16 +693,16 @@ export class Prop<T> extends Signal<T> {
    * An isomorphism is a pair of functions that convert values between two types,
    * along with an equality function to compare values of the second type.
    *
-   * @param to - A function that converts values from type T to type U.
-   * @param from - A function that converts values from type U to type T.
-   * @param equals - An optional function that compares values of type U for equality.
+   * @param to - A function that converts values from type T to type O.
+   * @param from - A function that converts values from type O to type T.
+   * @param equals - An optional function that compares values of type O for equality.
    *                Defaults to a strict equality check (===).
    * @returns A Prop object representing the isomorphism.
    */
-  readonly iso = <U>(
-    to: (value: T) => U,
-    from: (value: U) => T,
-    equals: (a: U, b: U) => boolean = (a, b) => a === b
+  readonly iso = <O>(
+    to: (value: T) => O,
+    from: (value: O) => T,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     const prop = new Prop(to(this.get()), equals)
     prop.onDispose(this.on(value => prop.set(to(value))))
@@ -682,7 +722,9 @@ export class Prop<T> extends Signal<T> {
       value => ({ ...this.value, [key]: value })
     )
   }
-  /** {@inheritDoc Signal.get} */
+  /**
+   *  Access for the current value of the property.
+   */
   get value() {
     return this.get()
   }

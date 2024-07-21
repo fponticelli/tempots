@@ -1,5 +1,5 @@
 import type { Renderable, Value } from '../types/domain'
-import { removeDOMNode } from '../dom/dom-utils'
+import { _removeDOMNode } from '../dom/dom-utils'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
 import { _maybeAddTextTracker } from '../dom/ssr'
@@ -15,7 +15,7 @@ export const _staticText =
     ctx.appendOrInsert(node)
     return (removeTree: boolean) => {
       if (removeTree) {
-        removeDOMNode(node)
+        _removeDOMNode(node)
       }
     }
   }
@@ -33,7 +33,7 @@ export const _signalText =
     return (removeTree: boolean) => {
       clear()
       if (removeTree) {
-        removeDOMNode(node)
+        _removeDOMNode(node)
       }
     }
   }
@@ -45,7 +45,7 @@ export const _signalText =
  * @returns A renderable text node.
  * @public
  */
-export function Text(value: Value<string>): Renderable {
+export const TextNode = (value: Value<string>): Renderable => {
   if (Signal.is(value)) {
     return _signalText(value as Signal<string>)
   } else {

@@ -4,17 +4,17 @@ import { Result } from './result'
  * Represents a valid result.
  * @public
  */
-export interface Valid {
-  type: 'valid'
+export type Valid = {
+  readonly type: 'valid'
 }
 /**
  * Represents an invalid value with an associated error.
  * @typeParam E - The type of the error.
  * @public
  */
-export interface Invalid<E> {
-  type: 'invalid'
-  error: E
+export type Invalid<E> = {
+  readonly type: 'invalid'
+  readonly error: E
 }
 
 /**

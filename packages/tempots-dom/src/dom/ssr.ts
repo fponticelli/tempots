@@ -1,7 +1,7 @@
 import { renderableOfTNode } from '../renderable/element'
 import { TNode, Renderable } from '../types/domain'
 import { DOMContext } from './dom-context'
-import { removeDOMNode } from './dom-utils'
+import { _removeDOMNode } from './dom-utils'
 
 const ATTR_NAME = 'data-tempo-attr'
 const CLASS_NAME = 'data-tempo-class'
@@ -76,7 +76,7 @@ export const _addNodeTracker = (element: Element) => {
  */
 export const _removeNodeTrackers = (doc: Document) => {
   doc.querySelectorAll(`[${NODE_NAME}]`).forEach(element => {
-    removeDOMNode(element)
+    _removeDOMNode(element)
   })
 }
 

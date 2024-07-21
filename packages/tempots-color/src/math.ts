@@ -15,11 +15,11 @@ export const EPSILON = 1e-9
  * @returns `true` if the two numbers are very close, `false` otherwise.
  * @public
  **/
-export function nearEquals(
+export const nearEquals = (
   a: number,
   b: number,
   tollerance = EPSILON
-): boolean {
+): boolean => {
   if (isFinite(a)) {
     if (!isFinite(b)) return false
     return Math.abs(a - b) <= tollerance
@@ -34,7 +34,6 @@ export function nearEquals(
 /**
  * `clamp` restricts a value within the specified range.
  *
- * @remarks
  * @example
  * ```ts
  * log(clamp(1.3, 0, 1)) // prints 1
@@ -47,9 +46,8 @@ export function nearEquals(
  * @returns The clamped value.
  * @public
  **/
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max)
 
 /**
  * `clampInt` restricts a value within the specified range and returns an integer.
@@ -60,9 +58,8 @@ export function clamp(value: number, min: number, max: number): number {
  * @returns The clamped value as an integer.
  * @public
  **/
-export function clampInt(value: number, min: number, max: number): number {
-  return Math.trunc(clamp(value, min, max))
-}
+export const clampInt = (value: number, min: number, max: number): number =>
+  Math.trunc(clamp(value, min, max))
 
 /**
  * `lerp` performs a linear interpolation between two values.
@@ -73,11 +70,11 @@ export function clampInt(value: number, min: number, max: number): number {
  * @returns The interpolated value.
  * @public
  **/
-export function distanceFromOriginAngle(
+export const distanceFromOriginAngle = (
   slope: number,
   intercept: number,
   angle: number
-): number {
+): number => {
   const d = intercept / (Math.sin(angle) - slope * Math.cos(angle))
   if (d < 0) {
     return Infinity
@@ -108,7 +105,7 @@ const mB2 = 1.056971514242878
 /**
  * @internal
  */
-export function _calculateBoundingLines(
+export const _calculateBoundingLines = (
   l: number
 ): [
   number,
@@ -123,7 +120,7 @@ export function _calculateBoundingLines(
   number,
   number,
   number,
-] {
+] => {
   const sub1 = (l + 16) ** 3 / 1560896
   const sub2 = sub1 > _epsilon ? sub1 : l / _kappa
   const s1r = sub2 * (284517 * mR0 - 94839 * mR2)
@@ -153,7 +150,7 @@ export function _calculateBoundingLines(
 /**
  * @internal
  */
-export function _calculateMaxChromaHsluv(
+export const _calculateMaxChromaHsluv = (
   h: number,
   r0s: number,
   r0i: number,
@@ -167,7 +164,7 @@ export function _calculateMaxChromaHsluv(
   b0i: number,
   b1s: number,
   b1i: number
-): number {
+): number => {
   const hueRad = (h / 180) * Math.PI
   const r0 = distanceFromOriginAngle(r0s, r0i, hueRad)
   const r1 = distanceFromOriginAngle(r1s, r1i, hueRad)
@@ -179,6 +176,8 @@ export function _calculateMaxChromaHsluv(
 }
 
 /**
+ * Constant value for the white reference.
+ *
  * @public
  */
 export const WHITE_REFERENCE: [number, number, number] = [0.95047, 1, 1.08883]

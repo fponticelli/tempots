@@ -15,9 +15,8 @@ import { objectKeys } from './object'
  * @returns The new array with the results of applying the function to each element.
  * @public
  */
-export function mapArray<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
-  return Array.from({ length: arr.length }, (_, i) => f(arr[i], i))
-}
+export const mapArray = <A, B>(arr: A[], f: (a: A, index: number) => B): B[] =>
+  Array.from({ length: arr.length }, (_, i) => f(arr[i], i))
 
 /**
  * Applies a mapping function to each element of an array and flattens the result.
@@ -29,7 +28,7 @@ export function mapArray<A, B>(arr: A[], f: (a: A, index: number) => B): B[] {
  * @typeParam B - The type of the elements in the resulting flattened array.
  * @public
  */
-export function flatMapArray<A, B>(arr: A[], f: (a: A) => B[]): B[] {
+export const flatMapArray = <A, B>(arr: A[], f: (a: A) => B[]): B[] => {
   const buff: B[] = []
   for (const el of arr) {
     buff.push(...f(el))
@@ -45,9 +44,8 @@ export function flatMapArray<A, B>(arr: A[], f: (a: A) => B[]): B[] {
  * @typeParam A - The type of elements in the array.
  * @public
  */
-export function arrayHead<A>(arr: A[]): Maybe<A> {
-  return arr.length > 0 ? arr[0] : undefined
-}
+export const arrayHead = <A>(arr: A[]): Maybe<A> =>
+  arr.length > 0 ? arr[0] : undefined
 
 /**
  * Returns a new array containing all elements of the input array except for the first element.
@@ -56,9 +54,7 @@ export function arrayHead<A>(arr: A[]): Maybe<A> {
  * @returns A new array containing all elements of the input array except for the first element.
  * @public
  */
-export function arrayTail<A>(arr: A[]): A[] {
-  return arr.slice(1)
-}
+export const arrayTail = <A>(arr: A[]): A[] => arr.slice(1)
 
 /**
  * Checks if two arrays are equal based on a custom equality function.
@@ -70,11 +66,11 @@ export function arrayTail<A>(arr: A[]): A[] {
  * @returns Returns `true` if the arrays are equal, `false` otherwise.
  * @public
  */
-export function areArraysEqual<T>(
+export const areArraysEqual = <T>(
   a: T[],
   b: T[],
   equality: (a: T, b: T) => boolean
-): boolean {
+): boolean => {
   if (a.length !== b.length) return false
   else {
     for (let i = 0; i < a.length; i++) {
@@ -91,9 +87,7 @@ export function areArraysEqual<T>(
  * @returns `true` if the array is empty, `false` otherwise.
  * @public
  */
-export function isArrayEmpty<T>(arr: T[]): arr is [] {
-  return arr.length === 0
-}
+export const isArrayEmpty = <T>(arr: T[]): arr is [] => arr.length === 0
 
 /**
  * Checks if an array has values.
@@ -102,9 +96,8 @@ export function isArrayEmpty<T>(arr: T[]): arr is [] {
  * @returns `true` if the array has values, `false` otherwise.
  * @public
  */
-export function arrayHasValues<T>(arr: T[]): arr is [T, ...T[]] {
-  return arr.length > 0
-}
+export const arrayHasValues = <T>(arr: T[]): arr is [T, ...T[]] =>
+  arr.length > 0
 
 /**
  * Filters the elements of an array based on a predicate function.
@@ -115,7 +108,7 @@ export function arrayHasValues<T>(arr: T[]): arr is [T, ...T[]] {
  * @returns The filtered array.
  * @public
  */
-export function filterArray<T>(arr: T[], predicate: (v: T) => boolean): T[] {
+export const filterArray = <T>(arr: T[], predicate: (v: T) => boolean): T[] => {
   const buff = [] as T[]
   for (const a of arr) if (predicate(a)) buff.push(a)
   return buff
@@ -132,10 +125,10 @@ export function filterArray<T>(arr: T[], predicate: (v: T) => boolean): T[] {
  * @returns The new array containing the mapped values.
  * @public
  */
-export function filterMapArray<A, B>(
+export const filterMapArray = <A, B>(
   arr: A[],
   f: (a: A, index: number) => Maybe<B>
-): B[] {
+): B[] => {
   const buff = [] as B[]
   for (let i = 0; i < arr.length; i++) {
     const v = f(arr[i], i)
@@ -154,9 +147,8 @@ export function filterMapArray<A, B>(
  * @returns The filtered array.
  * @public
  */
-export function filterNullsFromArray<T>(arr: Array<T | Nothing>): T[] {
-  return filterArray(arr, v => v != null) as T[]
-}
+export const filterNullsFromArray = <T>(arr: Array<T | Nothing>): T[] =>
+  filterArray(arr, v => v != null) as T[]
 
 /**
  * Flattens a two-dimensional array into a one-dimensional array.
@@ -166,9 +158,7 @@ export function filterNullsFromArray<T>(arr: Array<T | Nothing>): T[] {
  * @typeParam T - The type of elements in the array.
  * @public
  */
-export function flattenArray<T>(arr: T[][]): T[] {
-  return ([] as T[]).concat(...arr)
-}
+export const flattenArray = <T>(arr: T[][]): T[] => ([] as T[]).concat(...arr)
 
 /**
  * Applies a function to each element of an array, accumulating the result from left to right.
@@ -181,11 +171,11 @@ export function flattenArray<T>(arr: T[][]): T[] {
  * @returns The accumulated result.
  * @public
  */
-export function foldLeftArray<T, B>(
+export const foldLeftArray = <T, B>(
   arr: T[],
   f: (acc: B, curr: T) => B,
   b: B
-): B {
+): B => {
   for (const a of arr) {
     b = f(b, a)
   }
@@ -201,10 +191,10 @@ export function foldLeftArray<T, B>(
  * @typeParam T - The type of elements in the array.
  * @public
  */
-export function allElements<T>(
+export const allElements = <T>(
   arr: T[],
   predicate: (v: T) => boolean
-): boolean {
+): boolean => {
   for (const a of arr) {
     if (!predicate(a)) {
       return false
@@ -222,7 +212,10 @@ export function allElements<T>(
  * @typeParam T - The type of elements in the array.
  * @public
  */
-export function anyElement<T>(arr: T[], predicate: (v: T) => boolean): boolean {
+export const anyElement = <T>(
+  arr: T[],
+  predicate: (v: T) => boolean
+): boolean => {
   for (const a of arr) {
     if (predicate(a)) {
       return true
@@ -239,7 +232,7 @@ export function anyElement<T>(arr: T[], predicate: (v: T) => boolean): boolean {
  * @param f - The function to apply to each element.
  * @public
  */
-export function forEachElement<T>(arr: T[], f: (v: T) => void): void {
+export const forEachElement = <T>(arr: T[], f: (v: T) => void): void => {
   for (const a of arr) f(a)
 }
 
@@ -251,9 +244,8 @@ export function forEachElement<T>(arr: T[], f: (v: T) => void): void {
  * @typeParam A - The type of elements in the arrays.
  * @public
  */
-export function concatArrays<A>(...arrs: A[][]): A[] {
-  return ([] as A[]).concat(...arrs)
-}
+export const concatArrays = <A>(...arrs: A[][]): A[] =>
+  ([] as A[]).concat(...arrs)
 
 /**
  * Compares two arrays based on their lengths and element values.
@@ -262,16 +254,16 @@ export function concatArrays<A>(...arrs: A[][]): A[] {
  * @param a - The first array to compare.
  * @param b - The second array to compare.
  * @param comparef - The compare function to use for comparing the elements of the arrays.
- * @param shorterFirst - Optional. Specifies whether shorter arrays should be considered smaller. Defaults to true.
+ * @param shorterFirst - Specifies whether shorter arrays should be considered smaller. Defaults to true.
  * @returns A compare function that can be used to compare arrays.
  * @public
  */
-export function compareArrays<A>(
+export const compareArrays = <A>(
   a: A[],
   b: A[],
   comparef: Compare<A>,
   shorterFirst = true
-) {
+) => {
   if (a.length < b.length) {
     return -1 * (shorterFirst ? 1 : -1)
   } else if (a.length > b.length) {
@@ -293,9 +285,8 @@ export function compareArrays<A>(
  * @returns The sorted array.
  * @public
  */
-export function sortArray<A>(arr: A[], compare: Compare<A>): A[] {
-  return arr.slice().sort(compare)
-}
+export const sortArray = <A>(arr: A[], compare: Compare<A>): A[] =>
+  arr.slice().sort(compare)
 
 /**
  * Generates an array of values by applying a function to each index.
@@ -305,9 +296,10 @@ export function sortArray<A>(arr: A[], compare: Compare<A>): A[] {
  * @returns An array of values generated by applying the function to each index.
  * @public
  */
-export function generateArray<A>(length: number, f: (index: number) => A): A[] {
-  return Array.from({ length }, (_, i) => f(i))
-}
+export const generateArray = <A>(
+  length: number,
+  f: (index: number) => A
+): A[] => Array.from({ length }, (_, i) => f(i))
 
 /**
  * Generates an array of numbers in a specified range.
@@ -317,9 +309,8 @@ export function generateArray<A>(length: number, f: (index: number) => A): A[] {
  * @returns An array of numbers in the specified range.
  * @public
  */
-export function generateSequenceArray(length: number, startAt = 0): number[] {
-  return generateArray(length, i => startAt + i)
-}
+export const generateSequenceArray = (length: number, startAt = 0): number[] =>
+  generateArray(length, i => startAt + i)
 
 /**
  * Creates a new array with the specified length and fills it with the provided value.
@@ -330,9 +321,8 @@ export function generateSequenceArray(length: number, startAt = 0): number[] {
  * @returns A new array filled with the specified value.
  * @public
  */
-export function createFilledArray<A>(length: number, value: A): A[] {
-  return generateArray(length, () => value)
-}
+export const createFilledArray = <A>(length: number, value: A): A[] =>
+  generateArray(length, () => value)
 
 /**
  * Returns an array containing only the distinct primitive values from the input array.
@@ -342,9 +332,8 @@ export function createFilledArray<A>(length: number, value: A): A[] {
  * @returns An array containing only the distinct primitive values from the input array.
  * @public
  */
-export function uniquePrimitives<T extends Primitive>(values: T[]): T[] {
-  return Array.from(new Set(values))
-}
+export const uniquePrimitives = <T extends Primitive>(values: T[]): T[] =>
+  Array.from(new Set(values))
 
 /**
  * Returns an array of distinct elements from the input array based on the provided predicate.
@@ -355,10 +344,10 @@ export function uniquePrimitives<T extends Primitive>(values: T[]): T[] {
  * @returns An array of distinct elements.
  * @public
  */
-export function uniqueByPredicate<T>(
+export const uniqueByPredicate = <T>(
   values: T[],
   predicate: (a: T) => string
-): T[] {
+): T[] => {
   const map: Record<string, T> = {}
   values.forEach(v => {
     map[predicate(v)] = v
@@ -375,7 +364,7 @@ export function uniqueByPredicate<T>(
  * @returns `true` if the item was found and removed, `false` otherwise.
  * @public
  */
-export function removeOneFromArray<A>(arr: A[], item: A): boolean {
+export const removeOneFromArray = <A>(arr: A[], item: A): boolean => {
   const index = arr.indexOf(item)
   if (index < 0) {
     return false
@@ -394,7 +383,7 @@ export function removeOneFromArray<A>(arr: A[], item: A): boolean {
  * @returns `true` if at least one occurrence was found and removed, `false` otherwise.
  * @public
  */
-export function removeAllFromArray<A>(arr: A[], item: A): boolean {
+export const removeAllFromArray = <A>(arr: A[], item: A): boolean => {
   let removed = false
   while (removeOneFromArray(arr, item)) {
     removed = true
@@ -411,10 +400,10 @@ export function removeAllFromArray<A>(arr: A[], item: A): boolean {
  * @returns `true` if at least one element was removed, `false` otherwise.
  * @public
  */
-export function removeOneFromArrayByPredicate<A>(
+export const removeOneFromArrayByPredicate = <A>(
   arr: A[],
   predicate: (a: A) => boolean
-): boolean {
+): boolean => {
   const index = arr.findIndex(predicate)
   if (index < 0) {
     return false
@@ -433,10 +422,10 @@ export function removeOneFromArrayByPredicate<A>(
  * @returns `true` if at least one element was removed, `false` otherwise.
  * @public
  */
-export function removeAllFromArrayByPredicate<A>(
+export const removeAllFromArrayByPredicate = <A>(
   arr: A[],
   predicate: (a: A) => boolean
-): boolean {
+): boolean => {
   let removed = false
   while (removeOneFromArrayByPredicate(arr, predicate)) {
     removed = true
@@ -451,7 +440,7 @@ export function removeAllFromArrayByPredicate<A>(
  * @returns An array containing the values from the IterableIterator.
  * @public
  */
-export function arrayOfIterableIterator<A>(it: IterableIterator<A>): A[] {
+export const arrayOfIterableIterator = <A>(it: IterableIterator<A>): A[] => {
   const buff = [] as A[]
   for (let r = it.next(); !(r.done ?? false); r = it.next()) {
     buff.push(r.value)
@@ -464,7 +453,7 @@ export function arrayOfIterableIterator<A>(it: IterableIterator<A>): A[] {
  *
  * @public
  */
-export interface ArrayDiffOperations<T> {
+export type ArrayDiffOperations<T> = {
   removals: Array<{ at: number; qt: number }>
   swaps: Array<{ from: number; to: number }>
   inserts: Array<{ at: number; values: T[] }>
@@ -481,11 +470,11 @@ export interface ArrayDiffOperations<T> {
  * @returns The difference operations between the two arrays.
  * @public
  */
-export function arrayDiffOperations<T, K>(
+export const arrayDiffOperations = <T, K>(
   from: T[],
   to: T[],
   getKey: (v: T) => K
-): ArrayDiffOperations<T> {
+): ArrayDiffOperations<T> => {
   const ops: ArrayDiffOperations<T> = {
     removals: [],
     swaps: [],
@@ -556,10 +545,10 @@ export function arrayDiffOperations<T, K>(
  * @returns The modified array after applying the operations.
  * @public
  */
-export function applyArrayDiffOperations<T>(
+export const applyArrayDiffOperations = <T>(
   operations: ArrayDiffOperations<T>,
   start: T[]
-): T[] {
+): T[] => {
   const buff = [...start]
   for (const { at, qt } of operations.removals) {
     buff.splice(at, qt)
@@ -584,11 +573,11 @@ export function applyArrayDiffOperations<T>(
  * @returns The joined string.
  * @public
  */
-export function joinArrayWithConjunction<A>(
+export const joinArrayWithConjunction = <A>(
   arr: A[],
   conjunction = ' and ',
   separator = ', '
-): string {
+): string => {
   if (arr.length === 0) return ''
   if (arr.length === 1) return String(arr[0])
   return `${arr.slice(0, -1).join(separator)}${conjunction}${String(arr[arr.length - 1])}`
@@ -606,11 +595,11 @@ export function joinArrayWithConjunction<A>(
  * @returns An array of ranks corresponding to the elements in the input array.
  * @public
  */
-export function rankArray<T>(
+export const rankArray = <T>(
   array: T[],
   compare: (a: T, b: T) => number,
   incrementDuplicates: boolean = true
-): number[] {
+): number[] => {
   const arr = array.map((v, i): [T, number] => [v, i])
   arr.sort((a, b) => compare(a[0], b[0]))
   const ranks = new Array<number>(arr.length)

@@ -16,19 +16,19 @@ import {
  *
  * @public
  */
-export interface LocationData {
+export type LocationData = {
   /**
    * The pathname of the location.
    */
-  pathname: string
+  readonly pathname: string
   /**
    * The search parameters of the location.
    */
-  search: Record<string, string>
+  readonly search: Record<string, string>
   /**
    * The hash of the location.
    */
-  hash?: string
+  readonly hash?: string
 }
 
 /**
@@ -42,9 +42,9 @@ export const LocationProviderMarker =
 /**
  * Creates a location object based on the current browser location.
  * @returns The location object representing the current browser location.
- * @public
+ * @internal
  */
-export const makeLocation = (): LocationData => {
+export const _makeLocation = (): LocationData => {
   const hash =
     window?.location.hash === ''
       ? undefined
@@ -65,7 +65,7 @@ export const makeLocation = (): LocationData => {
  * @returns True if the location objects are equal, false otherwise.
  * @public
  */
-export const equalsLocation = (a: LocationData, b: LocationData) =>
+export const areLocationsEqual = (a: LocationData, b: LocationData) =>
   a.pathname === b.pathname &&
   JSON.stringify(a.search) === JSON.stringify(b.search) &&
   a.hash === b.hash
@@ -110,7 +110,7 @@ export const setLocationFromUrl = (prop: Prop<LocationData>, url: string) => {
  * @returns The full URL string.
  * @public
  */
-export const getFullURL = (location: LocationData) => {
+export const urlFromLocation = (location: LocationData) => {
   const search = new URLSearchParams(location.search)
   const searchStr = search.toString()
   const hash = location.hash
@@ -124,10 +124,10 @@ export const getFullURL = (location: LocationData) => {
  * The location prop is updated whenever the browser location changes.
  *
  * @returns The location prop.
- * @public
+ * @internal
  */
-export const makeLocationProp = (): Prop<LocationData> => {
-  const location = useProp(makeLocation(), equalsLocation)
+export const _makeLocationProp = (): Prop<LocationData> => {
+  const location = useProp(_makeLocation(), areLocationsEqual)
 
   const handler = () => {
     let hash = window?.location.hash ?? ''
@@ -151,7 +151,7 @@ export const makeLocationProp = (): Prop<LocationData> => {
   })
 
   location.on((location: LocationData) => {
-    window?.history.pushState({}, '', getFullURL(location))
+    window?.history.pushState({}, '', urlFromLocation(location))
   })
 
   return location
@@ -164,7 +164,7 @@ export const makeLocationProp = (): Prop<LocationData> => {
  * @public
  */
 export const ProvideLocation = (child: TNode) => {
-  const location = makeLocationProp()
+  const location = _makeLocationProp()
 
   return Fragment(
     OnUnmount(location.dispose),

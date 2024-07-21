@@ -1,4 +1,4 @@
-export interface AnimatableProps {
+export type AnimatableProps = {
   width?: number
   maxWidth?: number
   minWidth?: number
@@ -61,7 +61,7 @@ export type ColorChannels = [
   'rgba' | 'hex' | 'hsla',
 ]
 
-export function parseColorChannels(color: string): ColorChannels {
+export const parseColorChannels = (color: string): ColorChannels => {
   let match = color.match(/rgba?\((\d+), (\d+), (\d+)(, (\d+))?\)/)
   if (match != null) {
     return [
@@ -142,7 +142,7 @@ function boxShadowToString(shadow: BoxShadow): string {
   return `${inset ? 'inset ' : ''}${x}px ${y}px ${blur}px ${spread}px ${color}`
 }
 
-export function colorChannelsToString(channels: ColorChannels): string {
+export const colorChannelsToString = (channels: ColorChannels): string => {
   if (channels[4] === 'rgba') {
     return `rgba(${channels[0]}, ${channels[1]}, ${channels[2]}, ${channels[3]})`
   } else if (channels[4] === 'hex') {
@@ -153,10 +153,10 @@ export function colorChannelsToString(channels: ColorChannels): string {
   return ''
 }
 
-export function interpolateColor(
+export const interpolateColor = (
   startColor: string,
   endColor: string
-): (t: number) => string {
+): ((t: number) => string) => {
   const [startR, startG, startB, startA, startType] =
     parseColorChannels(startColor)
   const [endR, endG, endB, endA] = parseColorChannels(endColor)
@@ -169,10 +169,10 @@ export function interpolateColor(
   }
 }
 
-export function interpolateShadow(
+export const interpolateShadow = (
   startShadow: string,
   endShadow: string
-): (t: number) => string {
+): ((t: number) => string) => {
   const start = parseBoxShadow(startShadow)
   const end = parseBoxShadow(endShadow)
   return (t: number) => {
@@ -185,10 +185,10 @@ export function interpolateShadow(
   }
 }
 
-export function getComputedAnimatableProp(
+export const getComputedAnimatableProp = (
   styles: CSSStyleDeclaration,
   key: keyof AnimatableProps
-): AnimatableProps[typeof key] {
+): AnimatableProps[typeof key] => {
   if (key === 'translateX') {
     return new WebKitCSSMatrix(styles.transform).m41
   } else if (key === 'translateY') {
@@ -231,10 +231,10 @@ export function getComputedAnimatableProp(
   return Number(styles.getPropertyValue(key))
 }
 
-export function getComputedAnimatable(
+export const getComputedAnimatable = (
   el: HTMLElement,
   styles: AnimatableProps
-): AnimatableProps {
+): AnimatableProps => {
   const result: AnimatableProps = {}
   const computedStyles = getComputedStyle(el)
   for (const [key, value] of Object.entries(styles)) {
@@ -246,11 +246,11 @@ export function getComputedAnimatable(
   return result
 }
 
-export function applyAnimatableProp(
+export const applyAnimatableProp = (
   el: HTMLElement,
   key: keyof AnimatableProps,
   value: AnimatableProps[typeof key]
-): void {
+): void => {
   if (value == null) return
 
   if (key === 'translateX') {
@@ -324,13 +324,13 @@ function getShadowInterpolation(
   return getInterpolate(from, to, 's')
 }
 
-export function applyInterpolatedAnimatableProp(
+export const applyInterpolatedAnimatableProp = (
   el: HTMLElement,
   key: keyof AnimatableProps,
   from: AnimatableProps[typeof key],
   to: AnimatableProps[typeof key],
   progress: number
-): void {
+): void => {
   if (from != null && to != null) {
     if (typeof from === 'number' && typeof to === 'number') {
       const value = from + (to - from) * progress
@@ -356,12 +356,12 @@ export function applyInterpolatedAnimatableProp(
   }
 }
 
-export function applyInterpolatedAnimatable(
+export const applyInterpolatedAnimatable = (
   el: HTMLElement,
   from: AnimatableProps,
   to: AnimatableProps,
   progress: number
-): void {
+): void => {
   el.style.transform = ''
   el.style.filter = ''
   for (const [key, value] of Object.entries(to)) {
@@ -370,10 +370,10 @@ export function applyInterpolatedAnimatable(
   }
 }
 
-export function applyAnimatable(
+export const applyAnimatable = (
   el: HTMLElement,
   styles: AnimatableProps
-): void {
+): void => {
   el.style.transform = ''
   el.style.filter = ''
   for (const [key, value] of Object.entries(styles)) {

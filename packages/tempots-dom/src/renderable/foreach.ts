@@ -15,7 +15,7 @@ import { OneOfValue } from './oneof'
  * @typeParam T - The type of items in the array.
  * @param signal - The signal of arrays to iterate over.
  * @param item - The function that renders each item in the array.
- * @param separator - Optional. The function that renders the separator between items.
+ * @param separator - The function that renders the separator between items.
  * @returns - The renderable function that renders the list of items.
  * @public
  */

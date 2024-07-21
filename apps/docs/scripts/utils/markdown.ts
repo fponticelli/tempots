@@ -1,7 +1,18 @@
-import { marked } from 'marked'
+import { Marked } from 'marked'
+import { markedHighlight } from "marked-highlight";
 import fm from 'front-matter'
-import { highlightShell, highlightTS } from './highlight'
+import hljs from 'highlight.js'
 import { Browser, IOptionalBrowserSettings } from 'happy-dom'
+
+const marked = new Marked(
+  markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight(code, lang, info) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    }
+  })
+);
 
 // const renameHtml = (path: string) => {
 //   const hasLeadingHash = path.startsWith('#')
@@ -43,21 +54,17 @@ export const markdownToHTML = async (
   content: string,
   { anchorMangler, domMangler }: ManglerOptions = {}
 ) => {
-  const rawHtml = await marked(content)
+  content = content.replace(/export declare/g, 'declare')
+  let rawHtml = await marked.parse(content, { gfm: true })
+
+  // this is to avoid a bug with &lt; and &gt; being replaced by < and >
+  rawHtml = rawHtml
+    .replace(/&lt;/g, '↞↞↞')
+    .replace(/&gt;/g, '↠↠↠')
   const browser = new Browser({ settings: browserSettings })
   const page = browser.newPage()
   page.content = rawHtml
   const document = page.mainFrame.document
-  let codes = document.querySelectorAll('.language-ts,.language-typescript')
-  for (let i = 0; i < codes.length; i++) {
-    const code = codes[i]
-    code.innerHTML = highlightTS(code.textContent || '')
-  }
-  codes = document.querySelectorAll('.language-sh,.language-bash,.language-shell')
-  for (let i = 0; i < codes.length; i++) {
-    const code = codes[i]
-    code.innerHTML = highlightShell(code.textContent || '')
-  }
 
   const anchors = document.querySelectorAll('a')
   for (let i = 0; i < anchors.length; i++) {
@@ -90,12 +97,11 @@ export const markdownToHTML = async (
   }
 
   const el = document.body
-  // while (el.childNodes.length === 1) {
-  //   if (!el.firstElementTNode) break
-  //   el = el.firstElementTNode as HTMLElement
-  // }
-  // console.log(el.nodeName)
-  return el.innerHTML
+
+  let value = el.innerHTML
+  value = value.replace(/↞↞↞/g, '&lt;').replace(/↠↠↠/g, '&gt;')
+
+  return value
 }
 
 export type ManglerOptions = {
@@ -104,9 +110,10 @@ export type ManglerOptions = {
   domMangler?: (doc: Document) => void
 }
 
-function removeComments(md: string) {
-  return md.replace(/<!--[\s\S]*?--!?>|<!--[\s\S]*?$|^[\s\S]*?--!?>/, '')
-}
+const COMMENTS_PATTERN = /<!--[\s\S]*?--[!]?>|<!--[\s\S]*?$|^[\s\S]*?--[!]?>/g
+
+const removeComments = (md: string) =>
+  md.replace(COMMENTS_PATTERN, '')
 
 export const markdownWithFM = async (
   content: string,

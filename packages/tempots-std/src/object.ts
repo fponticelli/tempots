@@ -7,9 +7,8 @@ import { IndexKey, Merge, TupleToUnion } from './domain'
  * @returns An array of keys from the object.
  * @public
  */
-export function objectKeys<T extends object>(obj: T): Array<keyof T> {
-  return Object.keys(obj) as Array<keyof T>
-}
+export const objectKeys = <T extends object>(obj: T): Array<keyof T> =>
+  Object.keys(obj) as Array<keyof T>
 
 /**
  * Checks if two objects have the same keys.
@@ -19,7 +18,7 @@ export function objectKeys<T extends object>(obj: T): Array<keyof T> {
  * @returns `true` if both objects have the same keys, `false` otherwise.
  * @public
  */
-export function sameObjectKeys<T extends object>(a: T, b: T): boolean {
+export const sameObjectKeys = <T extends object>(a: T, b: T): boolean => {
   const ak = objectKeys(a)
   const bk = objectKeys(b)
   if (ak.length !== bk.length) return false
@@ -36,9 +35,8 @@ export function sameObjectKeys<T extends object>(a: T, b: T): boolean {
  * @returns `true` if the value is an object, `false` otherwise.
  * @public
  */
-export function isObject(obj: unknown): obj is Record<IndexKey, unknown> {
-  return obj != null && Object.getPrototypeOf(obj) === Object.prototype
-}
+export const isObject = (obj: unknown): obj is Record<IndexKey, unknown> =>
+  obj != null && Object.getPrototypeOf(obj) === Object.prototype
 
 /**
  * Removes specified fields from an object and returns a new object without those fields.
@@ -48,10 +46,10 @@ export function isObject(obj: unknown): obj is Record<IndexKey, unknown> {
  * @returns A new object without the specified fields.
  * @public
  */
-export function removeObjectFields<T extends object, F extends Array<keyof T>>(
+export const removeObjectFields = <T extends object, F extends Array<keyof T>>(
   ob: T,
   ...fields: F
-): Omit<T, TupleToUnion<F>> {
+): Omit<T, TupleToUnion<F>> => {
   const ks = objectKeys(ob)
   return ks.reduce((acc: Record<IndexKey, unknown>, key) => {
     if (!fields.includes(key)) acc[key] = ob[key]
@@ -69,12 +67,13 @@ export function removeObjectFields<T extends object, F extends Array<keyof T>>(
  * @returns The merged object.
  * @public
  */
-export function mergeObjects<
+export const mergeObjects = <
   A extends Record<IndexKey, unknown>,
   B extends Record<IndexKey, unknown>,
->(a: A, b: B): Merge<A, B> {
-  return Object.assign({}, a, b) as Merge<A, B>
-}
+>(
+  a: A,
+  b: B
+): Merge<A, B> => Object.assign({}, a, b) as Merge<A, B>
 
 /**
  * Checks if an object is empty.
@@ -84,6 +83,5 @@ export function mergeObjects<
  * @returns `true` if the object is empty, `false` otherwise.
  * @public
  */
-export function isEmptyObject(obj: object): boolean {
-  return Object.keys(obj).length === 0
-}
+export const isEmptyObject = (obj: object): boolean =>
+  Object.keys(obj).length === 0

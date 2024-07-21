@@ -10,7 +10,13 @@ export class ElementPosition {
    * @param total - The total number of elements in the collection.
    */
   constructor(
+    /**
+     * The index of the element.
+     */
     readonly index: number,
+    /**
+     * The total number of elements in the collection.
+     */
     readonly total: number
   ) {}
 

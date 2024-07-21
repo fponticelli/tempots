@@ -1,6 +1,6 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { removeDOMNode } from '../dom/dom-utils'
+import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
@@ -60,7 +60,7 @@ export const Task = <T>(
       active = false
       clear(removeTree)
       if (removeTree && ctx.reference) {
-        removeDOMNode(ctx.reference)
+        _removeDOMNode(ctx.reference)
       }
     }
   }

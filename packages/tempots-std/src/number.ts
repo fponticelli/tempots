@@ -1,8 +1,9 @@
 import { lpad } from './string'
 
 /**
-  Constant value employed to see if two `number` values are very close.
-**/
+ * Constant value employed to see if two `number` values are very close.
+ * @public
+ */
 export const EPSILON = 1e-9
 
 /**
@@ -13,7 +14,6 @@ export const EPSILON = 1e-9
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The difference between the two angles.
  * @public
- * @remarks
  * @example
  * ```ts
  * angleDifference(0, 90) // returns 90
@@ -22,7 +22,7 @@ export const EPSILON = 1e-9
  * angleDifference(270, 0) // returns 90
  * ```
  */
-export function angleDifference(a: number, b: number, turn = 360.0): number {
+export const angleDifference = (a: number, b: number, turn = 360.0): number => {
   let r = (b - a) % turn
   if (r < 0) r += turn
   if (r > turn / 2) r -= turn
@@ -36,7 +36,6 @@ export function angleDifference(a: number, b: number, turn = 360.0): number {
  * @param decimals - The number of decimals to round up to.
  * @returns The rounded up number.
  * @public
- * @remarks
  * @example
  * ```ts
  * ceilTo(1.234, 2) // returns 1.24
@@ -44,7 +43,7 @@ export function angleDifference(a: number, b: number, turn = 360.0): number {
  * ceilTo(1.234, 0) // returns 2
  * ```
  */
-export function ceilTo(v: number, decimals: number): number {
+export const ceilTo = (v: number, decimals: number): number => {
   const p = Math.pow(10, decimals)
   return Math.ceil(v * p) / p
 }
@@ -57,7 +56,6 @@ export function ceilTo(v: number, decimals: number): number {
  * @param max - The maximum value.
  * @returns The clamped value.
  * @public
- * @remarks
  * @example
  * ```ts
  * clamp(1.3, 0, 1) // returns 1
@@ -65,9 +63,8 @@ export function ceilTo(v: number, decimals: number): number {
  * clamp(-0.5, 0, 1) // returns 0.0
  * ```
  **/
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max)
 
 /**
  * Clamps a number to a specified range and returns an integer value.
@@ -77,7 +74,6 @@ export function clamp(value: number, min: number, max: number): number {
  * @param max - The maximum value of the range.
  * @returns The clamped integer value.
  * @public
- * @remarks
  * @example
  * ```ts
  * clampInt(5, 0, 10) // returns 5
@@ -85,9 +81,8 @@ export function clamp(value: number, min: number, max: number): number {
  * clampInt(-5, 0, 10) // returns 0
  * ```
  **/
-export function clampInt(value: number, min: number, max: number): number {
-  return Math.trunc(clamp(value, min, max))
-}
+export const clampInt = (value: number, min: number, max: number): number =>
+  Math.trunc(clamp(value, min, max))
 
 /**
  * Like clamp but you only pass one argument (`max`) that is used as the upper limit
@@ -97,7 +92,6 @@ export function clampInt(value: number, min: number, max: number): number {
  * @param max - The maximum value.
  * @returns The clamped value.
  * @public
- * @remarks
  * @example
  * ```ts
  * clampSym(5, 10) // returns 5
@@ -106,9 +100,7 @@ export function clampInt(value: number, min: number, max: number): number {
  * clampSym(-15, 10) // returns -10
  * ```
  **/
-export function clampSym(v: number, max: number): number {
-  return clamp(v, -max, max)
-}
+export const clampSym = (v: number, max: number): number => clamp(v, -max, max)
 
 /**
  * It returns the comparison value (an integer number) between two `float` values.
@@ -117,7 +109,6 @@ export function clampSym(v: number, max: number): number {
  * @param b - The second value to compare.
  * @returns A number indicating the relative order of the two values.
  * @public
- * @remarks
  * @example
  * ```ts
  * compare(5, 10) // returns -1
@@ -125,9 +116,8 @@ export function clampSym(v: number, max: number): number {
  * compare(5, 5) // returns 0
  * ```
  **/
-export function compareNumbers(a: number, b: number): number {
-  return a < b ? -1 : a > b ? 1 : 0
-}
+export const compareNumbers = (a: number, b: number): number =>
+  a < b ? -1 : a > b ? 1 : 0
 
 /**
  * Rounds a number down to the specified number of decimals.
@@ -136,7 +126,6 @@ export function compareNumbers(a: number, b: number): number {
  * @param decimals - The number of decimals to round down to.
  * @returns The rounded down number.
  * @public
- * @remarks
  * @example
  * ```ts
  * floorTo(1.234, 2) // returns 1.23
@@ -144,7 +133,7 @@ export function compareNumbers(a: number, b: number): number {
  * floorTo(1.234, 0) // returns 1
  * ```
  **/
-export function floorTo(v: number, decimals: number): number {
+export const floorTo = (v: number, decimals: number): number => {
   const p = Math.pow(10, decimals)
   return Math.floor(v * p) / p
 }
@@ -156,7 +145,6 @@ export function floorTo(v: number, decimals: number): number {
  * @param length - The desired length of the hexadecimal string. Defaults to 0.
  * @returns The hexadecimal representation of the number.
  * @public
- * @remarks
  * @example
  * ```ts
  * toHex(255) // returns 'ff'
@@ -164,9 +152,8 @@ export function floorTo(v: number, decimals: number): number {
  * toHex(255, 8) // returns '000000ff'
  * ```
  */
-export function toHex(num: number, length = 0): string {
-  return lpad(num.toString(16), '0', length)
-}
+export const toHex = (num: number, length = 0): string =>
+  lpad(num.toString(16), '0', length)
 
 /**
  * `interpolate` returns a value between `a` and `b` for any value of `t` (normally between 0 and 1).
@@ -176,7 +163,6 @@ export function toHex(num: number, length = 0): string {
  * @param t - The interpolation value.
  * @returns The interpolated value.
  * @public
- * @remarks
  * @example
  * ```ts
  * interpolate(0, 10, 0.5) // returns 5
@@ -184,7 +170,7 @@ export function toHex(num: number, length = 0): string {
  * interpolate(0, 10, 0.75) // returns 7.5
  * ```
  **/
-export function interpolate(a: number, b: number, t: number): number {
+export const interpolate = (a: number, b: number, t: number): number => {
   return (b - a) * t + a
 }
 
@@ -198,7 +184,6 @@ export function interpolate(a: number, b: number, t: number): number {
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
- * @remarks
  * @example
  * ```ts
  * interpolateAngle(0, 90, 0.5) // returns 45
@@ -207,14 +192,13 @@ export function interpolate(a: number, b: number, t: number): number {
  * interpolateAngle(0, 270, 0.25) // returns 337.5
  * ```
  **/
-export function interpolateAngle(
+export const interpolateAngle = (
   a: number,
   b: number,
   t: number,
   turn = 360.0
-): number {
-  return wrapCircular(interpolate(a, a + angleDifference(a, b, turn), t), turn)
-}
+): number =>
+  wrapCircular(interpolate(a, a + angleDifference(a, b, turn), t), turn)
 
 /**
  * Calculates the widest angle difference between two angles.
@@ -224,7 +208,6 @@ export function interpolateAngle(
  * @param turn - The total angle of a full turn. Defaults to 360 degrees.
  * @returns The widest angle difference between `a` and `b`.
  * @public
- * @remarks
  * @example
  * ```ts
  * widestAngleDifference(0, 90) // returns 90
@@ -233,11 +216,11 @@ export function interpolateAngle(
  * widestAngleDifference(270, 0) // returns 90
  * ```
  */
-export function widestAngleDifference(
+export const widestAngleDifference = (
   a: number,
   b: number,
   turn = 360.0
-): number {
+): number => {
   let r = (b - a) % turn
   if (r < 0) r += turn
   if (r > turn / 2) r -= turn
@@ -254,7 +237,6 @@ export function widestAngleDifference(
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
- * @remarks
  * @example
  * ```ts
  * interpolateWidestAngle(0, 90, 0.5) // returns 45
@@ -263,17 +245,13 @@ export function widestAngleDifference(
  * interpolateWidestAngle(0, 270, 0.25) // returns 337.5
  * ```
  **/
-export function interpolateWidestAngle(
+export const interpolateWidestAngle = (
   a: number,
   b: number,
   t: number,
   turn = 360
-): number {
-  return wrapCircular(
-    interpolate(a, a + widestAngleDifference(a, b, turn), t),
-    turn
-  )
-}
+): number =>
+  wrapCircular(interpolate(a, a + widestAngleDifference(a, b, turn), t), turn)
 
 /**
  * Interpolates values in a polar coordinate system always in clock-wise direction.
@@ -284,7 +262,6 @@ export function interpolateWidestAngle(
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
- * @remarks
  * @example
  * ```ts
  * interpolateAngleCW(0, 90, 0.5) // returns 45
@@ -293,12 +270,12 @@ export function interpolateWidestAngle(
  * interpolateAngleCW(0, 270, 0.25) // returns 337.5
  * ```
  **/
-export function interpolateAngleCW(
+export const interpolateAngleCW = (
   a: number,
   b: number,
   t: number,
   turn = 360
-): number {
+): number => {
   a = wrapCircular(a, turn)
   b = wrapCircular(b, turn)
   if (b < a) b += turn
@@ -314,7 +291,6 @@ export function interpolateAngleCW(
  * @param turn - The total number of degrees in a full turn. Default is 360.0.
  * @returns The interpolated angle.
  * @public
- * @remarks
  * @example
  * ```ts
  * interpolateAngleCCW(0, 90, 0.5) // returns 45
@@ -323,12 +299,12 @@ export function interpolateAngleCW(
  * interpolateAngleCCW(0, 270, 0.25) // returns 337.5
  * ```
  **/
-export function interpolateAngleCCW(
+export const interpolateAngleCCW = (
   a: number,
   b: number,
   t: number,
   turn = 360
-): number {
+): number => {
   a = wrapCircular(a, turn)
   b = wrapCircular(b, turn)
   if (b > a) b -= turn
@@ -345,7 +321,6 @@ export function interpolateAngleCCW(
  * @param tollerance - The tollerance value. Default is `EPSILON`.
  * @returns `true` if the numbers are very close, `false` otherwise.
  * @public
- * @remarks
  * @example
  * ```ts
  * nearEquals(5, 5.000000000000001) // returns true
@@ -353,11 +328,11 @@ export function interpolateAngleCCW(
  * nearEquals(5, 5.000000000001, 1e-9) // returns true
  * ```
  **/
-export function nearEquals(
+export const nearEquals = (
   a: number,
   b: number,
   tollerance = EPSILON
-): boolean {
+): boolean => {
   if (isFinite(a)) {
     if (!isFinite(b)) return false
     return Math.abs(a - b) <= tollerance
@@ -381,7 +356,6 @@ export function nearEquals(
  * @param tollerance - The tollerance value. Default is `EPSILON`.
  * @returns `true` if the angles are very close, `false` otherwise.
  * @public
- * @remarks
  * @example
  * ```ts
  * nearEqualAngles(0, 360) // returns true
@@ -390,14 +364,12 @@ export function nearEquals(
  * nearEqualAngles(0, 361, 360, 1) // returns true
  * ```
  **/
-export function nearEqualAngles(
+export const nearEqualAngles = (
   a: number,
   b: number,
   turn = 360.0,
   tollerance = EPSILON
-): boolean {
-  return Math.abs(angleDifference(a, b, turn)) <= tollerance
-}
+): boolean => Math.abs(angleDifference(a, b, turn)) <= tollerance
 
 /**
  * `nearZero` finds if the passed number is zero or very close to it. By default
@@ -407,7 +379,6 @@ export function nearEqualAngles(
  * @param tollerance - The tollerance value. Default is `EPSILON`.
  * @returns `true` if the number is zero or very close to it, `false` otherwise.
  * @public
- * @remarks
  * @example
  * ```ts
  * nearZero(0.000000000000001) // returns true
@@ -415,7 +386,7 @@ export function nearEqualAngles(
  * nearZero(0.000000001, 1e-9) // returns true
  * ```
  **/
-export function nearZero(n: number, tollerance = EPSILON): boolean {
+export const nearZero = (n: number, tollerance = EPSILON): boolean => {
   return Math.abs(n) <= tollerance
 }
 
@@ -426,7 +397,6 @@ export function nearZero(n: number, tollerance = EPSILON): boolean {
  * @param index - The index of the root.
  * @returns The nth root of the base number.
  * @public
- * @remarks
  * @example
  * ```ts
  * root(8, 3) // returns 2
@@ -434,7 +404,7 @@ export function nearZero(n: number, tollerance = EPSILON): boolean {
  * root(16, 4) // returns 2
  * ```
  **/
-export function root(base: number, index: number): number {
+export const root = (base: number, index: number): number => {
   return Math.pow(base, 1 / index)
 }
 
@@ -445,7 +415,6 @@ export function root(base: number, index: number): number {
  * @param decimals - The number of decimals to round to.
  * @returns The rounded number.
  * @public
- * @remarks
  * @example
  * ```ts
  * roundTo(1.234, 2) // returns 1.23
@@ -453,7 +422,7 @@ export function root(base: number, index: number): number {
  * roundTo(1.234, 0) // returns 1
  * ```
  **/
-export function roundTo(f: number, decimals: number): number {
+export const roundTo = (f: number, decimals: number): number => {
   const p = Math.pow(10, decimals)
   return Math.round(f * p) / p
 }
@@ -464,14 +433,13 @@ export function roundTo(f: number, decimals: number): number {
  * @param value - The number to check.
  * @returns `-1` if the number is negative, `1` otherwise.
  * @public
- * @remarks
  * @example
  * ```ts
  * sign(-5) // returns -1
  * sign(5) // returns 1
  * ```
  */
-export function sign<T extends number>(value: T): number {
+export const sign = <T extends number>(value: T): number => {
   return value < 0 ? -1 : 1
 }
 
@@ -486,7 +454,6 @@ export function sign<T extends number>(value: T): number {
  * @param max - The maximum value of the range.
  * @returns The wrapped value.
  * @public
- * @remarks
  * @example
  * ```ts
  * wrap(5, 0, 10) // returns 5
@@ -494,7 +461,7 @@ export function sign<T extends number>(value: T): number {
  * wrap(-5, 0, 10) // returns 5
  * ```
  **/
-export function wrap(v: number, min: number, max: number): number {
+export const wrap = (v: number, min: number, max: number): number => {
   const range = max - min + 1
   if (v < min) v += range * ((min - v) / range + 1)
   return min + ((v - min) % range)
@@ -507,7 +474,6 @@ export function wrap(v: number, min: number, max: number): number {
  * @param max - The maximum value of the range.
  * @returns The wrapped value.
  * @public
- * @remarks
  * @example
  * ```ts
  * wrapCircular(5, 10) // returns 5
@@ -515,7 +481,7 @@ export function wrap(v: number, min: number, max: number): number {
  * wrapCircular(-5, 10) // returns 5
  * ```
  **/
-export function wrapCircular(v: number, max: number): number {
+export const wrapCircular = (v: number, max: number): number => {
   v = v % max
   if (v < 0) v += max
   return v

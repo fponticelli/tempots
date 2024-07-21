@@ -13,7 +13,7 @@ To create HTML or SVG elements, use the `html` and `svg` objects. Each of them c
 
 These functions take an arbitrary number of `TNode` arguments. A `TNode` can be a string, a `Signal&lt;string&gt;`, a `Renderable`, a `Renderable[]` or `null`/`undefined`.
 
-To create text nodes, you can just pass a `string` or a `Signal&lt;string&gt;` where a `TNode` is expected. Alternatively you can be explicit and use the `Text()` function.
+To create text nodes, you can just pass a `string` or a `Signal&lt;string&gt;` where a `TNode` is expected. Alternatively you can be explicit and use the `TextNode()` function.
 
 ### attr.class
 

@@ -22,7 +22,7 @@ export class MemoryStore {
    * @param key - The key to retrieve the value for.
    * @returns The value associated with the key, or `null` if the key is not found.
    */
-  getItem = (key: string): string | null => {
+  readonly getItem = (key: string): string | null => {
     return this._store.get(key) ?? null
   }
 
@@ -31,7 +31,7 @@ export class MemoryStore {
    * @param key - The key to set the value for.
    * @param value - The value to set.
    */
-  setItem = (key: string, value: string): void => {
+  readonly setItem = (key: string, value: string): void => {
     this._store.set(key, value)
   }
 }
@@ -239,12 +239,12 @@ export type AnimateSignalsOptions<T> = {
  * @returns - The animated value as Prop<T>
  * @public
  */
-export function animateSignals<T>(
+export const animateSignals = <T>(
   initialValue: T,
   fn: () => T,
   dependencies: Array<AnySignal>,
   options?: AnimateSignalsOptions<T>
-): Prop<T> {
+): Prop<T> => {
   // istanbul ignore next
   const duration = options?.duration ?? 300
   const easing = options?.easing ?? (t => t)
@@ -336,10 +336,10 @@ export type AnimateSignal<T> = {
  * @returns - The animated signal.
  * @public
  */
-export function animateSignal<T>(
+export const animateSignal = <T>(
   signal: Signal<T>,
   options?: AnimateSignal<T>
-): Prop<T> {
+): Prop<T> => {
   // istanbul ignore next
   const { initialValue, ...rest } = options ?? {}
   // istanbul ignore next
@@ -355,16 +355,16 @@ export function animateSignal<T>(
  * Computes a value based on a record of signals and literals.
  *
  * @typeParam T - The type of the record containing signals and literals.
- * @typeParam U - The type of the computed value.
+ * @typeParam O - The type of the computed value.
  * @param record - The record containing signals and literals.
  * @param fn - The function to compute the value based on the literals.
  * @returns - The computed value as a signal.
  * @public
  */
-export function computedRecord<T extends Record<string, Value<unknown>>, U>(
+export const computedRecord = <T extends Record<string, Value<unknown>>, O>(
   record: T,
-  fn: (value: RemoveSignals<T>) => U
-) {
+  fn: (value: RemoveSignals<T>) => O
+) => {
   type RSignal = [string | number | symbol, Signal<unknown>]
   type RSignals = RSignal[]
   type RLiterals = RemoveSignals<T>

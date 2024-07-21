@@ -4,7 +4,7 @@ import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
-import { removeDOMNode } from '../dom/dom-utils'
+import { _removeDOMNode } from '../dom/dom-utils'
 import { _signalText, _staticText } from './text'
 import { Fragment } from './fragment'
 import { Empty } from './empty'
@@ -19,7 +19,7 @@ import { _addNodeTracker } from '../dom/ssr'
  * @returns The corresponding Renderable.
  * @public
  */
-export function renderableOfTNode(child: TNode): Renderable {
+export const renderableOfTNode = (child: TNode): Renderable => {
   if (child == null) {
     return Empty
   } else if (Array.isArray(child)) {
@@ -41,7 +41,7 @@ export function renderableOfTNode(child: TNode): Renderable {
  * @returns A renderable function that creates and appends the HTML element to the DOM.
  * @public
  */
-export function El(tagName: string, ...children: TNode[]): Renderable {
+export const El = (tagName: string, ...children: TNode[]): Renderable => {
   return (ctx: DOMContext) => {
     const element = ctx.createElement(tagName, undefined)
     if (ctx.isFirstLevel && isSSR()) {
@@ -54,7 +54,7 @@ export function El(tagName: string, ...children: TNode[]): Renderable {
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       if (removeTree) {
-        removeDOMNode(element)
+        _removeDOMNode(element)
       }
     }
   }
@@ -69,12 +69,9 @@ export function El(tagName: string, ...children: TNode[]): Renderable {
  * @returns A renderable function that creates and appends the element to the DOM.
  * @public
  */
-export function ElNS(
-  tagName: string,
-  namespace: string,
-  ...children: TNode[]
-): Renderable {
-  return (ctx: DOMContext) => {
+export const ElNS =
+  (tagName: string, namespace: string, ...children: TNode[]): Renderable =>
+  (ctx: DOMContext) => {
     const element = ctx.createElement(tagName, namespace)
     if (ctx.isFirstLevel && isSSR()) {
       _addNodeTracker(element)
@@ -85,11 +82,10 @@ export function ElNS(
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       if (removeTree) {
-        removeDOMNode(element)
+        _removeDOMNode(element)
       }
     }
   }
-}
 
 /**
  * A convenience object to create Renderables for HTML elements.
@@ -118,7 +114,6 @@ export const html = new Proxy(
  *
  * It automatically creates an attribute with the specified type
  *
- * @remarks
  * @example
  * ```ts
  * input.text() // equivalent to html.input(attr.type('text'))
