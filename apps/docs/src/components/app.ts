@@ -17,6 +17,9 @@ function mapPathToLibraryPageURL(path: string) {
   if (path.startsWith('/library/')) {
     path = path.slice('/library/'.length)
   }
+  if (path.endsWith('/')) {
+    path = path.slice(0, -1)
+  }
   const parts = path.split('/')
   const lib = parts.shift()!.substring('tempots-'.length)
   return [lib, parts.join('.')]
