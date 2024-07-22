@@ -8,6 +8,7 @@ import {
   svgAttr,
   When,
   OneOfType,
+  Portal,
 } from '@tempots/dom'
 import { Feed, Route, toTitle } from '../route'
 import { LinkRoute } from './link-route'
@@ -73,7 +74,10 @@ function HeaderLink({ route, feed }: { route: Signal<Route>; feed: Feed }) {
 }
 
 export function App(route: Signal<Route>, page: Signal<Page>) {
+  const urlParams = new URLSearchParams(window.location.search)
+  const base = urlParams.has('base') ? urlParams.get('base') : null
   return html.main(
+    base && Portal('head', html.base(base)),
     html.header(
       LinkRoute({
         route: useSignal(Route.root),
