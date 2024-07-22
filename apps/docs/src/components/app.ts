@@ -13,6 +13,7 @@ import { DemosView } from './element/demos-view'
 import { HomeView } from './element/home-view'
 
 function mapPathToLibraryPageURL(path: string) {
+  console.log('mapPathToLibraryPageURL', path)
   if (path.startsWith('/library/')) {
     path = path.slice('/library/'.length)
   }
