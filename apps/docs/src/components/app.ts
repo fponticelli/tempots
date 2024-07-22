@@ -17,6 +17,9 @@ function mapPathToLibraryPageURL(path: string) {
   if (path.startsWith('/library/')) {
     path = path.slice('/library/'.length)
   }
+  if (path.endsWith('.html')) {
+    path = path.slice(0, -5)
+  }
   if (path.endsWith('/')) {
     path = path.slice(0, -1)
   }
@@ -30,11 +33,11 @@ export const AppRouter = (toc: Toc) => {
   const map = tocAsMap(toc)
   return Router({
     '/': () => HomeView(map.pages.get('index')!),
-    '/all-tools': () => ToolsView(),
-    '/tool/html-to-tempo': () => HtmlToTempo(),
+    '/all-tools.html': () => ToolsView(),
+    '/tool/html-to-tempo.html': () => HtmlToTempo(),
     '/page/:id': info =>
-      PageView(info.$.params.$.id.map(id => map.pages.get(id)!)),
-    '/all-libraries': () => LibrariesView(toc.libraries),
+      PageView(info.$.params.$.id.map(id => map.pages.get(id.slice(0, -5))!)),
+    '/all-libraries.html': () => LibrariesView(toc.libraries),
     '/library/:id': info => {
       const url = info.$.path.map(mapPathToLibraryPageURL)
       return LibraryView(
@@ -44,9 +47,13 @@ export const AppRouter = (toc: Toc) => {
         }))
       )
     },
-    '/all-demos': () => DemosView(toc.demos),
+    '/all-demos.html': () => DemosView(toc.demos),
     '/demo/:id': info =>
-      DemoView(info.$.params.$.id.map(id => ({ id, ...map.demos.get(id)! }))),
+      DemoView(
+        info.$.params.$.id
+          .map(id => id.slice(0, -5))
+          .map(id => ({ id, ...map.demos.get(id)! }))
+      ),
     '/*': () => '404 Not Found',
   })
 }

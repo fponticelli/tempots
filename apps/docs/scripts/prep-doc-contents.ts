@@ -285,9 +285,9 @@ async function main() {
           const parts = anchor.href.substring(1).slice(0, -3).split('.')
           const lib = `/library/tempots-${parts.shift()}`
           if (parts.length === 0) {
-            anchor.href = lib
+            anchor.href = `${lib}.html`
           } else {
-            anchor.href = `${lib}.${parts.join('.')}`
+            anchor.href = `${lib}.${parts.join('.')}.html`
           }
           // console.log(anchor.href)
         }

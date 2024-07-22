@@ -19,7 +19,7 @@ export function ToolsView() {
         Card({
           title: 'HTML to Tempo',
           description: 'A simple tool to convert HTML to Tempo code.',
-          href: `/tool/html-to-tempo`,
+          href: `/tool/html-to-tempo.html`,
         }),
       ])
     )

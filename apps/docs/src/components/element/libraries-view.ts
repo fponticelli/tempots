@@ -20,7 +20,7 @@ export function LibrariesView(libraries: Library[]) {
       libraries.map(lib =>
         Card({
           description: LibraryInfo(lib),
-          href: `/library/${lib.name}`,
+          href: `/library/${lib.name}.html`,
           title: lib.title,
         })
       )

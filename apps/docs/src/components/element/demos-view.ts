@@ -21,7 +21,7 @@ export function DemosView(demos: Demo[]) {
           Card({
             title: demo.title,
             description: demo.description,
-            href: `/demo/${demo.path}`,
+            href: `/demo/${demo.path}.html`,
           })
         )
       )

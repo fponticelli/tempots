@@ -153,5 +153,5 @@ const OnChecked = (fn: (event: boolean) =&gt; void) =&gt; Renderable
 
 ## Next Steps
 
-- [Learn more about Signals](/page/signals)
-- [Learn more about render](/page/render)
+- [Learn more about Signals](/page/signals.html)
+- [Learn more about render](/page/render.html)

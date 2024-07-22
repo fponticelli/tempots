@@ -36,8 +36,8 @@ function renderWithContext(node: Renderable, ctx: DOMContext): () =&gt; void
 
 Check the API documentation for the Tempo libraries:
 
-- [@tempots/dom](/library/tempots-dom)
-- [@tempots/std](/library/tempots-std)
-- [@tempots/ui](/library/tempots-ui)
-- [@tempots/ssr](/library/tempots-ssr)
-- [@tempots/color](/library/tempots-color)
+- [@tempots/dom](/library/tempots-dom.html)
+- [@tempots/std](/library/tempots-std.html)
+- [@tempots/ui](/library/tempots-ui.html)
+- [@tempots/ssr](/library/tempots-ssr.html)
+- [@tempots/color](/library/tempots-color.html)

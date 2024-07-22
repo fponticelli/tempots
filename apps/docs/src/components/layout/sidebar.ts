@@ -116,7 +116,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
               .map(({ title, path }) =>
                 html.li(
                   MenuLink({
-                    href: `/page/${path}`,
+                    href: `/page/${path}.html`,
                     label: title,
                     active,
                   })
@@ -137,7 +137,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
               const initial = titleToInitial(title.split('/').pop()!)
               return html.li(
                 SectionLink({
-                  href: `/library/${name}`,
+                  href: `/library/${name}.html`,
                   label: title,
                   icon: initial,
                   active,
@@ -153,7 +153,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
             attr.class('-mx-2 mt-2'),
             html.li(
               SectionLink({
-                href: '/tool/html-to-tempo',
+                href: '/tool/html-to-tempo.html',
                 label: 'HTML to Tempo',
                 icon: 'HT',
                 active,
@@ -170,7 +170,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
               const initial = titleToInitial(title)
               return html.li(
                 SectionLink({
-                  href: `/demo/${path}`,
+                  href: `/demo/${path}.html`,
                   label: title,
                   icon: initial,
                   active,
