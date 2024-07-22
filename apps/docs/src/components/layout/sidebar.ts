@@ -125,7 +125,11 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          Anchor('/libraries', attr.class(Styles.sidebar.heading), 'Libraries'),
+          Anchor(
+            '/all-libraries',
+            attr.class(Styles.sidebar.heading),
+            'Libraries'
+          ),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
@@ -158,7 +162,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          Anchor('/demos', attr.class(Styles.sidebar.heading), 'Demos'),
+          Anchor('/all-demos', attr.class(Styles.sidebar.heading), 'Demos'),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),

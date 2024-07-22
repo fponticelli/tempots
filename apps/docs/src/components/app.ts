@@ -13,35 +13,29 @@ import { DemosView } from './element/demos-view'
 import { HomeView } from './element/home-view'
 
 function mapPathToLibraryPageURL(path: string) {
+  // console.log('#### ' + path)
   if (path.startsWith('/library/')) {
     path = path.slice('/library/'.length)
   }
   if (path.endsWith('/')) {
     path = path.slice(0, -1)
   }
-  const parts = path.split('/')
+  const parts = path.split('.')
   const lib = parts.shift()!.substring('tempots-'.length)
-  return [lib, parts.join('.')]
+  const sub = parts.length === 0 ? undefined : parts.join('.')
+  return [lib, sub]
 }
 
 export const AppRouter = (toc: Toc) => {
   const map = tocAsMap(toc)
   return Router({
     '/': () => HomeView(map.pages.get('index')!),
-    '/tools': () => ToolsView(),
+    '/all-tools': () => ToolsView(),
     '/tool/html-to-tempo': () => HtmlToTempo(),
     '/page/:id': info =>
       PageView(info.$.params.$.id.map(id => map.pages.get(id)!)),
-    '/libraries': () => LibrariesView(toc.libraries),
+    '/all-libraries': () => LibrariesView(toc.libraries),
     '/library/:id': info => {
-      const id = info.$.params.$.id
-      return LibraryView(
-        id.map((id): { library: Library; path?: string } => ({
-          library: map.libraries.get(id)!,
-        }))
-      )
-    },
-    '/library/*': info => {
       const url = info.$.path.map(mapPathToLibraryPageURL)
       return LibraryView(
         url.map(([id, path]): { library: Library; path?: string } => ({
@@ -50,7 +44,7 @@ export const AppRouter = (toc: Toc) => {
         }))
       )
     },
-    '/demos': () => DemosView(toc.demos),
+    '/all-demos': () => DemosView(toc.demos),
     '/demo/:id': info =>
       DemoView(info.$.params.$.id.map(id => ({ id, ...map.demos.get(id)! }))),
     '/*': () => '404 Not Found',

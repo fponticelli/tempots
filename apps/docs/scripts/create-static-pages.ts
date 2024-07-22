@@ -60,7 +60,7 @@ const extractURLs = (html: string) => {
 const filterURLs = (urls: string[]) => {
   return urls
     .filter(url => url.startsWith('/'))
-    .filter(url => url.split('.').length === 1)
+    .filter(url => !url.startsWith('/assets/'))
 }
 
 console.log('Creating static pages...')
@@ -70,24 +70,29 @@ while (toGenerate.length > 0) {
   // console.log('next ...', toGenerate.length)
   const url = toGenerate.pop()!
   try {
-    // console.log('url', url)
     if (generated.has(url)) {
       // console.log('already generated', url)
       continue
     }
     generated.add(url)
-    // console.log('before render')
+    // console.log('Render:', url)
     const html = await renderPage(url)
     // console.log('after render')
     const urls = filterURLs(extractURLs(html))
     const newUrls = urls.filter(url => !generated.has(url))
+    // console.log(newUrls)
     toGenerate.push(...newUrls)
 
     // save html
     const basePath = path.resolve(process.cwd(), './dist')
-    const filePath = path.join(basePath, url === '/' ? '/index.html' : url + '/index.html')
+    const filePath = path.join(basePath, url === '/' ? '/index.html' : url)
+    const dirPath = path.dirname(filePath)
 
-    await fse.ensureDir(path.dirname(filePath))
+    // console.log('#####')
+    // console.log(dirPath)
+    // console.log(filePath)
+
+    await fse.ensureDir(dirPath)
     await fsp.writeFile(filePath, html)
 
     // console.log('generated', generated)

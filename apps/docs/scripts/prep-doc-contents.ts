@@ -287,8 +287,9 @@ async function main() {
           if (parts.length === 0) {
             anchor.href = lib
           } else {
-            anchor.href = `${lib}/${parts.join('/')}`
+            anchor.href = `${lib}.${parts.join('.')}`
           }
+          // console.log(anchor.href)
         }
       }
     })

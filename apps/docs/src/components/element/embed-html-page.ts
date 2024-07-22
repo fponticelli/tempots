@@ -19,10 +19,15 @@ const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
   for (const anchor of anchors) {
     anchor.addEventListener(
       'click',
-      handleAnchorClick(() => {
-        setLocationFromUrl(location, anchor.href)
-        return true
-      })
+      handleAnchorClick(
+        () => {
+          setLocationFromUrl(location, anchor.href)
+          return true
+        },
+        {
+          checkExtension: false,
+        }
+      )
     )
   }
 }
