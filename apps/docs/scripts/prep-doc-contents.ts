@@ -160,7 +160,12 @@ async function collectLibrary(
   const libraryPath = path.join(src, library, 'PROJECT.md')
   const content = await markdownToHTML(
     fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : '',
-    library
+    library,
+    {
+      domMangler: (doc) => {
+        addIdToHeaders(doc)
+      }
+    }
   )
   return {
     priority: pack.priority ?? 0,
@@ -181,6 +186,12 @@ const tokenize = (text: string): string => {
     .replace(/[^a-z0-9-]+/g, ' ')
     .trim()
     .replace(/\s+/g, '-')
+}
+
+const addIdToHeaders = (doc: Document) => {
+  for (const header of Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
+    header.id = tokenize((header as HTMLElement).innerText)
+  }
 }
 
 async function collectLibraries(libraries: string[], src: string) {
@@ -236,11 +247,8 @@ async function main() {
   // pages
   await prepDir(pagesFolderDst)
   const sections = await createPages(pagesFolderSrc, pagesFolderDst, {
-    domMangler: (doc, currentPath) => {
-      // add ID to headers
-      for (const header of Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
-        header.id = tokenize((header as HTMLElement).innerText)
-      }
+    domMangler: (doc) => {
+      addIdToHeaders(doc)
     }
   })
 
@@ -272,7 +280,7 @@ async function main() {
         )
         return content
       },
-      domMangler: (doc, currentPath) => {
+      domMangler: (doc) => {
         // find breadcrumbs
         const breadcrumbs = Array.from( doc.querySelectorAll('p')).filter(p => {
           return p.firstElementChild?.tagName === 'A' &&
@@ -307,9 +315,7 @@ async function main() {
           // console.log(anchor.href)
         }
         // add ID to headers
-        for (const header of Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
-          header.id = tokenize((header as HTMLElement).innerText)
-        }
+        addIdToHeaders(doc)
       }
     })
     api[library.name] = pages.pages
