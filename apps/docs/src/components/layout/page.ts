@@ -60,7 +60,8 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
     key: 'td:sidebarOpen',
     defaultValue: true,
   })
-  return Fragment(
+  return html.div(
+    attr.class('h-full overflow-hidden'),
     html.div(
       attr.class('relative z-50 lg:hidden print:hidden'),
       attr.class(

@@ -41,7 +41,7 @@ const renderPage = async (pageUrl: string) => {
     url,
     html,
     makeApp: () => App(toc),
-    selector: '#app',
+    selector: 'body',
     makeFetch,
     waitFetch: true,
   })
