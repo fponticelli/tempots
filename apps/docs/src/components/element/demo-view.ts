@@ -5,6 +5,14 @@ import { CheckCode } from './check-code'
 import { HTMLTitle } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
 
+function getBase(id: string) {
+  const protocol = window.location.protocol
+  const host = window.location.host
+  const relativeUrl = `/demos/${id}/`
+  const url = protocol + '//' + host + relativeUrl
+  return encodeURIComponent(url)
+}
+
 export function DemoView(demo: Signal<Demo & { id: string }>) {
   return html.div(
     HTMLTitle(demo.map(({ title }) => `Tempo • ${title}`)),
@@ -26,7 +34,7 @@ export function DemoView(demo: Signal<Demo & { id: string }>) {
     html.iframe(
       attr.class('w-full h-full border rounded-md'),
       attr.src(
-        demo.map(({ id }) => `/demos/${id}/index.html?base=%2Fdemos%2F${id}/`)
+        demo.map(({ id }) => `/demos/${id}/index.html?base=${getBase(id)}`)
       )
     )
   )
