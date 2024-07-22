@@ -57,7 +57,7 @@ export type HandleAnchorClickOptions = {
   /**
    * A boolean indicating whether to check the anchor's href for a file extension.
    */
-  checkExtension?: boolean
+  checkExtension?: boolean | string[]
   /**
    * A boolean indicating whether to check if the anchor's href points to an external URL.
    */
