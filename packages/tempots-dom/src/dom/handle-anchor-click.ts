@@ -77,20 +77,13 @@ export type HandleAnchorClickOptions = {
 export const handleAnchorClick =
   (
     callback: () => boolean,
-    options: HandleAnchorClickOptions = {
-      checkExtension: true,
-      checkExternalUrl: true,
-    }
+    {
+      checkExtension = ['.html'],
+      checkExternalUrl = true,
+    }: HandleAnchorClickOptions = {}
   ) =>
   (e: MouseEvent) => {
-    const { checkExtension, checkExternalUrl } = options
-    if (
-      shouldNotApplyCallback(
-        e,
-        checkExtension === true,
-        checkExternalUrl === true
-      )
-    ) {
+    if (shouldNotApplyCallback(e, checkExtension, checkExternalUrl)) {
       return
     }
     if (callback()) e.preventDefault()

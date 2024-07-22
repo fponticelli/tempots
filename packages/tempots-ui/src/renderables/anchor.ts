@@ -22,15 +22,10 @@ export const Anchor = (href: Value<string>, ...children: TNode[]) =>
   UseLocation(location => {
     return html.a(
       on.click(
-        handleAnchorClick(
-          () => {
-            setLocationFromUrl(location, Signal.unwrap(href))
-            return true
-          },
-          {
-            checkExtension: ['.html'],
-          }
-        )
+        handleAnchorClick(() => {
+          setLocationFromUrl(location, Signal.unwrap(href))
+          return true
+        })
       ),
       attr.href(href),
       ...children
