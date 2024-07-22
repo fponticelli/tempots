@@ -1,6 +1,6 @@
 import {
   attr,
-  useComputed,
+  makeComputed,
   Ensure,
   ForEach,
   Fragment,
@@ -54,7 +54,7 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
     const library = data.$.library
     const path = data.$.path
     const isRoot = path.map(v => v == null)
-    const apiUrl = useComputed(() => {
+    const apiUrl = makeComputed(() => {
       const prefix = library.value.name.split('-').pop()
       return path.value == null
         ? `/api/${library.value.name}/${prefix}.html`

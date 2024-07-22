@@ -5,12 +5,12 @@ import {
   type Renderable,
   on,
   Signal,
-  useProp,
+  makeProp,
   Prop,
   TNode,
   When,
-  useSignal,
-  useComputed,
+  makeSignal,
+  makeComputed,
   Fragment,
   EmitValue,
 } from '@tempots/dom'
@@ -134,13 +134,13 @@ function extractCellReferences(formula: string): string[] {
 
 class CellValue {
   readonly value: Signal<string>
-  _value: Signal<string> = useSignal('')
+  _value: Signal<string> = makeSignal('')
   constructor(
     readonly key: string,
     readonly ctx: Map<string, CellValue>,
-    readonly formula: Prop<string> = useProp('')
+    readonly formula: Prop<string> = makeProp('')
   ) {
-    const value = useProp('')
+    const value = makeProp('')
     // Timeout is needed because ctx is not fully populated yet
     setTimeout(() => {
       this.formula.on(formula => {
@@ -148,7 +148,7 @@ class CellValue {
         const references = extractCellReferences(formula)
           .map(ref => ctx.get(ref)?.value)
           .filter(v => v != null) as Signal<string>[]
-        this._value = useComputed(
+        this._value = makeComputed(
           () => evalFormula(formula, this.ctx),
           [...references]
         )
@@ -176,7 +176,7 @@ export function Cells(): Renderable {
     }
   }
 
-  const editing = useProp<string | null>(null)
+  const editing = makeProp<string | null>(null)
   return html.div(
     attr.class('max-w-full max-h-[calc(100dvh-98px)] overflow-auto'),
     html.table(

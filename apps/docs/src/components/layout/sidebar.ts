@@ -1,4 +1,4 @@
-import { attr, TNode, html, useProp, Signal, When } from '@tempots/dom'
+import { attr, TNode, html, makeProp, Signal, When } from '@tempots/dom'
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
 import { Toc } from '../../model/domain'
@@ -84,7 +84,7 @@ export function SectionLink({
 }
 
 export function SideBar({ libraries, demos, pages }: Toc) {
-  const active = useProp('/')
+  const active = makeProp('/')
   return html.div(
     attr.class(
       'flex grow flex-col gap-y-5 overflow-y-auto bg-gray-100 px-6 pb-4 border-r'

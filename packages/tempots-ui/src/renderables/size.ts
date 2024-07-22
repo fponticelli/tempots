@@ -1,7 +1,7 @@
 import {
   DOMContext,
   Signal,
-  useProp,
+  makeProp,
   TNode,
   Size,
   renderableOfTNode,
@@ -17,7 +17,7 @@ import {
 export const ElementSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
     const el = ctx.element
-    const size = useProp({ width: el.clientWidth, height: el.clientHeight })
+    const size = makeProp({ width: el.clientWidth, height: el.clientHeight })
     const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
       size.set({ width: el.clientWidth, height: el.clientHeight })
@@ -41,7 +41,7 @@ export const ElementSize =
  */
 export const WindowSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
-    const size = useProp({
+    const size = makeProp({
       width: window?.innerWidth ?? 0,
       height: window?.innerHeight ?? 0,
     })

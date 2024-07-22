@@ -1,7 +1,7 @@
 import {
   Prop,
   Signal,
-  useProp,
+  makeProp,
   TNode,
   Renderable,
   renderableOfTNode,
@@ -70,7 +70,7 @@ export const InViewport = (
   mode: InViewportMode,
   fn: (value: Signal<boolean>) => TNode
 ): Renderable => {
-  const signal = useProp(isSSR())
+  const signal = makeProp(isSSR())
   return Fragment(
     OnMount((el: HTMLElement) => {
       const observer =

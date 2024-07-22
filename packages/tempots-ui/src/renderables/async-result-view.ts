@@ -3,7 +3,7 @@ import {
   Empty,
   Fragment,
   OnUnmount,
-  useSignal,
+  makeSignal,
   Signal,
   Value,
   OneOfType,
@@ -79,7 +79,7 @@ export const AsyncResultView = <T, E>(
     AsyncSuccess: s => success(s.$.value),
     AsyncFailure: e => fail(e.$.error),
     Loading: s =>
-      loading(s.$.previousValue ?? useSignal<T | undefined>(undefined)),
+      loading(s.$.previousValue ?? makeSignal<T | undefined>(undefined)),
     NotAsked: notAsked,
   })
 }

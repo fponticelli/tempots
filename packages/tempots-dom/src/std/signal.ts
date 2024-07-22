@@ -391,7 +391,7 @@ export class Signal<T> {
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
-    const p = useProp(alt, equals)
+    const p = makeProp(alt, equals)
     let count = 0
     p.onDispose(
       this.on(v => {
@@ -459,7 +459,7 @@ export class Signal<T> {
    * @returns The derived property.
    */
   readonly deriveProp = (autoDisposeProp = true) =>
-    this.feedProp(useProp(this.get()), autoDisposeProp)
+    this.feedProp(makeProp(this.get()), autoDisposeProp)
 
   /**
    * Returns a signal that emits the count of values received so far.
@@ -744,7 +744,7 @@ export class Prop<T> extends Signal<T> {
  * @returns - The computed signal.
  * @public
  */
-export const useComputed = <T>(
+export const makeComputed = <T>(
   fn: () => T,
   dependencies: Array<AnySignal>,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
@@ -763,8 +763,8 @@ export const useComputed = <T>(
  * @returns A disposable object that can be used to stop the effect.
  * @public
  */
-export const useEffect = (fn: () => void, signals: Array<AnySignal>) =>
-  useComputed(fn, signals).dispose
+export const makeEffect = (fn: () => void, signals: Array<AnySignal>) =>
+  makeComputed(fn, signals).dispose
 
 /**
  * Creates a new Prop object with the specified value and equality function.
@@ -775,7 +775,7 @@ export const useEffect = (fn: () => void, signals: Array<AnySignal>) =>
  * @returns A new Prop object.
  * @public
  */
-export const useProp = <T>(
+export const makeProp = <T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Prop<T> => new Prop(value, equals)
@@ -789,7 +789,7 @@ export const useProp = <T>(
  * @returns A new Signal instance.
  * @public
  */
-export const useSignal = <T>(
+export const makeSignal = <T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Signal<T> => new Signal(value, equals)

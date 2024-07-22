@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { html, on, attr, useProp, render } from "../src";
+import { html, on, attr, makeProp, render } from "../src";
 import { sleep } from "./helper";
 const { div, button } = html;
 
 function counter() {
-  const count = useProp(0);
+  const count = makeProp(0);
   const oddOrEven = count.map(
     (count): string => (count % 2 === 0 ? "even" : "odd")
   );

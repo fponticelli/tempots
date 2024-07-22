@@ -2,9 +2,9 @@ import { RemoveSignals, Value } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import {
   AnySignal,
-  useComputed,
+  makeComputed,
   Computed,
-  useProp,
+  makeProp,
   Prop,
   Signal,
 } from './signal'
@@ -256,7 +256,7 @@ export const animateSignals = <T>(
   let animationFrame: number | null = null
   let done = true
   const computed = new Computed(fn, equals)
-  const animated = useProp(initialValue, equals)
+  const animated = makeProp(initialValue, equals)
   animated.onDispose(() => {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame)
   })
@@ -361,7 +361,7 @@ export const animateSignal = <T>(
  * @returns - The computed value as a signal.
  * @public
  */
-export const useComputedRecord = <T extends Record<string, Value<unknown>>, O>(
+export const makeComputedRecord = <T extends Record<string, Value<unknown>>, O>(
   record: T,
   fn: (value: RemoveSignals<T>) => O
 ) => {
@@ -382,7 +382,7 @@ export const useComputedRecord = <T extends Record<string, Value<unknown>>, O>(
     { signals: [], literals: {} as RemoveSignals<T> } as R
   )
   const signalsArray = signals.map(([, s]) => s)
-  return useComputed(() => {
+  return makeComputed(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     signals.forEach(([key, sig]) => ((literals as any)[key] = sig.value))
     return fn(literals)

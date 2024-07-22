@@ -1,6 +1,6 @@
 import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Signal, useProp } from '../std/signal'
+import { Signal, makeProp } from '../std/signal'
 import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
@@ -28,7 +28,7 @@ export const Ensure =
     ctx = ctx.makeRef()
     let clear = null as Clear | null
     let hadValue = false
-    const feed = useProp(null as T | null)
+    const feed = makeProp(null as T | null)
     const clearSignal = signal.on(value => {
       if (value == null) {
         clear?.(true)

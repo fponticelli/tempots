@@ -3,7 +3,7 @@ import {
   attr,
   type Renderable,
   on,
-  useProp,
+  makeProp,
   html,
   ElementPosition,
   Signal,
@@ -14,7 +14,7 @@ import { Button } from './ui'
 import { flex } from './components/flex'
 
 export function RepeatDemo(): Renderable {
-  const count = useProp(5)
+  const count = makeProp(5)
   const deleteDisabled = count.map(count => count === 0)
   return flex.col(
     attr.class('gap-2 items-center'),

@@ -1,6 +1,6 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Signal, useComputed } from '../std/signal'
+import { Signal, makeComputed } from '../std/signal'
 import { ElementPosition } from '../std/position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
@@ -40,7 +40,7 @@ export const ForEach = <T>(
     return (ctx: DOMContext) => {
       const times = signal.map(arr => arr.length)
       return Repeat(times, pos => {
-        const value = useComputed(
+        const value = makeComputed(
           () => signal.value[pos.value.index],
           [pos, signal]
         )

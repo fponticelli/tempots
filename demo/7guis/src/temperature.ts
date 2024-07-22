@@ -5,7 +5,7 @@ import {
   Signal,
   attr,
   on,
-  useProp,
+  makeProp,
   type Renderable,
 } from '@tempots/dom'
 import { InputText } from './ui'
@@ -23,9 +23,9 @@ function round(value: number, decimals: number = 2) {
 }
 
 export function Temperature(): Renderable {
-  const celsius = useProp<string | number>('22')
-  const fahrenheit = useProp<string | number>('71.6')
-  const tchange = useProp<TempChange>({ unit: 'c', value: '' })
+  const celsius = makeProp<string | number>('22')
+  const fahrenheit = makeProp<string | number>('71.6')
+  const tchange = makeProp<TempChange>({ unit: 'c', value: '' })
   const clear = tchange.on(tchange => {
     const value = Number(tchange.value)
     if (tchange.value === '' || !Number.isFinite(value)) {

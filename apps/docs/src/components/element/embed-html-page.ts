@@ -5,7 +5,7 @@ import {
   ForEach,
   handleAnchorClick,
   html,
-  useProp,
+  makeProp,
   Prop,
   Signal,
   Value,
@@ -110,7 +110,7 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
 
 export function EmbedHTMLPage(content: Value<string>) {
   const htmlSignal = Signal.wrap(content)
-  const toc = useProp<TOCItem[]>([])
+  const toc = makeProp<TOCItem[]>([])
   return html.div(
     attr.class(
       'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'

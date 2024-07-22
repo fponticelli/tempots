@@ -2,7 +2,7 @@ import {
   aria,
   Fragment,
   html,
-  useSignal,
+  makeSignal,
   Signal,
   svg,
   svgAttr,
@@ -70,7 +70,7 @@ function HeaderLink({ route, feed }: { route: Signal<Route>; feed: Feed }) {
     aria.current('page'),
     toTitle(Route.feeds(feed, 1))
   )
-  const whenFalse = LinkRoute({ route: useSignal(Route.feeds(feed, 1)) })
+  const whenFalse = LinkRoute({ route: makeSignal(Route.feeds(feed, 1)) })
   return When(condition, whenTrue, whenFalse)
 }
 
@@ -81,7 +81,7 @@ export function App(route: Signal<Route>, page: Signal<Page>) {
     base && Portal('head', html.base(attr.href(base))),
     html.header(
       LinkRoute({
-        route: useSignal(Route.root),
+        route: makeSignal(Route.root),
         className: 'logo',
         children: Fragment(aria.label('Homepage'), Logo()),
       }),

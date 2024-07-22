@@ -44,10 +44,10 @@ State in Tempo is managed through signals. Signals are reactive and can be used 
 Here is an example of a simple counter:
 
 ```ts
-import { html, on, render, useProp } from '@tempots/dom'
+import { html, on, render, makeProp } from '@tempots/dom'
 
 // Define a writeable signal
-const count = useProp(0)
+const count = makeProp(0)
 
 // Define a template
 const Counter = html.div(

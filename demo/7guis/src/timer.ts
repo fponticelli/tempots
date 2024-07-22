@@ -3,8 +3,8 @@ import {
   attr,
   on,
   type Renderable,
-  useComputed,
-  useProp,
+  makeComputed,
+  makeProp,
   OnUnmount,
   EmitValueAsNumber,
 } from '@tempots/dom'
@@ -26,8 +26,8 @@ const START = 10000
 const INTERVAL = 1000 / 60
 
 export function Timer(): Renderable {
-  const elapsed = useProp(0)
-  const duration = useProp(START)
+  const elapsed = makeProp(0)
+  const duration = makeProp(START)
   let timerId: ReturnType<typeof setInterval> | undefined
   function startTimer() {
     const startTime = performance.now()
@@ -63,7 +63,7 @@ export function Timer(): Renderable {
       attr.class('gap-2 items-center'),
       Txt('Remaining time: '),
       Txt(
-        useComputed(
+        makeComputed(
           () => formatSecond(duration.value - elapsed.value),
           [duration, elapsed]
         )

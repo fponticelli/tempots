@@ -4,8 +4,8 @@ import {
   attr,
   type Renderable,
   on,
-  useComputed,
-  useProp,
+  makeComputed,
+  makeProp,
   ForEach,
   EmitValue,
 } from '@tempots/dom'
@@ -20,17 +20,17 @@ interface Person {
 export function Crud(): Renderable {
   let counter = 0
   const makeId = () => String(counter++)
-  const currentId = useProp<string | null>(null)
-  const person = useProp<Person>({ name: '', surname: '' })
+  const currentId = makeProp<string | null>(null)
+  const person = makeProp<Person>({ name: '', surname: '' })
   const isValid = person.map(
     person => person.name === '' || person.surname === ''
   )
   const isNotSelected = currentId.map(id => id == null)
   const name = person.map(p => p.name)
   const surname = person.map(p => p.surname)
-  const db = useProp<Record<string, Person>>({})
-  const filter = useProp('')
-  const filteredList = useComputed(() => {
+  const db = makeProp<Record<string, Person>>({})
+  const filter = makeProp('')
+  const filteredList = makeComputed(() => {
     const filtered = filter.value.toLocaleLowerCase()
     const values = Object.entries(db.value).filter(
       ([, { name, surname }]) =>
@@ -91,7 +91,7 @@ export function Crud(): Renderable {
         ),
         Button(
           attr.disabled(
-            useComputed(
+            makeComputed(
               () => isValid.value || isNotSelected.value,
               [isValid, isNotSelected]
             )
@@ -155,7 +155,10 @@ export function Crud(): Renderable {
             const label = el.map(el => `${el[1].name}, ${el[1].surname}`)
             return html.option(
               attr.selected(
-                useComputed(() => currentId.value === id.value, [currentId, id])
+                makeComputed(
+                  () => currentId.value === id.value,
+                  [currentId, id]
+                )
               ),
               attr.value(id),
               label

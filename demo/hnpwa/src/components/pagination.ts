@@ -1,7 +1,7 @@
 import {
   aria,
   attr,
-  useComputed,
+  makeComputed,
   ForEach,
   html,
   Signal,
@@ -33,7 +33,7 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
         page.map(v => v === 1),
         html.span(attr.class('inactive'), 'Previous'),
         LinkRoute({
-          route: useComputed(
+          route: makeComputed(
             () => Route.feeds(feed.value, page.value),
             [feed, page]
           ),
@@ -43,13 +43,13 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
     ),
     html.nav(
       ForEach(
-        useComputed(() => pageRange(feed.value, page.value), [feed, page]),
+        makeComputed(() => pageRange(feed.value, page.value), [feed, page]),
         res =>
           When(
             res.map(({ current, page }) => current === page),
             html.span(aria.current('page'), res.at('page').map(String)),
             LinkRoute({
-              route: useComputed(
+              route: makeComputed(
                 () => Route.feeds(res.value.feed, res.value.page),
                 [res]
               ),
@@ -66,10 +66,10 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
     ),
     html.section(
       When(
-        useComputed(() => maxPage(feed.value) === page.value, [feed, page]),
+        makeComputed(() => maxPage(feed.value) === page.value, [feed, page]),
         html.span(attr.class('inactive'), 'Next'),
         LinkRoute({
-          route: useComputed(
+          route: makeComputed(
             () => Route.feeds(feed.value, page.value + 1),
             [feed, page]
           ),

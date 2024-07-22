@@ -5,7 +5,7 @@ import {
   html,
   attr,
   ElementPosition,
-  useComputed,
+  makeComputed,
   When,
   Fragment,
 } from '@tempots/dom'
@@ -58,7 +58,7 @@ export function PageFeedView(page: Signal<PageFeed>) {
         (item: Signal<Item>, pos: Signal<ElementPosition>) =>
           html.li(
             html.aside(
-              useComputed(
+              makeComputed(
                 () => String((page.value.page - 1) * 30 + pos.value.index + 1),
                 [page, pos]
               )

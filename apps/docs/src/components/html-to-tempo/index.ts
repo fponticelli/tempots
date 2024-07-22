@@ -2,7 +2,7 @@ import {
   attr,
   html,
   OnUnmount,
-  useProp,
+  makeProp,
   TNode,
   Value,
   isSSR,
@@ -27,10 +27,10 @@ export function EditorContainer(
 }
 
 export function HtmlToTempo() {
-  const content = useProp(
+  const content = makeProp(
     '<div class="message">\n  Hello World!\n  <br/>\n  How are <b>you</b>?\n</div>'
   )
-  const tempo = useProp('')
+  const tempo = makeProp('')
   return html.div(
     HTMLTitle('Tempo • HTML to Tempo'),
     OpenGraph({

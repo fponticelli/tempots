@@ -1,7 +1,7 @@
 import { DOMContext } from '../dom/dom-context'
 import { _removeDOMNode } from '../dom/dom-utils'
 import { ElementPosition } from '../std/position'
-import { Prop, Signal, useProp } from '../std/signal'
+import { Prop, Signal, makeProp } from '../std/signal'
 import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
@@ -53,7 +53,7 @@ export const Repeat = (
         }
         for (let i = 0; i < newLength; i++) {
           if (existings[i] == null) {
-            existings[i] = useProp(elements[i])
+            existings[i] = makeProp(elements[i])
             const node = renderableOfTNode(element(existings[i]))
             clears[i] = node(ctx)
           } else {

@@ -1,6 +1,6 @@
 import {
   attr,
-  useComputed,
+  makeComputed,
   ForEach,
   Fragment,
   html,
@@ -8,7 +8,7 @@ import {
   localStorageProp,
   on,
   OnChecked,
-  useProp,
+  makeProp,
   Prop,
   Signal,
   When,
@@ -46,8 +46,8 @@ export const App = () => {
     key: STORE_KEY,
   })
   const todos = state.at('todos')
-  const adding = useProp('' as string)
-  const editing = useProp(null as null | Todo)
+  const adding = makeProp('' as string)
+  const editing = makeProp(null as null | Todo)
   const dispatch = state.reducer(update)
   return Fragment(
     html.section(
@@ -93,7 +93,7 @@ export const App = () => {
             ForEach(
               state.map(({ todos, filter }) => todos.filter(filterF(filter))),
               (item: Signal<Todo>) => {
-                const isEditing = useComputed(
+                const isEditing = makeComputed(
                   (): boolean =>
                     editing.value != null && editing.value.id === item.value.id,
                   [editing as Signal<unknown>, item]
