@@ -24,17 +24,15 @@ jobs:
           node-version: '20'
       - name: Yarn Install
         run: yarn install
-      # - name: Generate Docs for each project
-      #   run: yarn docs
       - name: Build Demos
         run: yarn build:demos
       - name: Assemble Docs
         run: yarn docs
       - name: Build Docs
         run: yarn build --filter=@tempos/docs
-      - name: Build Pages
-        working-directory: apps/docs
-        run: yarn docs:static
+      # - name: Build Pages
+      #   working-directory: apps/docs
+      #   run: yarn docs:static
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
