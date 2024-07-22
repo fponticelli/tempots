@@ -32,6 +32,8 @@ jobs:
         run: yarn docs
       - name: Build Docs
         run: yarn build --filter=@tempos/docs
+      - name: Build Pages
+        run: yarn docs:static
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

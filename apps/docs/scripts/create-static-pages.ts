@@ -84,7 +84,7 @@ while (toGenerate.length > 0) {
     toGenerate.push(...newUrls)
 
     // save html
-    const basePath = path.resolve(process.cwd(), './generated')
+    const basePath = path.resolve(process.cwd(), './dist')
     const filePath = path.join(basePath, url === '/' ? '/index.html' : url + '/index.html')
 
     await fse.ensureDir(path.dirname(filePath))

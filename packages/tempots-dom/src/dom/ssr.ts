@@ -13,7 +13,10 @@ const addAttributeTracker = (element: Element, name: string) => {
   if (value != null) {
     const dataAttr = element.getAttribute(ATTR_NAME) ?? '{}'
     const data = { ...JSON.parse(dataAttr), name: value }
-    element.setAttribute(ATTR_NAME, JSON.stringify(data))
+    element.setAttribute(
+      ATTR_NAME,
+      JSON.stringify(data).replace(/"/g, '&quot;')
+    )
   }
 }
 
@@ -26,12 +29,11 @@ export const _maybeAddAttributeTracker = (ctx: DOMContext, name: string) => {
   }
 }
 
-/**
- * @internal
- */
-export const _removeAttributeTrackers = (doc: Document) => {
+const removeAttributeTrackers = (doc: Document) => {
   doc.querySelectorAll(`[${ATTR_NAME}]`).forEach(element => {
-    const attr = JSON.parse(element.getAttribute(ATTR_NAME) ?? '{}')
+    const attr = JSON.parse(
+      (element.getAttribute(ATTR_NAME) ?? '{}').replace(/&quot;/g, '"')
+    )
     for (const [key, value] of Object.entries(attr)) {
       element.setAttribute(key, value as string)
     }
@@ -52,10 +54,7 @@ export const _maybeAddClassTracker = (ctx: DOMContext) => {
   }
 }
 
-/**
- * @internal
- */
-export const _removeClassTrackers = (doc: Document) => {
+const removeClassTrackers = (doc: Document) => {
   doc.querySelectorAll(`[${CLASS_NAME}]`).forEach(element => {
     const value = element.getAttribute(CLASS_NAME)
     if (value === null) return
@@ -71,16 +70,13 @@ export const _addNodeTracker = (element: Element) => {
   element.setAttribute(NODE_NAME, '')
 }
 
-/**
- * @internal
- */
-export const _removeNodeTrackers = (doc: Document) => {
+const removeNodeTrackers = (doc: Document) => {
   doc.querySelectorAll(`[${NODE_NAME}]`).forEach(element => {
     _removeDOMNode(element)
   })
 }
 
-const _addTextTracker = (element: Element) => {
+const addTextTracker = (element: Element) => {
   element.setAttribute(TEXT_NAME, element.textContent ?? '')
 }
 
@@ -89,14 +85,11 @@ const _addTextTracker = (element: Element) => {
  */
 export const _maybeAddTextTracker = (ctx: DOMContext) => {
   if (isSSR() && ctx.isFirstLevel) {
-    _addTextTracker(ctx.element)
+    addTextTracker(ctx.element)
   }
 }
 
-/**
- * @internal
- */
-export const _removeTextTrackers = (doc: Document) => {
+export const removeTextTrackers = (doc: Document) => {
   doc.querySelectorAll(`[${TEXT_NAME}]`).forEach(element => {
     element.textContent = element.getAttribute(TEXT_NAME)
     element.removeAttribute(TEXT_NAME)
@@ -107,10 +100,10 @@ export const _removeTextTrackers = (doc: Document) => {
  * @internal
  */
 export const _clearSSR = (doc: Document) => {
-  _removeNodeTrackers(doc)
-  _removeClassTrackers(doc)
-  _removeAttributeTrackers(doc)
-  _removeTextTrackers(doc)
+  removeNodeTrackers(doc)
+  removeClassTrackers(doc)
+  removeAttributeTrackers(doc)
+  removeTextTrackers(doc)
 }
 
 // TODO not sure why I have to attach this to window and module variables are not working
