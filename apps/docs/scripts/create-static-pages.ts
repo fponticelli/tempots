@@ -64,17 +64,29 @@ const filterURLs = (urls: string[]) => {
 }
 
 console.log('Creating static pages...')
-const generated = new Set<string>()
+const generated = new Set<string>([
+  '/demos/hnpwa/index.html',
+  '/demos/7guis/index.html',
+  '/demos/counter/index.html',
+  '/demos/todomvc/index.html'
+])
 const toGenerate = ['/']
 while (toGenerate.length > 0) {
   // console.log('next ...', toGenerate.length)
   const url = toGenerate.pop()!
   try {
+    const basePath = path.resolve(process.cwd(), './dist')
+    const filePath = path.join(basePath, url === '/' ? '/index.html' : url)
+    const dirPath = path.dirname(filePath)
     if (generated.has(url)) {
       // console.log('already generated', url)
       continue
     }
     generated.add(url)
+    if (url !== '/' && await fse.exists(filePath)) {
+      console.log(filePath)
+      continue
+    }
     // console.log('Render:', url)
     const html = await renderPage(url)
     // console.log('after render')
@@ -84,9 +96,6 @@ while (toGenerate.length > 0) {
     toGenerate.push(...newUrls)
 
     // save html
-    const basePath = path.resolve(process.cwd(), './dist')
-    const filePath = path.join(basePath, url === '/' ? '/index.html' : url)
-    const dirPath = path.dirname(filePath)
 
     // console.log('#####')
     // console.log(dirPath)
