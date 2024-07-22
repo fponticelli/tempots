@@ -45,6 +45,9 @@ export function EmbedHTMLFragment(content: Value<string>) {
 }
 
 export function EmbedHTMLFragmentFromURL(url: Value<string>) {
+  Signal.map(url, url => {
+    console.log('EmbedHTMLFragmentFromURL.url', url)
+  })
   const content = Signal.wrap(url).mapAsync(
     async url => (await fetch(url)).text(),
     ''

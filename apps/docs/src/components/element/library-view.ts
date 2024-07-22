@@ -53,7 +53,6 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
   return UseLocation(location => {
     const library = data.$.library
     const path = data.$.path
-    path.tap(console.log)
     const isRoot = path.map(v => v == null)
     const apiUrl = useComputed(() => {
       const prefix = library.value.name.split('-').pop()
@@ -61,6 +60,8 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
         ? `/api/${library.value.name}/${prefix}.html`
         : `/api/${library.value.name}/${prefix}.${path.value}.html`
     }, [data, location])
+    data.tap(console.log)
+    apiUrl.tap(console.log)
     return html.div(
       HTMLTitle(library.map(({ title }) => `Tempo • ${title}`)),
       OpenGraph({
