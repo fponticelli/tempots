@@ -175,6 +175,14 @@ async function collectLibrary(
   }
 }
 
+const tokenize = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, '-')
+}
+
 async function collectLibraries(libraries: string[], src: string) {
   const list = await Promise.all(
     libraries.map(async library => ({
@@ -227,7 +235,14 @@ async function main() {
 
   // pages
   await prepDir(pagesFolderDst)
-  const sections = await createPages(pagesFolderSrc, pagesFolderDst)
+  const sections = await createPages(pagesFolderSrc, pagesFolderDst, {
+    domMangler: (doc, currentPath) => {
+      // add ID to headers
+      for (const header of Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
+        header.id = tokenize((header as HTMLElement).innerText)
+      }
+    }
+  })
 
   // libraries
   const librariesData = await collectLibraries(libraries, librariesFolderSrc)
@@ -290,6 +305,10 @@ async function main() {
             anchor.href = `${lib}.${parts.join('.')}.html`
           }
           // console.log(anchor.href)
+        }
+        // add ID to headers
+        for (const header of Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
+          header.id = tokenize((header as HTMLElement).innerText)
         }
       }
     })
