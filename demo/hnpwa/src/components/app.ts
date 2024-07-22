@@ -9,6 +9,7 @@ import {
   When,
   OneOfType,
   Portal,
+  attr,
 } from '@tempots/dom'
 import { Feed, Route, toTitle } from '../route'
 import { LinkRoute } from './link-route'
@@ -77,7 +78,7 @@ export function App(route: Signal<Route>, page: Signal<Page>) {
   const urlParams = new URLSearchParams(window.location.search)
   const base = urlParams.has('base') ? urlParams.get('base') : null
   return html.main(
-    base && Portal('head', html.base(base)),
+    base && Portal('head', html.base(attr.href(base))),
     html.header(
       LinkRoute({
         route: useSignal(Route.root),
