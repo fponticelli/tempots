@@ -2,7 +2,6 @@ import {
   aria,
   attr,
   TNode,
-  Fragment,
   html,
   on,
   svg,
