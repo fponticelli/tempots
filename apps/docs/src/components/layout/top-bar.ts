@@ -11,9 +11,9 @@ export function TopBar() {
     html.div(attr.class('relative flex flex-1')),
     html.div(
       attr.class('flex items-center gap-x-4 lg:gap-x-6'),
-      TopLink('Demos', '/all-demos'),
-      TopLink('Tools', '/all-tools'),
-      TopLink('Libraries', '/all-libraries'),
+      TopLink('Demos', '/all-demos.html'),
+      TopLink('Tools', '/all-tools.html'),
+      TopLink('Libraries', '/all-libraries.html'),
       html.div(
         attr.class('relative w-9'),
         html.a(

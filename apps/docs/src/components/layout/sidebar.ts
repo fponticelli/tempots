@@ -49,11 +49,13 @@ export function FakeIcon(child: TNode) {
 }
 
 export function SectionLink({
+  external,
   label,
   icon,
   href,
   active,
 }: {
+  external?: boolean
   label: TNode
   icon: TNode
   href: string
@@ -74,6 +76,7 @@ export function SectionLink({
       attr.class(
         'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
       ),
+      external ? attr.target('_blank') : null,
       FakeIcon(icon),
       html.span(attr.class('truncate'), label)
     )
@@ -126,7 +129,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
         ),
         html.li(
           Anchor(
-            '/all-libraries',
+            '/all-libraries.html',
             attr.class(Styles.sidebar.heading),
             'Libraries'
           ),
@@ -147,7 +150,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          Anchor('/tools', attr.class(Styles.sidebar.heading), 'Tools'),
+          Anchor('/tools.html', attr.class(Styles.sidebar.heading), 'Tools'),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
@@ -162,7 +165,11 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          Anchor('/all-demos', attr.class(Styles.sidebar.heading), 'Demos'),
+          Anchor(
+            '/all-demos.html',
+            attr.class(Styles.sidebar.heading),
+            'Demos'
+          ),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),
@@ -170,7 +177,8 @@ export function SideBar({ libraries, demos, pages }: Toc) {
               const initial = titleToInitial(title)
               return html.li(
                 SectionLink({
-                  href: `/demo/${path}.html`,
+                  href: `/demos/${path}/index.html`,
+                  external: true,
                   label: title,
                   icon: initial,
                   active,

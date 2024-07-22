@@ -2,16 +2,19 @@ import { attr, TNode, html, Value } from '@tempots/dom'
 import { Anchor } from '@tempots/ui'
 
 export function Card({
+  external,
   title,
   description,
   href,
 }: {
+  external?: boolean
   title: TNode
   description: TNode
   href: Value<string>
 }) {
   return Anchor(
     href,
+    external ? attr.target('_blank') : null,
     html.div(
       attr.class('bg-white border rounded-lg shadow-md min-h-36'),
       html.h2(
