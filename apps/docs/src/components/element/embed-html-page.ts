@@ -88,14 +88,24 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
   )
 }
 
+const tokenize = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, '-')
+}
+
 const makeTOC = (el: HTMLElement): TOCItem[] => {
   const headers = el.querySelectorAll('h1, h2, h3, h4, h5, h6')
   if (headers.length > 0) {
     return Array.from(headers).map(header => {
+      const id = tokenize(header.textContent ?? '')
+      header.id = id
       const level = parseInt(header.tagName[1])
       return {
         title: header.textContent ?? '',
-        href: `#${header.id}`,
+        href: `#${id}`,
         level,
       }
     })
