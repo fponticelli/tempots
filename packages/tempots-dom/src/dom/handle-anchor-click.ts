@@ -1,6 +1,6 @@
 function shouldNotApplyCallback(
   e: MouseEvent,
-  checkExtension: boolean,
+  checkExtension: boolean | string[],
   checkExternalUrl: boolean
 ): boolean {
   let target = e.target as HTMLElement | null
@@ -32,9 +32,15 @@ function shouldNotApplyCallback(
     const relativeUrl = pathname + search + hash
 
     // don't navigate if external link or has extension
+    if (anchor.getAttribute('href') !== relativeUrl) {
+      return true
+    }
+    if (checkExtension === true && !/\/[^/.]*$/.test(pathname)) {
+      return true
+    }
     if (
-      anchor.getAttribute('href') !== relativeUrl ||
-      (checkExtension && !/\/[^/.]*$/.test(pathname))
+      Array.isArray(checkExtension) &&
+      !checkExtension.some(ext => pathname.endsWith(ext))
     ) {
       return true
     }
