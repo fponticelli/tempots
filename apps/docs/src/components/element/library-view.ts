@@ -53,6 +53,7 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
   return UseLocation(location => {
     const library = data.$.library
     const path = data.$.path
+    path.tap(console.log)
     const isRoot = path.map(v => v == null)
     const apiUrl = useComputed(() => {
       const prefix = library.value.name.split('-').pop()
