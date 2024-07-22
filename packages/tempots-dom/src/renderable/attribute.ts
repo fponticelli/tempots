@@ -61,8 +61,9 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
   return (ctx: DOMContext) => {
     _maybeAddAttributeTracker(ctx, name)
     const original = getter(ctx.element)
-    signal.on(v => setter(ctx.element, v))
+    const clear = signal.on(v => setter(ctx.element, v))
     return (removeTree: boolean) => {
+      clear()
       if (removeTree) {
         setter(ctx.element, original)
       }
