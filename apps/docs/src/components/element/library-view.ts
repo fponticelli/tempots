@@ -60,8 +60,6 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
         ? `/api/${library.value.name}/${prefix}.html`
         : `/api/${library.value.name}/${prefix}.${path.value}.html`
     }, [data, location])
-    data.tap(console.log)
-    apiUrl.tap(console.log)
     return html.div(
       HTMLTitle(library.map(({ title }) => `Tempo • ${title}`)),
       OpenGraph({

@@ -55,7 +55,7 @@ export const render = (
       `Cannot find element by selector for render: ${parent}`
     )
   }
-  if (clear && (doc ?? el.ownerDocument) != null) {
+  if (clear !== false && (doc ?? el.ownerDocument) != null) {
     _clearSSR((doc ?? el.ownerDocument)!)
   }
   const element = _getSelfOrParentElement(el)
