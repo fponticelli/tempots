@@ -20,6 +20,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
+      external: ['@tempots/dom', '@tempots/std'],
       output: {
         extend: true
       }
