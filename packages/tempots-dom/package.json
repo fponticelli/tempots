@@ -1,7 +1,7 @@
 {
   "name": "@tempots/dom",
   "private": false,
-  "version": "19.0.0",
+  "version": "19.1.0",
   "priority": 2,
   "description": "Fully-typed frontend framework alternative to React and Angular",
   "keywords": [
