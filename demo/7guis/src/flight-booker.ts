@@ -5,7 +5,7 @@ import {
   type Renderable,
   makeProp,
   BindDate,
-  EmitValue,
+  emitValue,
 } from '@tempots/dom'
 import { Button, InputDate, Select } from './ui'
 import { flex } from './components/flex'
@@ -17,7 +17,7 @@ export function FlightBooker(): Renderable {
   return flex.col(
     attr.class('gap-2 w-64'),
     Select(
-      on.change(EmitValue(v => oneWay.set(v === 'One-way'))),
+      on.change(emitValue(v => oneWay.set(v === 'One-way'))),
       html.option(attr.value('One-way'), 'One-way'),
       html.option(attr.value('Return'), 'Return')
     ),

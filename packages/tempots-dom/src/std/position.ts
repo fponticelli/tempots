@@ -21,6 +21,13 @@ export class ElementPosition {
   ) {}
 
   /**
+   * Gets the counter of the element.
+   */
+  get counter() {
+    return this.index + 1
+  }
+
+  /**
    * Checks if the element is the first element in the collection.
    * @returns `true` if the element is the first element, `false` otherwise.
    */

@@ -59,7 +59,7 @@ export const on = new Proxy(
  * @returns An event handler function that can be attached to an event listener.
  * @public
  */
-export const EmitValue = (fn: (text: string) => void) => {
+export const emitValue = (fn: (text: string) => void) => {
   return (event: Event) => {
     const target = event.target as HTMLInputElement
     fn(target.value)
@@ -73,7 +73,7 @@ export const EmitValue = (fn: (text: string) => void) => {
  * @returns A function that can be used as an event handler.
  * @public
  */
-export const EmitValueAsNumber = (fn: (num: number) => void) => {
+export const emitValueAsNumber = (fn: (num: number) => void) => {
   return (event: Event) => {
     const target = event.target as HTMLInputElement
     fn(target.valueAsNumber)
@@ -86,7 +86,7 @@ export const EmitValueAsNumber = (fn: (num: number) => void) => {
  * @returns A function that can be used as an event handler for input events.
  * @public
  */
-export const EmitValueAsDate = (fn: (date: Date) => void) => {
+export const emitValueAsDate = (fn: (date: Date) => void) => {
   return (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.value === '') {
@@ -108,7 +108,7 @@ export const EmitValueAsDate = (fn: (date: Date) => void) => {
  * @returns The event handler function.
  * @public
  */
-export const EmitValueAsDateTime = (fn: (date: Date) => void) => {
+export const emitValueAsDateTime = (fn: (date: Date) => void) => {
   return (event: Event) => {
     const target = event.target as HTMLInputElement
     if (target.value === '') {
@@ -135,7 +135,7 @@ export const EmitValueAsDateTime = (fn: (date: Date) => void) => {
  * @returns A function that takes an event and calls the provided function with the checked value of the event target.
  * @public
  */
-export const EmitChecked = (fn: (checked: boolean) => void) => {
+export const emitChecked = (fn: (checked: boolean) => void) => {
   return (event: Event) => {
     const target = event.target as HTMLInputElement
     fn(target.checked)
@@ -148,7 +148,7 @@ export const EmitChecked = (fn: (checked: boolean) => void) => {
  * @returns A new function that prevents the default behavior of the event and then invokes the original function.
  * @public
  */
-export const EmitPreventDefault = (fn: () => void) => {
+export const emitPreventDefault = (fn: () => void) => {
   return (event: Event) => {
     event.preventDefault()
     fn()
@@ -161,7 +161,7 @@ export const EmitPreventDefault = (fn: () => void) => {
  * @returns A new event handler function.
  * @public
  */
-export const EmitStopPropagation = (fn: () => void) => {
+export const emitStopPropagation = (fn: () => void) => {
   return (event: Event) => {
     event.stopPropagation()
     fn()
@@ -174,7 +174,7 @@ export const EmitStopPropagation = (fn: () => void) => {
  * @returns The event handler function.
  * @public
  */
-export const EmitStopImmediatePropagation = (fn: () => void) => {
+export const emitStopImmediatePropagation = (fn: () => void) => {
   return (event: Event) => {
     event.stopImmediatePropagation()
     fn()

@@ -12,7 +12,7 @@ import {
   makeSignal,
   makeComputed,
   Fragment,
-  EmitValue,
+  emitValue,
 } from '@tempots/dom'
 import { bmiData } from './cell-sample'
 import { InputText } from './ui'
@@ -204,7 +204,7 @@ export function Cells(): Renderable {
                       attr.class('w-full min-w-20 h-7'),
                       attr.value(cellValue.formula),
                       on.blur(
-                        EmitValue(text => {
+                        emitValue(text => {
                           if (text !== cellValue.formula.value) {
                             cellValue.formula.set(text)
                           }

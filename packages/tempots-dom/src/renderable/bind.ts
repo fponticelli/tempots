@@ -3,10 +3,10 @@ import { Renderable } from '../types/domain'
 import { attr } from './attribute'
 import { Fragment } from './fragment'
 import {
-  EmitValue,
-  EmitValueAsDate,
-  EmitValueAsDateTime,
-  EmitValueAsNumber,
+  emitValue,
+  emitValueAsDate,
+  emitValueAsDateTime,
+  emitValueAsNumber,
   on,
   OnChecked,
 } from './handler'
@@ -26,7 +26,7 @@ export const BindDate = (
 ): Renderable => {
   return Fragment(
     attr.valueAsDate(prop),
-    on[handler](EmitValueAsDate(prop.set))
+    on[handler](emitValueAsDate(prop.set))
   )
 }
 
@@ -43,7 +43,7 @@ export const BindDateTime = (
 ): Renderable => {
   return Fragment(
     attr.valueAsDate(prop),
-    on[handler](EmitValueAsDateTime(prop.set))
+    on[handler](emitValueAsDateTime(prop.set))
   )
 }
 
@@ -60,7 +60,7 @@ export const BindNumber = (
 ): Renderable => {
   return Fragment(
     attr.valueAsNumber(prop),
-    on[handler](EmitValueAsNumber(prop.set))
+    on[handler](emitValueAsNumber(prop.set))
   )
 }
 
@@ -75,7 +75,7 @@ export const BindText = (
   prop: Prop<string>,
   handler: keyof typeof on = 'input'
 ): Renderable => {
-  return Fragment(attr.value(prop), on[handler](EmitValue(prop.set)))
+  return Fragment(attr.value(prop), on[handler](emitValue(prop.set)))
 }
 
 /**

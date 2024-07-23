@@ -9,7 +9,7 @@ import {
   Signal,
   makeComputed,
   ForEach,
-  EmitValueAsNumber,
+  emitValueAsNumber,
 } from '@tempots/dom'
 import { Button, Range } from './ui'
 import { flex } from './components/flex'
@@ -161,7 +161,7 @@ export function CircleDrawer(): Renderable {
         attr.min(1),
         attr.max(100),
         attr.valueAsNumber(radius),
-        on.change(EmitValueAsNumber(changeRadius))
+        on.change(emitValueAsNumber(changeRadius))
       )
     ),
     flex.row(

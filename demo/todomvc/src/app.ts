@@ -12,7 +12,7 @@ import {
   Prop,
   Signal,
   When,
-  EmitValue,
+  emitValue,
 } from '@tempots/dom'
 import { AutoFocus, AutoSelect } from '@tempots/ui'
 import { Action, AllFilters, Filter, State, Todo } from './types'
@@ -63,7 +63,7 @@ export const App = () => {
             attr.value(adding),
             on.keydown(e => {
               if (e.key === 'Enter') {
-                EmitValue(adding.set)(e)
+                emitValue(adding.set)(e)
                 dispatch({ type: 'AddTodo', title: adding.value })
                 adding.set('')
               } else if (e.key === 'Escape') {
@@ -140,7 +140,7 @@ export const App = () => {
                       attr.value(editing.map(v => v?.title || '')),
                       on.keydown(e => {
                         if (e.key === 'Enter') {
-                          EmitValue(v =>
+                          emitValue(v =>
                             editing.set({ ...editing.value!, title: v })
                           )(e)
                           const todo = editing.value
@@ -153,13 +153,13 @@ export const App = () => {
                         } else if (e.key === 'Escape') {
                           editing.set(null)
                         } else {
-                          EmitValue(v =>
+                          emitValue(v =>
                             editing.set({ ...editing.value!, title: v })
                           )(e)
                         }
                       }),
                       on.blur(
-                        EmitValue(title => {
+                        emitValue(title => {
                           const todo = { ...editing.value!, title }
                           if (todo.title) {
                             dispatch({ type: 'UpdateTodo', todo })

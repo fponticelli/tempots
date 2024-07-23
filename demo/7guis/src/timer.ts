@@ -6,7 +6,7 @@ import {
   makeComputed,
   makeProp,
   OnUnmount,
-  EmitValueAsNumber,
+  emitValueAsNumber,
 } from '@tempots/dom'
 import { Button, Progress, Range } from './ui'
 import { flex } from './components/flex'
@@ -55,7 +55,7 @@ export function Timer(): Renderable {
         attr.min(MIN),
         attr.max(MAX),
         attr.valueAsNumber(duration),
-        on.input(EmitValueAsNumber(duration.set))
+        on.input(emitValueAsNumber(duration.set))
       ),
       Txt(duration.map(duration => formatSecond(duration)))
     ),
