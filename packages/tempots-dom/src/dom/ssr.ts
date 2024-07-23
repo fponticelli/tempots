@@ -182,7 +182,7 @@ export const prepareSSR = (timeoutSeconds = 30): Promise<void> => {
  * @returns A renderable value.
  * @public
  */
-export const useSSRDone = (child: (done: () => void) => TNode): Renderable => {
+export const UseSSRDone = (child: (done: () => void) => TNode): Renderable => {
   incrementCounter()
   return renderableOfTNode(child(decrementCounter))
 }

@@ -40,7 +40,7 @@
     "happy-dom": "^14.12.3"
   },
   "peerDependencies": {
-    "@tempots/dom": "19.1.0"
+    "@tempots/dom": "19.2.0"
   },
   "license": "Apache-2.0"
 }
