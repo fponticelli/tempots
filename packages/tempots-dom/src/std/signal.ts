@@ -379,43 +379,39 @@ export class Signal<T> {
    * If no recovery function is provided, the error will be logged as an unhandled promise rejection.
    *
    * @typeParam O - The type of the mapped value.
-   * @param fn - The function to map the values emitted by the signal.
+   * @param fn - The function to map the values emitted by the signal. The second argument to this function allows to cancel the previously running mapping function if it has not completed by the time a new value is emitted.
    * @param alt - The alternate value to use if the signal is disposed or the mapping function throws an error.
    * @param recover - The recovery function to handle errors thrown by the mapping function.
    * @param equals - The equality function to compare the mapped values for equality.
    * @returns A property that holds the mapped value and can be observed for changes.
    */
   readonly mapAsync = <O>(
-    fn: (value: T) => Promise<O>,
+    fn: (value: T, options: { abortSignal: AbortSignal }) => Promise<O>,
     alt: O,
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     const p = makeProp(alt, equals)
     let count = 0
+    let abortController = new AbortController()
     p.onDispose(
-      this.on(v => {
+      this.on(async v => {
         const current = ++count
+        abortController.abort()
+        abortController = new AbortController()
         try {
-          fn(v)
-            .then(value => {
-              if (current === count) p.set(value)
-            })
-            .catch(error => {
-              if (current === count) {
-                if (recover != null) {
-                  p.set(recover(error))
-                } else {
-                  console.error(
-                    'Unhandled promise rejection in Signal.mapAsync:',
-                    error
-                  )
-                }
-              }
-            })
+          const value = await fn(v, { abortSignal: abortController.signal })
+          if (current === count) {
+            p.set(value)
+          }
         } catch (error) {
-          console.error('Error in Signal.mapAsync:', error)
-          throw error
+          if (current === count) {
+            if (recover != null) {
+              p.set(recover(error))
+            } else {
+              throw error
+            }
+          }
         }
       })
     )

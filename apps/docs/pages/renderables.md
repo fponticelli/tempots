@@ -181,45 +181,155 @@ NotEmpty(
 )
 ```
 
-### Repeat
+`Repeat` takes a signal that represents the number of times to repeat the renderable. It is useful when you want to repeat a renderable a fixed number of times.
 
-### Conjunction
+```ts
+const countSignal = makeSignal(3)
 
-### NotEmpty
+Repeat(
+  countSignal,
+  pos => html.div(pos.$.counter.map(String))
+)
+```
+
+If you know ahead of time the number and content of the elements, you can use a regular loop to create an array of renderables.
+
+```ts
+const items = ['Item 1', 'Item 2', 'Item 3']
+
+html.div(
+  items.map((item, index) => html.div(String(index), ': ', item))
+)
+```
 
 ## Lifecycle
 
-### OnMount
+For more advanced use cases, Tempo provides a set of functions to handle the lifecycle of a renderable. For example, to run a function when a renderable is mounted, use `OnMount`. This will take a callback function that will be called with the HTML Dom Element just mounted. Similarly `OnCtx` will take a callback function that will be called with the current `DOMContext`.
 
-### OnUnmount
+```ts
+html.div(
+  // element is the DIV Element just mounted
+  OnMount(element => {
+    console.log('Mounted', element)
+  })
+)
+```
 
-### OnCtx
+Whenever you want to cleanup resources when a renderable is unmounted, use `OnUnmount`.
 
-## Other
+```ts
+html.div(
+  OnMount(element => {
+    const listener = () => console.log('Clicked')
+    element.addEventListener('click', listener)
+    OnUnmount(removeTree => {
+      if (removeTree) {
+        element.removeEventListener('click', listener)
+      }
+    })
+  })
+)
+```
 
-### Fragment
+## Fragment/Empty
 
-### MapSignal
+You can use `Fragment` where a single renderable is expected but you want to render multiple components. Similarly, you can use `Empty` to fill a slot with nothing.
 
 ## Providers and Consumers
 
-### Provide
+To simplify the structure of a larger project, it is often useful to use a Provider/Consumer pattern. In a high-level component, you can provide a value (or function, or signal, or anything really) that is consumed by a lower-level component. You can use `WithProvider` to provide a single value, and `UseProvider` to consume it.
 
-### Use
+They both required a `ProviderMark` to be passed as the first argument. This is a unique symbol that is used to identify the provider. You can use `makeProviderMark` to create a unique mark for your own provider/consumer.
 
-### UseProvider
+```ts
+type Preferences = Signal<{ theme: string }>
+const PreferencesMark = makeProviderMark<Preferences>('Preferences')
 
-### UseProviders
+const MyComponent = WithProvider(
+  PreferencesMark,
+  makeSignal({ theme: 'bubbly' }),
+  html.div(
+    UseProvider(PreferencesMark, value => html.div(value.$.theme))
+  )
+)
+```
 
-### WithProvider
+When creating reusable providers, you probably want to wrap them in a provider function. This function has generally the signature `(node: TNode) => Renderable`.
 
-## Ctx
+```ts
+const PreferencesProvider = (node: TNode) => {
+  const preferences = makeSignal<Preferences>({ theme: 'bubbly' })
+  return WithProvider(
+    PreferencesMark,
+    preferences,
+    node
+  )
+}
+```
 
-## Empty
+Similarly on the consumer side, you can have:
 
-## Async and Task
+```ts
+const UsePreferences = (fn: (preferences: Signal<Preference>) => TNode) =>
+  UseProvider(PreferencesMark, fn)
+```
+
+Now you can use them together for easy access to the preferences:
+
+```ts
+PreferencesProvider(
+  html.div(
+    UsePreferences(preferences => html.div(preferences.$.theme))
+  )
+)
+```
+
+## Asynchrnous Operations
+
+If you are dealing with asynchronous operations, you can use `Async` to render a promise or `Task` to render a function that returns a promise. More likely than not you will want to use a combination of `Signal`s and `Promise` to define your UI. Let's take as an example loading from an API.
+
+```ts
+const dataSignal = Signal.ofPromise<string | null>(
+  async () => {
+    const res = await fetch('https://api.example.com/data')
+    return r.text()
+  },
+  null // this is the default state before the promise resolves
+)
+
+html.div(
+  Ensure(
+    dataSignal,
+    data => html.div(data),
+    html.div('Loading...')
+  )
+)
+```
+
+Often you will want to refetch when some parameter changes.
+
+```ts
+const idSignal = makeSignal(1)
+
+const dataSignal = idSignal.mapAsync<string | null>(
+  async (id) => {
+    const res = await fetch(`https://api.example.com/data/${id}`)
+    return r.text()
+  },
+  null // this is the default state before the promise resolves
+)
+
+// the rest remains the same
+```
 
 ## Portal
+
+A `Portal` is a way to render a renderable in a different part of the DOM. This is useful when you want to render a modal, a tooltip or you want to make changes to the `head` element. The `HTMLTitle` renderable defined in the `@tempots/ui` package is a good example of this.
+
+```ts
+export const HTMLTitle = (title: Value<string>) =>
+  Portal('head > title', attr.innerText(title))
+```
 
 ## Next Steps
 

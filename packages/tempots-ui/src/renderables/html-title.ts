@@ -8,4 +8,4 @@ import { Value, attr, Portal } from '@tempots/dom'
  * @public
  */
 export const HTMLTitle = (title: Value<string>) =>
-  Portal('head title', attr.innerText(title))
+  Portal('head > title', attr.innerText(title))
