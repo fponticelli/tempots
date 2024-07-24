@@ -17,7 +17,7 @@ A classic “Hello World” example:
 ```ts
 import { html, render } from '@tempots/dom'
 
-// Define a template
+// Define a template or renderable
 const HelloWorld = html.h1('Hello World')
 
 // Render it to the DOM
