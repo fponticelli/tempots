@@ -10,18 +10,21 @@ import {
   Signal,
   Value,
   Ensure,
+  on,
 } from '@tempots/dom'
-import { UseLocation, LocationData, setLocationFromUrl } from '@tempots/ui'
+import { UseLocation, LocationData } from '@tempots/ui'
 import { Styles } from '../styles'
+import { navigateTo } from '../../utils/scroll-to'
 
 const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
   const anchors = el.querySelectorAll('a')
   for (const anchor of anchors) {
+    const href = anchor.getAttribute('href') ?? ''
     anchor.addEventListener(
       'click',
       handleAnchorClick(
         () => {
-          setLocationFromUrl(location, anchor.href)
+          navigateTo(location, href)
           return true
         },
         {
@@ -47,7 +50,7 @@ const mapLevel: Record<number, string> = {
   6: 'list-disc ml-10 text-sm',
 }
 
-const TOCView = (toc: Signal<TOCItem[]>) => {
+const TOCView = (location: Prop<LocationData>, toc: Signal<TOCItem[]>) => {
   return Ensure(
     toc.map(v => (v.length > 3 ? v : null)),
     toc =>
@@ -78,6 +81,12 @@ const TOCView = (toc: Signal<TOCItem[]>) => {
                         item.$.level.map(level => mapLevel[level] ?? 'ml-0')
                       ),
                       html.a(
+                        on.click(
+                          handleAnchorClick(() => {
+                            navigateTo(location, item.$.href.value)
+                            return true
+                          })
+                        ),
                         attr.class('hover:underline text-blue-900'),
                         attr.href(item.$.href),
                         item.$.title
@@ -111,22 +120,22 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
 export function EmbedHTMLPage(content: Value<string>) {
   const htmlSignal = Signal.wrap(content)
   const toc = makeProp<TOCItem[]>([])
-  return html.div(
-    attr.class(
-      'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'
-    ),
+  return UseLocation(location =>
     html.div(
-      attr.class(Styles.prose),
-      attr.innerHTML(htmlSignal),
-      UseLocation(location =>
+      attr.class(
+        'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'
+      ),
+      html.div(
+        attr.class(Styles.prose),
+        attr.innerHTML(htmlSignal),
         OnCtx((ctx: DOMContext) => {
           return htmlSignal.on(() => {
             updateAnchors(location, ctx.element as HTMLElement)
             toc.set(makeTOC(ctx.element as HTMLElement))
           })
         })
-      )
-    ),
-    TOCView(toc)
+      ),
+      TOCView(location, toc)
+    )
   )
 }

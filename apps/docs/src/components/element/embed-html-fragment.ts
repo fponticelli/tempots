@@ -8,17 +8,19 @@ import {
   Signal,
   Value,
 } from '@tempots/dom'
-import { UseLocation, LocationData, setLocationFromUrl } from '@tempots/ui'
+import { UseLocation, LocationData } from '@tempots/ui'
 import { Styles } from '../styles'
+import { navigateTo } from '../../utils/scroll-to'
 
 const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
   const anchors = el.querySelectorAll('a')
   for (const anchor of anchors) {
+    const href = anchor.getAttribute('href') ?? ''
     anchor.addEventListener(
       'click',
       handleAnchorClick(
         () => {
-          setLocationFromUrl(location, anchor.href)
+          navigateTo(location, href)
           return true
         },
         {

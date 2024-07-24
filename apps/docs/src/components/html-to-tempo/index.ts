@@ -38,7 +38,7 @@ export function HtmlToTempo() {
       description: 'A simple tool to convert HTML to Tempo code.',
     }),
     attr.class(
-      'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-full overflow-hidden gap-2 p-2'
+      'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-full overflow-hidden gap-2'
     ),
     OnUnmount(
       content.on(html => {

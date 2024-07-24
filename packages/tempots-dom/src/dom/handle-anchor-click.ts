@@ -7,23 +7,29 @@ function shouldNotApplyCallback(
   while (target != null && !(target instanceof HTMLAnchorElement)) {
     target = target.parentElement
   }
-  if (target == null) return true
+  if (target == null) {
+    // console.log('no target element')
+    return true
+  }
 
   const anchor = target
 
   // Check for modifier keys and non-left-button, which indicate the user wants to control
   // navigation
   if (e.button !== 0 || e.ctrlKey || e.metaKey) {
+    // console.log('modifier keys or non-left-button')
     return true
   }
 
   // If there is a target and it is not `_self` then we take this
   // as a signal that it doesn't want to be intercepted.
   if (anchor.target !== '_self' && anchor.target !== '') {
+    // console.log('target is not _self')
     return true
   }
 
   if (anchor.getAttribute('download') != null) {
+    // console.log('download attribute')
     return true // let the download happen
   }
 
@@ -32,16 +38,20 @@ function shouldNotApplyCallback(
     const relativeUrl = pathname + search + hash
 
     // don't navigate if external link or has extension
-    if (anchor.getAttribute('href') !== relativeUrl) {
+    const href = anchor.getAttribute('href')
+    if (!href?.startsWith('#') && href !== relativeUrl) {
+      // console.log('external link', relativeUrl, href)
       return true
     }
     if (checkExtension === true && !/\/[^/.]*$/.test(pathname)) {
+      // console.log('has extension')
       return true
     }
     if (
       Array.isArray(checkExtension) &&
       !checkExtension.some(ext => pathname.endsWith(ext))
     ) {
+      // console.log('extension not in list', pathname)
       return true
     }
   }

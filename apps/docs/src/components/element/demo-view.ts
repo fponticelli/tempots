@@ -20,7 +20,6 @@ export function DemoView(demo: Signal<Demo & { id: string }>) {
       title: demo.map(({ title }) => `${title} • Tempo`),
       description: demo.$.description as Signal<string | undefined>,
     }),
-    attr.class('w-full h-full flex flex-col p-2'),
     html.h1(
       attr.class(Styles.heading.small),
       attr.class('flex justify-between items-center gap-2'),

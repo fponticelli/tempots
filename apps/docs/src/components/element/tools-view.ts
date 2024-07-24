@@ -12,16 +12,13 @@ export function ToolsView() {
       title: 'Tools • Tempo',
       description: 'Tempo tools',
     }),
-    attr.class('w-full h-full flex flex-col'),
-    html.div(
-      html.h1(attr.class(Styles.heading.large), 'Tools'),
-      Cards([
-        Card({
-          title: 'HTML to Tempo',
-          description: 'A simple tool to convert HTML to Tempo code.',
-          href: `/tool/html-to-tempo.html`,
-        }),
-      ])
-    )
+    html.h1(attr.class(Styles.heading.large), 'Tools'),
+    Cards([
+      Card({
+        title: 'HTML to Tempo',
+        description: 'A simple tool to convert HTML to Tempo code.',
+        href: `/tool/html-to-tempo.html`,
+      }),
+    ])
   )
 }

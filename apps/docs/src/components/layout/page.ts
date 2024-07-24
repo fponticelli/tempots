@@ -112,14 +112,11 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
       ),
       html.main(
         attr.class(
-          'h-[calc(100dvh_-_4rem)] print:h-none print:overflow-visible overflow-hidden print:overflow-visible'
+          'h-[calc(100dvh_-_4rem)] print:h-none overflow-auto print:overflow-visible'
         ),
-        main
+        html.div(attr.id('main-anchor')),
+        html.div(attr.class('p-4'), main)
       )
     )
   )
-  // html.div(
-  //   html.nav('Navbar'),
-  //   html.div(html.aside('Sidebar'), html.main(HtmlToTempo()))
-  // )
 }

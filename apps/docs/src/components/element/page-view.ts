@@ -11,13 +11,12 @@ export function PageView(page: Signal<Page>) {
     return `https://github.com/fponticelli/tempots/edit/main/apps/docs/pages/${value}`
   })
   return html.div(
-    HTMLTitle(page.$.title.map(t => `Tempo • ${t}`)),
-    OpenGraph({
-      title: page.$.title.map(title => `${title} • Tempo`),
-      description: page.$.description,
-    }),
-    attr.class('w-full h-full print:overflow-visible overflow-auto p-2'),
     html.div(
+      HTMLTitle(page.$.title.map(t => `Tempo • ${t}`)),
+      OpenGraph({
+        title: page.$.title.map(title => `${title} • Tempo`),
+        description: page.$.description,
+      }),
       attr.class('text-center mb-2'),
       html.a(
         attr.target('_blank'),
@@ -28,9 +27,6 @@ export function PageView(page: Signal<Page>) {
         'edit this page'
       )
     ),
-    html.div(
-      attr.class('px-4'),
-      html.div(EmbedHTMLPage(page.$.path.mapAsync(fetchPage, 'loading...')))
-    )
+    html.div(EmbedHTMLPage(page.$.path.mapAsync(fetchPage, 'loading...')))
   )
 }

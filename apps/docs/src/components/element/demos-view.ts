@@ -13,18 +13,15 @@ export function DemosView(demos: Demo[]) {
       title: 'Demos • Tempo',
       description: 'Tempo demos',
     }),
-    attr.class('w-full h-full flex flex-col'),
-    html.div(
-      html.h1(attr.class(Styles.heading.large), 'Demos'),
-      Cards(
-        demos.map(demo =>
-          Card({
-            title: demo.title,
-            description: demo.description,
-            href: `/demos/${demo.path}/index.html`,
-            external: true,
-          })
-        )
+    html.h1(attr.class(Styles.heading.large), 'Demos'),
+    Cards(
+      demos.map(demo =>
+        Card({
+          title: demo.title,
+          description: demo.description,
+          href: `/demos/${demo.path}/index.html`,
+          external: true,
+        })
       )
     )
   )
