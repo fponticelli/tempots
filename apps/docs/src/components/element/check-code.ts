@@ -12,6 +12,6 @@ export function CheckCode(prefix: string, name: Value<string>) {
         n => `https://github.com/fponticelli/tempots/tree/main/${prefix}/${n}`
       )
     ),
-    'Check Code'
+    'Check the code'
   )
 }

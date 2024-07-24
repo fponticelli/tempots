@@ -3,6 +3,7 @@ import { Logo } from '../element/logo'
 import { Styles } from '../styles'
 import { Toc } from '../../model/domain'
 import { Anchor } from '@tempots/ui'
+import { NPMShield } from '../element/npm-shield'
 
 function titleToInitial(title: string) {
   let initial = title
@@ -139,12 +140,14 @@ export function SideBar({ libraries, demos, pages }: Toc) {
             libraries.map(({ title, name }) => {
               const initial = titleToInitial(title.split('/').pop()!)
               return html.li(
+                attr.class('flex flex-row gap-2 items-center justify-between'),
                 SectionLink({
                   href: `/library/${name}.html`,
                   label: title,
                   icon: initial,
                   active,
-                })
+                }),
+                NPMShield(title, null)
               )
             })
           )
