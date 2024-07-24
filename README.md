@@ -10,8 +10,8 @@ Tempo is a framework to build dynamic frontend applications.
 
 [HNPWA demo](https://tempots.com/demos/hnpwa/index.html)
 
-[7GUIs](https://tempots.com/demos/7guis)
+[7GUIs](https://tempots.com/demos/7guis/index.html)
 
-[TODO MVC demo](https://tempots.com/demos/todomvc)
+[TODO MVC demo](https://tempots.com/demos/todomvc/index.html)
 
-[Counter App](https://tempots.com/demos/counter)
+[Counter App](https://tempots.com/demos/counter/index.html)
