@@ -1,3 +1,14 @@
+function getExtension(pathname: string): string | undefined {
+  let extension = pathname.split('/').pop()?.split('.').pop()
+  if (extension === '') {
+    // not an extension
+    extension = undefined
+  } else {
+    extension = '.' + extension
+  }
+  return extension
+}
+
 function shouldNotApplyCallback(
   e: MouseEvent,
   checkExtension: boolean | string[],
@@ -33,8 +44,8 @@ function shouldNotApplyCallback(
     return true // let the download happen
   }
 
+  const { pathname, search, hash } = anchor
   if (checkExternalUrl) {
-    const { pathname, search, hash } = anchor
     const relativeUrl = pathname + search + hash
 
     // don't navigate if external link or has extension
@@ -43,16 +54,22 @@ function shouldNotApplyCallback(
       // console.log('external link', relativeUrl, href)
       return true
     }
-    if (checkExtension === true && !/\/[^/.]*$/.test(pathname)) {
-      // console.log('has extension')
-      return true
-    }
-    if (
-      Array.isArray(checkExtension) &&
-      !checkExtension.some(ext => pathname.endsWith(ext))
-    ) {
-      // console.log('extension not in list', pathname)
-      return true
+  }
+  if (checkExtension !== false) {
+    const extension = getExtension(pathname)
+    if (extension != null) {
+      // console.log('extension: ', extension)
+      if (checkExtension === true) {
+        // console.log('has extension')
+        return true
+      }
+      if (
+        Array.isArray(checkExtension) &&
+        !checkExtension.some(ext => extension == ext)
+      ) {
+        // console.log('extension not in list: ', checkExtension, extension)
+        return true
+      }
     }
   }
 
@@ -93,6 +110,11 @@ export const handleAnchorClick =
     }: HandleAnchorClickOptions = {}
   ) =>
   (e: MouseEvent) => {
+    if (Array.isArray(checkExtension)) {
+      checkExtension = checkExtension.map(ext =>
+        ext.startsWith('.') ? ext : '.' + ext
+      )
+    }
     if (shouldNotApplyCallback(e, checkExtension, checkExternalUrl)) {
       return
     }
