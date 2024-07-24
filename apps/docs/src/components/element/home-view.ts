@@ -7,7 +7,7 @@ export function HomeView(page: Page) {
   return html.div(
     attr.class('relative'),
     html.div(
-      attr.class('float-right mt-4 mr-4'),
+      attr.class('float-right'),
       CommitsShield('fponticelli', 'tempots')
     ),
     PageView(makeSignal(page))
