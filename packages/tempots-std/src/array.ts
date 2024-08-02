@@ -344,11 +344,11 @@ export const uniquePrimitives = <T extends Primitive>(values: T[]): T[] =>
  * @returns An array of distinct elements.
  * @public
  */
-export const uniqueByPredicate = <T>(
+export const uniqueByPrimitive = <T>(
   values: T[],
-  predicate: (a: T) => string
+  predicate: (a: T) => string | number | symbol
 ): T[] => {
-  const map: Record<string, T> = {}
+  const map: Record<string | number | symbol, T> = {}
   values.forEach(v => {
     map[predicate(v)] = v
   })

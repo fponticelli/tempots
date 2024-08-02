@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPredicate, uniquePrimitives } from "../src/array";
+import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPrimitive, uniquePrimitives } from "../src/array";
 import { compareStrings } from "../src/string";
 
 describe('arrays:mapArray', () => {
@@ -258,12 +258,12 @@ describe('arrays:uniquePrimitives', () => {
   })
 })
 
-describe('arrays:uniqueByPredicate', () => {
+describe('arrays:uniqueByPrimitive', () => {
   test('should work with empty arrays', () => {
-    expect(uniqueByPredicate([], a => a)).toEqual([])
+    expect(uniqueByPrimitive([], a => a)).toEqual([])
   })
   test('should work with any array', () => {
-    expect(uniqueByPredicate([1, 2, 3, 2], String)).toEqual([1, 2, 3])
+    expect(uniqueByPrimitive([1, 2, 3, 2], String)).toEqual([1, 2, 3])
   })
 })
 

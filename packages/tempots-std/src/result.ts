@@ -176,6 +176,18 @@ export const Result = {
     return Result.isSuccess(r) ? r.value : undefined
   },
   /**
+   * Gets the value of a `Result` if it is a `Success`, otherwise it throws the error contained in the `Failure`.
+   * @param r - The `Result` to get the value from.
+   * @returns The value of the `Result` if it is a `Success`.
+   */
+  getUnsafe: <V, E>(r: Result<V, E>): V => {
+    if (Result.isSuccess(r)) {
+      return r.value
+    } else {
+      throw r.error
+    }
+  },
+  /**
    * Based on the state of the result, it picks the appropriate function to call and returns the result.
    * @param success - The function to call if the result is a success.
    * @param failure - The function to call if the result is a failure.
@@ -242,4 +254,46 @@ export const Result = {
           (e2: E) => Result.failure<E>(combineE(e1, e2))
         )
     ),
+  /**
+   * Compares two results for equality.
+   * @param r1 - The first result.
+   * @param r2 - The second result.
+   * @param options - The options to use for comparison. By default, uses strict equality.
+   * @returns `true` if the results are equal, `false` otherwise.
+   */
+  equals: <V, E>(
+    r1: Result<V, E>,
+    r2: Result<V, E>,
+    options: {
+      valueEquals: (v1: V, v2: V) => boolean
+      errorEquals: (e1: E, e2: E) => boolean
+    } = {
+      valueEquals: (v1: V, v2: V): boolean => v1 === v2,
+      errorEquals: (e1: E, e2: E): boolean => e1 === e2,
+    }
+  ): boolean => {
+    if (r1.type === 'Success' && r2.type === 'Success') {
+      return options.valueEquals(r1.value, r2.value)
+    } else if (r1.type === 'Failure' && r2.type === 'Failure') {
+      return options.errorEquals(r1.error, r2.error)
+    } else {
+      return false
+    }
+  },
+  /**
+   * Combines multiple results into a single result.
+   * @param results - The results to combine.
+   * @returns A single result that is a success if all the input results are successes, otherwise a failure.
+   */
+  all: <V, E>(results: Result<V, E>[]): Result<V[], E> => {
+    const values: V[] = []
+    for (const result of results) {
+      if (Result.isSuccess(result)) {
+        values.push(result.value)
+      } else {
+        return result
+      }
+    }
+    return Result.success(values)
+  },
 }

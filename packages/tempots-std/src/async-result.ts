@@ -166,6 +166,20 @@ export const AsyncResult = {
     return AsyncResult.isSuccess(r) ? r.value : undefined
   },
   /**
+   * Gets the value of a `AsyncResult` if it is a `Success`, otherwise it throws the error contained in the `Failure`.
+   * @param r - The `AsyncResult` to get the value from.
+   * @returns The value of the `AsyncResult` if it is a `Success`.
+   */
+  getUnsafe: <V, E>(r: AsyncResult<V, E>): V => {
+    if (AsyncResult.isSuccess(r)) {
+      return r.value
+    } else if (AsyncResult.isFailure(r)) {
+      throw r.error
+    } else {
+      throw new Error('Cannot get value from a not-asked or loading result')
+    }
+  },
+  /**
    * Based on the state of the result, it picks the appropriate function to call and returns the result.
    * @param success - The function to call if the result is a success.
    * @param failure - The function to call if the result is a failure.
@@ -231,5 +245,51 @@ export const AsyncResult = {
       apply(r.error)
     }
     return r
+  },
+  /**
+   * Compares two results for equality.
+   * @param r1 - The first result.
+   * @param r2 - The second result.
+   * @param options - The options to use for comparison. By default, uses strict equality.
+   * @returns `true` if the results are equal, `false` otherwise.
+   */
+  equals: <V, E>(
+    r1: AsyncResult<V, E>,
+    r2: AsyncResult<V, E>,
+    options: {
+      valueEquals: (v1: V, v2: V) => boolean
+      errorEquals: (e1: E, e2: E) => boolean
+    } = {
+      valueEquals: (v1: V, v2: V): boolean => v1 === v2,
+      errorEquals: (e1: E, e2: E): boolean => e1 === e2,
+    }
+  ): boolean => {
+    if (r1.type === 'AsyncSuccess' && r2.type === 'AsyncSuccess') {
+      return options.valueEquals(r1.value, r2.value)
+    } else if (r1.type === 'AsyncFailure' && r2.type === 'AsyncFailure') {
+      return options.errorEquals(r1.error, r2.error)
+    } else if (r1.type === 'Loading' && r2.type === 'Loading') {
+      return options.valueEquals(r1.previousValue!, r2.previousValue!)
+    } else if (r1.type === 'NotAsked' && r2.type === 'NotAsked') {
+      return true
+    } else {
+      return false
+    }
+  },
+  /**
+   * Combines multiple results into a single result.
+   * @param results - The results to combine.
+   * @returns A single result that is a success if all the input results are successes, otherwise a failure.
+   */
+  all: <V, E>(results: AsyncResult<V, E>[]): AsyncResult<V[], E> => {
+    const values: V[] = []
+    for (const result of results) {
+      if (AsyncResult.isSuccess(result)) {
+        values.push(result.value)
+      } else {
+        return result as AsyncResult<V[], E>
+      }
+    }
+    return AsyncResult.success(values)
   },
 }
