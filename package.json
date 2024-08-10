@@ -21,7 +21,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "turbo": "^2.0.6"
+    "turbo": "^2.0.12"
   },
   "packageManager": "yarn@1.22.19"
 }
