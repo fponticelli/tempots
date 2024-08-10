@@ -105,10 +105,10 @@ export const handleAnchorClick =
   ) =>
   (e: MouseEvent) => {
     const normalizedExtensions = Array.isArray(checkExtension)
-      ? checkExtension.map(ext => ext.startsWith('.') ? ext : '.' + ext)
-      : checkExtension;
+      ? checkExtension.map(ext => (ext.startsWith('.') ? ext : '.' + ext))
+      : checkExtension
     if (shouldNotApplyCallback(e, normalizedExtensions, checkExternalUrl)) {
-      return;
+      return
     }
-    if (callback()) e.preventDefault();
+    if (callback()) e.preventDefault()
   }
