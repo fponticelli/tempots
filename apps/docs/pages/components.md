@@ -5,17 +5,17 @@ description: Reusing Renderables allow an efficient workflow that minimize code 
 ---
 # Build your own Renderables or Components
 
-A reusable Renderable or Component can be either exported as constant value of a function.
+A reusable Renderable or Component can be exported as either a constant value or a function.
 
 ```ts
 const Logo = html.div(attr.class('logo'), html.img(attr.src('logo.png')))
 ```
 
-In this example, `Logo` is a reusable component. The content of the component does not change, it is always the same. It is still reusable because it does not generate new DOM unless it is `render`ed and it can be applied multiple times in different locations because it is not exclusive to a single application.
+In this example, `Logo` is a reusable component. The content of the component remains the same; it doesn’t change. However, it is still reusable because it doesn’t generate a new DOM unless it is `render`ed. It can be applied multiple times in different locations, making it versatile across applications.
 
 Using a capitalized name for your component is a common convention to indicate that it is a component.
 
-You can take it a step further and have a component that is still constant and reusable but has dynamic content.
+You can create a component that is still constant and reusable but has dynamic content.
 
 ```ts
 const UserView = Async(fetchUser(), (user) => html.div(user.name))
@@ -25,7 +25,7 @@ The rendered content of the component is dynamic and depends on the result of th
 
 ## Props
 
-More commonly, you will see components that take a set of props as argument. In this case the component is a function that returns a `Renderable`.
+More commonly, you'll see components that take a set of props as argument. In this case the component is a function that returns a `Renderable`.
 
 ```ts
 const UserView = (user: User) => html.div(user.name)
@@ -39,7 +39,7 @@ To address this, you want to use `Signal`s instead.
 const UserView = (user: Signal<User>) => html.div(user.$.name)
 ```
 
-Now, any time the `user` signal changes, the DOM will be updated. Notice that the `$` property is used to access the value of the signal. It is a convenient (and type-safe) way to access the value of a signal. The equivalent method is `at` (`user.at('name')`).
+Now, any time the `user` signal changes, the DOM will be updated. Notice that the `$` property is used to access the value of a field wrapped in the signal. It is convenient and type-safe. The equivalent method is `user.at('name')`.
 
 To get the best of both worlds, you can use `Value<T>`.
 

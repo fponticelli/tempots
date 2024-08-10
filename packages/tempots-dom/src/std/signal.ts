@@ -314,19 +314,18 @@ export class Signal<T> {
   readonly at = <K extends keyof T>(key: K): Signal<T[K]> =>
     this.map(value => value[key])
 
+  private $proxy: AtGetter<T> | undefined
   /**
-   * Represents a collection of signals for each key in the value of the signal.
+   * Represents a collection of signals mapping to each key/field in the wrapped value.
    * @typeParam T - The type of the signals.
    */
-  readonly $ = new Proxy(this, {
-    /**
-     * Retrieves the signal with the specified key.
-     * @param _ - The target object.
-     * @param key - The key of the signal.
-     * @returns The signal associated with the key.
-     */
-    get: (_, key) => this.at(key as keyof T),
-  }) as unknown as AtGetter<T>
+  get $() {
+    if (this.$proxy !== undefined) return this.$proxy
+    return (this.$proxy = new Proxy(this, {
+      get: (_, key) => this.at(key as keyof T),
+    }) as unknown as AtGetter<T>)
+  }
+
   readonly filter = (fn: (value: T) => boolean, startValue?: T) => {
     let latestValue = startValue ?? this.get()
     const computed = new Computed(() => {
