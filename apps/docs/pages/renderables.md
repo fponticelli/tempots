@@ -334,4 +334,5 @@ export const HTMLTitle = (title: Value<string>) =>
 ## Next Steps
 
 - [Learn more about Signals](/page/signals.html)
+- [Learn more about Building your own Renderables](/page/components.html)
 - [Learn more about render](/page/render.html)

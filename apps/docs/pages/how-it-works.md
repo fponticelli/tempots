@@ -68,4 +68,5 @@ Additionally, `DOMContext` contains a collection of providers for shared state b
 
 - [Learn more about Renderables](/page/renderables.html)
 - [Learn more about Signals](/page/signals.html)
+- [Learn more about Building your own Renderables](/page/components.html)
 - [Learn more about render](/page/render.html)

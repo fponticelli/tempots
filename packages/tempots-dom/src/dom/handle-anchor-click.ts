@@ -1,12 +1,6 @@
 function getExtension(pathname: string): string | undefined {
-  let extension = pathname.split('/').pop()?.split('.').pop()
-  if (extension === '') {
-    // not an extension
-    extension = undefined
-  } else {
-    extension = '.' + extension
-  }
-  return extension
+  const parts = pathname.split('/').pop()?.split('.') || []
+  return parts.length > 1 ? '.' + parts.pop() : undefined
 }
 
 function shouldNotApplyCallback(
@@ -110,13 +104,11 @@ export const handleAnchorClick =
     }: HandleAnchorClickOptions = {}
   ) =>
   (e: MouseEvent) => {
-    if (Array.isArray(checkExtension)) {
-      checkExtension = checkExtension.map(ext =>
-        ext.startsWith('.') ? ext : '.' + ext
-      )
+    const normalizedExtensions = Array.isArray(checkExtension)
+      ? checkExtension.map(ext => ext.startsWith('.') ? ext : '.' + ext)
+      : checkExtension;
+    if (shouldNotApplyCallback(e, normalizedExtensions, checkExternalUrl)) {
+      return;
     }
-    if (shouldNotApplyCallback(e, checkExtension, checkExternalUrl)) {
-      return
-    }
-    if (callback()) e.preventDefault()
+    if (callback()) e.preventDefault();
   }

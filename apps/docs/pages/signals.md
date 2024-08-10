@@ -76,4 +76,5 @@ The `at()` function is equivalent to `$` but it takes a key as an argument.
 
 ## Next Steps
 
+- [Learn more about Building your own Renderables](/page/components.html)
 - [Learn more about render](/page/render.html)
