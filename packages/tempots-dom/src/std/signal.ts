@@ -314,14 +314,17 @@ export class Signal<T> {
   readonly at = <K extends keyof T>(key: K): Signal<T[K]> =>
     this.map(value => value[key])
 
-  private $proxy: AtGetter<T> | undefined
+  /**
+   * @internal
+   */
+  private _$: AtGetter<T> | undefined
   /**
    * Represents a collection of signals mapping to each key/field in the wrapped value.
    * @typeParam T - The type of the signals.
    */
   get $() {
-    if (this.$proxy !== undefined) return this.$proxy
-    return (this.$proxy = new Proxy(this, {
+    if (this._$ !== undefined) return this._$
+    return (this._$ = new Proxy(this, {
       get: (_, key) => this.at(key as keyof T),
     }) as unknown as AtGetter<T>)
   }
