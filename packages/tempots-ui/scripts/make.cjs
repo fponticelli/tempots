@@ -1,5 +1,4 @@
 const {
-  updateDependencies,
   updateLibVersion,
   publishToNpm
 } = require('../../../scripts/version')
