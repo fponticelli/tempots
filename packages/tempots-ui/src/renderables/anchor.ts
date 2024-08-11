@@ -1,13 +1,6 @@
-import {
-  attr,
-  TNode,
-  handleAnchorClick,
-  html,
-  on,
-  Signal,
-  Value,
-} from '@tempots/dom'
+import { attr, TNode, html, on, Signal, Value } from '@tempots/dom'
 import { setLocationFromUrl, UseLocation } from './router/location'
+import { handleAnchorClick } from '../dom/handle-anchor-click'
 
 /**
  * Creates an anchor element with the specified href and children.

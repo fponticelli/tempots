@@ -2,13 +2,12 @@ import {
   attr,
   OnCtx,
   DOMContext,
-  handleAnchorClick,
   html,
   Prop,
   Signal,
   Value,
 } from '@tempots/dom'
-import { UseLocation, LocationData } from '@tempots/ui'
+import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
 
@@ -24,7 +23,9 @@ const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
           return true
         },
         {
-          checkExtension: false,
+          ignoreUrlWithExtension: true,
+          allowedExtensions: ['.html'],
+          ignoreExternalUrl: true,
         }
       )
     )

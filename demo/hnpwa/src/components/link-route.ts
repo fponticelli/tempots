@@ -1,15 +1,8 @@
-import {
-  attr,
-  TNode,
-  handleAnchorClick,
-  html,
-  Renderable,
-  on,
-  Signal,
-} from '@tempots/dom'
+import { attr, TNode, html, Renderable, on, Signal } from '@tempots/dom'
 import { getCurrentPath, isGithub } from '../config'
 import { Route, toTitle, toUrl } from '../route'
 import { setGlobalRoute } from '../main'
+import { handleAnchorClick } from '@tempots/ui'
 
 export interface LinkRouteProps {
   route: Signal<Route>
@@ -57,8 +50,8 @@ export function LinkRoute({
           }
         },
         {
-          checkExtension: false,
-          checkExternalUrl: false,
+          ignoreUrlWithExtension: true,
+          ignoreExternalUrl: true,
         }
       )
     ),

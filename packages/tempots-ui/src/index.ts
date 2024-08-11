@@ -1,3 +1,4 @@
+export * from './dom/handle-anchor-click'
 export * from './renderables/anchor'
 export * from './renderables/appearance'
 export * from './renderables/async-result-view'
