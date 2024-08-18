@@ -79,6 +79,14 @@ export type NValue<T> =
 export type GetValueType<T> = T extends Signal<infer V> ? V : T
 
 /**
+ * Gets the value types of a given array of Value types.
+ * @public
+ */
+export type GetValueTypes<T extends Value<unknown>[]> = {
+  [K in keyof T]: GetValueType<T[K]>
+}
+
+/**
  * Removes signals from a given object type and returns a new object type
  * with only the non-signal properties.
  *

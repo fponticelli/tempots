@@ -23,10 +23,10 @@ export type AnchorOptions = Merge<
 /**
  * Represents either a string value (or Signal of string) for the href,
  * or a full AnchorOptions object.
- * 
+ *
  * This type is used as the first parameter of the Anchor function,
  * allowing for flexible configuration of anchor elements.
- * 
+ *
  * @public
  */
 export type HrefOrAnchorOptions = Value<string> | AnchorOptions

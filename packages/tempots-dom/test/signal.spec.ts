@@ -10,6 +10,8 @@ import {
   sessionStorageProp,
   localStorageProp,
   animateSignal,
+  makeComputedOf,
+  makeEffectOf,
 } from "../src";
 import { sleep } from "./helper";
 
@@ -334,5 +336,64 @@ describe("Signal", () => {
     expect(s.value).toBe(0);
     await sleep()
     expect(s.value).toBe(2);
+  })
+  test("makeComputedOf signals", () => {
+    const p1 = makeProp(1);
+    const p2 = makeProp(2);
+    const c = makeComputedOf(p1, p2)((a, b) => a + b);
+    expect(c.value).toBe(3);
+    p1.set(2);
+    expect(c.value).toBe(4);
+    p2.set(3);
+    expect(c.value).toBe(5);
+  })
+  test("makeComputedOf literals", () => {
+    const c = makeComputedOf(1, 2)((a, b) => a + b);
+    expect(c.value).toBe(3);
+  })
+  test("makeComputedOf mixed", () => {
+    const p1 = makeProp(1);
+    const c = makeComputedOf(p1, 2)((a, b) => a + b);
+    expect(c.value).toBe(3);
+    p1.set(2);
+    expect(c.value).toBe(4);
+  })
+  test("makeEffectOf", async () => {
+    const p1 = makeProp(1);
+    const p2 = makeProp(2);
+    const spy = vi.fn();
+    makeEffectOf(p1, p2)((a, b) => {
+      spy(a, b);
+    });
+    await sleep()
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(1, 2);
+    p1.set(2);
+    await sleep()
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith(2, 2);
+    p2.set(3);
+    await sleep()
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(spy).toHaveBeenCalledWith(2, 3);
+  })
+  test("makeEffectOf with literals", async () => {
+    const spy = vi.fn();
+    makeEffectOf(1, 2)((a, b) => {
+      spy(a, b);
+    });
+    await sleep()
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(1, 2);
+  })
+  test("makeEffectOf with mixed", async () => {
+    const p1 = makeProp(1);
+    const spy = vi.fn();
+    makeEffectOf(p1, 2)((a, b) => {
+      spy(a, b);
+    });
+    await sleep()
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(1, 2);
   })
 });

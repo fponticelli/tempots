@@ -1,4 +1,4 @@
-import { Value } from '../types/domain'
+import { GetValueTypes, Value } from '../types/domain'
 
 /**
  * Represents any type of signal.
@@ -753,6 +753,28 @@ export const makeComputed = <T>(
 }
 
 /**
+ * Creates a computed signal that depends on other signals or literal values and updates when any of the dependencies change.
+ *
+ * @typeParam T - The type of the argument values.
+ * @param fn - The function that computes the value.
+ * @param equals - The equality function used to compare the previous and current computed values.
+ * @returns - The computed signal.
+ * @public
+ */
+export const makeComputedOf =
+  <T extends Value<unknown>[]>(...args: T) =>
+  <O>(
+    fn: (...args: GetValueTypes<T>) => O,
+    equals?: (a: O, b: O) => boolean
+  ) => {
+    const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
+    return makeComputed(
+      () => fn(...(args.map(arg => Signal.unwrap(arg)) as GetValueTypes<T>)),
+      signals,
+      equals
+    )
+  }
+/**
  * Executes the provided function `fn` whenever any of the signals in the `signals` array change.
  * Returns a disposable object that can be used to stop the effect.
  *
@@ -764,6 +786,22 @@ export const makeComputed = <T>(
 export const makeEffect = (fn: () => void, signals: Array<AnySignal>) =>
   makeComputed(fn, signals).dispose
 
+/**
+ * Creates an effect that depends on other signals or literal values and updates when any of the dependencies change.
+ *
+ * @param args - The array of signals or literal values that the effect depends on.
+ * @returns A disposable object that can be used to stop the effect.
+ * @public
+ */
+export const makeEffectOf =
+  <T extends Value<unknown>[]>(...args: T) =>
+  (fn: (...args: GetValueTypes<T>) => void) => {
+    const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
+    makeEffect(
+      () => fn(...(args.map(Signal.unwrap) as GetValueTypes<T>)),
+      signals
+    )
+  }
 /**
  * Creates a new Prop object with the specified value and equality function.
  *
