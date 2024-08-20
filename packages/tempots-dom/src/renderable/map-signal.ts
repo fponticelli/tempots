@@ -1,5 +1,5 @@
-import type { Clear, Renderable } from '../types/domain'
-import type { Signal } from '../std/signal'
+import type { Clear, Renderable, Value } from '../types/domain'
+import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
 
@@ -13,26 +13,30 @@ import { renderableOfTNode } from './element'
  * changes to a state that requires a different renderable function.
  *
  * @typeParam T - The type of values emitted by the signal.
- * @param signal - The signal to map.
+ * @param vlaue - The signal or value to map.
  * @param fn - The function to map the signal values to renderable functions.
  * @returns - A new renderable function that represents the mapped signal.
  * @public
  */
 export const MapSignal = <T>(
-  signal: Signal<T>,
+  value: Value<T>,
   fn: (value: T) => Renderable
 ): Renderable => {
-  return (ctx: DOMContext) => {
-    ctx = ctx.makeRef()
-    const mountableSignal = signal.map(v => renderableOfTNode(fn(v)))
-    let previousClear: Clear = () => {}
-    const clear = mountableSignal.on(child => {
-      previousClear(true)
-      previousClear = child(ctx)
-    })
-    return removeTree => {
-      clear()
-      previousClear(removeTree)
+  if (Signal.is(value)) {
+    const signal = value as Signal<T>
+    return (ctx: DOMContext) => {
+      ctx = ctx.makeRef()
+      const mountableSignal = signal.map(v => renderableOfTNode(fn(v)))
+      let previousClear: Clear = () => {}
+      const clear = mountableSignal.on(child => {
+        previousClear(true)
+        previousClear = child(ctx)
+      })
+      return removeTree => {
+        clear()
+        previousClear(removeTree)
+      }
     }
   }
+  return renderableOfTNode(fn(value))
 }

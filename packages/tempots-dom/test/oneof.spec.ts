@@ -15,7 +15,6 @@ export interface B {
 
 export type Letter = A | B
 
-
 describe("oneof", () => {
   test("type", async () => {
     const p = makeProp<Letter>({ type: "A", text: "a" });

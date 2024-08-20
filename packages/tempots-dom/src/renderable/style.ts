@@ -1,4 +1,4 @@
-import type { NValue, Renderable } from '../types/domain'
+import type { NValue, Renderable, Value } from '../types/domain'
 import type { CSSStyles } from '../types/css-styles'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
@@ -46,7 +46,7 @@ export const style = new Proxy(
      */
     get: (_, name: keyof CSSStyles) => {
       return (value: NValue<string>) => {
-        if (Signal.is(value)) {
+        if (Signal.is(value as Value<string>)) {
           return signalStyle(name, value as Signal<string>)
         } else {
           return staticStyle(name, value as string)

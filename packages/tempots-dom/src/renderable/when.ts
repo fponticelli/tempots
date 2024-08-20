@@ -1,4 +1,4 @@
-import { Renderable, TNode } from '../types/domain'
+import { Renderable, TNode, Value } from '../types/domain'
 import { Signal } from '../std/signal'
 import { Ensure } from './ensure'
 
@@ -12,12 +12,12 @@ import { Ensure } from './ensure'
  * @public
  */
 export const When = (
-  condition: Signal<boolean>,
+  condition: Value<boolean>,
   then: TNode,
   otherwise?: TNode
 ): Renderable => {
   return Ensure(
-    condition.map(v => (v ? true : null)) as Signal<true | null>,
+    Signal.map(condition, v => (v ? true : null)) as Value<true | null>,
     () => then,
     otherwise != null ? () => otherwise : undefined
   )
@@ -33,12 +33,12 @@ export const When = (
  * @public
  */
 export const Unless = (
-  condition: Signal<boolean>,
+  condition: Value<boolean>,
   then: TNode,
   otherwise?: TNode
 ): Renderable => {
   return When(
-    condition.map(v => !v),
+    Signal.map(condition, v => !v),
     then,
     otherwise
   )

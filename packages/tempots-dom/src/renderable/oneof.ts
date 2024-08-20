@@ -1,7 +1,7 @@
 import { DOMContext } from '../dom/dom-context'
 import { _removeDOMNode } from '../dom/dom-utils'
-import { Computed, Signal } from '../std/signal'
-import { Renderable, Clear, TNode } from '../types/domain'
+import { Computed, makeSignal, Signal } from '../std/signal'
+import { Renderable, Clear, TNode, Value } from '../types/domain'
 import { renderableOfTNode } from './element'
 
 /**
@@ -19,43 +19,47 @@ export type OneOfOptions<T extends Record<string, unknown>> = {
  * The signal value should be an object with a single key that matches one of the keys in the `cases` object.
  *
  * @typeParam T - The type of the signal value.
- * @param match - The signal to match against.
+ * @param match - The signal or value to match against.
  * @param cases - An object containing the different cases to render based on the signal value.
  * @returns A renderable function that renders the appropriate component based on the signal value.
  * @public
  */
-export const OneOf =
-  <T extends Record<string, unknown>>(
-    match: Signal<T>,
-    cases: OneOfOptions<T>
-  ): Renderable =>
-  (ctx: DOMContext) => {
-    ctx = ctx.makeRef()
-    let clearRenderable: Clear | undefined
-    let matched: Computed<T[keyof T]> | undefined
-    const keySignal = match.map(value => {
-      return Object.keys(value)[0] as keyof T // the object only has one field
-    })
-    let currentKey: keyof T | undefined
-    const clearSignal = keySignal.on(newKey => {
-      if (newKey !== currentKey) {
-        matched?.dispose()
-        clearRenderable?.(true)
-        matched = match.map(value => value[newKey])
+export const OneOf = <T extends Record<string, unknown>>(
+  match: Value<T>,
+  cases: OneOfOptions<T>
+): Renderable => {
+  if (Signal.is(match)) {
+    return (ctx: DOMContext) => {
+      ctx = ctx.makeRef()
+      let clearRenderable: Clear | undefined
+      let matched: Computed<T[keyof T]> | undefined
+      const keySignal = match.map(value => {
+        return Object.keys(value)[0] as keyof T // the object only has one field
+      })
+      let currentKey: keyof T | undefined
+      const clearSignal = keySignal.on(newKey => {
+        if (newKey !== currentKey) {
+          matched?.dispose()
+          clearRenderable?.(true)
+          matched = match.map(value => value[newKey])
 
-        const child = cases[newKey](matched)
-        clearRenderable = renderableOfTNode(child)(ctx)
-        currentKey = newKey
+          const child = cases[newKey](matched)
+          clearRenderable = renderableOfTNode(child)(ctx)
+          currentKey = newKey
+        }
+      })
+      return (removeTree: boolean) => {
+        clearSignal()
+        if (removeTree && ctx.reference != null) {
+          _removeDOMNode(ctx.reference)
+        }
+        clearRenderable?.(true)
       }
-    })
-    return (removeTree: boolean) => {
-      clearSignal()
-      if (removeTree && ctx.reference != null) {
-        _removeDOMNode(ctx.reference)
-      }
-      clearRenderable?.(true)
     }
   }
+  const key = Object.keys(match)[0] as keyof T
+  return renderableOfTNode(cases[key](makeSignal(match[key])))
+}
 
 /**
  * Represents the options for a one-of field.
@@ -86,19 +90,19 @@ export type OneOfFieldOptions<
  *
  * @typeParam T - The type containing the one-of field.
  * @typeParam K - The type of the one-of field key.
- * @param match - The signal that emits the object containing the one-of field.
+ * @param match - The signal or value that emits the object containing the one-of field.
  * @param field - The key of the one-of field.
  * @param cases - The options for the different cases of rendering based on the one-of field value.
  * @returns - The renderable field representing the one-of field.
  * @public
  */
 export const OneOfField = <T extends { [_ in K]: string }, K extends string>(
-  match: Signal<T>,
+  match: Value<T>,
   field: K,
   cases: OneOfFieldOptions<T, K>
 ) =>
   OneOf(
-    match.map(v => ({ [v[field]]: v })),
+    Signal.map(match, v => ({ [v[field]]: v })),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cases as any
   )
@@ -137,7 +141,7 @@ export type OneOfKindOptions<
  * @public
  */
 export const OneOfKind = <T extends { kind: string }>(
-  match: Signal<T>,
+  match: Value<T>,
   cases: OneOfKindOptions<T>
 ) => OneOfField(match, 'kind', cases)
 
@@ -164,10 +168,10 @@ export type OneOfTupleOptions<T extends string, V> = {
  * @public
  */
 export const OneOfTuple = <T extends string, V>(
-  match: Signal<[T, V]>,
+  match: Value<[T, V]>,
   cases: OneOfTupleOptions<T, V>
 ) => {
-  const matchRecord = match.map(([key, value]) => ({ [key]: value }))
+  const matchRecord = Signal.map(match, ([key, value]) => ({ [key]: value }))
   return OneOf(matchRecord, cases)
 }
 
@@ -209,7 +213,7 @@ export type OneOfTypeOptions<
  * @public
  */
 export const OneOfType = <T extends { type: string }>(
-  match: Signal<T>,
+  match: Value<T>,
   cases: OneOfTypeOptions<T>
 ) => OneOfField(match, 'type', cases)
 
@@ -234,10 +238,10 @@ export type OneOfValueOptions<T extends symbol | number | string> = {
  * @public
  */
 export const OneOfValue = <T extends symbol | number | string>(
-  match: Signal<T>,
+  match: Value<T>,
   cases: OneOfValueOptions<T>
 ) =>
   OneOf(
-    match.map(v => ({ [v]: true })),
+    Signal.map(match, v => ({ [v]: true })),
     cases
   )

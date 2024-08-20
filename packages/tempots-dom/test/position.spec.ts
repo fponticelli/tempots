@@ -10,12 +10,13 @@ describe("ElementPosition", () => {
     const pos = new ElementPosition(2, 3);
     expect(pos.isLast).toBe(true);
   })
-  test("isEven", () => {
-    const pos = new ElementPosition(2, 3);
+  test("even/odd", () => {
+    let pos = new ElementPosition(0, 3);
+    expect(pos.isEven).toBe(false);
+    expect(pos.isOdd).toBe(true);
+
+    pos = new ElementPosition(1, 3);
     expect(pos.isEven).toBe(true);
-  })
-  test("isOdd", () => {
-    const pos = new ElementPosition(2, 3);
     expect(pos.isOdd).toBe(false);
   })
 })

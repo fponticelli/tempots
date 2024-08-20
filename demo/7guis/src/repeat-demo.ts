@@ -45,7 +45,7 @@ export function RepeatDemo(): Renderable {
       Repeat(
         count,
         pos => {
-          const index = pos.map(pos => `index: ${pos.index}, `)
+          const loc = pos.map(pos => `${pos.counter} - index: ${pos.index}, `)
           const isFirst = pos.map(pos => pos.isFirst)
           const isLast = pos.map(pos => pos.isLast)
           const isOdd = pos.map(pos => pos.isOdd)
@@ -55,7 +55,7 @@ export function RepeatDemo(): Renderable {
             attr.class('gap-2 justify-between items-center w-96'),
             flex.row(
               attr.class('gap-2'),
-              Txt(index),
+              Txt(loc),
               When(isFirst, Txt('FIRST, ')),
               When(isLast, Txt('LAST, ')),
               When(isOdd, Txt('odd')),
@@ -66,6 +66,7 @@ export function RepeatDemo(): Renderable {
         (pos: Signal<ElementPosition>) => {
           const cls = pos.map((p: ElementPosition) => {
             const classes = []
+            console.log(p)
             if (p.isFirst) {
               classes.push('border-2')
             }

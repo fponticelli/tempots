@@ -1,4 +1,3 @@
-import { Empty } from './empty'
 import { Signal } from '../std/signal'
 import { Renderable, TNode } from '../types/domain'
 import { ElementPosition } from '../std/position'
@@ -30,8 +29,8 @@ export type ConjunctionOptions = {
 export const Conjunction =
   (separator: TNode, options: ConjunctionOptions = {}) =>
   (pos: Signal<ElementPosition>): Renderable => {
-    const firstSeparator = options?.firstSeparator ?? Empty
-    const lastSeparator = options?.lastSeparator ?? Empty
+    const firstSeparator = options?.firstSeparator ?? separator
+    const lastSeparator = options?.lastSeparator ?? separator
     return OneOfValue(
       pos.map(v => {
         if (v.isFirst) {

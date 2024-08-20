@@ -1,4 +1,4 @@
-import type { TNode, Renderable } from '../types/domain'
+import type { TNode, Renderable, Value } from '../types/domain'
 import type { HTMLTags } from '../types/html-tags'
 import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
@@ -26,7 +26,7 @@ export const renderableOfTNode = (child: TNode): Renderable => {
     return Fragment(...child.map(renderableOfTNode))
   } else if (typeof child === 'string') {
     return _staticText(child)
-  } else if (Signal.is(child)) {
+  } else if (Signal.is(child as Value<string>)) {
     return _signalText(child as Signal<string>)
   } else {
     return child as Renderable

@@ -107,7 +107,7 @@ export const attr = new Proxy(
     get: (_, name: keyof HTMLAttributes) => {
       if (name === 'class') {
         return (value: NValue<HTMLAttributes[typeof name]>) => {
-          if (Signal.is(value)) {
+          if (Signal.is(value as Value<string>)) {
             return signalClassName(value as Signal<string>)
           } else {
             return staticClassName(
@@ -117,7 +117,7 @@ export const attr = new Proxy(
         }
       } else {
         return (value: NValue<HTMLAttributes[typeof name]>) => {
-          if (Signal.is(value)) {
+          if (Signal.is(value as Value<HTMLAttributes[typeof name]>)) {
             return signalAttributeRenderable(
               name,
               value as Signal<HTMLAttributes[typeof name]>
@@ -206,7 +206,7 @@ export const aria = new Proxy(
      */
     get: (_, name: keyof AriaAttributes) => {
       return (value: NValue<AriaAttributes[typeof name]>) => {
-        if (Signal.is(value)) {
+        if (Signal.is(value as Value<AriaAttributes[typeof name]>)) {
           return signalAttributeRenderable(
             `aria-${name}`,
             value as Signal<AriaAttributes[typeof name]>
@@ -251,7 +251,7 @@ export const svgAttr = new Proxy(
      */
     get: (_, name: keyof SVGAttributes) => {
       return (value: NValue<SVGAttributes[typeof name]>) => {
-        if (Signal.is(value)) {
+        if (Signal.is(value as Value<SVGAttributes[typeof name]>)) {
           return signalAttributeRenderable(
             name,
             value as Signal<SVGAttributes[typeof name]>
@@ -294,7 +294,7 @@ export const mathAttr = new Proxy(
      */
     get: (_, name: keyof MathMLTags) => {
       return (value: NValue<MathMLTags[typeof name]>) => {
-        if (Signal.is(value)) {
+        if (Signal.is(value as Value<MathMLTags[typeof name]>)) {
           return signalAttributeRenderable(
             name,
             value as Signal<MathMLTags[typeof name]>

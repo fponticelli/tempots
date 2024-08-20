@@ -63,7 +63,7 @@ export class Signal<T> {
    * @param value - The value to check.
    * @returns `true` if the value is a Signal, `false` otherwise.
    */
-  static readonly is = <O = unknown>(value: unknown): value is Signal<O> =>
+  static readonly is = <O>(value: O | Signal<O>): value is Signal<O> =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value != null && (value as any).$__signal__ === true
 
@@ -633,7 +633,9 @@ export class Prop<T> extends Signal<T> {
    * @param value - The value to check.
    * @returns `true` if the value is a Prop, `false` otherwise.
    */
-  static is = <T = unknown>(value: unknown): value is Prop<T> =>
+  static is = <T>(
+    value: T | Prop<T> | Signal<T> | Computed<T>
+  ): value is Prop<T> =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value != null && (value as any).$__prop__ === true
 

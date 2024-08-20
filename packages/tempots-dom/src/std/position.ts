@@ -44,18 +44,18 @@ export class ElementPosition {
   }
 
   /**
-   * Checks if the index of the element is even.
-   * @returns `true` if the index is even, `false` otherwise.
+   * Checks if the counter of the element is even.
+   * @returns `true` if the counter is even, `false` otherwise.
    */
   get isEven() {
-    return this.index % 2 === 0
+    return this.index % 2 === 1
   }
 
   /**
-   * Checks if the index of the element is odd.
-   * @returns `true` if the index is odd, `false` otherwise.
+   * Checks if the counter of the element is odd.
+   * @returns `true` if the counter is odd, `false` otherwise.
    */
   get isOdd() {
-    return this.index % 2 === 1
+    return this.index % 2 === 0
   }
 }

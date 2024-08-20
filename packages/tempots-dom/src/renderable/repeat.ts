@@ -1,8 +1,8 @@
 import { DOMContext } from '../dom/dom-context'
 import { _removeDOMNode } from '../dom/dom-utils'
 import { ElementPosition } from '../std/position'
-import { Prop, Signal, makeProp } from '../std/signal'
-import { TNode, Clear, Renderable } from '../types/domain'
+import { Prop, Signal, makeProp, makeSignal } from '../std/signal'
+import { TNode, Clear, Renderable, Value } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
@@ -19,55 +19,67 @@ import { OnUnmount } from './onunmount'
  * @public
  */
 export const Repeat = (
-  times: Signal<number>,
+  times: Value<number>,
   element: (index: Signal<ElementPosition>) => TNode,
   separator?: (pos: Signal<ElementPosition>) => TNode
 ): Renderable => {
   if (separator != null) {
-    return Repeat(times, p => {
-      const last = p.map(v => (v.isLast ? 'last' : 'other'))
+    return Repeat(times, pos => {
+      const sepPos = pos.map(p => new ElementPosition(p.index, p.total - 1))
+      const last = pos.map(p => (p.isLast ? 'last' : 'other'))
       return Fragment(
-        OnUnmount(() => last.dispose()),
-        renderableOfTNode(element(p)),
+        OnUnmount(() => {
+          sepPos.dispose()
+          last.dispose()
+        }),
+        renderableOfTNode(element(pos)),
         OneOfValue(last, {
           last: () => Empty,
-          other: () => separator(p),
+          other: () => separator(sepPos),
         })
       )
     })
   } else {
-    return (ctx: DOMContext) => {
-      ctx = ctx.makeRef()
-      const elementSignals = times.map(times =>
-        Array.from({ length: times }, (_, i) => i).map(
-          i => new ElementPosition(i, times)
+    if (Signal.is(times)) {
+      return (ctx: DOMContext) => {
+        ctx = ctx.makeRef()
+        const elementSignals = times.map(times =>
+          Array.from({ length: times }, (_, i) => i).map(
+            i => new ElementPosition(i, times)
+          )
         )
-      )
-      const clears: Clear[] = []
-      const existings: Prop<ElementPosition>[] = []
-      const clear = elementSignals.on(elements => {
-        const newLength = elements.length
-        while (newLength < clears.length) {
-          clears.pop()?.(true)
-          existings.pop()?.dispose()
-        }
-        for (let i = 0; i < newLength; i++) {
-          if (existings[i] == null) {
-            existings[i] = makeProp(elements[i])
-            const node = renderableOfTNode(element(existings[i]))
-            clears[i] = node(ctx)
-          } else {
-            existings[i].value = elements[i]
+        const clears: Clear[] = []
+        const existings: Prop<ElementPosition>[] = []
+        const clear = elementSignals.on(elements => {
+          const newLength = elements.length
+          while (newLength < clears.length) {
+            clears.pop()?.(true)
+            existings.pop()?.dispose()
+          }
+          for (let i = 0; i < newLength; i++) {
+            if (existings[i] == null) {
+              existings[i] = makeProp(elements[i])
+              const node = renderableOfTNode(element(existings[i]))
+              clears[i] = node(ctx)
+            } else {
+              existings[i].value = elements[i]
+            }
+          }
+        })
+
+        return (removeTree: boolean) => {
+          clear()
+          if (removeTree && ctx.reference) {
+            _removeDOMNode(ctx.reference)
           }
         }
-      })
-
-      return (removeTree: boolean) => {
-        clear()
-        if (removeTree && ctx.reference) {
-          _removeDOMNode(ctx.reference)
-        }
       }
+    } else {
+      return Fragment(
+        ...Array.from({ length: times }, (_, i) => i).map(i =>
+          renderableOfTNode(element(makeSignal(new ElementPosition(i, times))))
+        )
+      )
     }
   }
 }
