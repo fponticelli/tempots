@@ -1,7 +1,8 @@
-import type { NValue, Renderable, Value } from '../types/domain'
+import type { NValue, Renderable } from '../types/domain'
 import type { CSSStyles } from '../types/css-styles'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
+import { Value } from '../std/value'
 
 const staticStyle =
   (name: keyof CSSStyles, value: string) => (ctx: DOMContext) => {

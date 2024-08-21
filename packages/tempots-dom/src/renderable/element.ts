@@ -1,4 +1,4 @@
-import type { TNode, Renderable, Value } from '../types/domain'
+import type { TNode, Renderable } from '../types/domain'
 import type { HTMLTags } from '../types/html-tags'
 import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
@@ -12,6 +12,7 @@ import { attr } from './attribute'
 import { InputTypes } from '../types/html-attributes'
 import { isSSR } from '../dom/ssr'
 import { _addNodeTracker } from '../dom/ssr'
+import { Value } from '../std/value'
 
 /**
  * Converts a TNode into a Renderable.

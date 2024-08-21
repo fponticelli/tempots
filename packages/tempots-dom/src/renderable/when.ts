@@ -1,6 +1,6 @@
-import { Renderable, TNode, Value } from '../types/domain'
-import { Signal } from '../std/signal'
+import { Renderable, TNode } from '../types/domain'
 import { Ensure } from './ensure'
+import { Value } from '../std/value'
 
 /**
  * Renders the `then` node if the `condition` is true, otherwise renders the `otherwise` node.
@@ -17,7 +17,7 @@ export const When = (
   otherwise?: TNode
 ): Renderable => {
   return Ensure(
-    Signal.map(condition, v => (v ? true : null)) as Value<true | null>,
+    Value.map(condition, v => (v ? true : null)) as Value<true | null>,
     () => then,
     otherwise != null ? () => otherwise : undefined
   )
@@ -38,7 +38,7 @@ export const Unless = (
   otherwise?: TNode
 ): Renderable => {
   return When(
-    Signal.map(condition, v => !v),
+    Value.map(condition, v => !v),
     then,
     otherwise
   )

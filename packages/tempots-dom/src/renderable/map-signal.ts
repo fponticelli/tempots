@@ -1,7 +1,8 @@
-import type { Clear, Renderable, Value } from '../types/domain'
+import type { Clear, Renderable } from '../types/domain'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
+import { Value } from '../std/value'
 
 /**
  * Maps the values emitted by a signal to a renderable function and returns a new renderable function.

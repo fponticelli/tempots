@@ -44,10 +44,10 @@ Now, any time the `user` signal changes, the DOM will be updated. Notice that th
 To get the best of both worlds, you can use `Value<T>`.
 
 ```ts
-const UserView = (user: Value<User>) => html.div(Signal.map(user, (user) => user.name))
+const UserView = (user: Value<User>) => html.div(Value.map(user, (user) => user.name))
 ```
 
-`Value<T>` is a union type that can be either a `Signal<T>` or a `T`. It is a convenient way to work with signals and values in the same way. `Signal.map` is used to map a `Value<T>` to a new `Value<O>`.
+`Value<T>` is a union type that can be either a `Signal<T>` or a `T`. It is a convenient way to work with signals and values in the same way. `Value.map` is used to map a `Value<T>` to a new `Value<O>`.
 
 Most Renderables in Tempo accept `Value<T>` instead of `Signal<T>` or `T`.
 

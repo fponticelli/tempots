@@ -1,9 +1,10 @@
-import type { TNode, Clear, Renderable, Value } from '../types/domain'
+import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, makeProp, makeSignal } from '../std/signal'
 import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
+import { Value } from '../std/value'
 
 /**
  * Represents a function that ensures a signal has a value before rendering a TNode.

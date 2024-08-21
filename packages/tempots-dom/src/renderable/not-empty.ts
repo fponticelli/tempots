@@ -1,5 +1,5 @@
-import { Signal } from '../std/signal'
-import { Renderable, Value } from '../types/domain'
+import { Value } from '../std/value'
+import { Renderable } from '../types/domain'
 import { Empty } from './empty'
 import { When } from './when'
 
@@ -21,7 +21,7 @@ export const NotEmpty = <T>(
   whenEmpty: Renderable = Empty
 ): Renderable =>
   When(
-    Signal.map(value, v => v.length > 0),
+    Value.map(value, v => v.length > 0),
     display,
     whenEmpty
   )

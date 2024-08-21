@@ -1,12 +1,4 @@
-import {
-  attr,
-  OnCtx,
-  DOMContext,
-  html,
-  Prop,
-  Signal,
-  Value,
-} from '@tempots/dom'
+import { attr, OnCtx, DOMContext, html, Prop, Value } from '@tempots/dom'
 import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
@@ -33,7 +25,7 @@ const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
 }
 
 export function EmbedHTMLFragment(content: Value<string>) {
-  const htmlSignal = Signal.wrap(content)
+  const htmlSignal = Value.toSignal(content)
   return html.div(
     attr.class(
       'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'
@@ -53,7 +45,7 @@ export function EmbedHTMLFragment(content: Value<string>) {
 }
 
 export function EmbedHTMLFragmentFromURL(url: Value<string>) {
-  const content = Signal.wrap(url).mapAsync(
+  const content = Value.toSignal(url).mapAsync(
     async url => (await fetch(url)).text(),
     ''
   )

@@ -75,7 +75,7 @@ export const AsyncResultView = <T, E>(
   const success = options.success
   const loading = options.loading ?? (() => Empty)
   const notAsked = options.notAsked ?? (() => Empty)
-  return OneOfType(Signal.wrap(result), {
+  return OneOfType(Value.toSignal(result), {
     AsyncSuccess: s => success(s.$.value),
     AsyncFailure: e => fail(e.$.error),
     Loading: s =>

@@ -2,7 +2,6 @@ import {
   TNode,
   DOMContext,
   OnMount,
-  Signal,
   Value,
   html,
   Portal,
@@ -91,7 +90,7 @@ export const PopOver =
   }: PopOverOptions) =>
   (ctx: DOMContext) => {
     const target = ctx.element
-    const isOpen = Signal.wrap(open)
+    const isOpen = Value.toSignal(open)
 
     return When(
       isOpen,

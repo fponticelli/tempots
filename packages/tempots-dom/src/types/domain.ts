@@ -1,5 +1,6 @@
 import { DOMContext } from '../dom/dom-context'
 import type { Signal } from '../std/signal'
+import { Value } from '../std/value'
 
 /**
  * Represents a function that can be rendered in the DOM.
@@ -49,13 +50,6 @@ export type Size = {
    */
   readonly height: number
 }
-
-/**
- * Represents a value that can either be a `Signal<T>` or a generic type `T`.
- *
- * @public
- */
-export type Value<T> = Signal<T> | T
 
 /**
  * Represents a nullable value or a signal of a nullable value.

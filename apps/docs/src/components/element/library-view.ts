@@ -27,7 +27,7 @@ export function LibraryInfo(library: Value<Library>) {
       html.div(
         attr.class('flex flex-wrap gap-2'),
         ForEach(
-          Signal.wrap(library).map(({ keywords }) => keywords),
+          Value.toSignal(library).map(({ keywords }) => keywords),
           Tag
         )
       ),
@@ -35,16 +35,16 @@ export function LibraryInfo(library: Value<Library>) {
         attr.class(
           'text-right flex flex-col justify-end items-center gap-2 min-w-20'
         ),
-        NPMShield(Signal.map(library, ({ title }) => title)),
+        NPMShield(Value.map(library, ({ title }) => title)),
         CheckCode(
           'packages',
-          Signal.map(library, ({ name }) => name)
+          Value.map(library, ({ name }) => name)
         )
       )
     ),
     html.div(
       attr.class('text-gray-600'),
-      Signal.map(library, ({ description }) => description ?? '')
+      Value.map(library, ({ description }) => description ?? '')
     )
   )
 }

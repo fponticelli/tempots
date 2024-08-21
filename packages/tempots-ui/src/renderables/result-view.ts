@@ -56,7 +56,7 @@ export const ResultView = <T, E>(
         error.map(error => `Error: ${error}`)
       ))
   const success = options.success
-  return OneOfType(Signal.wrap(result), {
+  return OneOfType(Value.toSignal(result), {
     Success: signal => success(signal.$.value),
     Failure: signal => fail(signal.$.error),
   })

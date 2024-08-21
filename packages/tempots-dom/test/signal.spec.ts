@@ -12,6 +12,7 @@ import {
   animateSignal,
   makeComputedOf,
   makeEffectOf,
+  Value,
 } from "../src";
 import { sleep } from "./helper";
 
@@ -76,27 +77,27 @@ describe("Signal", () => {
     p.set(5);
     expect(c2.value).toBe(4);
   });
-  test("maybeWrap", () => {
+  test("Value.maybeToSignal", () => {
     const p = makeProp(1);
     const s = makeSignal(1);
     const c = p.map(v => v + 1);
-    expect(Signal.maybeWrap(p)).toBe(p);
-    expect(Signal.maybeWrap(s)).toBe(s);
-    expect(Signal.maybeWrap(c)).toBe(c);
+    expect(Value.maybeToSignal(p)).toBe(p);
+    expect(Value.maybeToSignal(s)).toBe(s);
+    expect(Value.maybeToSignal(c)).toBe(c);
     const v = 1;
-    expect(Signal.maybeWrap(v)).toBeInstanceOf(Signal);
-    expect(Signal.maybeWrap(null)).toBeNull();
-    expect(Signal.maybeWrap(undefined)).toBeUndefined();
+    expect(Value.maybeToSignal(v)).toBeInstanceOf(Signal);
+    expect(Value.maybeToSignal(null)).toBeUndefined();
+    expect(Value.maybeToSignal(undefined)).toBeUndefined();
   });
-  test("wrap", () => {
+  test("Value.toSignal", () => {
     const p = makeProp(1);
     const s = makeSignal(1);
     const c = p.map(v => v + 1);
-    expect(Signal.wrap(p)).toBe(p);
-    expect(Signal.wrap(s)).toBe(s);
-    expect(Signal.wrap(c)).toBe(c);
+    expect(Value.toSignal(p)).toBe(p);
+    expect(Value.toSignal(s)).toBe(s);
+    expect(Value.toSignal(c)).toBe(c);
     const v = 1;
-    expect(Signal.wrap(v)).toBeInstanceOf(Signal);
+    expect(Value.toSignal(v)).toBeInstanceOf(Signal);
   });
   test("flatMap", () => {
     const p = makeProp(1);

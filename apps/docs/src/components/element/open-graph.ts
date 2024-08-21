@@ -1,4 +1,4 @@
-import { Fragment, Portal, Signal, Value, attr, makeSignal } from '@tempots/dom'
+import { Fragment, Portal, Value, attr, makeSignal } from '@tempots/dom'
 import { UseLocation, urlFromLocation } from '@tempots/ui'
 
 export type OpenGraphProps = {
@@ -11,9 +11,9 @@ export type OpenGraphProps = {
 export function OpenGraph(props: OpenGraphProps) {
   const { title, description, image, keywords } = props
   const imageSignal =
-    Signal.maybeWrap<string | undefined>(image) ??
+    Value.maybeToSignal<string | undefined>(image) ??
     makeSignal(undefined as string | undefined)
-  const card = Signal.map<string | undefined, string>(
+  const card = Value.map<string | undefined, string>(
     imageSignal,
     (image): string => {
       return image == null ? 'summary' : 'summary_large_image'
@@ -35,7 +35,7 @@ export function OpenGraph(props: OpenGraphProps) {
       Portal('meta[property="twitter:image"]', attr.content(image)),
       Portal(
         'meta[name="keywords"]',
-        attr.content(Signal.map(keywords, k => k?.join(', ')))
+        attr.content(Value.map(keywords, k => k?.join(', ')))
       ),
       Portal('meta[name="description"]', attr.content(description))
     )

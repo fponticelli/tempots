@@ -1,7 +1,8 @@
 import { DOMContext } from '../dom/dom-context'
 import { _removeDOMNode } from '../dom/dom-utils'
 import { Computed, makeSignal, Signal } from '../std/signal'
-import { Renderable, Clear, TNode, Value } from '../types/domain'
+import { Value } from '../std/value'
+import { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 
 /**
@@ -102,7 +103,7 @@ export const OneOfField = <T extends { [_ in K]: string }, K extends string>(
   cases: OneOfFieldOptions<T, K>
 ) =>
   OneOf(
-    Signal.map(match, v => ({ [v[field]]: v })),
+    Value.map(match, v => ({ [v[field]]: v })),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cases as any
   )
@@ -171,7 +172,7 @@ export const OneOfTuple = <T extends string, V>(
   match: Value<[T, V]>,
   cases: OneOfTupleOptions<T, V>
 ) => {
-  const matchRecord = Signal.map(match, ([key, value]) => ({ [key]: value }))
+  const matchRecord = Value.map(match, ([key, value]) => ({ [key]: value }))
   return OneOf(matchRecord, cases)
 }
 
@@ -242,6 +243,6 @@ export const OneOfValue = <T extends symbol | number | string>(
   cases: OneOfValueOptions<T>
 ) =>
   OneOf(
-    Signal.map(match, v => ({ [v]: true })),
+    Value.map(match, v => ({ [v]: true })),
     cases
   )

@@ -119,7 +119,7 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
 }
 
 export function EmbedHTMLPage(content: Value<string>) {
-  const htmlSignal = Signal.wrap(content)
+  const htmlSignal = Value.toSignal(content)
   const toc = makeProp<TOCItem[]>([])
   return UseLocation(location =>
     html.div(

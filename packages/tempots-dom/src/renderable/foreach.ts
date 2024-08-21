@@ -1,6 +1,6 @@
-import type { TNode, Renderable, Value } from '../types/domain'
+import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Signal, makeComputedOf } from '../std/signal'
+import { Signal } from '../std/signal'
 import { ElementPosition } from '../std/position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
@@ -8,6 +8,7 @@ import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { OnUnmount } from './onunmount'
 import { OneOfValue } from './oneof'
+import { makeComputedOf, Value } from '../std/value'
 
 /**
  * Renders a list of items based on a signal of arrays.
@@ -42,7 +43,7 @@ export const ForEach = <T>(
     })
   } else {
     return (ctx: DOMContext) => {
-      const times = Signal.map(value, arr => arr.length)
+      const times = Value.map(value, arr => arr.length)
       return Repeat(times, pos => {
         const signal = makeComputedOf(
           pos,

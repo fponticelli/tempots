@@ -1,8 +1,9 @@
-import type { Renderable, Value } from '../types/domain'
+import type { Renderable } from '../types/domain'
 import { _removeDOMNode } from '../dom/dom-utils'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
 import { _maybeAddTextTracker } from '../dom/ssr'
+import { Value } from '../std/value'
 
 /**
  * @internal

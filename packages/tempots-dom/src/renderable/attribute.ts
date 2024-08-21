@@ -1,12 +1,13 @@
 import type { HTMLAttributes } from '../types/html-attributes'
 import type { MathMLTags } from '../types/mathml-tags'
-import type { NValue, Renderable, Value } from '../types/domain'
+import type { NValue, Renderable } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal } from '../std/signal'
 import { _makeGetter, _makeSetter } from '../dom/attr'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
 import { _maybeAddAttributeTracker, _maybeAddClassTracker } from '../dom/ssr'
+import { Value } from '../std/value'
 
 const staticClassName =
   (value: string[]): Renderable =>

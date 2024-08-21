@@ -1,4 +1,4 @@
-import { attr, html, Signal, Value } from '@tempots/dom'
+import { attr, html, Value } from '@tempots/dom'
 
 export function CheckCode(prefix: string, name: Value<string>) {
   return html.a(
@@ -7,7 +7,7 @@ export function CheckCode(prefix: string, name: Value<string>) {
     ),
     attr.target('_blank'),
     attr.href(
-      Signal.map(
+      Value.map(
         name,
         n => `https://github.com/fponticelli/tempots/tree/main/${prefix}/${n}`
       )

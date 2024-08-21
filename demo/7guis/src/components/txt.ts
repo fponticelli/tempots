@@ -1,4 +1,4 @@
-import { Signal, Value, attr, El } from '@tempots/dom'
+import { Value, attr, El } from '@tempots/dom'
 
 export type TextSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
 
@@ -48,5 +48,5 @@ export function Txt(value: Value<string>, options: TextOptions = {}) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function AnyTxt(value: Value<any>, options: TextOptions = {}) {
-  return Txt(Signal.wrap(value).map(String), options)
+  return Txt(Value.toSignal(value).map(String), options)
 }

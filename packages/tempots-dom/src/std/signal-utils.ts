@@ -1,4 +1,4 @@
-import { RemoveSignals, Value } from '../types/domain'
+import { RemoveSignals } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import {
   AnySignal,
@@ -8,6 +8,7 @@ import {
   Prop,
   Signal,
 } from './signal'
+import { Value } from './value'
 
 /**
  * Represents a memory store that stores key-value pairs.
@@ -276,7 +277,7 @@ export const animateSignals = <T>(
   }
   const update = () => {
     const now = performance.now()
-    const delta = (now - startTime) / Signal.unwrap(duration)
+    const delta = (now - startTime) / Value.get(duration)
     const t = easing(delta)
     if (interpolate == null) {
       interpolate = guessInterpolate(startValue) as (

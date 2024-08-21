@@ -44,7 +44,10 @@ export const Anchor = (
   hrefOrOptions: HrefOrAnchorOptions,
   ...children: TNode[]
 ): Renderable => {
-  if (typeof hrefOrOptions === 'string' || Signal.is(hrefOrOptions)) {
+  if (
+    typeof hrefOrOptions === 'string' ||
+    Signal.is(hrefOrOptions as Value<string>)
+  ) {
     return Anchor({ href: hrefOrOptions as Value<string> }, ...children)
   }
   const { href, ...options } = hrefOrOptions as AnchorOptions
@@ -52,7 +55,7 @@ export const Anchor = (
     return html.a(
       on.click(
         handleAnchorClick(() => {
-          setLocationFromUrl(location, Signal.unwrap(href))
+          setLocationFromUrl(location, Value.get(href))
           return true
         }, options)
       ),

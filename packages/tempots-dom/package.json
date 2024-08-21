@@ -1,7 +1,7 @@
 {
   "name": "@tempots/dom",
   "private": false,
-  "version": "20.1.0",
+  "version": "21.0.0",
   "priority": 2,
   "description": "Fully-typed frontend framework alternative to React and Angular",
   "keywords": [
@@ -60,7 +60,10 @@
     "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
     "npm:publish": "yarn npm:prep:patch && yarn npm:publish:impl",
     "npm:publish:minor": "yarn npm:prep:minor && yarn npm:publish:impl",
-    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
+    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl",
+    "npm:publish-all": "yarn npm:prep:patch && yarn npm:publish:impl && (cd ../tempots-ui && yarn npm:publish) && (cd ../tempots-ssr && yarn npm:publish)",
+    "npm:publish-all:minor": "yarn npm:prep:minor && yarn npm:publish:impl && (cd ../tempots-ui && yarn npm:publish) && (cd ../tempots-ssr && yarn npm:publish)",
+    "npm:publish-all:major": "yarn npm:prep:major && yarn npm:publish:impl && (cd ../tempots-ui && yarn npm:publish) && (cd ../tempots-ssr && yarn npm:publish)"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

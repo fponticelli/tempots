@@ -1,5 +1,3 @@
-import { GetValueTypes, Value } from '../types/domain'
-
 /**
  * Represents any type of signal.
  * It can be a Signal, Prop, or Computed.
@@ -66,66 +64,6 @@ export class Signal<T> {
   static readonly is = <O>(value: O | Signal<O>): value is Signal<O> =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value != null && (value as any).$__signal__ === true
-
-  /**
-   * Wraps a value or a Signal instance into a Signal.
-   * If the value is already a Signal, it returns the value itself.
-   * If the value is not a Signal, it creates a new Signal instance with the given value.
-   *
-   * @typeParam O - The type of the value.
-   * @param value - The value or Signal instance to wrap.
-   * @param equals - A function that determines if two values are equal. Defaults to strict equality (===).
-   * @returns A Signal instance.
-   */
-  static readonly wrap = <O>(
-    value: O | Signal<O>,
-    // istanbul ignore next
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
-  ): Signal<O> => (Signal.is<O>(value) ? value : new Signal(value, equals))
-
-  /**
-   * Wraps a value in a `Signal` if it is not already a `Signal`.
-   * If the value is `null` or `undefined`, it returns `null` or `undefined` respectively.
-   * @param value - The value to wrap or check.
-   * @returns The wrapped value if it is not `null` or `undefined`, otherwise `null` or `undefined`.
-   */
-  static readonly maybeWrap = <O>(
-    value: O | Signal<O> | null | undefined
-  ): Signal<O> | undefined | null =>
-    value == null ? (value as null | undefined) : Signal.wrap(value)
-
-  /**
-   * Unwraps a value from a `Signal` if it is a `Signal`, otherwise returns the value as is.
-   *
-   * @param value - The value to unwrap.
-   * @returns The unwrapped value.
-   */
-  static readonly unwrap = <O>(value: Signal<O> | O): O =>
-    Signal.is<O>(value) ? value.get() : value
-
-  /**
-   * Maps the value of a `Signal` or a regular value using the provided mapping function.
-   * If the input value is a `Signal`, the mapping function is applied to its value.
-   * If the input value is not a `Signal`, the mapping function is directly applied to the value.
-   *
-   * @param value - The input value to be mapped.
-   * @param fn - The mapping function to be applied to the value.
-   * @returns A new `Signal` with the mapped value if the input value is a `Signal`,
-   * otherwise, the result of applying the mapping function to the value.
-   *
-   * @typeParam N - The type of the input value.
-   * @typeParam O - The type of the mapped value.
-   */
-  static readonly map = <N, O>(
-    value: Value<N>,
-    fn: (value: N) => O
-  ): Value<O> => {
-    if (Signal.is<N>(value)) {
-      return value.map(fn)
-    } else {
-      return fn(value)
-    }
-  }
 
   /**
    * @internal
@@ -753,29 +691,6 @@ export const makeComputed = <T>(
   dependencies.forEach(signal => signal.setDerivative(computed))
   return computed
 }
-
-/**
- * Creates a computed signal that depends on other signals or literal values and updates when any of the dependencies change.
- *
- * @typeParam T - The type of the argument values.
- * @param fn - The function that computes the value.
- * @param equals - The equality function used to compare the previous and current computed values.
- * @returns - The computed signal.
- * @public
- */
-export const makeComputedOf =
-  <T extends Value<unknown>[]>(...args: T) =>
-  <O>(
-    fn: (...args: GetValueTypes<T>) => O,
-    equals?: (a: O, b: O) => boolean
-  ) => {
-    const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
-    return makeComputed(
-      () => fn(...(args.map(arg => Signal.unwrap(arg)) as GetValueTypes<T>)),
-      signals,
-      equals
-    )
-  }
 /**
  * Executes the provided function `fn` whenever any of the signals in the `signals` array change.
  * Returns a disposable object that can be used to stop the effect.
@@ -787,23 +702,6 @@ export const makeComputedOf =
  */
 export const makeEffect = (fn: () => void, signals: Array<AnySignal>) =>
   makeComputed(fn, signals).dispose
-
-/**
- * Creates an effect that depends on other signals or literal values and updates when any of the dependencies change.
- *
- * @param args - The array of signals or literal values that the effect depends on.
- * @returns A disposable object that can be used to stop the effect.
- * @public
- */
-export const makeEffectOf =
-  <T extends Value<unknown>[]>(...args: T) =>
-  (fn: (...args: GetValueTypes<T>) => void) => {
-    const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
-    makeEffect(
-      () => fn(...(args.map(Signal.unwrap) as GetValueTypes<T>)),
-      signals
-    )
-  }
 /**
  * Creates a new Prop object with the specified value and equality function.
  *

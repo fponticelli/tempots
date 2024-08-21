@@ -98,8 +98,8 @@ export function MonacoEditor({
           const monaco = (window as any)
             .monaco as typeof import('monaco-editor')
           const editor = monaco.editor.create(el, {
-            value: Signal.unwrap(content),
-            language: Signal.unwrap(language),
+            value: Value.get(content),
+            language: Value.get(language),
             'semanticHighlighting.enabled': true,
             renderControlCharacters: true,
             renderWhitespace: 'all',
@@ -134,7 +134,7 @@ export function MonacoEditor({
             editor.onDidChangeModelContent(
               throttle(() => {
                 const newValue = editor.getValue()
-                if (newValue !== Signal.unwrap(content)) {
+                if (newValue !== Value.get(content)) {
                   onChange(newValue)
                 }
               }, 100)
