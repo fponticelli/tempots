@@ -200,3 +200,15 @@ export type SplitLiteralToUnion<
   T extends string,
   SplitBy extends string,
 > = TupleToUnion<SplitLiteral<T, SplitBy>>
+
+/**
+ * Creates a new type by making the specified key `K` of `T` optional.
+ * @typeParam T - The type to create a new type from.
+ * @typeParam K - The key of `T` to make optional.
+ * @returns A new type with the specified key made optional.
+ * @public
+ */
+export type PartialBy<T, K extends keyof T> = Merge<
+  Omit<T, K>,
+  Partial<Pick<T, K>>
+>
