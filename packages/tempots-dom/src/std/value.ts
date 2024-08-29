@@ -88,6 +88,18 @@ export const Value = {
       return () => {}
     }
   },
+
+  /**
+   * Disposes of a value or a Signal.
+   * If the value is a Signal, it disposes of the Signal.
+   * If the value is not a Signal, it does nothing.
+   * @param value - The value or Signal instance to dispose of.
+   */
+  dispose: <T>(value: Value<T>): void => {
+    if (Signal.is(value)) {
+      value.dispose()
+    }
+  },
 }
 
 /**

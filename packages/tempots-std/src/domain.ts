@@ -212,3 +212,15 @@ export type PartialBy<T, K extends keyof T> = Merge<
   Omit<T, K>,
   Partial<Pick<T, K>>
 >
+
+/**
+ * Creates a new type by making the specified key `K` of `T` required.
+ * @typeParam T - The type to create a new type from.
+ * @typeParam K - The key of `T` to make required.
+ * @returns A new type with the specified key made required.
+ * @public
+ */
+export type RequiredBy<T, K extends keyof T> = Merge<
+  Omit<T, K>,
+  Required<Pick<T, K>>
+>

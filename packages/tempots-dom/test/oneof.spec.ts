@@ -38,7 +38,7 @@ describe("oneof", () => {
     );
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(0)
-    expect(document.body.innerHTML).toBe('<div>a</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>a</div>');
     p.set({ type: "A", text: "b" })
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
@@ -47,16 +47,16 @@ describe("oneof", () => {
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toBe('<div>num:1</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>num:1</div>');
     p.set({ type: "B", num: 2 })
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toBe('<div>num:2</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>num:2</div>');
     p.set({ type: "A", text: "c" })
     await sleep()
     expect(spyMountA).toBeCalledTimes(2)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toBe('<div>c</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>c</div>');
   });
 });

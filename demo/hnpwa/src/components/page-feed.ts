@@ -5,7 +5,6 @@ import {
   html,
   attr,
   ElementPosition,
-  makeComputed,
   When,
   Fragment,
 } from '@tempots/dom'
@@ -53,24 +52,17 @@ export function PageFeedView(page: Signal<PageFeed>) {
     ),
     attr.class('list-view'),
     html.ul(
-      ForEach(
-        page.at('items'),
-        (item: Signal<Item>, pos: Signal<ElementPosition>) =>
-          html.li(
-            html.aside(
-              makeComputed(
-                () => String((page.value.page - 1) * 30 + pos.value.index + 1),
-                [page, pos]
-              )
+      ForEach(page.at('items'), (item: Signal<Item>, pos: ElementPosition) =>
+        html.li(
+          html.aside(page.map(p => String((p.page - 1) * 30 + pos.counter))),
+          html.div(
+            ItemLink(item),
+            Ensure(item.at('domain'), domain =>
+              html.span(attr.class('domain'), domain)
             ),
-            html.div(
-              ItemLink(item),
-              Ensure(item.at('domain'), domain =>
-                html.span(attr.class('domain'), domain)
-              ),
-              ItemFooter(item)
-            )
+            ItemFooter(item)
           )
+        )
       )
     ),
     Pagination({ feed: page.at('feed'), page: page.at('page') })

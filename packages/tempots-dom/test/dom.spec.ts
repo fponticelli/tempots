@@ -9,7 +9,7 @@ describe("render", () => {
   test("div base attributes", () => {
     const node = div(attr.id("test"), attr.class("test"), style.color("red"));
     render(node, document.body);
-    expect(document.body.innerHTML).toBe(
+    expect(document.body.innerHTML).toStrictEqual(
       '<div id="test" class="test" style="color: red;"></div>'
     );
   });
@@ -18,12 +18,12 @@ describe("render", () => {
     const cls = makeProp("test");
     const node = div(attr.class(cls));
     const clear = render(node, document.body);
-    expect(document.body.innerHTML).toBe('<div class="test"></div>');
+    expect(document.body.innerHTML).toStrictEqual('<div class="test"></div>');
     cls.value = "test2";
-    expect(document.body.innerHTML).toBe('<div class="test2"></div>');
+    expect(document.body.innerHTML).toStrictEqual('<div class="test2"></div>');
     clear();
     cls.value = "test3";
-    expect(document.body.innerHTML).toBe("");
+    expect(document.body.innerHTML).toStrictEqual("");
   });
 
   test("onDispose", () => {
@@ -36,23 +36,23 @@ describe("render", () => {
 
   test("add text", () => {
     render(div("test"), document.body);
-    expect(document.body.innerText).toBe("test");
+    expect(document.body.innerText).toStrictEqual("test");
   });
 
   test("add signal text", () => {
     const txt = makeProp("test");
     const clear = render(div(txt), document.body);
-    expect(document.body.innerText).toBe("test");
+    expect(document.body.innerText).toStrictEqual("test");
     txt.value = "test2";
-    expect(document.body.innerText).toBe("test2");
+    expect(document.body.innerText).toStrictEqual("test2");
     clear();
     txt.value = "test3";
-    expect(document.body.innerText).toBe("");
+    expect(document.body.innerText).toStrictEqual("");
   });
 
   test("add child", () => {
     render(div(div()), document.body);
-    expect(document.body.innerHTML).toBe("<div><div></div></div>");
+    expect(document.body.innerHTML).toStrictEqual("<div><div></div></div>");
   });
 
   test("when", () => {
@@ -70,23 +70,23 @@ describe("render", () => {
     );
     expect(spyMount).toHaveBeenCalledTimes(1);
     expect(spyDispose).toHaveBeenCalledTimes(0);
-    expect(document.body.innerHTML).toBe(
+    expect(document.body.innerHTML).toStrictEqual(
       '<div class="test"><div>test</div></div>'
     );
     cls.value = "test2";
     expect(spyMount).toHaveBeenCalledTimes(1);
     expect(spyDispose).toHaveBeenCalledTimes(0);
-    expect(document.body.innerHTML).toBe(
+    expect(document.body.innerHTML).toStrictEqual(
       '<div class="test2"><div>test2</div></div>'
     );
     cls.value = null;
     expect(spyMount).toHaveBeenCalledTimes(1);
     expect(spyDispose).toHaveBeenCalledTimes(1);
-    expect(document.body.innerHTML).toBe('<div class=""></div>');
+    expect(document.body.innerHTML).toStrictEqual('<div class=""></div>');
     cls.value = "test3";
     expect(spyMount).toHaveBeenCalledTimes(2);
     expect(spyDispose).toHaveBeenCalledTimes(1);
-    expect(document.body.innerHTML).toBe(
+    expect(document.body.innerHTML).toStrictEqual(
       '<div class="test3"><div>test3</div></div>'
     );
   });

@@ -8,7 +8,7 @@ describe("computedRecord", () => {
       a: "A",
       n: 1
     }, ({ a, n }) => `${a}:${n * 2}`);
-    expect(s.value).toBe("A:2");
+    expect(s.value).toStrictEqual("A:2");
   });
   test("signls only", async () => {
     const a = makeProp("A")
@@ -17,15 +17,15 @@ describe("computedRecord", () => {
       { a, n },
       ({ a, n }) => `${a}:${n * 2}`
     );
-    expect(s.value).toBe("A:2");
+    expect(s.value).toStrictEqual("A:2");
 
     a.set("B")
     await sleep()
-    expect(s.value).toBe("B:2")
+    expect(s.value).toStrictEqual("B:2")
 
     n.set(2)
     await sleep()
-    expect(s.value).toBe("B:4")
+    expect(s.value).toStrictEqual("B:4")
   });
   test("mixes", async () => {
     const a = makeProp("A")
@@ -33,10 +33,10 @@ describe("computedRecord", () => {
       { a, n: 1 },
       ({ a, n }) => `${a}:${n * 2}`
     );
-    expect(s.value).toBe("A:2");
+    expect(s.value).toStrictEqual("A:2");
 
     a.set("B")
     await sleep()
-    expect(s.value).toBe("B:2")
+    expect(s.value).toStrictEqual("B:2")
   });
 })

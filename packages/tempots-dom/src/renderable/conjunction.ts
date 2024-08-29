@@ -1,6 +1,6 @@
 import { Signal } from '../std/signal'
 import { Renderable, TNode } from '../types/domain'
-import { ElementPosition } from '../std/position'
+import { ElementPosition } from '../std/element-position'
 import { OneOfValue } from './oneof'
 
 /**

@@ -15,10 +15,10 @@ describe("Ensure", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('x')
+    expect(document.body.innerHTML).toStrictEqual('x')
     s.set('y')
     await sleep()
-    expect(document.body.innerHTML).toBe('y')
+    expect(document.body.innerHTML).toStrictEqual('y')
   });
   test("using string literal", () => {
     render(
@@ -29,7 +29,7 @@ describe("Ensure", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('A')
+    expect(document.body.innerHTML).toStrictEqual('A')
   });
   test("using null literal", () => {
     render(
@@ -40,6 +40,6 @@ describe("Ensure", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('x')
+    expect(document.body.innerHTML).toStrictEqual('x')
   });
 });

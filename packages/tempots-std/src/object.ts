@@ -11,6 +11,38 @@ export const objectKeys = <T extends object>(obj: T): Array<keyof T> =>
   Object.keys(obj) as Array<keyof T>
 
 /**
+ * Returns an array of values from the given object.
+ *
+ * @param obj - The object from which to extract values.
+ * @returns An array of values from the object.
+ * @public
+ */
+export const objectValues = <T extends object>(obj: T): Array<T[keyof T]> =>
+  Object.values(obj) as Array<T[keyof T]>
+
+/**
+ * Returns an array of entries (key-value pairs) from the given object.
+ *
+ * @param obj - The object from which to extract entries.
+ * @returns An array of tuples, where each tuple contains a key and its corresponding value from the object.
+ * @public
+ */
+export const objectEntries = <T extends object>(
+  obj: T
+): [keyof T, T[keyof T]][] => Object.entries(obj) as [keyof T, T[keyof T]][]
+
+/**
+ * Creates an object from an array of entries.
+ *
+ * @param entries - The array of entries to create an object from.
+ * @returns The created object.
+ * @public
+ */
+export const objectFromEntries = <T extends object>(
+  entries: [keyof T, T[keyof T]][]
+): T => Object.fromEntries(entries) as T
+
+/**
  * Checks if two objects have the same keys.
  *
  * @param a - The first object.

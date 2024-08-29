@@ -6,7 +6,6 @@ import {
   makeProp,
   html,
   ElementPosition,
-  Signal,
   Repeat,
   When,
 } from '@tempots/dom'
@@ -45,43 +44,39 @@ export function RepeatDemo(): Renderable {
       Repeat(
         count,
         pos => {
-          const loc = pos.map(pos => `${pos.counter} - index: ${pos.index}, `)
-          const isFirst = pos.map(pos => pos.isFirst)
-          const isLast = pos.map(pos => pos.isLast)
-          const isOdd = pos.map(pos => pos.isOdd)
-          const isEven = pos.map(pos => pos.isEven)
+          const loc = `${pos.counter} - index: ${pos.index}, `
 
           return flex.row(
             attr.class('gap-2 justify-between items-center w-96'),
             flex.row(
               attr.class('gap-2'),
               Txt(loc),
-              When(isFirst, Txt('FIRST, ')),
-              When(isLast, Txt('LAST, ')),
-              When(isOdd, Txt('odd')),
-              When(isEven, Txt('even'))
+              When(pos.isFirst, Txt('FIRST, ')),
+              When(pos.isLast, Txt('LAST, ')),
+              When(pos.isOdd, Txt('odd')),
+              When(pos.isEven, Txt('even'))
             )
           )
         },
-        (pos: Signal<ElementPosition>) => {
-          const cls = pos.map((p: ElementPosition) => {
-            const classes = []
-            console.log(p)
-            if (p.isFirst) {
-              classes.push('border-2')
-            }
-            if (p.isLast) {
-              classes.push('border-dashed')
-            }
-            if (p.isOdd) {
-              classes.push('border-green-600')
-            }
-            if (p.isEven) {
-              classes.push('border-red-600')
-            }
-            return classes.join(' ')
-          })
-          return html.hr(attr.class(cls))
+        (pos: ElementPosition) => {
+          const classes = []
+          if (pos.isFirst) {
+            classes.push('border-2')
+          }
+          if (pos.isOdd) {
+            classes.push('border-green-600')
+          }
+          if (pos.isEven) {
+            classes.push('border-red-600')
+          }
+          return html.hr(
+            attr.class(classes.join(' ')),
+            attr.class(
+              pos.isLast.map((isLast): string =>
+                isLast ? 'border-dashed' : ''
+              )
+            )
+          )
         }
       )
     )

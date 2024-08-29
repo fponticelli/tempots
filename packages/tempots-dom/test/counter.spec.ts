@@ -27,24 +27,24 @@ describe("Counter", () => {
     const body = document.body;
     const { node, count } = counter();
     const clear = render(node, body);
-    expect(body.innerHTML).toBe(
+    expect(body.innerHTML).toStrictEqual(
       '<div id="counter"><div class="even">Count: 0</div><div><button>Decrement</button><button>Increment</button></div></div>'
     );
     const decrement = body.querySelector("button")!;
     const increment = decrement.nextElementSibling! as HTMLElement;
     increment.click();
-    expect(count.value).toBe(1);
+    expect(count.value).toStrictEqual(1);
     await sleep();
-    expect(body.innerHTML).toBe(
+    expect(body.innerHTML).toStrictEqual(
       '<div id="counter"><div class="odd">Count: 1</div><div><button>Decrement</button><button>Increment</button></div></div>'
     );
     decrement.click();
-    expect(count.value).toBe(0);
+    expect(count.value).toStrictEqual(0);
     await sleep();
-    expect(body.innerHTML).toBe(
+    expect(body.innerHTML).toStrictEqual(
       '<div id="counter"><div class="even">Count: 0</div><div><button>Decrement</button><button>Increment</button></div></div>'
     );
     clear();
-    expect(body.innerHTML).toBe("");
+    expect(body.innerHTML).toStrictEqual("");
   });
 });

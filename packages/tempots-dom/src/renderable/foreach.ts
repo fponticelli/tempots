@@ -1,14 +1,14 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
-import { ElementPosition } from '../std/position'
+import { ElementPosition } from '../std/element-position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { OnUnmount } from './onunmount'
-import { OneOfValue } from './oneof'
-import { makeComputedOf, Value } from '../std/value'
+import { Value } from '../std/value'
+import { When } from './when'
 
 /**
  * Renders a list of items based on a signal of arrays.
@@ -22,35 +22,29 @@ import { makeComputedOf, Value } from '../std/value'
  */
 export const ForEach = <T>(
   value: Value<T[]>,
-  item: (value: Signal<T>, position: Signal<ElementPosition>) => TNode,
-  separator?: (pos: Signal<ElementPosition>) => TNode
+  item: (value: Signal<T>, position: ElementPosition) => TNode,
+  separator?: (pos: ElementPosition) => TNode
 ): Renderable => {
   if (separator != null) {
     return ForEach(value, (v, pos) => {
-      const sepPos = pos.map(p => new ElementPosition(p.index, p.total - 1))
-      const last = pos.map(p => (p.isLast ? 'last' : 'other'))
+      const sepPos = new ElementPosition(
+        pos.index,
+        pos.total.map(v => v - 1)
+      )
       return Fragment([
-        OnUnmount(() => {
-          last.dispose()
-          sepPos.dispose()
-        }),
+        OnUnmount(sepPos.dispose),
         renderableOfTNode(item(v, pos)),
-        OneOfValue(last, {
-          last: () => Empty,
-          other: () => separator(sepPos),
-        }),
+        When(pos.isLast, Empty, separator(sepPos)),
       ])
     })
   } else {
     return (ctx: DOMContext) => {
       const times = Value.map(value, arr => arr.length)
+      const arr = Value.toSignal(value)
       return Repeat(times, pos => {
-        const signal = makeComputedOf(
-          pos,
-          value
-        )((pos, value) => value[pos.index])
+        const signal = arr.map(arr => arr[pos.index])
         return Fragment(
-          OnUnmount(() => signal.dispose()),
+          OnUnmount(signal.dispose),
           renderableOfTNode(item(signal, pos))
         )
       })(ctx)

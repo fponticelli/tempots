@@ -1,14 +1,14 @@
 import { DOMContext } from '../dom/dom-context'
 import { _removeDOMNode } from '../dom/dom-utils'
-import { ElementPosition } from '../std/position'
-import { Prop, Signal, makeProp, makeSignal } from '../std/signal'
+import { ElementPosition } from '../std/element-position'
+import { Signal, makeSignal } from '../std/signal'
 import { Value } from '../std/value'
 import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
-import { OneOfValue } from './oneof'
 import { OnUnmount } from './onunmount'
+import { When } from './when'
 
 /**
  * Creates a renderable function that repeats a given element a specified number of times.
@@ -21,49 +21,42 @@ import { OnUnmount } from './onunmount'
  */
 export const Repeat = (
   times: Value<number>,
-  element: (index: Signal<ElementPosition>) => TNode,
-  separator?: (pos: Signal<ElementPosition>) => TNode
+  element: (index: ElementPosition) => TNode,
+  separator?: (pos: ElementPosition) => TNode
 ): Renderable => {
   if (separator != null) {
     return Repeat(times, pos => {
-      const sepPos = pos.map(p => new ElementPosition(p.index, p.total - 1))
-      const last = pos.map(p => (p.isLast ? 'last' : 'other'))
+      const sepPos = new ElementPosition(
+        pos.index,
+        pos.total.map(v => v - 1)
+      )
       return Fragment(
-        OnUnmount(() => {
-          sepPos.dispose()
-          last.dispose()
-        }),
+        OnUnmount(sepPos.dispose),
         renderableOfTNode(element(pos)),
-        OneOfValue(last, {
-          last: () => Empty,
-          other: () => separator(sepPos),
-        })
+        When(pos.isLast, Empty, separator(sepPos))
       )
     })
   } else {
     if (Signal.is(times)) {
       return (ctx: DOMContext) => {
         ctx = ctx.makeRef()
-        const elementSignals = times.map(times =>
-          Array.from({ length: times }, (_, i) => i).map(
-            i => new ElementPosition(i, times)
-          )
+        const existings: ElementPosition[] = Array.from(
+          { length: times.value },
+          (_, i) => i
+        ).map(i => new ElementPosition(i, times))
+        const clears: Clear[] = existings.map(pos =>
+          renderableOfTNode(element(pos))(ctx)
         )
-        const clears: Clear[] = []
-        const existings: Prop<ElementPosition>[] = []
-        const clear = elementSignals.on(elements => {
-          const newLength = elements.length
+        const clear = times.on(newLength => {
           while (newLength < clears.length) {
-            clears.pop()?.(true)
-            existings.pop()?.dispose()
+            clears.pop()!(true)
+            existings.pop()!.dispose()
           }
           for (let i = 0; i < newLength; i++) {
             if (existings[i] == null) {
-              existings[i] = makeProp(elements[i])
+              existings[i] = new ElementPosition(i, times)
               const node = renderableOfTNode(element(existings[i]))
               clears[i] = node(ctx)
-            } else {
-              existings[i].value = elements[i]
             }
           }
         })
@@ -78,7 +71,7 @@ export const Repeat = (
     } else {
       return Fragment(
         ...Array.from({ length: times }, (_, i) => i).map(i =>
-          renderableOfTNode(element(makeSignal(new ElementPosition(i, times))))
+          renderableOfTNode(element(new ElementPosition(i, makeSignal(times))))
         )
       )
     }
