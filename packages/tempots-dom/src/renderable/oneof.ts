@@ -181,24 +181,14 @@ export const OneOfTuple = <T extends string, V>(
  * @typeParam T - The type that contains a `type` property.
  * @public
  */
-export type OneOfTypeOptions<
-  T extends {
-    type: string
-  },
-> = {
+export type OneOfTypeOptions<T extends { type: string }> = {
   /**
    * Represents a rendering function for a specific type.
    * @param value - The value of type `T` or `never` if the type doesn't match.
    * @returns The rendered node.
    */
   [KK in T['type']]: (
-    value: Signal<
-      T extends {
-        type: KK
-      }
-        ? T
-        : never
-    >
+    value: Signal<T extends { type: KK } ? T : never>
   ) => TNode
 }
 

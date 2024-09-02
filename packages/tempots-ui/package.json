@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "0.17.2",
+  "version": "0.18.0",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -67,7 +67,7 @@
   },
   "peerDependencies": {
     "@tempots/dom": "22.0.0",
-    "@tempots/std": "0.15.0"
+    "@tempots/std": "0.16.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

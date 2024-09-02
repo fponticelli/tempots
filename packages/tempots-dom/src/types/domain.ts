@@ -1,5 +1,4 @@
 import { DOMContext } from '../dom/dom-context'
-import type { Signal } from '../std/signal'
 import { Value } from '../std/value'
 
 /**
@@ -70,7 +69,7 @@ export type NValue<T> =
  * Otherwise, it returns the type itself.
  * @public
  */
-export type GetValueType<T> = T extends Signal<infer V> ? V : T
+export type GetValueType<T> = T extends Value<infer V> ? V : T
 
 /**
  * Gets the value types of a given array of Value types.

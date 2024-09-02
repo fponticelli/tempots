@@ -292,4 +292,18 @@ export const AsyncResult = {
     }
     return AsyncResult.success(values)
   },
+
+  /**
+   * Converts a Promise to an AsyncResult.
+   * @param p - The Promise to convert.
+   * @returns A Promise that resolves to an AsyncResult.
+   */
+  ofPromise: async <V>(p: Promise<V>): Promise<AsyncResult<V, Error>> => {
+    try {
+      const v = await p
+      return AsyncResult.success(v)
+    } catch (e) {
+      return AsyncResult.failure(e instanceof Error ? e : new Error(String(e)))
+    }
+  },
 }
