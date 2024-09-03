@@ -9,7 +9,7 @@ import {
   emitValueAsNumber,
   on,
   OnChecked,
-} from './handler'
+} from './on'
 
 /**
  * Binds a `Date` property to an input element. The binding is two-way.

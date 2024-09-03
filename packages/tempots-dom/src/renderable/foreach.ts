@@ -1,5 +1,4 @@
 import type { TNode, Renderable } from '../types/domain'
-import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
 import { ElementPosition } from '../std/element-position'
 import { Repeat } from './repeat'
@@ -38,16 +37,14 @@ export const ForEach = <T>(
       ])
     })
   } else {
-    return (ctx: DOMContext) => {
-      const times = Value.map(value, arr => arr.length)
-      const arr = Value.toSignal(value)
-      return Repeat(times, pos => {
-        const signal = arr.map(arr => arr[pos.index])
-        return Fragment(
-          OnUnmount(signal.dispose),
-          renderableOfTNode(item(signal, pos))
-        )
-      })(ctx)
-    }
+    const times = Value.map(value, arr => arr.length)
+    const arr = Value.toSignal(value)
+    return Repeat(times, pos => {
+      const signal = arr.map(v => v[pos.index])
+      return Fragment(
+        OnUnmount(signal.dispose),
+        renderableOfTNode(item(signal, pos))
+      )
+    })
   }
 }

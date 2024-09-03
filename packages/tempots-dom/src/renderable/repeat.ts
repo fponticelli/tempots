@@ -49,8 +49,8 @@ export const Repeat = (
         )
         const clear = times.on(newLength => {
           while (newLength < clears.length) {
-            clears.pop()!(true)
             existings.pop()!.dispose()
+            clears.pop()!(true)
           }
           for (let i = 0; i < newLength; i++) {
             if (existings[i] == null) {
