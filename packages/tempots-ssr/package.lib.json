@@ -1,6 +1,6 @@
 {
   "name": "@tempots/ssr",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -40,7 +40,7 @@
     "happy-dom": "^14.12.3"
   },
   "peerDependencies": {
-    "@tempots/dom": "22.1.1"
+    "@tempots/dom": "23.0.0"
   },
   "license": "Apache-2.0"
 }

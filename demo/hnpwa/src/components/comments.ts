@@ -16,8 +16,7 @@ export interface CommentsProps {
 }
 
 export function Comments({ items }: CommentsProps): Renderable {
-  return NotEmpty(
-    items,
+  return NotEmpty(items, items =>
     html.ul(
       ForEach(items, ({ at }: Signal<Item>) =>
         html.li(
@@ -27,7 +26,9 @@ export function Comments({ items }: CommentsProps): Renderable {
           ),
           html.div(attr.innerHTML(at('content'))),
           Ensure(at('comments'), (comments: Signal<Item[]>) =>
-            NotEmpty(comments, html.div(Comments({ items: comments })))
+            NotEmpty(comments, comments =>
+              html.div(Comments({ items: comments }))
+            )
           )
         )
       )

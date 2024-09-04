@@ -1,7 +1,8 @@
+import { Signal } from '../std/signal'
 import { Value } from '../std/value'
 import { Renderable } from '../types/domain'
 import { Empty } from './empty'
-import { When } from './when'
+import { OneOf } from './oneof'
 
 /**
  * Returns a renderable component that displays the given `display` component
@@ -17,11 +18,15 @@ import { When } from './when'
  */
 export const NotEmpty = <T>(
   value: Value<T[]>,
-  display: Renderable,
-  whenEmpty: Renderable = Empty
+  display: (value: Signal<T[]>) => Renderable,
+  whenEmpty: () => Renderable = () => Empty
 ): Renderable =>
-  When(
-    Value.map(value, v => v.length > 0),
-    display,
-    whenEmpty
+  OneOf(
+    Value.map<T[], { notEmpty: T[] } | { whenEmpty: null }>(value, v =>
+      v.length > 0 ? { notEmpty: v } : { whenEmpty: null }
+    ),
+    {
+      notEmpty: (v: Signal<T[]>) => display(v),
+      whenEmpty: () => whenEmpty(),
+    }
   )

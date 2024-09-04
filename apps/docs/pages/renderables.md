@@ -170,14 +170,14 @@ const itemsSignal = makeSignal(['Item 1', 'Item 2', 'Item 3'])
 
 NotEmpty(
   itemsSignal,
-  html.ul(
+  items => html.ul(
     ForEach(
       items,
       item => html.li(item),
       html.br()
     ),
   ),
-  'No items'
+  () => 'No items'
 )
 ```
 
