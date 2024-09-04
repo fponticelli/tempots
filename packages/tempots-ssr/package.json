@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ssr",
   "private": false,
-  "version": "0.8.2",
+  "version": "0.8.3",
   "priority": 6,
   "keywords": [
     "tempo",
@@ -65,7 +65,7 @@
     "jsdom": "^24.1.1"
   },
   "peerDependencies": {
-    "@tempots/dom": "22.0.0"
+    "@tempots/dom": "22.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
