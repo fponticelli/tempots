@@ -223,6 +223,9 @@ export const aria = new Proxy(
   }
 )
 
+const dashedName = (name: string) =>
+  name.replace(/([A-Z])/g, '-$1').toLowerCase()
+
 /**
  * An object that provides a convenient way to create mountable attributes for
  * SVG elements.
@@ -252,14 +255,15 @@ export const svgAttr = new Proxy(
      */
     get: (_, name: keyof SVGAttributes) => {
       return (value: NValue<SVGAttributes[typeof name]>) => {
+        const dasherized = dashedName(name)
         if (Signal.is(value as Value<SVGAttributes[typeof name]>)) {
           return signalAttributeRenderable(
-            name,
+            dasherized,
             value as Signal<SVGAttributes[typeof name]>
           )
         } else {
           return staticAttributeRenderable(
-            name,
+            dasherized,
             value as SVGAttributes[typeof name]
           )
         }
