@@ -7,6 +7,7 @@ import {
   OnUnmount,
   makeProviderMark,
   WithProvider,
+  Renderable,
 } from '@tempots/dom'
 
 /**
@@ -35,7 +36,7 @@ export const appearanceMarker =
  * @returns The child component with the appearance context.
  * @public
  */
-export const ProvideAppearance = (child: TNode): TNode => {
+export const ProvideAppearance = (child: TNode): Renderable => {
   const isDark =
     window.matchMedia != null &&
     window.matchMedia('(prefers-color-scheme: dark)').matches
