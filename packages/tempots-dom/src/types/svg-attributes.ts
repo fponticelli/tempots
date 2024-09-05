@@ -4,10 +4,10 @@
  * @public
  */
 export type SVGAttributes = {
-  accentHeight: number
+  'accent-height': number
   accumulate: 'none' | 'sum'
   additive: 'replace' | 'sum'
-  alignmentBaseline:
+  'alignment-baseline':
     | 'auto'
     | 'baseline'
     | 'before-edge'
@@ -21,10 +21,10 @@ export type SVGAttributes = {
     | 'hanging'
     | 'mathematical'
     | 'inherit'
-  allowReorder: 'no' | 'yes'
+  'allow-reorder': 'no' | 'yes'
   alphabetic: number
   amplitude: number
-  arabicForm: 'initial' | 'medial' | 'terminal' | 'isolated'
+  'arabic-form': 'initial' | 'medial' | 'terminal' | 'isolated'
   ascent: number
   attributeName: string
   attributeType: string
@@ -32,21 +32,21 @@ export type SVGAttributes = {
   azimuth: number
   baseFrequency: number
   baseProfile: string
-  baselineShift: number
+  'baseline-shift': number
   bbox: number
   begin: number
   bias: number
   by: number
   calcMode: string
-  capHeight: number
+  'cap-height': number
   clip: number
-  clipPath: string
+  'clip-path': string
   clipPathUnits: string
   clipRule: string
-  colorInterpolation: string
-  colorInterpolationFilters: 'auto' | 'sRGB' | 'linearRGB' | 'inherit'
+  'color-interpolation': string
+  'color-interpolation-filters': 'auto' | 'sRGB' | 'linearRGB' | 'inherit'
   colorProfile: string
-  colorRendering: string
+  'color-rendering': string
   contentScriptType: string
   contentStyleType: string
   cursor: string
@@ -59,7 +59,7 @@ export type SVGAttributes = {
   direction: string
   display: string
   divisor: number
-  dominantBaseline: string
+  'dominant-baseline': string
   dur: number
   dx: number
   dy: number
@@ -70,39 +70,40 @@ export type SVGAttributes = {
   exponent: number
   externalResourcesRequired: 'true' | 'false'
   fill: string
-  fillOpacity: number
-  fillRule: string
+  'fill-opacity': number
+  'fill-rule': string
   filter: string
   filterRes: number
   filterUnits: string
-  floodColor: string
-  floodOpacity: number
+  'flood-color': string
+  'flood-opacity': number
   focusable: 'true' | 'false' | 'auto'
-  fontFamily: string
-  fontSize: number
-  fontSizeAdjust: number
-  fontStretch: string
-  fontStyle: string
-  fontVariant: string
-  fontWeight: string
+  'font-family': string
+  'font-size': number
+  'font-size-adjust': number
+  'font-stretch': string
+  'font-style': string
+  'font-variant': string
+  'font-weight': string
   format: string
   from: number
   fx: number
   fy: number
   g1: number
   g2: number
-  glyphName: string
-  glyphOrientationHorizontal: number
-  glyphOrientationVertical: number
+  'glyph-name': string
+  'glyph-orientation-horizontal': number
+  'glyph-orientation-vertical': number
   glyphRef: string
   gradientTransform: string
   gradientUnits: string
   hanging: number
   height: number
-  horizAdvX: number
-  horizOriginX: number
+  'horiz-adv-x': number
+  'horiz-origin-x': number
+  'horiz-origin-y': number
   ideographic: number
-  imageRendering: string
+  'image-rendering': string
   in: string
   in2: string
   intercept: number
@@ -118,14 +119,14 @@ export type SVGAttributes = {
   keySplines: string
   keyTimes: string
   lengthAdjust: string
-  letterSpacing: number
-  lightingColor: string
+  'letter-spacing': number
+  'lighting-color': string
   limitingConeAngle: number
   local: number
-  markerEnd: string
+  'marker-end': string
   markerHeight: number
-  markerMid: string
-  markerStart: string
+  'marker-mid': string
+  'marker-start': string
   markerUnits: string
   markerWidth: number
   mask: string
@@ -142,15 +143,15 @@ export type SVGAttributes = {
   orientation: number
   origin: number
   overflow: string
-  overlinePosition: number
-  overlineThickness: number
-  paintOrder: string
-  panose1: number
+  'overline-position': number
+  'overline-thickness': number
+  'paint-order': string
+  'panose-1': number
   pathLength: number
   patternContentUnits: string
   patternTransform: string
   patternUnits: string
-  pointerEvents: string
+  'pointer-events': string
   points: string
   pointsAtX: number
   pointsAtY: number
@@ -162,7 +163,7 @@ export type SVGAttributes = {
   radius: number
   refX: number
   refY: number
-  renderingIntent: string
+  'rendering-intent': string
   repeatCount: number
   repeatDur: number
   requiredExtensions: string
@@ -174,7 +175,7 @@ export type SVGAttributes = {
   ry: number
   scale: number
   seed: number
-  shapeRendering: string
+  'shape-rendering': string
   slope: number
   spacing: number
   specularConstant: number
@@ -186,60 +187,61 @@ export type SVGAttributes = {
   stemh: number
   stemv: number
   stitchTiles: string
-  stopColor: string
-  stopOpacity: number
-  strikethroughPosition: number
-  strikethroughThickness: number
+  'stop-color': string
+  'stop-opacity': number
+  'strikethrough-position': number
+  'strikethrough-thickness': number
   string: string
   stroke: string
-  strokeDasharray: string
-  strokeDashoffset: number
-  strokeLinecap: string
-  strokeLinejoin: string
-  strokeMiterlimit: number
-  strokeOpacity: number
-  strokeWidth: number
+  'stroke-dasharray': string
+  'stroke-dashoffset': number
+  'stroke-linecap': string
+  'stroke-linejoin': string
+  'stroke-miterlimit': number
+  'stroke-opacity': number
+  'stroke-width': number
   surfaceScale: number
   systemLanguage: string
   tableValues: string
   targetX: number
   targetY: number
-  textAnchor: string
-  textDecoration: string
+  'text-anchor': string
+  'text-decoration': string
   textLength: number
-  textRendering: string
+  'text-rendering': string
   to: number
   transform: string
+  'transform-origin': string
   u1: number
   u2: number
-  underlinePosition: number
-  underlineThickness: number
+  'underline-position': number
+  'underline-thickness': number
   unicode: number
-  unicodeBidi: string
-  unicodeRange: string
-  unitsPerEm: number
-  vAlphabetic: number
+  'unicode-bidi': string
+  'unicode-range': string
+  'units-per-em': number
+  'v-alphabetic': number
   values: string
-  vectorEffect: string
+  'vector-effect': string
   version: string
-  vertAdvY: number
-  vertOriginX: number
-  vertOriginY: number
-  vHanging: number
-  vIdeographic: number
+  'vert-adv-y': number
+  'vert-origin-x': number
+  'vert-origin-y': number
+  'v-hanging': number
+  'v-ideographic': number
   viewBox: string
   viewTarget: number
   visibility: string
-  vMathematical: number
+  'v-mathematical': number
   width: number
   widths: number
-  wordSpacing: number
-  writingMode: string
+  'word-spacing': number
+  'writing-mode': string
   x1: number
   x2: number
   x: number
   xChannelSelector: string
-  xHeight: number
+  'x-height': number
   xlinkActuate: string
   xlinkArcrole: string
   xlinkHref: string

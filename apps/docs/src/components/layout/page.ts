@@ -20,12 +20,12 @@ export function CloseButton(onClick: () => void) {
       attr.class('h-6 w-6 text-white'),
       svgAttr.fill('none'),
       svgAttr.viewBox('0 0 24 24'),
-      svgAttr.strokeWidth(1.5),
+      svgAttr['stroke-width'](1.5),
       svgAttr.stroke('currentColor'),
       aria.hidden(true),
       svg.path(
-        svgAttr.strokeLinecap('round'),
-        svgAttr.strokeLinejoin('round'),
+        svgAttr['stroke-linecap']('round'),
+        svgAttr['stroke-linejoin']('round'),
         svgAttr.d('M6 18L18 6M6 6l12 12')
       )
     )
@@ -42,12 +42,12 @@ export function OpenButton(onClick: () => void) {
       attr.class('h-6 w-6'),
       svgAttr.fill('none'),
       svgAttr.viewBox('0 0 24 24'),
-      svgAttr.strokeWidth(1.5),
+      svgAttr['stroke-width'](1.5),
       svgAttr.stroke('currentColor'),
       aria.hidden(true),
       svg.path(
-        svgAttr.strokeLinecap('round'),
-        svgAttr.strokeLinejoin('round'),
+        svgAttr['stroke-linecap']('round'),
+        svgAttr['stroke-linejoin']('round'),
         svgAttr.d('M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5')
       )
     )
