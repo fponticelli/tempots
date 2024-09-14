@@ -6,7 +6,7 @@ import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-function updateExportsAndTypesVersions(packageFile, names, prefix = null) {
+function updatePackageJSONExportsAndTypes(packageFile, names, prefix = null) {
   const exports = {
     '.': {
       import: prefix ? `./${prefix}/index.js` : './index.js',
@@ -40,8 +40,8 @@ function writeExports(names) {
   const cwd = process.cwd()
   const packageJson = path.join(cwd, 'package.json')
   const packageLibJson = path.join(cwd, 'package.lib.json')
-  updateExportsAndTypesVersions(packageJson, names, 'dist')
-  updateExportsAndTypesVersions(packageLibJson, names)
+  updatePackageJSONExportsAndTypes(packageJson, names, 'dist')
+  updatePackageJSONExportsAndTypes(packageLibJson, names)
 }
 
 const names = fs.readdirSync(resolve(__dirname, 'src'))
