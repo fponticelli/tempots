@@ -180,7 +180,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
               const initial = titleToInitial(title)
               return html.li(
                 SectionLink({
-                  href: `/demo/${path}/index.html`,
+                  href: `/demo/${path}.html`,
                   external: true,
                   label: title,
                   icon: initial,
