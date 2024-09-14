@@ -181,7 +181,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
               return html.li(
                 SectionLink({
                   href: `/demo/${path}.html`,
-                  external: true,
+                  external: false,
                   label: title,
                   icon: initial,
                   active,

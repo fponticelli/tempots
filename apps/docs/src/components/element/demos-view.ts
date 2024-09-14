@@ -20,7 +20,7 @@ export function DemosView(demos: Demo[]) {
           title: demo.title,
           description: demo.description,
           href: `/demo/${demo.path}.html`,
-          external: true,
+          external: false,
         })
       )
     )
