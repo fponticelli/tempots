@@ -15,3 +15,5 @@ export * from './renderables/router/location'
 export * from './renderables/router/match'
 export * from './renderables/router/route-info'
 export * from './renderables/router/router'
+
+export * from './utils/make-relative-time'
