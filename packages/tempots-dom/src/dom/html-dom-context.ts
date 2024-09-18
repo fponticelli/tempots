@@ -149,6 +149,18 @@ export class HTMLDOMContext implements DOMContext {
     new HTMLDOMContext(this.document, element, undefined, this.providers, false)
 
   /**
+   * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
+   * @param selector - The CSS selector for the target DOM element.
+   * @returns A new `DOMContext` instance with a reference to the selected DOM element.
+   */
+  readonly makePortal = (selector: string): DOMContext => {
+    const element = this.document.querySelector(selector)
+    if (element === null) {
+      throw new Error(`Cannot find element by selector for portal: ${selector}`)
+    }
+    return this.withElement(element).withFirstLevel()
+  }
+  /**
    * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
    * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
    */

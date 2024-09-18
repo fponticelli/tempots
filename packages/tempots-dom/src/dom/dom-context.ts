@@ -55,13 +55,12 @@ export interface DOMContext {
    */
   appendOrInsert(child: Node): void
 
-  // TODO
   /**
-   * Creates a new `DOMContext` instance with the provided `element`.
-   * @param element - The DOM element to use in the new `DOMContext` instance.
-   * @returns A new `DOMContext` instance with the provided `element`.
+   * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
+   * @param selector - The CSS selector for the target DOM element.
+   * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
-  withElement(element: Element): DOMContext
+  makePortal(selector: string): DOMContext
 
   /**
    * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
