@@ -6,6 +6,7 @@ import {
   Size,
   renderableOfTNode,
   OnBrowserCtx,
+  BrowserContext,
 } from '@tempots/dom'
 
 /**
@@ -16,7 +17,7 @@ import {
  * @public
  */
 export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
-  OnBrowserCtx((ctx: DOMContext) => {
+  OnBrowserCtx((ctx: BrowserContext) => {
     const { element } = ctx
     const size = makeProp({
       width: element.clientWidth,
