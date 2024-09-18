@@ -10,11 +10,15 @@ import type { ProviderMark } from '../types/domain'
  * @public
  */
 export interface DOMContext {
+  // TODO
   readonly document: Document
+  // TODO
   readonly element: Element
+  // TODO
   readonly reference: Node | undefined
   readonly isFirstLevel: boolean
 
+  // TODO
   /**
    * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace.
    *
@@ -24,6 +28,7 @@ export interface DOMContext {
    */
   createElement(tagName: string, namespace: string | undefined): Element
 
+  // TODO
   /**
    * Creates a new text node with the specified text content.
    * @param text - The text content for the new text node.
@@ -38,6 +43,7 @@ export interface DOMContext {
    */
   makeRef(): DOMContext
 
+  // TODO
   /**
    * Appends or inserts a child node to the element, depending on whether a reference node is provided.
    *
@@ -45,6 +51,7 @@ export interface DOMContext {
    */
   appendOrInsert(child: Node): void
 
+  // TODO
   /**
    * Creates a new `DOMContext` instance with the provided `document`.
    *
@@ -53,6 +60,7 @@ export interface DOMContext {
    */
   withDocument(document: Document): DOMContext
 
+  // TODO
   /**
    * Creates a new `DOMContext` instance with the provided `element`.
    * @param element - The DOM element to use in the new `DOMContext` instance.
