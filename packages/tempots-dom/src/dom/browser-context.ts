@@ -2,6 +2,7 @@ import type { Clear, ProviderMark, Providers } from '../types/domain'
 import { _makeGetter, _makeSetter } from './attr'
 import { DOMContext } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
+import { ProviderNotFoundError } from './errors'
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -21,7 +22,7 @@ export class BrowserContext implements DOMContext {
    * @returns A new `DOMContext` instance.
    */
   static of(element: HTMLElement, ref?: Node | undefined): DOMContext {
-    return new BrowserContext(element.ownerDocument, element, ref, {}, true)
+    return new BrowserContext(element.ownerDocument, element, ref, {})
   }
 
   /**
@@ -49,11 +50,11 @@ export class BrowserContext implements DOMContext {
     /**
      * The `Providers` instance associated with this context.
      */
-    readonly providers: Providers,
-    /**
-     * A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated
-     */
-    readonly isFirstLevel: boolean
+    readonly providers: Providers
+    // /**
+    //  * A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated
+    //  */
+    // readonly isFirstLevel: boolean
   ) {}
 
   /**
@@ -154,8 +155,8 @@ export class BrowserContext implements DOMContext {
    * @param element - The DOM element to use in the new `DOMContext` instance.
    * @returns A new `DOMContext` instance with the provided `element`.
    */
-  readonly withElement = (element: HTMLElement): DOMContext =>
-    new BrowserContext(this.document, element, undefined, this.providers, false)
+  readonly withElement = (element: HTMLElement): BrowserContext =>
+    new BrowserContext(this.document, element, undefined, this.providers)
 
   /**
    * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
@@ -167,20 +168,20 @@ export class BrowserContext implements DOMContext {
     if (element == null) {
       throw new Error(`Cannot find element by selector for portal: ${selector}`)
     }
-    return this.withElement(element).withFirstLevel()
+    return this.withElement(element) // .withFirstLevel()
   }
-  /**
-   * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-   * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-   */
-  readonly withFirstLevel = (): DOMContext =>
-    new BrowserContext(
-      this.document,
-      this.element,
-      this.reference,
-      this.providers,
-      true
-    )
+  // /**
+  //  * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
+  //  * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
+  //  */
+  // readonly withFirstLevel = (): DOMContext =>
+  //   new BrowserContext(
+  //     this.document,
+  //     this.element,
+  //     this.reference,
+  //     this.providers,
+  //     true
+  //   )
 
   /**
    * Creates a new `DOMContext` instance with the specified reference.
@@ -193,8 +194,8 @@ export class BrowserContext implements DOMContext {
       this.document,
       this.element,
       reference,
-      this.providers,
-      this.isFirstLevel
+      this.providers
+      // this.isFirstLevel
     )
 
   /** Creates a new HTMLDOMContext with the provided provider value.
@@ -211,8 +212,8 @@ export class BrowserContext implements DOMContext {
       {
         ...this.providers,
         [mark]: value,
-      },
-      this.isFirstLevel
+      }
+      // this.isFirstLevel
     )
 
   /**
@@ -232,8 +233,8 @@ export class BrowserContext implements DOMContext {
       {
         ...this.providers,
         ...providers,
-      },
-      this.isFirstLevel
+      }
+      // this.isFirstLevel
     )
 
   /**
@@ -330,16 +331,5 @@ export class BrowserContext implements DOMContext {
       get: _makeGetter(name, this.element),
       set: _makeSetter(name, this.element),
     }
-  }
-}
-
-/**
- * Error thrown when a provider is not found.
- *
- * @public
- */
-export class ProviderNotFoundError extends Error {
-  constructor(mark: ProviderMark<unknown>) {
-    super(`Provider not found: ${mark.description}`)
   }
 }

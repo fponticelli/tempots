@@ -1,8 +1,8 @@
 import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { _getSelfOrParentElement, _isElement } from '../dom/dom-utils'
-import { _clearSSR } from '../dom/ssr'
 import { BrowserContext } from '../dom/browser-context'
+import { HeadlessElementContext } from '../dom/headless-context'
 
 /**
  * Renders the given `renderable` with the provided `ctx` DOM context.
@@ -57,12 +57,41 @@ export const render = (
     )
   }
   if (clear !== false && (doc ?? el.ownerDocument) != null) {
-    _clearSSR((doc ?? el.ownerDocument)!)
+    if (el.nodeType === 1) (el as Element).innerHTML = ''
+    // _clearSSR((doc ?? el.ownerDocument)!)
   }
   const element = _getSelfOrParentElement(el)
   const ref = _isElement(el) ? undefined : el
   const ctx = BrowserContext.of(element, ref)
   return renderWithContext(node, ctx)
+}
+
+export const headlessRender = (node: Renderable) => {
+  const ctx = new HeadlessElementContext(
+    // true,
+    '$$root',
+    undefined,
+    {},
+    undefined
+  )
+  const clear = renderWithContext(node, ctx)
+  return {
+    clear,
+    root: ctx,
+    getPortals: () => {
+      const portals = {} as Record<string, DOMContext>
+      const run = (ctx: HeadlessElementContext) => {
+        for (const [selector, portal] of ctx.portals.entries()) {
+          portals[selector] = portal
+          if (portal instanceof HeadlessElementContext) {
+            run(portal)
+          }
+        }
+      }
+      run(ctx)
+      return portals
+    },
+  }
 }
 
 /**

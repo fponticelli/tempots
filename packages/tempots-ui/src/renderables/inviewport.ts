@@ -7,10 +7,8 @@ import {
   renderableOfTNode,
   Empty,
   Fragment,
-  OnDispose,
   OnElement,
   When,
-  isSSR,
 } from '@tempots/dom'
 
 /**
@@ -70,17 +68,18 @@ export const InViewport = (
   mode: InViewportMode,
   fn: (value: Signal<boolean>) => TNode
 ): Renderable => {
-  const signal = makeProp(isSSR())
+  const inView = makeProp(false)
   return Fragment(
     OnElement((el: HTMLElement) => {
       const observer =
         typeof IntersectionObserver !== 'undefined'
           ? ensureObserver(mode)
           : null
-      maps[mode].set(el, signal)
+      maps[mode].set(el, inView)
       observer?.observe(el)
 
       return () => {
+        inView.dispose()
         observer?.unobserve(el)
         maps[mode].delete(el)
         if (maps[mode].size === 0) {
@@ -89,8 +88,7 @@ export const InViewport = (
         }
       }
     }),
-    OnDispose(signal.dispose),
-    renderableOfTNode(fn(signal))
+    renderableOfTNode(fn(inView))
   )
 }
 

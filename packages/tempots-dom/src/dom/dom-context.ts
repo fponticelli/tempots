@@ -11,7 +11,7 @@ import { BrowserContext } from './browser-context'
  * @public
  */
 export interface DOMContext {
-  readonly isFirstLevel: boolean
+  // readonly isFirstLevel: boolean
 
   /**
    * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace and appends it to the current element.
@@ -54,12 +54,6 @@ export interface DOMContext {
    * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
   makePortal(selector: string): DOMContext
-
-  /**
-   * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-   * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-   */
-  withFirstLevel(): DOMContext
 
   /** Creates a new DOMContext with the provided provider value.
    *
@@ -143,7 +137,7 @@ export interface DOMContext {
    * @returns An object with methods to get and set the value of the property.
    */
   makeAccessors(name: string): {
-    get(): string
+    get(): unknown
     set(value: unknown): void
   }
 }

@@ -15,7 +15,7 @@ const demoFolderDst = path.join(pubFolder, 'demos')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
 const librariesFolderSrc = path.join(rootFolder, 'packages')
-const libraries = ['tempots-dom', 'tempots-ssr', 'tempots-std', 'tempots-color', 'tempots-ui']
+const libraries = ['tempots-dom', 'tempots-std', 'tempots-color', 'tempots-ui']
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')

@@ -1,4 +1,4 @@
-import { renderSSR, FetchFunction } from '@tempots/ssr'
+// import { renderSSR, FetchFunction } from '@tempots/ssr'
 import { App } from '../src/components/app'
 import * as fsp from 'fs/promises'
 import * as fse from 'fs-extra'
@@ -34,17 +34,19 @@ const renderPage = async (pageUrl: string) => {
         }
       }
       return originalFetch(`https://tempots.com${input}`, init)
-    }) as FetchFunction
+    })
   }
   // console.log('before renderSSR', url)
-  return renderSSR({
-    url,
-    html,
-    makeApp: () => App(toc),
-    selector: 'body',
-    makeFetch,
-    waitFetch: true,
-  })
+  // TODO
+  return html
+  // return renderSSR({
+  //   url,
+  //   html,
+  //   makeApp: () => App(toc),
+  //   selector: 'body',
+  //   makeFetch,
+  //   waitFetch: true,
+  // })
 }
 
 const extractURLs = (html: string) => {
