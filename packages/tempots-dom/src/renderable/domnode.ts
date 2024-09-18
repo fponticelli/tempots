@@ -1,5 +1,5 @@
-import { DOMContext } from '../dom/dom-context'
 import { _removeDOMNode } from '../dom/dom-utils'
+import { HTMLDOMContext } from '../dom/html-dom-context'
 import { Renderable } from '../types/domain'
 
 /**
@@ -11,8 +11,8 @@ import { Renderable } from '../types/domain'
  * @public
  */
 export const DOMNode =
-  (node: Node): Renderable =>
-  (ctx: DOMContext) => {
+  (node: Node): Renderable<HTMLDOMContext> =>
+  (ctx: HTMLDOMContext) => {
     ctx.appendOrInsert(node)
     return (removeTree: boolean) => {
       if (removeTree) {

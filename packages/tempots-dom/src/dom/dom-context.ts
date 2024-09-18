@@ -47,14 +47,6 @@ export interface DOMContext {
    */
   makeRef(): DOMContext
 
-  // TODO
-  /**
-   * Appends or inserts a child node to the element, depending on whether a reference node is provided.
-   *
-   * @param child - The child node to append or insert.
-   */
-  appendOrInsert(child: Node): void
-
   /**
    * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
    * @param selector - The CSS selector for the target DOM element.
