@@ -5,7 +5,7 @@ import { Repeat } from './repeat'
 import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
-import { OnUnmount } from './onunmount'
+import { OnDispose } from './on-dispose'
 import { Value } from '../std/value'
 import { When } from './when'
 
@@ -31,7 +31,7 @@ export const ForEach = <T>(
         pos.total.map(v => v - 1)
       )
       return Fragment([
-        OnUnmount(sepPos.dispose),
+        OnDispose(sepPos.dispose),
         renderableOfTNode(item(v, pos)),
         When(pos.isLast, Empty, separator(sepPos)),
       ])
@@ -42,7 +42,7 @@ export const ForEach = <T>(
     return Repeat(times, pos => {
       const signal = arr.map(v => v[pos.index])
       return Fragment(
-        OnUnmount(signal.dispose),
+        OnDispose(signal.dispose),
         renderableOfTNode(item(signal, pos))
       )
     })

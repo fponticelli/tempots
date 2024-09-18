@@ -45,8 +45,7 @@ export const El = (tagName: string, ...children: TNode[]): Renderable => {
   return (ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, undefined)
     if (ctx.isFirstLevel && isSSR()) {
-      // TODO
-      _addNodeTracker(newCtx.element)
+      _addNodeTracker(newCtx)
     }
     const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
     return (removeTree: boolean) => {
@@ -70,8 +69,7 @@ export const ElNS =
   (ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, namespace)
     if (ctx.isFirstLevel && isSSR()) {
-      // TODO
-      _addNodeTracker(newCtx.element)
+      _addNodeTracker(newCtx)
     }
     const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
     return (removeTree: boolean) => {

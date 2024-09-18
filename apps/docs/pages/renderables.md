@@ -204,25 +204,25 @@ html.div(
 
 ## Lifecycle
 
-For more advanced use cases, Tempo provides a set of functions to handle the lifecycle of a renderable. For example, to run a function when a renderable is mounted, use `OnMount`. This will take a callback function that will be called with the HTML Dom Element just mounted. Similarly `OnCtx` will take a callback function that will be called with the current `DOMContext`.
+For more advanced use cases, Tempo provides a set of functions to handle the lifecycle of a renderable. For example, to run a function when a renderable is mounted, use `OnElement`. This will take a callback function that will be called with the HTML Dom Element just mounted. Similarly `OnCtx` will take a callback function that will be called with the current `DOMContext`.
 
 ```ts
 html.div(
   // element is the DIV Element just mounted
-  OnMount(element => {
+  OnElement(element => {
     console.log('Mounted', element)
   })
 )
 ```
 
-Whenever you want to cleanup resources when a renderable is unmounted, use `OnUnmount`.
+Whenever you want to cleanup resources when a renderable is unmounted, use `OnDispose`.
 
 ```ts
 html.div(
-  OnMount(element => {
+  OnElement(element => {
     const listener = () => console.log('Clicked')
     element.addEventListener('click', listener)
-    OnUnmount(removeTree => {
+    OnDispose(removeTree => {
       if (removeTree) {
         element.removeEventListener('click', listener)
       }

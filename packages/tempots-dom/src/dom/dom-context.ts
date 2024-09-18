@@ -1,4 +1,5 @@
-import type { ProviderMark } from '../types/domain'
+import type { Clear, ProviderMark } from '../types/domain'
+import { BrowserContext } from './browser-context'
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -10,8 +11,6 @@ import type { ProviderMark } from '../types/domain'
  * @public
  */
 export interface DOMContext {
-  // TODO
-  readonly element: Element
   readonly isFirstLevel: boolean
 
   /**
@@ -35,6 +34,12 @@ export interface DOMContext {
    * @param text - The text content to set.
    */
   setText(text: string): void
+
+  /**
+   * Gets the text content of the current element or text node.
+   * @returns The text content of the current element or text node.
+   */
+  getText(): string | undefined
 
   /**
    * Creates a new `DOMContext` with a reference to a newly created text node.
@@ -85,4 +90,60 @@ export interface DOMContext {
   getProvider<T>(mark: ProviderMark<T>): T
 
   clear(removeTree: boolean): void
+
+  /**
+   * Adds an event listener to the element.
+   * @param event - The event to listen for.
+   * @param listener - The listener to call when the event occurs.
+   * @returns A function to remove the event listener.
+   */
+  on<E>(event: string, listener: (event: E) => void): Clear
+
+  /**
+   * Adds classes to the element.
+   * @param tokens - The class names to add.
+   */
+  addClasses(tokens: string[]): void
+
+  /**
+   * Removes classes from the element.
+   * @param tokens - The class names to remove.
+   */
+  removeClasses(tokens: string[]): void
+
+  /**
+   * Gets the classes of the element.
+   * @returns The classes of the element.
+   */
+  getClasses(): string[]
+
+  /**
+   * Returns `true` if the context is a browser DOM context.
+   * @returns `true` if the context is a browser DOM context.
+   */
+  isBrowserDOM(): this is BrowserContext
+
+  /**
+   * Sets the style of the element.
+   * @param name - The name of the style to set.
+   * @param value - The value of the style to set.
+   */
+  setStyle(name: string, value: string): void
+
+  /**
+   * Gets the style of the element.
+   * @param name - The name of the style to get.
+   * @returns The value of the style.
+   */
+  getStyle(name: string): string
+
+  /**
+   * Returns an object with methods to get and set the value of a property or attribute.
+   * @param name - The name of the property to create accessors for.
+   * @returns An object with methods to get and set the value of the property.
+   */
+  makeAccessors(name: string): {
+    get(): string
+    set(value: unknown): void
+  }
 }

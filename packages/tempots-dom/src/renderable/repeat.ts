@@ -6,7 +6,7 @@ import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
-import { OnUnmount } from './onunmount'
+import { OnDispose } from './on-dispose'
 import { When } from './when'
 
 /**
@@ -30,7 +30,7 @@ export const Repeat = (
         pos.total.map(v => v - 1)
       )
       return Fragment(
-        OnUnmount(sepPos.dispose),
+        OnDispose(sepPos.dispose),
         renderableOfTNode(element(pos)),
         When(pos.isLast, Empty, separator(sepPos))
       )

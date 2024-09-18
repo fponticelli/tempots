@@ -1,4 +1,5 @@
-import type { ProviderMark, Providers } from '../types/domain'
+import type { Clear, ProviderMark, Providers } from '../types/domain'
+import { _makeGetter, _makeSetter } from './attr'
 import { DOMContext } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
 
@@ -11,16 +12,16 @@ import { _removeDOMNode } from './dom-utils'
  *
  * @public
  */
-export class HTMLDOMContext implements DOMContext {
+export class BrowserContext implements DOMContext {
   /**
    * Creates a new `DOMContext` instance for the given `Element` and optional reference `Node`.
    *
-   * @param element - The `Element` to create the `DOMContext` for.
+   * @param element - The `HTMLElement` to create the `DOMContext` for.
    * @param ref - An optional reference `Node` to associate with the `DOMContext`.
    * @returns A new `DOMContext` instance.
    */
-  static of(element: Element, ref?: Node | undefined): DOMContext {
-    return new HTMLDOMContext(element.ownerDocument, element, ref, {}, true)
+  static of(element: HTMLElement, ref?: Node | undefined): DOMContext {
+    return new BrowserContext(element.ownerDocument, element, ref, {}, true)
   }
 
   /**
@@ -40,7 +41,7 @@ export class HTMLDOMContext implements DOMContext {
     /**
      * The `Element` instance associated with this context.
      */
-    readonly element: Element,
+    readonly element: HTMLElement,
     /**
      * An optional `Node` instance that serves as a reference for this context.
      */
@@ -65,9 +66,9 @@ export class HTMLDOMContext implements DOMContext {
   readonly createElement = (
     tagName: string,
     namespace: string | undefined
-  ): Element => {
+  ): HTMLElement => {
     if (namespace !== undefined) {
-      return this.document.createElementNS(namespace, tagName)
+      return this.document.createElementNS(namespace, tagName) as HTMLElement
     } else {
       return this.document.createElement(tagName)
     }
@@ -84,7 +85,7 @@ export class HTMLDOMContext implements DOMContext {
     tagName: string,
     namespace: string | undefined
   ): DOMContext => {
-    const element = this.createElement(tagName, namespace)
+    const element = this.createElement(tagName, namespace) as HTMLElement
     this.appendOrInsert(element)
     return this.withElement(element)
   }
@@ -117,6 +118,14 @@ export class HTMLDOMContext implements DOMContext {
   }
 
   /**
+   * Gets the text content of the current element or text node.
+   * @returns The text content of the current element or text node.
+   */
+  readonly getText = (): string | undefined => {
+    return this.reference?.nodeValue ?? this.element.textContent ?? undefined
+  }
+
+  /**
    * Creates a new `DOMContext` with a reference to a newly created text node.
    * The text node is appended or inserted to the current `DOMContext`.
    * The new `DOMContext` with the reference is returned.
@@ -145,8 +154,8 @@ export class HTMLDOMContext implements DOMContext {
    * @param element - The DOM element to use in the new `DOMContext` instance.
    * @returns A new `DOMContext` instance with the provided `element`.
    */
-  readonly withElement = (element: Element): DOMContext =>
-    new HTMLDOMContext(this.document, element, undefined, this.providers, false)
+  readonly withElement = (element: HTMLElement): DOMContext =>
+    new BrowserContext(this.document, element, undefined, this.providers, false)
 
   /**
    * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
@@ -154,8 +163,8 @@ export class HTMLDOMContext implements DOMContext {
    * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
   readonly makePortal = (selector: string): DOMContext => {
-    const element = this.document.querySelector(selector)
-    if (element === null) {
+    const element = this.document.querySelector(selector) as HTMLElement | null
+    if (element == null) {
       throw new Error(`Cannot find element by selector for portal: ${selector}`)
     }
     return this.withElement(element).withFirstLevel()
@@ -165,7 +174,7 @@ export class HTMLDOMContext implements DOMContext {
    * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
    */
   readonly withFirstLevel = (): DOMContext =>
-    new HTMLDOMContext(
+    new BrowserContext(
       this.document,
       this.element,
       this.reference,
@@ -180,7 +189,7 @@ export class HTMLDOMContext implements DOMContext {
    * @returns A new `DOMContext` instance with the specified reference.
    */
   readonly withReference = (reference: Text | undefined): DOMContext =>
-    new HTMLDOMContext(
+    new BrowserContext(
       this.document,
       this.element,
       reference,
@@ -195,7 +204,7 @@ export class HTMLDOMContext implements DOMContext {
    * @returns A new HTMLDOMContext with the updated providers.
    */
   readonly withProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
-    new HTMLDOMContext(
+    new BrowserContext(
       this.document,
       this.element,
       this.reference,
@@ -216,7 +225,7 @@ export class HTMLDOMContext implements DOMContext {
   readonly withProviders = (providers: {
     [K in ProviderMark<unknown>]: unknown
   }): DOMContext =>
-    new HTMLDOMContext(
+    new BrowserContext(
       this.document,
       this.element,
       this.reference,
@@ -249,6 +258,77 @@ export class HTMLDOMContext implements DOMContext {
       } else {
         _removeDOMNode(this.element)
       }
+    }
+  }
+
+  /**
+   * Adds classes to the element.
+   * @param tokens - The class names to add.
+   */
+  readonly addClasses = (tokens: string[]) => {
+    this.element.classList.add(...tokens)
+  }
+
+  /**
+   * Removes classes from the element.
+   * @param tokens - The class names to remove.
+   */
+
+  readonly removeClasses = (tokens: string[]) => {
+    this.element.classList.remove(...tokens)
+  }
+
+  /**
+   * Gets the classes of the element.
+   * @returns The classes of the element.
+   */
+  readonly getClasses = (): string[] => {
+    return Array.from(this.element.classList)
+  }
+
+  /**
+   * Adds an event listener to the element.
+   * @param event - The event to listen for.
+   * @param listener - The listener to call when the event occurs.
+   * @returns A function to remove the event listener.
+   */
+  readonly on = <E>(event: string, listener: (event: E) => void): Clear => {
+    this.element.addEventListener(event, listener as EventListener)
+    return (removeTree: boolean) => {
+      if (removeTree) {
+        this.element.removeEventListener(event, listener as EventListener)
+      }
+    }
+  }
+
+  /**
+   * Returns `true` if the context is a browser DOM context.
+   * @returns `true` if the context is a browser DOM context.
+   */
+  readonly isBrowserDOM = (): this is BrowserContext => true
+
+  /**
+   * Sets the style of the element.
+   * @param name - The name of the style to set.
+   * @param value - The value of the style to set.
+   */
+  readonly setStyle = (name: string, value: string) => {
+    this.element.style.setProperty(name, value)
+  }
+
+  /**
+   * Gets the style of the element.
+   * @param name - The name of the style to get.
+   * @returns The value of the style.
+   */
+  readonly getStyle = (name: string) => {
+    return this.element.style.getPropertyValue(name)
+  }
+
+  readonly makeAccessors = (name: string) => {
+    return {
+      get: _makeGetter(name, this.element),
+      set: _makeSetter(name, this.element),
     }
   }
 }

@@ -6,24 +6,22 @@ import { Value } from '../std/value'
 
 const staticStyle =
   (name: keyof CSSStyles, value: string) => (ctx: DOMContext) => {
-    const element = ctx.element as HTMLElement
-    const original = element.style.getPropertyValue(name as string)
-    element.style.setProperty(name as string, value)
+    const original = ctx.getStyle(name as string)
+    ctx.setStyle(name as string, value)
     return (removeTree: boolean) => {
       if (removeTree) {
-        element.style.setProperty(name as string, original)
+        ctx.setStyle(name as string, original)
       }
     }
   }
 
 const signalStyle =
   (name: keyof CSSStyles, signal: Signal<string>) => (ctx: DOMContext) => {
-    const element = ctx.element as HTMLElement
-    const original = element.style.getPropertyValue(name as string)
-    signal.on(v => element.style.setProperty(name as string, v))
+    const original = ctx.getStyle(name as string)
+    signal.on(v => ctx.setStyle(name as string, v))
     return (removeTree: boolean) => {
       if (removeTree) {
-        element.style.setProperty(name as string, original)
+        ctx.setStyle(name as string, original)
       }
     }
   }

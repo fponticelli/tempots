@@ -8,15 +8,13 @@ const CLASS_NAME = 'data-tempo-class'
 const NODE_NAME = 'data-tempo-node'
 const TEXT_NAME = 'data-tempo-text'
 
-const addAttributeTracker = (element: Element, name: string) => {
-  const value = element.getAttribute(name)
+const addAttributeTracker = (ctx: DOMContext, name: string) => {
+  const value = ctx.makeAccessors(name).get()
   if (value != null) {
-    const dataAttr = element.getAttribute(ATTR_NAME) ?? '{}'
+    const { get, set } = ctx.makeAccessors(ATTR_NAME)
+    const dataAttr = get() ?? '{}'
     const data = { ...JSON.parse(dataAttr), name: value }
-    element.setAttribute(
-      ATTR_NAME,
-      JSON.stringify(data).replace(/"/g, '&quot;')
-    )
+    set(JSON.stringify(data).replace(/"/g, '&quot;'))
   }
 }
 
@@ -25,7 +23,7 @@ const addAttributeTracker = (element: Element, name: string) => {
  */
 export const _maybeAddAttributeTracker = (ctx: DOMContext, name: string) => {
   if (isSSR() && ctx.isFirstLevel) {
-    addAttributeTracker(ctx.element, name)
+    addAttributeTracker(ctx, name)
   }
 }
 
@@ -41,8 +39,14 @@ const removeAttributeTrackers = (doc: Document) => {
   })
 }
 
-function _addClassTracker(element: Element) {
-  element.setAttribute(CLASS_NAME, element.className)
+function _addClassTracker(ctx: DOMContext) {
+  const value = ctx.getClasses()
+  if (value.length > 0) {
+    const { get, set } = ctx.makeAccessors(CLASS_NAME)
+    const dataAttr = get()?.split(' ') ?? []
+    const data = [...new Set([...dataAttr, ...value])]
+    set(data.join(' '))
+  }
 }
 
 /**
@@ -50,7 +54,7 @@ function _addClassTracker(element: Element) {
  */
 export const _maybeAddClassTracker = (ctx: DOMContext) => {
   if (isSSR() && ctx.isFirstLevel) {
-    _addClassTracker(ctx.element)
+    _addClassTracker(ctx)
   }
 }
 
@@ -66,8 +70,9 @@ const removeClassTrackers = (doc: Document) => {
 /**
  * @internal
  */
-export const _addNodeTracker = (element: Element) => {
-  element.setAttribute(NODE_NAME, '')
+export const _addNodeTracker = (ctx: DOMContext) => {
+  const { set } = ctx.makeAccessors(NODE_NAME)
+  set('')
 }
 
 const removeNodeTrackers = (doc: Document) => {
@@ -76,8 +81,12 @@ const removeNodeTrackers = (doc: Document) => {
   })
 }
 
-const addTextTracker = (element: Element) => {
-  element.setAttribute(TEXT_NAME, element.textContent ?? '')
+const addTextTracker = (ctx: DOMContext) => {
+  const text = ctx.getText()
+  if (text != null) {
+    const { set } = ctx.makeAccessors(TEXT_NAME)
+    set(text)
+  }
 }
 
 /**
@@ -85,7 +94,7 @@ const addTextTracker = (element: Element) => {
  */
 export const _maybeAddTextTracker = (ctx: DOMContext) => {
   if (isSSR() && ctx.isFirstLevel) {
-    addTextTracker(ctx.element)
+    addTextTracker(ctx)
   }
 }
 

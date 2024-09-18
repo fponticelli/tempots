@@ -4,7 +4,7 @@ import {
   TNode,
   UseProvider,
   Fragment,
-  OnUnmount,
+  OnDispose,
   makeProviderMark,
   WithProvider,
   Renderable,
@@ -51,7 +51,7 @@ export const ProvideAppearance = (child: TNode): Renderable => {
   matcher?.addEventListener('change', onChange)
   return Fragment(
     WithProvider(appearanceMarker, appearance, child),
-    OnUnmount(() => matcher?.removeEventListener('change', onChange))
+    OnDispose(() => matcher?.removeEventListener('change', onChange))
   )
 }
 

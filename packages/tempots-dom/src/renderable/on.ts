@@ -4,14 +4,8 @@ import { DOMContext } from '../dom/dom-context'
 
 const handler =
   <T extends Event>(name: string, handler: (event: T) => void): Renderable =>
-  (ctx: DOMContext) => {
-    ctx.element.addEventListener(name, handler as (e: Event) => void)
-    return (removeTree: boolean) => {
-      if (removeTree) {
-        ctx.element.removeEventListener(name, handler as (e: Event) => void)
-      }
-    }
-  }
+  (ctx: DOMContext) =>
+    ctx.on(name, handler)
 
 /**
  * Attaches an event handler to the 'click' event that triggers when a checkbox is checked or unchecked.

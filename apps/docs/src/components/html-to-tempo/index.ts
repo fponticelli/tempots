@@ -1,7 +1,7 @@
 import {
   attr,
   html,
-  OnUnmount,
+  OnDispose,
   makeProp,
   TNode,
   Value,
@@ -40,7 +40,7 @@ export function HtmlToTempo() {
     attr.class(
       'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-[calc(100dvh_-_6rem)] overflow-hidden gap-2'
     ),
-    OnUnmount(
+    OnDispose(
       content.on(html => {
         try {
           const tempoStr = isSSR() ? '' : htmlToTempo(html)

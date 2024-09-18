@@ -16,124 +16,6 @@ const stringProperties = new Set([
   'classList',
 ])
 
-const cache = new Map<string, (element: Element, value: unknown) => void>()
-
-const getOrCreate = (
-  attributeName: string,
-  make: (attributeName: string) => (element: Element, value: unknown) => void
-): ((element: Element, value: unknown) => void) => {
-  if (cache.has(attributeName)) {
-    return cache.get(attributeName)!
-  } else {
-    const f = make(attributeName)
-    cache.set(attributeName, f)
-    return f
-  }
-}
-
-/**
- * Sets a boolean property on an HTML element.
- *
- * If the `value` is `null`, the property is set to `null`. Otherwise, the
- * property is set to the boolean value of `value`.
- *
- * @param attributeName - The name of the boolean property to set.
- * @returns A function that takes an `Element` and a `value` and sets the
- * boolean property on the element.
- * @internal
- */
-export const _setBooleanProperty =
-  (attributeName: string) => (element: Element, value: unknown) => {
-    if (value == null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = null
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = Boolean(value)
-    }
-  }
-
-/**
- * Sets a numeric property on an HTML element.
- *
- * If the provided `value` is `null`, the property will be set to `null`.
- * Otherwise, the property will be set to the numeric value of the provided `value`.
- *
- * @param attributeName - The name of the property to set on the element.
- * @returns A function that takes an `Element` and a `value` and sets the property.
- * @internal
- */
-export const _setNumberProperty =
-  (attributeName: string) => (element: Element, value: unknown) => {
-    if (value == null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = null
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = Number(value)
-    }
-  }
-
-/**
- * Sets a date property on an element.
- *
- * If the `value` is `null`, the date property is set to `null`. Otherwise, the
- * date property is set to the provided `value`.
- *
- * @param attributeName - The name of the date property to set on the element.
- * @returns A function that takes an element and a value, and sets the date
- * property on the element.
- * @internal
- */
-export const _setDateProperty =
-  (attributeName: string) => (element: Element, value: unknown) => {
-    if (value == null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = null
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = value
-    }
-  }
-
-/**
- * Sets a string property on an `Element` object.
- *
- * If the provided `value` is `null`, the property will be set to `null`.
- * Otherwise, the `value` will be converted to a string and set as the property.
- *
- * @param attributeName - The name of the property to set on the `Element`.
- * @returns A function that takes an `Element` and a `value` and sets the property.
- * @internal
- */
-export const _setStringProperty =
-  (attributeName: string) => (element: Element, value: unknown) => {
-    if (value == null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = null
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(element as any)[attributeName] = String(value)
-    }
-  }
-
-/**
- * Sets the specified attribute on the given element to the provided value.
- * If the value is `null`, the attribute will be removed from the element.
- *
- * @param attributeName - The name of the attribute to set.
- * @returns A function that takes an element and a value, and sets the attribute on the element.
- * @internal
- */
-export const _setAttribute =
-  (attributeName: string) => (element: Element, value: unknown) => {
-    if (value == null) {
-      element.removeAttribute(attributeName)
-    } else {
-      element.setAttribute(attributeName, value as string)
-    }
-  }
-
 /**
  * Creates a setter function for an element attribute based on the attribute's type.
  *
@@ -145,19 +27,55 @@ export const _setAttribute =
  * @returns A function that sets the attribute value on an element.
  * @internal
  */
-export const _makeSetter = (
-  attributeName: string
-): ((element: Element, value: unknown) => void) => {
+export const _makeSetter = (attributeName: string, element: Element) => {
   if (boolProperties.has(attributeName)) {
-    return getOrCreate(attributeName, _setBooleanProperty)
+    return (value: unknown) => {
+      if (value == null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = null
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = Boolean(value)
+      }
+    }
   } else if (numberProperties.has(attributeName)) {
-    return getOrCreate(attributeName, _setNumberProperty)
+    return (value: unknown) => {
+      if (value == null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = null
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = Number(value)
+      }
+    }
   } else if (dateProperties.has(attributeName)) {
-    return getOrCreate(attributeName, _setDateProperty)
+    return (value: unknown) => {
+      if (value == null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = null
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = value
+      }
+    }
   } else if (stringProperties.has(attributeName)) {
-    return getOrCreate(attributeName, _setStringProperty)
+    return (value: unknown) => {
+      if (value == null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = null
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(element as any)[attributeName] = String(value)
+      }
+    }
   } else {
-    return getOrCreate(attributeName, _setAttribute)
+    return (value: unknown) => {
+      if (value == null) {
+        element.removeAttribute(attributeName)
+      } else {
+        element.setAttribute(attributeName, value as string)
+      }
+    }
   }
 }
 
@@ -173,22 +91,20 @@ export const _makeSetter = (
  * specified attribute.
  * @internal
  */
-export const _makeGetter =
-  <T>(attributeName: string): ((element: Element) => T) =>
-  (element: Element) => {
-    if (boolProperties.has(attributeName)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return Boolean((element as any)[attributeName])
-    } else if (numberProperties.has(attributeName)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return Number((element as any)[attributeName])
-    } else if (dateProperties.has(attributeName)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (element as any)[attributeName]
-    } else if (stringProperties.has(attributeName)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return String((element as any)[attributeName])
-    } else {
-      return element.getAttribute(attributeName)
-    }
+export const _makeGetter = (attributeName: string, element: Element) => {
+  if (boolProperties.has(attributeName)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return () => Boolean((element as any)[attributeName])
+  } else if (numberProperties.has(attributeName)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return () => Number((element as any)[attributeName])
+  } else if (dateProperties.has(attributeName)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return () => (element as any)[attributeName]
+  } else if (stringProperties.has(attributeName)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return () => String((element as any)[attributeName])
+  } else {
+    return () => element.getAttribute(attributeName)
   }
+}

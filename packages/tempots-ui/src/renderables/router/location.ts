@@ -4,7 +4,7 @@ import {
   DOMContext,
   Fragment,
   makeProviderMark,
-  OnUnmount,
+  OnDispose,
   makeProp,
   Prop,
   UseProvider,
@@ -167,7 +167,7 @@ export const ProvideLocation = (child: TNode) => {
   const location = _makeLocationProp()
 
   return Fragment(
-    OnUnmount(location.dispose),
+    OnDispose(location.dispose),
     WithProvider(LocationProviderMarker, location, child)
   )
 }

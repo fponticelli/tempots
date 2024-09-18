@@ -1,4 +1,4 @@
-import { DOMContext, type Renderable } from '@tempots/dom'
+import { OnElement, type Renderable } from '@tempots/dom'
 
 /**
  * Creates a renderable function that focuses on the element after a specified delay.
@@ -7,12 +7,10 @@ import { DOMContext, type Renderable } from '@tempots/dom'
  * @returns A renderable function that focuses on the element.
  * @public
  */
-export const AutoFocus =
-  (delay: number = 10): Renderable =>
-  (ctx: DOMContext) => {
+export const AutoFocus = (delay: number = 10): Renderable =>
+  OnElement(el => {
     const timeout = setTimeout(() => {
-      ;(ctx.element as HTMLElement)?.focus()
+      el?.focus()
     }, delay)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return (_removeTree: boolean) => clearTimeout(timeout)
-  }
+    return () => clearTimeout(timeout)
+  })

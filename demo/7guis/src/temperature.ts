@@ -1,7 +1,7 @@
 import { Txt } from './components/txt'
 import {
   emitValue,
-  OnUnmount,
+  OnDispose,
   Signal,
   attr,
   on,
@@ -38,7 +38,7 @@ export function Temperature(): Renderable {
     }
   })
   return flex.col(
-    OnUnmount(clear),
+    OnDispose(clear),
     attr.class('gap-2'),
     flex.row(
       attr.class('gap-2 items-center'),

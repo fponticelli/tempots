@@ -1,4 +1,4 @@
-import { DOMContext, type Renderable } from '@tempots/dom'
+import { OnElement, type Renderable } from '@tempots/dom'
 
 /**
  * Creates a renderable function that automatically selects the content of an input element after a specified delay.
@@ -6,14 +6,10 @@ import { DOMContext, type Renderable } from '@tempots/dom'
  * @returns A renderable function that can be used with a DOMContext.
  * @public
  */
-export const AutoSelect =
-  (delay: number = 10): Renderable =>
-  (ctx: DOMContext) => {
+export const AutoSelect = (delay: number = 10): Renderable =>
+  OnElement(el => {
     const timeout = setTimeout(() => {
-      ;(ctx.element as HTMLInputElement)?.select()
+      ;(el as HTMLInputElement)?.select()
     }, delay)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return (_removeTree: boolean) => {
-      clearTimeout(timeout)
-    }
-  }
+    return () => clearTimeout(timeout)
+  })

@@ -1,4 +1,4 @@
-import { attr, html, OnMount, Signal, Task, Value } from '@tempots/dom'
+import { attr, html, OnElement, Signal, Task, Value } from '@tempots/dom'
 
 function throttle<T extends (...args: unknown[]) => void>(
   fn: T,
@@ -93,7 +93,7 @@ export function MonacoEditor({
     Task(
       () => loadAssetsInOrder(SCRIPTS),
       () =>
-        OnMount((el: HTMLElement) => {
+        OnElement((el: HTMLElement) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const monaco = (window as any)
             .monaco as typeof import('monaco-editor')

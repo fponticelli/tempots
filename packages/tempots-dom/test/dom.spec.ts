@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { attr, html, style, render, makeProp, OnUnmount, Ensure, OnMount } from "../src";
+import { attr, html, style, render, makeProp, OnDispose, Ensure, OnElement } from "../src";
 const { div } = html;
 
 describe("render", () => {
@@ -28,7 +28,7 @@ describe("render", () => {
 
   test("onDispose", () => {
     const spy = vi.fn();
-    const clear = render(div(div(OnUnmount(spy))), document.body);
+    const clear = render(div(div(OnDispose(spy))), document.body);
     expect(spy).toHaveBeenCalledTimes(0);
     clear();
     expect(spy).toHaveBeenCalledTimes(1);
@@ -63,7 +63,7 @@ describe("render", () => {
       div(
         Ensure(cls, s => attr.class(s)),
         Ensure(cls, s =>
-          div(s, OnMount(spyMount), OnUnmount(spyDispose))
+          div(s, OnElement(spyMount), OnDispose(spyDispose))
         )
       ),
       document.body

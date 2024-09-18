@@ -7,7 +7,7 @@ import { DOMContext } from '../dom/dom-context'
  * @returns A renderable function that takes a DOMContext and returns a function that takes a boolean indicating whether to remove the tree.
  * @public
  */
-export const OnUnmount =
+export const OnDispose =
   (fn: (removeTree: boolean, ctx: DOMContext) => void): Renderable =>
   (ctx: DOMContext) => {
     return (removeTree: boolean) => fn(removeTree, ctx)

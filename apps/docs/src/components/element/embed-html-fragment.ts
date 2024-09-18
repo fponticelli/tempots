@@ -1,4 +1,4 @@
-import { attr, OnCtx, DOMContext, html, Prop, Value } from '@tempots/dom'
+import { attr, html, Prop, Value, OnElement } from '@tempots/dom'
 import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
@@ -34,11 +34,9 @@ export function EmbedHTMLFragment(content: Value<string>) {
       attr.class(Styles.prose),
       attr.innerHTML(htmlSignal),
       UseLocation(location =>
-        OnCtx((ctx: DOMContext) => {
-          return htmlSignal.on(() => {
-            updateAnchors(location, ctx.element as HTMLElement)
-          })
-        })
+        OnElement(el =>
+          htmlSignal.on(() => updateAnchors(location, el as HTMLElement))
+        )
       )
     )
   )

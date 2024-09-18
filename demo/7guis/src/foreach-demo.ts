@@ -6,7 +6,7 @@ import {
   makeProp,
   html,
   ForEach,
-  OnUnmount,
+  OnDispose,
   animateSignals,
 } from '@tempots/dom'
 import { Button } from './ui'
@@ -122,7 +122,7 @@ export function ForEachDemo(): Renderable {
             )
           }, duration)
           return flex.row(
-            OnUnmount(() => {
+            OnDispose(() => {
               clearInterval(timer)
             }),
             attr.class('gap-2 justify-between items-center w-96'),

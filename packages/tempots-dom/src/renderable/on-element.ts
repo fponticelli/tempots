@@ -1,5 +1,5 @@
-import { DOMContext } from '../dom/dom-context'
 import type { Clear, Renderable } from '../types/domain'
+import { OnBrowserCtx } from './on-browser-ctx'
 
 /**
  * Executes a callback function when the parent element is mounted in the DOM.
@@ -9,10 +9,6 @@ import type { Clear, Renderable } from '../types/domain'
  * @returns - The renderable function.
  * @public
  */
-export const OnMount =
-  <T extends Element>(
-    fn: (element: T) => Clear | undefined | void
-  ): Renderable =>
-  (ctx: DOMContext) => {
-    return fn(ctx.element as T) ?? (() => {})
-  }
+export const OnElement = <T extends HTMLElement>(
+  fn: (element: T) => Clear | undefined | void
+): Renderable => OnBrowserCtx(ctx => fn(ctx.element as T) ?? (() => {}))
