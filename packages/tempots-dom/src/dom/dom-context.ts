@@ -68,15 +68,6 @@ export interface DOMContext {
    */
   withFirstLevel(): DOMContext
 
-  // TODO
-  /**
-   * Creates a new `DOMContext` instance with the specified reference.
-   *
-   * @param reference - The optional `Text` node to use as the reference for the new `DOMContext`.
-   * @returns A new `DOMContext` instance with the specified reference.
-   */
-  withReference(reference: Text | undefined): DOMContext
-
   /** Creates a new DOMContext with the provided provider value.
    *
    * @param mark - The provider mark to associate the value with.
