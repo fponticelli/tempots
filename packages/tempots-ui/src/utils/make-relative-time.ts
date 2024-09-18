@@ -100,7 +100,7 @@ export const makeRelativeTime = (date: Value<Date>, now?: Value<Date>) => {
     date,
     realNow
   )((date, now) => {
-    const diff = now.getTime() - date.getTime()
+    const diff = date.getTime() - now.getTime()
     return timeDiffToString(diff)
   })
 

@@ -2,6 +2,7 @@ import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { _getSelfOrParentElement, _isElement } from '../dom/dom-utils'
 import { _clearSSR } from '../dom/ssr'
+import { HTMLDOMContext } from '../dom/html-dom-context'
 
 /**
  * Renders the given `renderable` with the provided `ctx` DOM context.
@@ -60,7 +61,7 @@ export const render = (
   }
   const element = _getSelfOrParentElement(el)
   const ref = _isElement(el) ? undefined : el
-  const ctx = DOMContext.of(element, ref)
+  const ctx = HTMLDOMContext.of(element, ref)
   return renderWithContext(node, ctx)
 }
 

@@ -1,4 +1,4 @@
-import type { ProviderMark, Providers } from '../types/domain'
+import type { ProviderMark } from '../types/domain'
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -9,49 +9,11 @@ import type { ProviderMark, Providers } from '../types/domain'
  *
  * @public
  */
-export class DOMContext {
-  /**
-   * Creates a new `DOMContext` instance for the given `Element` and optional reference `Node`.
-   *
-   * @param element - The `Element` to create the `DOMContext` for.
-   * @param ref - An optional reference `Node` to associate with the `DOMContext`.
-   * @returns A new `DOMContext` instance.
-   */
-  static of(element: Element, ref?: Node | undefined): DOMContext {
-    return new DOMContext(element.ownerDocument, element, ref, {}, true)
-  }
-
-  /**
-   * Constructs a new `DOMContext` instance.
-   *
-   * @param document - The `Document` instance associated with this context.
-   * @param element - The `Element` instance associated with this context.
-   * @param reference - An optional `Node` instance that serves as a reference for this context.
-   * @param providers - The `Providers` instance associated with this context.
-   * @param isFirstLevel - A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated DOM.
-   */
-  constructor(
-    /**
-     * The `Document` instance associated with this context.
-     */
-    readonly document: Document,
-    /**
-     * The `Element` instance associated with this context.
-     */
-    readonly element: Element,
-    /**
-     * An optional `Node` instance that serves as a reference for this context.
-     */
-    readonly reference: Node | undefined,
-    /**
-     * The `Providers` instance associated with this context.
-     */
-    readonly providers: Providers,
-    /**
-     * A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated
-     */
-    readonly isFirstLevel: boolean
-  ) {}
+export interface DOMContext {
+  readonly document: Document
+  readonly element: Element
+  readonly reference: Node | undefined
+  readonly isFirstLevel: boolean
 
   /**
    * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace.
@@ -60,48 +22,28 @@ export class DOMContext {
    * @param namespace - The namespace URI to create the element in, or `undefined` to create a standard HTML element.
    * @returns The newly created element.
    */
-  readonly createElement = (
-    tagName: string,
-    namespace: string | undefined
-  ): Element => {
-    if (namespace !== undefined) {
-      return this.document.createElementNS(namespace, tagName)
-    } else {
-      return this.document.createElement(tagName)
-    }
-  }
+  createElement(tagName: string, namespace: string | undefined): Element
 
   /**
    * Creates a new text node with the specified text content.
    * @param text - The text content for the new text node.
    * @returns A new `Text` node with the specified text content.
    */
-  readonly createText = (text: string): Text =>
-    this.document.createTextNode(text)
+  createText(text: string): Text
 
   /**
    * Creates a new `DOMContext` with a reference to a newly created text node.
    * The text node is appended or inserted to the current `DOMContext`.
    * The new `DOMContext` with the reference is returned.
    */
-  readonly makeRef = (): DOMContext => {
-    const ref = this.createText('')
-    this.appendOrInsert(ref)
-    return this.withReference(ref)
-  }
+  makeRef(): DOMContext
 
   /**
    * Appends or inserts a child node to the element, depending on whether a reference node is provided.
    *
    * @param child - The child node to append or insert.
    */
-  readonly appendOrInsert = (child: Node) => {
-    if (this.reference === undefined) {
-      this.element.appendChild(child)
-    } else {
-      this.element.insertBefore(child, this.reference)
-    }
-  }
+  appendOrInsert(child: Node): void
 
   /**
    * Creates a new `DOMContext` instance with the provided `document`.
@@ -109,29 +51,20 @@ export class DOMContext {
    * @param document - The `Document` to use for the `DOMContext`.
    * @returns A new `DOMContext` instance.
    */
-  readonly withDocument = (document: Document): DOMContext =>
-    new DOMContext(document, this.element, this.reference, this.providers, true)
+  withDocument(document: Document): DOMContext
 
   /**
    * Creates a new `DOMContext` instance with the provided `element`.
    * @param element - The DOM element to use in the new `DOMContext` instance.
    * @returns A new `DOMContext` instance with the provided `element`.
    */
-  readonly withElement = (element: Element): DOMContext =>
-    new DOMContext(this.document, element, undefined, this.providers, false)
+  withElement(element: Element): DOMContext
 
   /**
    * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
    * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
    */
-  readonly withFirstLevel = (): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      this.reference,
-      this.providers,
-      true
-    )
+  withFirstLevel(): DOMContext
 
   /**
    * Creates a new `DOMContext` instance with the specified reference.
@@ -139,14 +72,7 @@ export class DOMContext {
    * @param reference - The optional `Text` node to use as the reference for the new `DOMContext`.
    * @returns A new `DOMContext` instance with the specified reference.
    */
-  readonly withReference = (reference: Text | undefined): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      reference,
-      this.providers,
-      this.isFirstLevel
-    )
+  withReference(reference: Text | undefined): DOMContext
 
   /** Creates a new DOMContext with the provided provider value.
    *
@@ -154,17 +80,7 @@ export class DOMContext {
    * @param value - The value to set for the provider.
    * @returns A new DOMContext with the updated providers.
    */
-  readonly withProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      this.reference,
-      {
-        ...this.providers,
-        [mark]: value,
-      },
-      this.isFirstLevel
-    )
+  withProvider<T>(mark: ProviderMark<T>, value: T): DOMContext
 
   /**
    * Returns a new DOMContext instance with the specified providers merged into
@@ -173,19 +89,9 @@ export class DOMContext {
    * @param providers - An object containing the providers to be merged into the existing providers.
    * @returns A new DOMContext instance with the merged providers.
    */
-  readonly withProviders = (providers: {
+  withProviders(providers: {
     [K in ProviderMark<unknown>]: unknown
-  }): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      this.reference,
-      {
-        ...this.providers,
-        ...providers,
-      },
-      this.isFirstLevel
-    )
+  }): DOMContext
 
   /**
    * Retrieves a provider for the given provider mark.
@@ -194,22 +100,5 @@ export class DOMContext {
    * @returns The provider for the given mark.
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
-  readonly getProvider = <T>(mark: ProviderMark<T>): T => {
-    if (this.providers[mark] === undefined) {
-      throw new ProviderNotFoundError(mark)
-    }
-
-    return this.providers[mark]! as T
-  }
-}
-
-/**
- * Error thrown when a provider is not found.
- *
- * @public
- */
-export class ProviderNotFoundError extends Error {
-  constructor(mark: ProviderMark<unknown>) {
-    super(`Provider not found: ${mark.description}`)
-  }
+  getProvider<T>(mark: ProviderMark<T>): T
 }
