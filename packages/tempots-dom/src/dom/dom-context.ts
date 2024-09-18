@@ -18,15 +18,14 @@ export interface DOMContext {
   readonly reference: Node | undefined
   readonly isFirstLevel: boolean
 
-  // TODO
   /**
-   * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace.
+   * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace and appends it to the current element.
    *
    * @param tagName - The tag name of the element to create.
    * @param namespace - The namespace URI to create the element in, or `undefined` to create a standard HTML element.
    * @returns The newly created element.
    */
-  createElement(tagName: string, namespace: string | undefined): Element
+  makeChildElement(tagName: string, namespace: string | undefined): DOMContext
 
   // TODO
   /**
@@ -53,15 +52,6 @@ export interface DOMContext {
 
   // TODO
   /**
-   * Creates a new `DOMContext` instance with the provided `document`.
-   *
-   * @param document - The `Document` to use for the `DOMContext`.
-   * @returns A new `DOMContext` instance.
-   */
-  withDocument(document: Document): DOMContext
-
-  // TODO
-  /**
    * Creates a new `DOMContext` instance with the provided `element`.
    * @param element - The DOM element to use in the new `DOMContext` instance.
    * @returns A new `DOMContext` instance with the provided `element`.
@@ -74,6 +64,7 @@ export interface DOMContext {
    */
   withFirstLevel(): DOMContext
 
+  // TODO
   /**
    * Creates a new `DOMContext` instance with the specified reference.
    *
@@ -109,4 +100,6 @@ export interface DOMContext {
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
   getProvider<T>(mark: ProviderMark<T>): T
+
+  clear(removeTree: boolean): void
 }

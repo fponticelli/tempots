@@ -1,5 +1,6 @@
 import type { ProviderMark, Providers } from '../types/domain'
 import { DOMContext } from './dom-context'
+import { _removeDOMNode } from './dom-utils'
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -73,6 +74,22 @@ export class HTMLDOMContext implements DOMContext {
   }
 
   /**
+   * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace and appends it to the current element.
+   *
+   * @param tagName - The tag name of the element to create.
+   * @param namespace - The namespace URI to create the element in, or `undefined` to create a standard HTML element.
+   * @returns The newly created element.
+   */
+  readonly makeChildElement = (
+    tagName: string,
+    namespace: string | undefined
+  ): DOMContext => {
+    const element = this.createElement(tagName, namespace)
+    this.appendOrInsert(element)
+    return this.withElement(element)
+  }
+
+  /**
    * Creates a new text node with the specified text content.
    * @param text - The text content for the new text node.
    * @returns A new `Text` node with the specified text content.
@@ -103,21 +120,6 @@ export class HTMLDOMContext implements DOMContext {
       this.element.insertBefore(child, this.reference)
     }
   }
-
-  /**
-   * Creates a new `DOMContext` instance with the provided `document`.
-   *
-   * @param document - The `Document` to use for the `DOMContext`.
-   * @returns A new `DOMContext` instance.
-   */
-  readonly withDocument = (document: Document): DOMContext =>
-    new HTMLDOMContext(
-      document,
-      this.element,
-      this.reference,
-      this.providers,
-      true
-    )
 
   /**
    * Creates a new `DOMContext` instance with the provided `element`.
@@ -207,6 +209,16 @@ export class HTMLDOMContext implements DOMContext {
     }
 
     return this.providers[mark]! as T
+  }
+
+  readonly clear = (removeTree: boolean) => {
+    if (removeTree) {
+      if (this.reference !== undefined) {
+        _removeDOMNode(this.reference)
+      } else {
+        _removeDOMNode(this.element)
+      }
+    }
   }
 }
 

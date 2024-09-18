@@ -4,7 +4,6 @@ import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { _signalText, _staticText } from './text'
 import { Fragment } from './fragment'
 import { Empty } from './empty'
@@ -44,19 +43,15 @@ export const renderableOfTNode = (child: TNode): Renderable => {
  */
 export const El = (tagName: string, ...children: TNode[]): Renderable => {
   return (ctx: DOMContext) => {
-    const element = ctx.createElement(tagName, undefined)
+    const newCtx = ctx.makeChildElement(tagName, undefined)
     if (ctx.isFirstLevel && isSSR()) {
-      _addNodeTracker(element)
+      // TODO
+      _addNodeTracker(newCtx.element)
     }
-    ctx.appendOrInsert(element)
-
-    ctx = ctx.withElement(element)
-    const clears = children.map(fn => renderableOfTNode(fn)(ctx))
+    const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
-      if (removeTree) {
-        _removeDOMNode(element)
-      }
+      newCtx.clear(removeTree)
     }
   }
 }
@@ -73,18 +68,15 @@ export const El = (tagName: string, ...children: TNode[]): Renderable => {
 export const ElNS =
   (tagName: string, namespace: string, ...children: TNode[]): Renderable =>
   (ctx: DOMContext) => {
-    const element = ctx.createElement(tagName, namespace)
+    const newCtx = ctx.makeChildElement(tagName, namespace)
     if (ctx.isFirstLevel && isSSR()) {
-      _addNodeTracker(element)
+      // TODO
+      _addNodeTracker(newCtx.element)
     }
-    ctx.appendOrInsert(element)
-    ctx = ctx.withElement(element)
-    const clears = children.map(fn => renderableOfTNode(fn)(ctx))
+    const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
-      if (removeTree) {
-        _removeDOMNode(element)
-      }
+      newCtx.clear(removeTree)
     }
   }
 
