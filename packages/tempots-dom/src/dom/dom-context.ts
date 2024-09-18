@@ -27,13 +27,18 @@ export interface DOMContext {
    */
   makeChildElement(tagName: string, namespace: string | undefined): DOMContext
 
-  // TODO
   /**
-   * Creates a new text node with the specified text content.
+   * Creates a new text node with the specified text content and appends it to the current element.
    * @param text - The text content for the new text node.
-   * @returns A new `Text` node with the specified text content.
+   * @returns A new `DOMContext` with a reference to the new text node.
    */
-  createText(text: string): Text
+  makeChildText(text: string): DOMContext
+
+  /**
+   * Sets the text content of the current element.
+   * @param text - The text content to set.
+   */
+  setText(text: string): void
 
   /**
    * Creates a new `DOMContext` with a reference to a newly created text node.

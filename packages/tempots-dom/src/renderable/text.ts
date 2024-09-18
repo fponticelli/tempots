@@ -1,5 +1,4 @@
 import type { Renderable } from '../types/domain'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
 import { _maybeAddTextTracker } from '../dom/ssr'
@@ -12,13 +11,8 @@ export const _staticText =
   (text: string): Renderable =>
   (ctx: DOMContext) => {
     _maybeAddTextTracker(ctx)
-    const node = ctx.createText(text)
-    ctx.appendOrInsert(node)
-    return (removeTree: boolean) => {
-      if (removeTree) {
-        _removeDOMNode(node)
-      }
-    }
+    const newCtx = ctx.makeChildText(text)
+    return (removeTree: boolean) => newCtx.clear(removeTree)
   }
 
 /**
@@ -28,14 +22,11 @@ export const _signalText =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
     _maybeAddTextTracker(ctx)
-    const node = ctx.createText(signal.value)
-    ctx.appendOrInsert(node)
-    const clear = signal.on(v => (node.data = v))
+    const newCtx = ctx.makeChildText(signal.value)
+    const clear = signal.on(v => newCtx.setText(v))
     return (removeTree: boolean) => {
       clear()
-      if (removeTree) {
-        _removeDOMNode(node)
-      }
+      newCtx.clear(removeTree)
     }
   }
 

@@ -98,6 +98,25 @@ export class HTMLDOMContext implements DOMContext {
     this.document.createTextNode(text)
 
   /**
+   * Creates a new text node with the specified text content and appends it to the current element.
+   * @param text - The text content for the new text node.
+   * @returns A new `DOMContext` with a reference to the new text node.
+   */
+  readonly makeChildText = (text: string): DOMContext => {
+    const textNode = this.createText(text)
+    this.appendOrInsert(textNode)
+    return this.withReference(textNode)
+  }
+
+  /**
+   * Sets the text content of the current element.
+   * @param text - The text content to set.
+   */
+  readonly setText = (text: string) => {
+    this.reference!.nodeValue = text
+  }
+
+  /**
    * Creates a new `DOMContext` with a reference to a newly created text node.
    * The text node is appended or inserted to the current `DOMContext`.
    * The new `DOMContext` with the reference is returned.
