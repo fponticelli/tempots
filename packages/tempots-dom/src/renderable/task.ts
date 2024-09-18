@@ -1,6 +1,5 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
@@ -42,26 +41,24 @@ export const Task = <T>(
   return (ctx: DOMContext) => {
     let active = true
     const promise = task()
-    ctx = ctx.makeRef()
-    let clear = renderableOfTNode(pending)(ctx)
+    const newCtx = ctx.makeRef()
+    let clear = renderableOfTNode(pending)(newCtx)
     promise.then(
       value => {
         if (!active) return
         clear(true)
-        clear = renderableOfTNode(then(value))(ctx)
+        clear = renderableOfTNode(then(value))(newCtx)
       },
       e => {
         if (!active) return
         clear(true)
-        clear = renderableOfTNode(error(e))(ctx)
+        clear = renderableOfTNode(error(e))(newCtx)
       }
     )
     return (removeTree: boolean) => {
       active = false
       clear(removeTree)
-      if (removeTree && ctx.reference) {
-        _removeDOMNode(ctx.reference)
-      }
+      newCtx.clear(removeTree)
     }
   }
 }

@@ -1,7 +1,6 @@
 import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal, makeProp, makeSignal } from '../std/signal'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Value } from '../std/value'
@@ -24,20 +23,22 @@ export const Ensure = <T>(
   if (Signal.is(value as Value<T | null | undefined>)) {
     const signal = value as Signal<T | null | undefined>
     return (ctx: DOMContext) => {
-      ctx = ctx.makeRef()
+      const newCtx = ctx.makeRef()
       let clear = null as Clear | null
       let hadValue = false
       const feed = makeProp(null as T | null)
       const clearSignal = signal.on(value => {
         if (value == null) {
           clear?.(true)
-          clear = renderableOfTNode(otherwise?.() ?? Empty)(ctx)
+          clear = renderableOfTNode(otherwise?.() ?? Empty)(newCtx)
           hadValue = false
         } else {
           feed.value = value
           if (!hadValue) {
             clear?.(true)
-            clear = renderableOfTNode(then(feed as Signal<NonNullable<T>>))(ctx)
+            clear = renderableOfTNode(then(feed as Signal<NonNullable<T>>))(
+              newCtx
+            )
             hadValue = true
           }
         }
@@ -45,9 +46,7 @@ export const Ensure = <T>(
       return (removeTree: boolean) => {
         clearSignal()
         clear?.(removeTree)
-        if (removeTree && ctx.reference) {
-          _removeDOMNode(ctx.reference)
-        }
+        newCtx.clear(removeTree)
       }
     }
   } else {

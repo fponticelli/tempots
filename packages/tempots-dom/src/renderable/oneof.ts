@@ -1,5 +1,4 @@
 import { DOMContext } from '../dom/dom-context'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { Computed, makeSignal, Signal } from '../std/signal'
 import { Value } from '../std/value'
 import { Renderable, Clear, TNode } from '../types/domain'
@@ -31,7 +30,7 @@ export const OneOf = <T extends Record<string, unknown>>(
 ): Renderable => {
   if (Signal.is(match)) {
     return (ctx: DOMContext) => {
-      ctx = ctx.makeRef()
+      const newCtx = ctx.makeRef()
       let clearRenderable: Clear | undefined
       let matched: Computed<T[keyof T]> | undefined
       const keySignal = match.map(value => {
@@ -45,16 +44,14 @@ export const OneOf = <T extends Record<string, unknown>>(
           matched = match.map(value => value[newKey])
 
           const child = cases[newKey](matched)
-          clearRenderable = renderableOfTNode(child)(ctx)
+          clearRenderable = renderableOfTNode(child)(newCtx)
           currentKey = newKey
         }
       })
       return (removeTree: boolean) => {
         clearSignal()
-        if (removeTree && ctx.reference != null) {
-          _removeDOMNode(ctx.reference)
-        }
-        clearRenderable?.(true)
+        newCtx.clear(removeTree)
+        clearRenderable?.(removeTree)
       }
     }
   }

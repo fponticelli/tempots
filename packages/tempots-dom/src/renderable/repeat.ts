@@ -1,5 +1,4 @@
 import { DOMContext } from '../dom/dom-context'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { ElementPosition } from '../std/element-position'
 import { Signal, makeSignal } from '../std/signal'
 import { Value } from '../std/value'
@@ -39,13 +38,13 @@ export const Repeat = (
   } else {
     if (Signal.is(times)) {
       return (ctx: DOMContext) => {
-        ctx = ctx.makeRef()
+        const newCtx = ctx.makeRef()
         const existings: ElementPosition[] = Array.from(
           { length: times.value },
           (_, i) => i
         ).map(i => new ElementPosition(i, times))
         const clears: Clear[] = existings.map(pos =>
-          renderableOfTNode(element(pos))(ctx)
+          renderableOfTNode(element(pos))(newCtx)
         )
         const clear = times.on(newLength => {
           while (newLength < clears.length) {
@@ -56,16 +55,14 @@ export const Repeat = (
             if (existings[i] == null) {
               existings[i] = new ElementPosition(i, times)
               const node = renderableOfTNode(element(existings[i]))
-              clears[i] = node(ctx)
+              clears[i] = node(newCtx)
             }
           }
         })
 
         return (removeTree: boolean) => {
           clear()
-          if (removeTree && ctx.reference) {
-            _removeDOMNode(ctx.reference)
-          }
+          newCtx.clear(removeTree)
         }
       }
     } else {

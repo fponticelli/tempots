@@ -11,11 +11,7 @@ import type { ProviderMark } from '../types/domain'
  */
 export interface DOMContext {
   // TODO
-  readonly document: Document
-  // TODO
   readonly element: Element
-  // TODO
-  readonly reference: Node | undefined
   readonly isFirstLevel: boolean
 
   /**
