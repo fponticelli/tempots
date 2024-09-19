@@ -1,5 +1,5 @@
 import { ProvideLocation, Router } from '@tempots/ui'
-import { PageLayout } from './layout/page'
+import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
 import { Library, Toc } from '../model/domain'
@@ -33,11 +33,11 @@ export const AppRouter = (toc: Toc) => {
   const map = tocAsMap(toc)
   return Router({
     '/': () => HomeView(map.pages.get('index')!),
-    '/all-tools.html': () => ToolsView(),
+    '/tools.html': () => ToolsView(),
     '/tool/html-to-tempo.html': () => HtmlToTempo(),
     '/page/:id': info =>
       PageView(info.$.params.$.id.map(id => map.pages.get(id.slice(0, -5))!)),
-    '/all-libraries.html': () => LibrariesView(toc.libraries),
+    '/libraries.html': () => LibrariesView(toc.libraries),
     '/library/:id': info => {
       const url = info.$.path.map(mapPathToLibraryPageURL)
       return LibraryView(
@@ -47,7 +47,7 @@ export const AppRouter = (toc: Toc) => {
         }))
       )
     },
-    '/all-demos.html': () => DemosView(toc.demos),
+    '/demos.html': () => DemosView(toc.demos),
     '/demo/:id': info =>
       DemoView(
         info.$.params.$.id

@@ -332,4 +332,4 @@ async function main() {
   console.timeEnd('main')
 }
 
-main()
+await main()

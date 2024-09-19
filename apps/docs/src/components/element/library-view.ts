@@ -61,13 +61,14 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
         : `/api/${library.value.name}/${prefix}.${path.value}.html`
     }, [data, location])
     return html.div(
+      attr.class('overflow-auto h-full flex flex-col gap-1 p-4'),
       HTMLTitle(library.map(({ title }) => `Tempo • ${title}`)),
       OpenGraph({
         title: library.map(({ title }) => `${title} • Tempo`),
         description: library.$.description,
         keywords: library.$.keywords as Value<string[] | undefined>,
       }),
-      attr.class('flex flex-col gap-2'),
+      // attr.class('flex flex-col gap-2'),
       html.h1(attr.class(Styles.heading.large), library.$.title),
       When(
         isRoot,

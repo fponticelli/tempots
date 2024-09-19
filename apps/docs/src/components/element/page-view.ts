@@ -11,6 +11,7 @@ export function PageView(page: Signal<Page>) {
     return `https://github.com/fponticelli/tempots/edit/main/apps/docs/pages/${value}`
   })
   return html.div(
+    attr.class('p-4 h-full overflow-auto'),
     html.div(
       HTMLTitle(page.$.title.map(t => `Tempo • ${t}`)),
       OpenGraph({
