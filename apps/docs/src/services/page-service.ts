@@ -1,7 +1,9 @@
 export async function fetchPage(path: string) {
+  console.log('fetchPage', path)
   if (!path.endsWith('.html')) {
     path = `${path}.html`
   }
   const res = await fetch(`/pages/${path}`)
-  return res.text()
+  const text = await res.text()
+  return text
 }

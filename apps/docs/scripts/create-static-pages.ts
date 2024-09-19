@@ -3,6 +3,7 @@ import { App } from '../src/components/app'
 import * as fsp from 'fs/promises'
 import * as fse from 'fs-extra'
 import * as path from 'path'
+import { headlessRender, ProvideGlobalProbe } from '@tempots/dom'
 
 const htmlTemplate = (async () => {
   const htmlPath = path.resolve(process.cwd(), './dist/index.html')
@@ -18,27 +19,69 @@ const jsonToc = (async () => {
   return toc
 })()
 
+const makePoller = (delay: number = 0) => {
+  let fetchCount = 0
+  let outerResolve: () => void
+  let done = new Promise<void>(resolve => {
+    outerResolve = resolve
+  })
+  const start = () => {
+    fetchCount++
+    console.log('start', fetchCount)
+  }
+  const end = () => {
+    fetchCount--
+    console.log('end', fetchCount)
+    if (fetchCount > 0) {
+      return
+    }
+    console.log('resolve')
+    setTimeout(outerResolve, delay)
+  }
+  return { start, end, done }
+}
+
 const renderPage = async (pageUrl: string) => {
   const url = `https://tempots.com${pageUrl}`
   const toc = await jsonToc
   const html = await htmlTemplate
+  const { start, end, done } = makePoller()
   const makeFetch = (originalFetch) => {
     return (async (input: RequestInfo, init?: RequestInit) => {
-      if (typeof input === 'string' && input.startsWith('/')) {
+      console.log('## FETCH', input)
+      start()
+      if (typeof input === 'string' && (input.startsWith('/'))) { // || input.startsWith('https://tempots.com/'))) {
+        // console.log('# FETCH 1: ', input)
+        // if (input.startsWith('https://tempots.com/')) {
+        //   input = input.slice('https://tempots.com'.length)
+        // }
+        // console.log('# FETCH 2: ', input)
         try {
           const file = await fsp.readFile(path.resolve(process.cwd(), `./dist${input}`), 'utf-8')
           return new Response(file, { status: 200 })
         } catch (error) {
           console.error('Error fetching', input, error)
           return new Response('Not found', { status: 404 })
+        } finally {
+          end()
         }
       }
-      return originalFetch(`https://tempots.com${input}`, init)
+      start()
+      return originalFetch(`https://tempots.com${input}`, init).finally(end)
     })
   }
-  // console.log('before renderSSR', url)
+  let originalFetch = fetch
+  Reflect.set(globalThis, 'fetch', makeFetch(originalFetch))
+  const app = App(toc)
+  console.log('### RENDER', url)
+  const { root } = headlessRender(app, url)
   // TODO
-  return html
+  return done.then(() => {
+    Reflect.set(globalThis, 'fetch', originalFetch)
+    const html = root.contentToHTML()
+    console.log('# rendered html!')
+    return html
+  })
   // return renderSSR({
   //   url,
   //   html,
@@ -98,10 +141,7 @@ while (toGenerate.length > 0) {
     toGenerate.push(...newUrls)
 
     // save html
-
-    // console.log('#####')
-    // console.log(dirPath)
-    // console.log(filePath)
+    console.log(`#### SAVED TO ${filePath}`)
 
     await fse.ensureDir(dirPath)
     await fsp.writeFile(filePath, html)

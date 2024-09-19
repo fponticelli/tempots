@@ -2,7 +2,8 @@ import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { _getSelfOrParentElement, _isElement } from '../dom/dom-utils'
 import { BrowserContext } from '../dom/browser-context'
-import { HeadlessElementContext } from '../dom/headless-context'
+import { HeadlessContext, HeadlessPortal } from '../dom/headless-context'
+import { makeProp } from '../std/signal'
 
 /**
  * Renders the given `renderable` with the provided `ctx` DOM context.
@@ -66,31 +67,16 @@ export const render = (
   return renderWithContext(node, ctx)
 }
 
-export const headlessRender = (node: Renderable) => {
-  const ctx = new HeadlessElementContext(
-    // true,
-    '$$root',
-    undefined,
-    {},
-    undefined
-  )
+export const headlessRender = (node: Renderable, currentUrl: string) => {
+  console.log('headlessRender', currentUrl)
+  const currentURL = makeProp(currentUrl)
+  const root = new HeadlessPortal(':#root', undefined)
+  const ctx = new HeadlessContext(root, undefined, { currentURL }, {})
   const clear = renderWithContext(node, ctx)
   return {
     clear,
-    root: ctx,
-    getPortals: () => {
-      const portals = {} as Record<string, DOMContext>
-      const run = (ctx: HeadlessElementContext) => {
-        for (const [selector, portal] of ctx.portals.entries()) {
-          portals[selector] = portal
-          if (portal instanceof HeadlessElementContext) {
-            run(portal)
-          }
-        }
-      }
-      run(ctx)
-      return portals
-    },
+    root,
+    currentURL,
   }
 }
 

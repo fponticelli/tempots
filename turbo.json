@@ -2,19 +2,39 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "lint", "test"],
-      "outputs": ["dist/**"]
+      "dependsOn": [
+        "^build",
+        "lint",
+        "test"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "build:watch": {
+      "persistent": true,
+      "cache": false,
+      "outputs": [
+        "dist/**"
+      ]
     },
     "docs": {
-      "dependsOn": ["^docs", "build"],
-      "outputs": ["docs/**"]
+      "dependsOn": [
+        "^docs",
+        "build"
+      ],
+      "outputs": [
+        "docs/**"
+      ]
     },
     "lint": {},
     "lint:fix": {},
     "test": {},
     "test:coverage": {},
     "npm:publish": {
-      "dependsOn": ["^npm:publish"]
+      "dependsOn": [
+        "^npm:publish"
+      ]
     },
     "dev": {
       "persistent": true,

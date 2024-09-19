@@ -3,6 +3,7 @@ import { _makeGetter, _makeSetter } from './attr'
 import { DOMContext } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
 import { ProviderNotFoundError } from './errors'
+import { HeadlessContext } from './headless-context'
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -122,8 +123,8 @@ export class BrowserContext implements DOMContext {
    * Gets the text content of the current element or text node.
    * @returns The text content of the current element or text node.
    */
-  readonly getText = (): string | undefined => {
-    return this.reference?.nodeValue ?? this.element.textContent ?? undefined
+  readonly getText = (): string => {
+    return this.reference?.nodeValue ?? this.element.textContent ?? ''
   }
 
   /**
@@ -195,24 +196,6 @@ export class BrowserContext implements DOMContext {
       this.element,
       reference,
       this.providers
-      // this.isFirstLevel
-    )
-
-  /** Creates a new HTMLDOMContext with the provided provider value.
-   *
-   * @param mark - The provider mark to associate the value with.
-   * @param value - The value to set for the provider.
-   * @returns A new HTMLDOMContext with the updated providers.
-   */
-  readonly withProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
-    new BrowserContext(
-      this.document,
-      this.element,
-      this.reference,
-      {
-        ...this.providers,
-        [mark]: value,
-      }
       // this.isFirstLevel
     )
 
@@ -307,6 +290,12 @@ export class BrowserContext implements DOMContext {
    * @returns `true` if the context is a browser DOM context.
    */
   readonly isBrowserDOM = (): this is BrowserContext => true
+
+  /**
+   * Returns `true` if the context is a headless DOM context.
+   * @returns `true` if the context is a headless DOM context.
+   */
+  readonly isHeadlessDOM = (): this is HeadlessContext => false
 
   /**
    * Sets the style of the element.

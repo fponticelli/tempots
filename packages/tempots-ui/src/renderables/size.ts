@@ -7,6 +7,7 @@ import {
   renderableOfTNode,
   OnBrowserCtx,
   BrowserContext,
+  getWindow,
 } from '@tempots/dom'
 
 /**
@@ -46,20 +47,21 @@ export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
  */
 export const WindowSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
+    const win = getWindow()
     const size = makeProp({
-      width: window?.innerWidth ?? 0,
-      height: window?.innerHeight ?? 0,
+      width: win?.innerWidth ?? 0,
+      height: win?.innerHeight ?? 0,
     })
     const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
       size.set({
-        width: window?.innerWidth ?? 0,
-        height: window?.innerHeight ?? 0,
+        width: win?.innerWidth ?? 0,
+        height: win?.innerHeight ?? 0,
       })
     }
-    window?.addEventListener('resize', onResize)
+    win?.addEventListener('resize', onResize)
     return (removeTree: boolean) => {
-      window?.removeEventListener('resize', onResize)
+      win?.removeEventListener('resize', onResize)
       clear(removeTree)
     }
   }

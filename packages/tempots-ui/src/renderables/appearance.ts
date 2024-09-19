@@ -8,6 +8,7 @@ import {
   makeProviderMark,
   WithProvider,
   Renderable,
+  getWindow,
 } from '@tempots/dom'
 
 /**
@@ -37,16 +38,18 @@ export const appearanceMarker =
  * @public
  */
 export const ProvideAppearance = (child: TNode): Renderable => {
+  const win = getWindow()
   const isDark =
-    window.matchMedia != null &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+    win != null &&
+    win.matchMedia != null &&
+    win.matchMedia('(prefers-color-scheme: dark)').matches
   const appearance = makeProp<AppearanceType>(isDark ? 'dark' : 'light')
   const onChange = (e: MediaQueryListEvent) => {
     appearance.set(e.matches ? 'dark' : 'light')
   }
   const matcher =
-    window.matchMedia != null
-      ? window.matchMedia('(prefers-color-scheme: dark)')
+    win != null && win.matchMedia != null
+      ? win.matchMedia('(prefers-color-scheme: dark)')
       : undefined
   matcher?.addEventListener('change', onChange)
   return Fragment(

@@ -1,5 +1,5 @@
-import { BrowserContext } from '../dom/browser-context'
 import { DOMContext } from '../dom/dom-context'
+import { HeadlessContext } from '../dom/headless-context'
 import { Clear, Renderable } from '../types/domain'
 
 /**
@@ -9,10 +9,10 @@ import { Clear, Renderable } from '../types/domain'
  * @returns A Clear function that can be used to clean up any resources associated with the execution.
  * @public
  */
-export const OnBrowserCtx =
-  (fn: (ctx: BrowserContext) => Clear): Renderable =>
+export const OnHeadlessCtx =
+  (fn: (ctx: HeadlessContext) => Clear): Renderable =>
   (ctx: DOMContext): Clear => {
-    if (ctx.isBrowserDOM()) {
+    if (ctx.isHeadlessDOM()) {
       return fn(ctx)
     }
     return () => {}

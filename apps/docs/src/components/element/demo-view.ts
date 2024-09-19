@@ -1,4 +1,4 @@
-import { attr, html, Signal } from '@tempots/dom'
+import { attr, html, Signal, getWindow } from '@tempots/dom'
 import { Styles } from '../styles'
 import { Demo } from '../../model/domain'
 import { CheckCode } from './check-code'
@@ -6,8 +6,8 @@ import { HTMLTitle } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
 
 function getBase(id: string) {
-  const protocol = window.location.protocol
-  const host = window.location.host
+  const protocol = getWindow()?.location.protocol
+  const host = getWindow()?.location.host
   const relativeUrl = `/demos/${id}/`
   const url = protocol + '//' + host + relativeUrl
   return encodeURIComponent(url)

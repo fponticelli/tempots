@@ -8,6 +8,7 @@
   "scripts": {
     "build": "turbo build",
     "build:demos": "turbo build --filter=./demo/*",
+    "build:watch": "turbo build:watch",
     "docs": "turbo docs && yarn workspace @tempos/docs docs:prep",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",

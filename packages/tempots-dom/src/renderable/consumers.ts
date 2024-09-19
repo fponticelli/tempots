@@ -48,9 +48,6 @@ const consumersRenderable =
   (ctx: DOMContext) => {
     const providers = Object.values(marks).reduce((providers, mark) => {
       const provider = ctx.getProvider(mark)
-      if (provider == null) {
-        throw new Error(`No provider found for mark: ${mark.description}`)
-      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(providers as any)[mark] = provider
       return providers

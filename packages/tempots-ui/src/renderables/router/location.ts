@@ -4,32 +4,14 @@ import {
   DOMContext,
   Fragment,
   makeProviderMark,
-  OnDispose,
   makeProp,
   Prop,
   UseProvider,
-  WithProvider,
+  OnBrowserCtx,
+  OnHeadlessCtx,
+  Async,
 } from '@tempots/dom'
-
-/**
- * Represents the data for a location.
- *
- * @public
- */
-export type LocationData = {
-  /**
-   * The pathname of the location.
-   */
-  readonly pathname: string
-  /**
-   * The search parameters of the location.
-   */
-  readonly search: Record<string, string>
-  /**
-   * The hash of the location.
-   */
-  readonly hash?: string
-}
+import { LocationData } from './location-data'
 
 /**
  * Marker for the LocationProvider.
@@ -40,135 +22,26 @@ export const LocationProviderMarker =
   makeProviderMark<Prop<LocationData>>('LocationProvider')
 
 /**
- * Creates a location object based on the current browser location.
- * @returns The location object representing the current browser location.
- * @internal
- */
-export const _makeLocation = (): LocationData => {
-  const hash =
-    window?.location.hash === ''
-      ? undefined
-      : (window?.location.hash.substring(1) ?? undefined)
-  return {
-    pathname: window?.location.pathname ?? '',
-    search: Object.fromEntries(
-      new URLSearchParams(window?.location.search ?? '').entries()
-    ),
-    hash,
-  }
-}
-
-/**
- * Compares two location objects and returns true if they are equal, false otherwise.
- * @param a - The first location object to compare.
- * @param b - The second location object to compare.
- * @returns True if the location objects are equal, false otherwise.
- * @public
- */
-export const areLocationsEqual = (a: LocationData, b: LocationData) =>
-  a.pathname === b.pathname &&
-  JSON.stringify(a.search) === JSON.stringify(b.search) &&
-  a.hash === b.hash
-
-/**
- * Converts a URL string into a LocationData object.
- * @param url - The URL string to convert.
- * @returns The LocationData object representing the URL.
- * @public
- */
-export const locationFromURL = (url: string): LocationData => {
-  const urlObj = new URL(url, window?.location.toString() ?? '')
-  const search = Object.fromEntries(urlObj.searchParams.entries())
-  let hash = urlObj.hash
-  if (hash.startsWith('#')) {
-    hash = hash.substring(1)
-  }
-  return {
-    pathname: urlObj.pathname,
-    search,
-    hash: hash === '' ? undefined : hash,
-  }
-}
-
-/**
- * Sets the location from the given URL and updates the specified property.
- * @param prop - The property to update with the new location.
- * @param url - The URL from which to extract the location.
- * @returns The updated property.
- * @public
- */
-export const setLocationFromUrl = (prop: Prop<LocationData>, url: string) => {
-  const location = locationFromURL(url)
-  prop.set(location)
-  return prop
-}
-
-/**
- * Returns the full URL based on the provided location data.
- *
- * @param location - The location data object.
- * @returns The full URL string.
- * @public
- */
-export const urlFromLocation = (location: LocationData) => {
-  const search = new URLSearchParams(location.search)
-  const searchStr = search.toString()
-  const hash = location.hash
-  return `${location.pathname}${searchStr ? `?${searchStr}` : ''}${
-    hash ? `#${hash}` : ''
-  }`
-}
-
-/**
- * Creates a location prop that represents the current browser location.
- * The location prop is updated whenever the browser location changes.
- *
- * @returns The location prop.
- * @internal
- */
-export const _makeLocationProp = (): Prop<LocationData> => {
-  const location = makeProp(_makeLocation(), areLocationsEqual)
-
-  const handler = () => {
-    let hash = window?.location.hash ?? ''
-    if (hash.startsWith('#')) {
-      hash = hash.substring(1)
-    }
-    const newLocation = {
-      pathname: window?.location.pathname ?? '',
-      search: Object.fromEntries(
-        new URLSearchParams(window?.location.search ?? '').entries()
-      ),
-      hash: hash === '' ? undefined : hash,
-    }
-    location.set(newLocation)
-  }
-
-  window?.addEventListener('popstate', handler)
-
-  location.onDispose(() => {
-    window?.removeEventListener('popstate', handler)
-  })
-
-  location.on((location: LocationData) => {
-    window?.history.pushState({}, '', urlFromLocation(location))
-  })
-
-  return location
-}
-
-/**
  * Provides the location context to the child component.
  * @param child - The child component to be wrapped with the location context.
  * @returns The wrapped component with the location context.
  * @public
  */
 export const ProvideLocation = (child: TNode) => {
-  const location = _makeLocationProp()
-
   return Fragment(
-    OnDispose(location.dispose),
-    WithProvider(LocationProviderMarker, location, child)
+    OnBrowserCtx(ctx => {
+      return Async(
+        import('./browser-location').then(mod => mod.ProvideBrowserLocation),
+        ProvideBrowserLocation => ProvideBrowserLocation(child)
+      )(ctx)
+    }),
+    OnHeadlessCtx(ctx => {
+      return Async(
+        import('./headless-location').then(mod => mod.ProvideHeadlessLocation),
+        ProvideHeadlessLocation =>
+          ProvideHeadlessLocation(ctx.container.currentURL, child)
+      )(ctx)
+    })
   )
 }
 

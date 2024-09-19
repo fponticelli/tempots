@@ -1,5 +1,6 @@
 import type { Clear, ProviderMark } from '../types/domain'
 import { BrowserContext } from './browser-context'
+import { HeadlessContext } from './headless-context'
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -39,7 +40,7 @@ export interface DOMContext {
    * Gets the text content of the current element or text node.
    * @returns The text content of the current element or text node.
    */
-  getText(): string | undefined
+  getText(): string
 
   /**
    * Creates a new `DOMContext` with a reference to a newly created text node.
@@ -54,14 +55,6 @@ export interface DOMContext {
    * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
   makePortal(selector: string): DOMContext
-
-  /** Creates a new DOMContext with the provided provider value.
-   *
-   * @param mark - The provider mark to associate the value with.
-   * @param value - The value to set for the provider.
-   * @returns A new DOMContext with the updated providers.
-   */
-  withProvider<T>(mark: ProviderMark<T>, value: T): DOMContext
 
   /**
    * Returns a new DOMContext instance with the specified providers merged into
@@ -116,6 +109,12 @@ export interface DOMContext {
    * @returns `true` if the context is a browser DOM context.
    */
   isBrowserDOM(): this is BrowserContext
+
+  /**
+   * Returns `true` if the context is a headless DOM context.
+   * @returns `true` if the context is a headless DOM context.
+   */
+  isHeadlessDOM(): this is HeadlessContext
 
   /**
    * Sets the style of the element.
