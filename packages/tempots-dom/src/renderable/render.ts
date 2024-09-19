@@ -70,7 +70,7 @@ export const render = (
 export const headlessRender = (node: Renderable, currentUrl: string) => {
   console.log('headlessRender', currentUrl)
   const currentURL = makeProp(currentUrl)
-  const root = new HeadlessPortal(':#root', undefined)
+  const root = new HeadlessPortal(':root', undefined)
   const ctx = new HeadlessContext(root, undefined, { currentURL }, {})
   const clear = renderWithContext(node, ctx)
   return {

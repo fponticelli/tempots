@@ -77,10 +77,20 @@ const renderPage = async (pageUrl: string) => {
   const { root } = headlessRender(app, url)
   // TODO
   return done.then(() => {
+    const portals = root.getPortals()
+    portals.forEach(p => {
+      console.log('> PORTAL: ', p.selector, p.hasChildren(), p.hasClasses(), p.hasStyles(), p.hasAttributes(), p.hasHandlers(), p.hasRenderableProperties())
+    })
+    console.log('# DONE', url)
     Reflect.set(globalThis, 'fetch', originalFetch)
-    const html = root.contentToHTML()
-    console.log('# rendered html!')
-    return html
+    try {
+      const html = root.contentToHTML()
+      console.log('# rendered html!')
+      return html
+    } catch (error) {
+      console.error('Error rendering', url, error)
+      return ''
+    }
   })
   // return renderSSR({
   //   url,

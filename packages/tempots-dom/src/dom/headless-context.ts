@@ -34,7 +34,7 @@ abstract class HeadlessBase {
   abstract isPortal(): this is HeadlessPortal
 
   readonly getPortals = (): HeadlessPortal[] => {
-    return this.children.flatMap(child => {
+    const children = this.children.flatMap(child => {
       if (child.isText()) {
         return []
       }
@@ -45,9 +45,38 @@ abstract class HeadlessBase {
 
       return child.getPortals()
     })
+    if (this.isPortal()) {
+      children.unshift(this)
+    }
+
+    return children
   }
 
   abstract toHTML(): string
+
+  readonly hasChildren = (): boolean => {
+    return this.children.length > 0
+  }
+
+  readonly hasClasses = (): boolean => {
+    return this.classes.size > 0
+  }
+
+  readonly hasStyles = (): boolean => {
+    return this.styles.size > 0
+  }
+
+  readonly hasAttributes = (): boolean => {
+    return this.attributes.size > 0
+  }
+
+  readonly hasHandlers = (): boolean => {
+    return this.handlers.size > 0
+  }
+
+  readonly hasRenderableProperties = (): boolean => {
+    return this.hasClasses() || this.hasStyles() || this.hasAttributes()
+  }
 }
 
 export class HeadlessElement extends HeadlessBase {

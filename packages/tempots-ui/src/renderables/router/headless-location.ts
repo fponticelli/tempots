@@ -23,9 +23,10 @@ export const ProvideHeadlessLocation = (url: Prop<string>, child: TNode) => {
       if (isAbsoluteURL(data.pathname)) {
         return urlFromLocation(data)
       }
-      const path = new URL(data.pathname, url.value).href
-      console.log('path', path, data, url.value)
-      return urlFromLocation({ ...data, pathname: path })
+      const nurl = new URL(data.pathname, url.value)
+      const pathname = nurl.origin + nurl.pathname
+      console.log('pathname', pathname, data, url.value)
+      return urlFromLocation({ ...data, pathname: pathname })
     }
   )
 
