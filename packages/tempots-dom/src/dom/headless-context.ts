@@ -12,6 +12,11 @@ const makeRandom = (): string => {
   return Math.random().toString(36).substring(2, 15)
 }
 
+const stripTags = (html: string): string => {
+  // cheap but ok for this case
+  return html.replace(/<[^>]*>?/g, '')
+}
+
 abstract class HeadlessBase {
   readonly id = makeRandom()
   private readonly properties: Record<string, unknown> & {
@@ -24,17 +29,17 @@ abstract class HeadlessBase {
   readonly isElement = (): this is HeadlessBase => true
   readonly isText = (): this is HeadlessText => false
   readonly getText = (): string => {
+    if (this.properties.innerText != null) {
+      return this.properties.innerText as string
+    }
+    if (this.properties.innerHTML != null) {
+      return stripTags(this.properties.innerHTML as string)
+    }
     return this.children.map(child => child.getText()).join('')
   }
   readonly removeChild = (child: HeadlessNode): void => {
-    console.log(
-      '>>>> removeChild',
-      child.id,
-      this.children.map(c => c.id)
-    )
     const index = this.children.indexOf(child)
     if (index === -1) {
-      console.log('>>>> removeChild', 'not found')
       return
     }
 
@@ -210,6 +215,13 @@ const quote = (value: string): string => {
   return value.replace(/"/g, '&quot;')
 }
 
+const escapeHTML = (value: string): string => {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
 export class HeadlessElement extends HeadlessBase {
   constructor(
     readonly tagName: string,
@@ -224,6 +236,7 @@ export class HeadlessElement extends HeadlessBase {
   readonly toHTML = (): string => {
     const children = this.children.map(child => child.toHTML()).join('')
     const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
+    let innerHTML = null as string | null
     const attrs = this.getVisibleAttributes()
       .map(([name, value]) => {
         if (name === 'class') {
@@ -241,13 +254,21 @@ export class HeadlessElement extends HeadlessBase {
         if (attributesWithNoValue.has(name)) {
           return ` ${name}`
         }
+        if (name === 'innerHTML') {
+          innerHTML = value
+          return ''
+        }
+        if (name === 'innerText') {
+          innerHTML = escapeHTML(value)
+          return ''
+        }
         return ` ${name}="${quote(value as string)}"`
       })
       .join('')
     if (selfClosingTags.has(this.tagName) && children === '') {
       return `<${this.tagName}${ns}${attrs} />`
     }
-    return `<${this.tagName}${ns}${attrs}>${children}</${this.tagName}>`
+    return `<${this.tagName}${ns}${attrs}>${innerHTML ?? children}</${this.tagName}>`
   }
 }
 
@@ -353,10 +374,8 @@ export class HeadlessContext implements DOMContext {
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
       if (this.reference !== undefined) {
-        console.log('>>>> clear REF', this.reference.toHTML())
         this.element.removeChild(this.reference)
       } else {
-        console.log('>>>> clear ELEM', this.element.toHTML())
         this.element.remove()
       }
     }
@@ -377,183 +396,7 @@ export class HeadlessContext implements DOMContext {
     name: string
   ): { get(): unknown; set(value: unknown): void } =>
     this.element.makeAccessors(name)
-  // readonly container: HeadlessContainer
-  // readonly parent: HeadlessElementContext | undefined
-  // readonly trigger: <E>(event: string, detail: E) => void
-  // readonly toHTML: () => string
 }
-
-// export class HeadlessElementContext implements HeadlessContext {
-//   readonly classes = new Set<string>()
-//   readonly styles = new Map<string, string>()
-//   readonly attributes = new Map<string, unknown>()
-//   readonly handlers = new Map<string, ((event: unknown) => void)[]>()
-//   readonly children: HeadlessContext[] = []
-//   readonly portals = new Map<string, DOMContext>()
-
-//   constructor(
-//     // readonly isFirstLevel: boolean,
-//     readonly container: HeadlessContainer,
-//     readonly tagName: string,
-//     readonly namespace: string | undefined,
-//     readonly providers: Providers,
-//     readonly parent: HeadlessElementContext | undefined
-//   ) {}
-
-//   readonly makeChildElement = (
-//     tagName: string,
-//     namespace: string | undefined
-//   ): DOMContext => {
-//     const child = new HeadlessElementContext(
-//       this.container,
-//       tagName,
-//       namespace,
-//       this.providers,
-//       this
-//     )
-//     this.children.push(child)
-//     return child
-//   }
-//   readonly makeChildText = (text: string): DOMContext => {
-//     const child = new HeadlessTextContext(
-//       this.container,
-//       this,
-//       this.providers,
-//       text
-//     )
-//     this.children.push(child)
-//     return child
-//   }
-//   readonly setText = (): void => {}
-//   readonly getText = (): string | undefined => {
-//     const values = this.children
-//       .map(child => child.getText())
-//       .filter(v => v != null)
-//     if (values.length === 0) {
-//       return undefined
-//     }
-
-//     return values.join('')
-//   }
-//   readonly makeRef = (): DOMContext => {
-//     const ref = new HeadlessTextContext(
-//       this.container,
-//       this,
-//       this.providers,
-//       ''
-//     )
-//     this.children.push(ref)
-//     return ref
-//   }
-//   readonly makePortal = (selector: string): DOMContext => {
-//     const portal = new HeadlessElementContext(
-//       this.container,
-//       '$$portal',
-//       undefined,
-//       this.providers,
-//       this
-//     )
-//     this.portals.set(selector, portal)
-//     return portal
-//   }
-//   readonly withProviders = (providers: {
-//     [K in ProviderMark<unknown>]: unknown
-//   }): DOMContext =>
-//     new HeadlessElementContext(
-//       this.container,
-//       this.tagName,
-//       this.namespace,
-//       { ...this.providers, ...providers },
-//       this
-//     )
-//   readonly getProvider = <T>(mark: ProviderMark<T>): T => {
-//     if (this.providers[mark] === undefined) {
-//       throw new ProviderNotFoundError(mark)
-//     }
-
-//     return this.providers[mark]! as T
-//   }
-//   readonly clear = (): void => {
-//     if (this.parent != null) {
-//       this.parent.removeChild(this)
-//     }
-//   }
-//   readonly on = <E>(event: string, listener: (event: E) => void): Clear => {
-//     const _listener = listener as (event: unknown) => void
-//     this.handlers.set(event, [...(this.handlers.get(event) ?? []), _listener])
-//     return () => {
-//       const listeners = this.handlers.get(event) ?? []
-//       const index = listeners.indexOf(_listener)
-//       if (index === -1) {
-//         return
-//       }
-
-//       listeners.splice(index, 1)
-//       if (listeners.length === 0) {
-//         this.handlers.delete(event)
-//       } else {
-//         this.handlers.set(event, listeners)
-//       }
-//     }
-//   }
-//   readonly addClasses = (tokens: string[]): void => {
-//     tokens.forEach(token => this.classes.add(token))
-//   }
-//   readonly removeClasses = (tokens: string[]): void => {
-//     tokens.forEach(token => this.classes.delete(token))
-//   }
-//   readonly getClasses = (): string[] => Array.from(this.classes)
-//   readonly isBrowserDOM = (): this is BrowserContext => false
-//   readonly isHeadlessDOM = (): this is HeadlessContext => true
-//   readonly setStyle = (name: string, value: string): void => {
-//     this.styles.set(name, value)
-//   }
-//   readonly getStyle = (name: string): string => {
-//     return this.styles.get(name) ?? ''
-//   }
-//   readonly makeAccessors = (
-//     name: string
-//   ): { get(): unknown; set(value: unknown): void } => {
-//     return {
-//       get: () => this.attributes.get(name),
-//       set: (value: unknown) => this.attributes.set(name, value),
-//     }
-//   }
-
-//   readonly removeChild = (child: HeadlessContext): void => {
-//     const index = this.children.indexOf(child)
-//     if (index === -1) {
-//       return
-//     }
-
-//     this.children.splice(index, 1)
-//   }
-
-//   readonly trigger = <E>(event: string, detail: E): void => {
-//     const listeners = this.handlers.get(event) ?? []
-//     listeners.forEach(listener => listener(detail))
-//   }
-
-//   readonly toHTML = (): string => {
-//     const children = this.children.map(child => child.toHTML()).join('')
-//     if (this.tagName === '$$root') {
-//       return children
-//     }
-//     const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
-//     const classes =
-//       this.classes.size > 0
-//         ? ` class="${Array.from(this.classes).join(' ')}"`
-//         : ''
-//     const attributes = Array.from(this.attributes.entries()).map(
-//       ([name, value]) =>
-//         attributesWithNoValue.has(name) ? ` ${name}` : ` ${name}="${value}"`
-//     )
-//     if (selfClosingTags.has(this.tagName) && children === '') {
-//       return `<${this.tagName}${ns}${classes}${attributes} />`
-//     }
-//     return `<${this.tagName}${ns}${classes}${attributes}>${children}</${this.tagName}>`
-//   }
-// }
 
 const attributesWithNoValue = new Set([
   'checked',

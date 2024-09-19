@@ -16,7 +16,7 @@ export async function makePretty(code: string) {
   try {
     return format(code, config);
   } catch (_) {
-    console.log(code);
+    console.error(code);
     return code;
   }
 }

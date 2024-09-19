@@ -1,5 +1,4 @@
 export async function fetchPage(path: string) {
-  console.log('fetchPage', path)
   if (!path.endsWith('.html')) {
     path = `${path}.html`
   }

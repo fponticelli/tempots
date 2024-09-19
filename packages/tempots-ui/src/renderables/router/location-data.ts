@@ -59,7 +59,6 @@ export const locationFromURL = (
   url: string,
   baseUrl?: string
 ): LocationData => {
-  console.log('locationFromURL', url)
   const urlObj = new URL(url, baseUrl ?? getWindow()?.location.toString())
   const search = Object.fromEntries(urlObj.searchParams.entries())
   let hash = urlObj.hash

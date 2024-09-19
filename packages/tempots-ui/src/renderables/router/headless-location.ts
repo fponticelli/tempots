@@ -25,7 +25,6 @@ export const ProvideHeadlessLocation = (url: Prop<string>, child: TNode) => {
       }
       const nurl = new URL(data.pathname, url.value)
       const pathname = nurl.origin + nurl.pathname
-      console.log('pathname', pathname, data, url.value)
       return urlFromLocation({ ...data, pathname: pathname })
     }
   )
