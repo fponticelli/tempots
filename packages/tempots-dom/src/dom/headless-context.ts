@@ -4,21 +4,37 @@ import { BrowserContext } from './browser-context'
 import { DOMContext } from './dom-context'
 import { ProviderNotFoundError } from './errors'
 
+const classKey = Symbol('class')
+const styleKey = Symbol('style')
+const handlerKey = Symbol('handler')
+
+const makeRandom = (): string => {
+  return Math.random().toString(36).substring(2, 15)
+}
+
 abstract class HeadlessBase {
-  readonly classes = new Set<string>()
-  readonly styles = new Map<string, string>()
-  readonly attributes = new Map<string, unknown>()
-  readonly handlers = new Map<string, ((event: unknown) => void)[]>()
+  readonly id = makeRandom()
+  private readonly properties: Record<string, unknown> & {
+    [classKey]?: string[]
+    [styleKey]?: Record<string, string>
+    [handlerKey]?: Record<string, ((event: unknown) => void)[]>
+  } = {}
   readonly children: HeadlessNode[] = []
   constructor(readonly parent: HeadlessBase | undefined) {}
-  readonly isElement = (): this is HeadlessElement => true
+  readonly isElement = (): this is HeadlessBase => true
   readonly isText = (): this is HeadlessText => false
   readonly getText = (): string => {
     return this.children.map(child => child.getText()).join('')
   }
   readonly removeChild = (child: HeadlessNode): void => {
+    console.log(
+      '>>>> removeChild',
+      child.id,
+      this.children.map(c => c.id)
+    )
     const index = this.children.indexOf(child)
     if (index === -1) {
+      console.log('>>>> removeChild', 'not found')
       return
     }
 
@@ -34,11 +50,7 @@ abstract class HeadlessBase {
   abstract isPortal(): this is HeadlessPortal
 
   readonly getPortals = (): HeadlessPortal[] => {
-    const children = this.children.flatMap(child => {
-      if (child.isText()) {
-        return []
-      }
-
+    const children = this.elements().flatMap(child => {
       if (child.isPortal()) {
         return [child, ...child.getPortals()]
       }
@@ -52,31 +64,150 @@ abstract class HeadlessBase {
     return children
   }
 
+  readonly elements = (): HeadlessBase[] => {
+    return this.children.filter(child => child.isElement()) as HeadlessBase[]
+  }
+
   abstract toHTML(): string
 
-  readonly hasChildren = (): boolean => {
-    return this.children.length > 0
+  readonly hasChildren = (): boolean => this.children.length > 0
+
+  readonly hasClasses = (): boolean => this.properties[classKey] != null
+
+  readonly hasStyles = (): boolean => this.properties[styleKey] != null
+
+  readonly hasAttributes = (): boolean =>
+    Object.keys(this.properties).length > 0
+
+  readonly hasHandlers = (): boolean => this.properties[handlerKey] != null
+
+  readonly hasRenderableProperties = (): boolean =>
+    this.hasClasses() || this.hasAttributes() || this.hasStyles()
+
+  readonly getById = (id: string): HeadlessBase | undefined => {
+    if (this.properties.id === id) {
+      return this
+    }
+
+    for (const child of this.elements()) {
+      const result = child.getById(id)
+      if (result != null) {
+        return result
+      }
+    }
   }
 
-  readonly hasClasses = (): boolean => {
-    return this.classes.size > 0
+  readonly trigger = <E>(event: string, detail: E): void => {
+    const listeners = (this.properties[handlerKey] ?? {})[event] ?? []
+    listeners.forEach(listener => listener(detail))
   }
 
-  readonly hasStyles = (): boolean => {
-    return this.styles.size > 0
+  readonly click = (): void => {
+    this.trigger('click', {})
   }
+  readonly on = <E>(event: string, listener: (event: E) => void): Clear => {
+    const handlers = (this.properties[handlerKey] ??= {})
+    const _listener = listener as (event: unknown) => void
+    handlers[event] = [...(handlers[event] ?? []), _listener]
+    return () => {
+      const listeners = handlers[event] ?? []
+      const index = listeners.indexOf(_listener)
+      if (index === -1) {
+        return
+      }
 
-  readonly hasAttributes = (): boolean => {
-    return this.attributes.size > 0
+      listeners.splice(index, 1)
+      if (listeners.length === 0) {
+        delete handlers[event]
+        if (Object.keys(handlers).length === 0) {
+          delete this.properties[handlerKey]
+        }
+      } else {
+        handlers[event] = listeners
+      }
+    }
   }
+  readonly addClasses = (tokens: string[]): void => {
+    if (tokens.length === 0) {
+      return
+    }
+    const classes = (this.properties[classKey] ??= []) as string[]
+    tokens.forEach(token => {
+      if (!classes.includes(token)) {
+        classes.push(token)
+      }
+    })
+  }
+  readonly removeClasses = (tokens: string[]): void => {
+    if (tokens.length === 0) {
+      return
+    }
+    const classes = (this.properties[classKey] ??= []) as string[]
+    tokens.forEach(token => {
+      const index = classes.indexOf(token)
+      if (index !== -1) {
+        classes.splice(index, 1)
+      }
+    })
+    if (classes.length === 0) {
+      delete this.properties[classKey]
+    }
+  }
+  readonly getClasses = (): string[] => {
+    return this.properties[classKey] ?? []
+  }
+  readonly getAttributes = () => {
+    return Object.entries(this.properties)
+  }
+  readonly getVisibleAttributes = () => {
+    return Reflect.ownKeys(this.properties).flatMap(
+      (
+        key
+      ): (
+        | ['class', string[]]
+        | ['style', Record<string, string> | string]
+        | [string, string]
+      )[] => {
+        if (key === classKey) {
+          return [['class', this.getClasses()]]
+        } else if (key === styleKey) {
+          return [['style', this.getStyles()]]
+        } else if (typeof key === 'string') {
+          return [[key as string, String(this.properties[key])]]
+        }
+        return []
+      }
+    )
+  }
+  readonly setStyle = (name: string, value: string): void => {
+    const styles = (this.properties[styleKey] ??= {})
+    styles[name] = value
+    if (value === '') {
+      delete styles[name]
+      if (Object.keys(styles).length === 0) {
+        delete this.properties[styleKey]
+      }
+    }
+  }
+  readonly getStyle = (name: string): string => {
+    return this.properties[styleKey]?.[name] ?? ''
+  }
+  readonly getStyles = (): Record<string, string> => {
+    return this.properties[styleKey] ?? {}
+  }
+  readonly makeAccessors = (
+    name: string
+  ): { get(): unknown; set(value: unknown): void } => {
+    const attributes = this.properties
+    return {
+      get: () => attributes[name],
+      set: (value: unknown) => (attributes[name] = value),
+    }
+  }
+}
 
-  readonly hasHandlers = (): boolean => {
-    return this.handlers.size > 0
-  }
-
-  readonly hasRenderableProperties = (): boolean => {
-    return this.hasClasses() || this.hasStyles() || this.hasAttributes()
-  }
+const quote = (value: string): string => {
+  return value.replace(/"/g, '&quot;')
 }
 
 export class HeadlessElement extends HeadlessBase {
@@ -93,22 +224,30 @@ export class HeadlessElement extends HeadlessBase {
   readonly toHTML = (): string => {
     const children = this.children.map(child => child.toHTML()).join('')
     const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
-    const classes =
-      this.classes.size > 0
-        ? ` class="${Array.from(this.classes).join(' ')}"`
-        : ''
-    const attributes = Array.from(this.attributes.entries()).map(
-      ([name, value]) =>
-        attributesWithNoValue.has(name) ? ` ${name}` : ` ${name}="${value}"`
-    )
-    const allStyles = Array.from(this.styles.entries()).map(
-      ([name, value]) => `${name}: ${value}`
-    )
-    const styles = allStyles.length > 0 ? ` style="${allStyles.join(';')}"` : ''
+    const attrs = this.getVisibleAttributes()
+      .map(([name, value]) => {
+        if (name === 'class') {
+          return ` class="${(value as string[]).join(' ')}"`
+        }
+        if (name === 'style') {
+          if (typeof value === 'string') {
+            return ` style="${value}"`
+          } else {
+            return ` style="${Object.entries(value)
+              .map(([name, value]) => `${name}: ${value};`)
+              .join(' ')}"`
+          }
+        }
+        if (attributesWithNoValue.has(name)) {
+          return ` ${name}`
+        }
+        return ` ${name}="${quote(value as string)}"`
+      })
+      .join('')
     if (selfClosingTags.has(this.tagName) && children === '') {
-      return `<${this.tagName}${ns}${classes}${attributes}${styles} />`
+      return `<${this.tagName}${ns}${attrs} />`
     }
-    return `<${this.tagName}${ns}${classes}${attributes}${styles}>${children}</${this.tagName}>`
+    return `<${this.tagName}${ns}${attrs}>${children}</${this.tagName}>`
   }
 }
 
@@ -130,6 +269,7 @@ export class HeadlessPortal extends HeadlessBase {
 }
 
 export class HeadlessText {
+  readonly id = makeRandom()
   constructor(public text: string) {}
   readonly isElement = (): this is HeadlessElement => false
   readonly isText = (): this is HeadlessText => true
@@ -150,25 +290,33 @@ export class HeadlessContext implements DOMContext {
     readonly container: HeadlessContainer,
     readonly providers: Providers
   ) {}
+  readonly appendOrInsert = (element: HeadlessNode): void => {
+    if (this.reference != null) {
+      const index = this.element.children.indexOf(this.reference)
+      this.element.children.splice(index, 0, element)
+    } else {
+      this.element.children.push(element)
+    }
+  }
   readonly makeChildElement = (
     tagName: string,
     namespace: string | undefined
   ): DOMContext => {
-    const child = new HeadlessElement(tagName, namespace, this.element)
-    this.element.children.push(child)
+    const childEl = new HeadlessElement(tagName, namespace, this.element)
+    this.appendOrInsert(childEl)
     return new HeadlessContext(
-      child,
-      this.reference,
+      childEl,
+      undefined,
       this.container,
       this.providers
     )
   }
   readonly makeChildText = (text: string): DOMContext => {
-    const child = new HeadlessText(text)
-    this.element.children.push(child)
+    const childTxt = new HeadlessText(text)
+    this.appendOrInsert(childTxt)
     return new HeadlessContext(
       this.element,
-      child,
+      childTxt,
       this.container,
       this.providers
     )
@@ -204,64 +352,31 @@ export class HeadlessContext implements DOMContext {
   }
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
-      if (this.reference) {
+      if (this.reference !== undefined) {
+        console.log('>>>> clear REF', this.reference.toHTML())
         this.element.removeChild(this.reference)
       } else {
+        console.log('>>>> clear ELEM', this.element.toHTML())
         this.element.remove()
       }
     }
   }
-  readonly on = <E>(event: string, listener: (event: E) => void): Clear => {
-    const handlers = this.element.handlers
-    const _listener = listener as (event: unknown) => void
-    handlers.set(event, [...(handlers.get(event) ?? []), _listener])
-    return () => {
-      const listeners = handlers.get(event) ?? []
-      const index = listeners.indexOf(_listener)
-      if (index === -1) {
-        return
-      }
-
-      listeners.splice(index, 1)
-      if (listeners.length === 0) {
-        handlers.delete(event)
-      } else {
-        handlers.set(event, listeners)
-      }
-    }
-  }
-  readonly addClasses = (tokens: string[]): void => {
-    tokens.forEach(token => this.element.classes.add(token))
-  }
-  readonly removeClasses = (tokens: string[]): void => {
-    tokens.forEach(token => this.element.classes.delete(token))
-  }
-  readonly getClasses = (): string[] => {
-    return Array.from(this.element.classes)
-  }
+  readonly on = <E>(event: string, listener: (event: E) => void): Clear =>
+    this.element.on(event, listener)
+  readonly addClasses = (tokens: string[]): void =>
+    this.element.addClasses(tokens)
+  readonly removeClasses = (tokens: string[]): void =>
+    this.element.removeClasses(tokens)
+  readonly getClasses = (): string[] => this.element.getClasses()
   readonly isBrowserDOM = (): this is BrowserContext => false
   readonly isHeadlessDOM = (): this is HeadlessContext => true
-  readonly setStyle = (name: string, value: string): void => {
-    this.element.styles.set(name, value)
-  }
-  readonly getStyle = (name: string): string => {
-    return this.element.styles.get(name) ?? ''
-  }
+  readonly setStyle = (name: string, value: string): void =>
+    this.element.setStyle(name, value)
+  readonly getStyle = (name: string): string => this.element.getStyle(name)
   readonly makeAccessors = (
     name: string
-  ): { get(): unknown; set(value: unknown): void } => {
-    const attributes = this.element.attributes
-    return {
-      get: () => attributes.get(name),
-      set: (value: unknown) => attributes.set(name, value),
-    }
-  }
-
-  readonly trigger = <E>(event: string, detail: E): void => {
-    const listeners = this.element.handlers.get(event) ?? []
-    listeners.forEach(listener => listener(detail))
-  }
-
+  ): { get(): unknown; set(value: unknown): void } =>
+    this.element.makeAccessors(name)
   // readonly container: HeadlessContainer
   // readonly parent: HeadlessElementContext | undefined
   // readonly trigger: <E>(event: string, detail: E) => void

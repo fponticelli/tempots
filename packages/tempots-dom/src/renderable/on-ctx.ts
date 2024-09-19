@@ -11,4 +11,4 @@ import { Clear, Renderable } from '../types/domain'
 export const OnCtx =
   (fn: (ctx: DOMContext) => Clear): Renderable =>
   (ctx: DOMContext) =>
-    fn(ctx)
+    fn(ctx) ?? (() => {})

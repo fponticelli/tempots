@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { attr, html, style, render, makeProp, OnDispose, Ensure, OnElement } from "../src";
+import { attr, html, style, render, makeProp, OnDispose, Ensure, OnElement, OnCtx, OnBrowserCtx, OnHeadlessCtx } from "../src";
 const { div } = html;
 
-describe("render", () => {
+describe("DOM", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
   });
@@ -57,34 +57,56 @@ describe("render", () => {
 
   test("when", () => {
     const cls = makeProp("test" as string | null);
-    const spyMount = vi.fn();
+    const spyElement = vi.fn();
+    const spyCtxMount = vi.fn();
+    const spyBrowserCtx = vi.fn();
+    const spyHeadlessCtx = vi.fn();
     const spyDispose = vi.fn();
     render(
       div(
         Ensure(cls, s => attr.class(s)),
         Ensure(cls, s =>
-          div(s, OnElement(spyMount), OnDispose(spyDispose))
+          div(
+            s,
+            OnElement(spyElement),
+            OnCtx(spyCtxMount),
+            OnBrowserCtx(spyBrowserCtx),
+            OnHeadlessCtx(spyHeadlessCtx),
+            OnDispose(spyDispose)
+          )
         )
       ),
       document.body
     );
-    expect(spyMount).toHaveBeenCalledTimes(1);
+    expect(spyElement).toHaveBeenCalledTimes(1);
+    expect(spyCtxMount).toHaveBeenCalledTimes(1);
+    expect(spyBrowserCtx).toHaveBeenCalledTimes(1);
+    expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(0);
     expect(document.body.innerHTML).toStrictEqual(
       '<div class="test"><div>test</div></div>'
     );
     cls.value = "test2";
-    expect(spyMount).toHaveBeenCalledTimes(1);
+    expect(spyElement).toHaveBeenCalledTimes(1);
+    expect(spyCtxMount).toHaveBeenCalledTimes(1);
+    expect(spyBrowserCtx).toHaveBeenCalledTimes(1);
+    expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(0);
     expect(document.body.innerHTML).toStrictEqual(
       '<div class="test2"><div>test2</div></div>'
     );
     cls.value = null;
-    expect(spyMount).toHaveBeenCalledTimes(1);
+    expect(spyElement).toHaveBeenCalledTimes(1);
+    expect(spyCtxMount).toHaveBeenCalledTimes(1);
+    expect(spyBrowserCtx).toHaveBeenCalledTimes(1);
+    expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(1);
     expect(document.body.innerHTML).toStrictEqual('<div class=""></div>');
     cls.value = "test3";
-    expect(spyMount).toHaveBeenCalledTimes(2);
+    expect(spyElement).toHaveBeenCalledTimes(2);
+    expect(spyCtxMount).toHaveBeenCalledTimes(2);
+    expect(spyBrowserCtx).toHaveBeenCalledTimes(2);
+    expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(1);
     expect(document.body.innerHTML).toStrictEqual(
       '<div class="test3"><div>test3</div></div>'

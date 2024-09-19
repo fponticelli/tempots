@@ -13,7 +13,7 @@ export const OnBrowserCtx =
   (fn: (ctx: BrowserContext) => Clear): Renderable =>
   (ctx: DOMContext): Clear => {
     if (ctx.isBrowserDOM()) {
-      return fn(ctx)
+      return fn(ctx) ?? (() => {})
     }
     return () => {}
   }

@@ -26,6 +26,7 @@ export const Router = <
   return UseLocation(location => {
     const route = location.map(location => {
       const match = matchRoute(location.pathname)
+      console.log('## MATCH', match)
       if (match == null) {
         console.error('No route found for', location)
         throw new Error('No route found')
@@ -38,6 +39,7 @@ export const Router = <
         hash: location.hash,
       } as RouteInfo<MakeParams<typeof match.params>, typeof match.route>
     })
+    console.log('## ROUTES', routes, route.value)
     return OneOfTuple(
       route.map(route => [route.route, route]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

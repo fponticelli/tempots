@@ -3,7 +3,7 @@ import { html, on, attr, makeProp, render } from "../src";
 import { sleep } from "./helper";
 const { div, button } = html;
 
-function counter() {
+export function counter() {
   const count = makeProp(0);
   const oddOrEven = count.map(
     (count): string => (count % 2 === 0 ? "even" : "odd")
@@ -12,8 +12,8 @@ function counter() {
     attr.id("counter"),
     div(attr.class(oddOrEven), "Count: ", count.map(String)),
     div(
-      button(on.click(() => count.value--), "Decrement"),
-      button(on.click(() => count.value++), "Increment"),
+      button(attr.id("decrement"), on.click(() => count.value--), "Decrement"),
+      button(attr.id("increment"), on.click(() => count.value++), "Increment"),
     )
   );
   return { node, count };
@@ -28,7 +28,7 @@ describe("Counter", () => {
     const { node, count } = counter();
     const clear = render(node, body);
     expect(body.innerHTML).toStrictEqual(
-      '<div id="counter"><div class="even">Count: 0</div><div><button>Decrement</button><button>Increment</button></div></div>'
+      '<div id="counter"><div class="even">Count: 0</div><div><button id="decrement">Decrement</button><button id="increment">Increment</button></div></div>'
     );
     const decrement = body.querySelector("button")!;
     const increment = decrement.nextElementSibling! as HTMLElement;
@@ -36,13 +36,13 @@ describe("Counter", () => {
     expect(count.value).toStrictEqual(1);
     await sleep();
     expect(body.innerHTML).toStrictEqual(
-      '<div id="counter"><div class="odd">Count: 1</div><div><button>Decrement</button><button>Increment</button></div></div>'
+      '<div id="counter"><div class="odd">Count: 1</div><div><button id="decrement">Decrement</button><button id="increment">Increment</button></div></div>'
     );
     decrement.click();
     expect(count.value).toStrictEqual(0);
     await sleep();
     expect(body.innerHTML).toStrictEqual(
-      '<div id="counter"><div class="even">Count: 0</div><div><button>Decrement</button><button>Increment</button></div></div>'
+      '<div id="counter"><div class="even">Count: 0</div><div><button id="decrement">Decrement</button><button id="increment">Increment</button></div></div>'
     );
     clear();
     expect(body.innerHTML).toStrictEqual("");

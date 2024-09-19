@@ -1,44 +1,33 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, render, html, OnElement, OneOfType } from "../src";
+import { makeProp, runHeadless, html, OneOfType, OnCtx } from "../src";
 import { sleep } from "./helper";
+import { Letter } from "./oneof.spec";
 const { div } = html
 
-export interface A {
-  type: 'A'
-  text: string
-}
-
-export interface B {
-  type: 'B'
-  num: number
-}
-
-export type Letter = A | B
-
-describe("OneOf", () => {
+describe("OneOf Headless", () => {
   test("type", async () => {
     const p = makeProp<Letter>({ type: "A", text: "a" });
     const spyMountA = vi.fn()
     const spyMountB = vi.fn()
-    render(
+    const { root } = runHeadless(
       OneOfType(
         p,
         {
           'A': (s) => div(
-            OnElement(spyMountA),
+            OnCtx(spyMountA),
             s.at('text')
           ),
           'B': (s) => div(
-            OnElement(spyMountB),
+            OnCtx(spyMountB),
             'num:', s.at('num').map(String)
           )
         }
       ),
-      document.body
+      'https://tempots.com'
     );
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(0)
-    expect(document.body.innerHTML).toStrictEqual('<div>a</div>');
+    expect(root.contentToHTML()).toStrictEqual('<div>a</div>');
     p.set({ type: "A", text: "b" })
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
@@ -47,16 +36,16 @@ describe("OneOf", () => {
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toStrictEqual('<div>num:1</div>');
+    expect(root.contentToHTML()).toStrictEqual('<div>num:1</div>');
     p.set({ type: "B", num: 2 })
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toStrictEqual('<div>num:2</div>');
+    expect(root.contentToHTML()).toStrictEqual('<div>num:2</div>');
     p.set({ type: "A", text: "c" })
     await sleep()
     expect(spyMountA).toBeCalledTimes(2)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toStrictEqual('<div>c</div>');
+    expect(root.contentToHTML()).toStrictEqual('<div>c</div>');
   });
 });

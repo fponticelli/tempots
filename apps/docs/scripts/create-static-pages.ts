@@ -3,7 +3,7 @@ import { App } from '../src/components/app'
 import * as fsp from 'fs/promises'
 import * as fse from 'fs-extra'
 import * as path from 'path'
-import { headlessRender, ProvideGlobalProbe } from '@tempots/dom'
+import { runHeadless, ProvideGlobalProbe } from '@tempots/dom'
 
 const htmlTemplate = (async () => {
   const htmlPath = path.resolve(process.cwd(), './dist/index.html')
@@ -74,7 +74,7 @@ const renderPage = async (pageUrl: string) => {
   Reflect.set(globalThis, 'fetch', makeFetch(originalFetch))
   const app = App(toc)
   console.log('### RENDER', url)
-  const { root } = headlessRender(app, url)
+  const { root } = runHeadless(app, url)
   // TODO
   return done.then(() => {
     const portals = root.getPortals()

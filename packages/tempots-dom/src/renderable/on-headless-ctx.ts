@@ -13,7 +13,7 @@ export const OnHeadlessCtx =
   (fn: (ctx: HeadlessContext) => Clear): Renderable =>
   (ctx: DOMContext): Clear => {
     if (ctx.isHeadlessDOM()) {
-      return fn(ctx)
+      return fn(ctx) ?? (() => {})
     }
     return () => {}
   }

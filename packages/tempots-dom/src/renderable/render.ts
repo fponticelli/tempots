@@ -67,7 +67,7 @@ export const render = (
   return renderWithContext(node, ctx)
 }
 
-export const headlessRender = (node: Renderable, currentUrl: string) => {
+export const runHeadless = (node: Renderable, currentUrl: string) => {
   console.log('headlessRender', currentUrl)
   const currentURL = makeProp(currentUrl)
   const root = new HeadlessPortal(':root', undefined)

@@ -27,8 +27,10 @@ export const renderableOfTNode = (child: TNode): Renderable => {
     return _staticText(child)
   } else if (Signal.is(child as Value<string>)) {
     return _signalText(child as Signal<string>)
-  } else {
+  } else if (typeof child === 'function') {
     return child as Renderable
+  } else {
+    throw new Error(`Unknown type: '${typeof child}' for child: ${child}`)
   }
 }
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { Ensure, makeProp, render, Signal, TextNode } from "../src";
+import { Ensure, makeProp, render, TextNode } from "../src";
 import { sleep } from "./helper";
 
 describe("Ensure", () => {
