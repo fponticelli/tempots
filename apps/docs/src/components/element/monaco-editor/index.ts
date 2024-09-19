@@ -119,7 +119,9 @@ export function MonacoEditor({
               content.on(value => {
                 const selection = editor.getSelection()
                 editor.setValue(value)
-                selection && editor.setSelection(selection)
+                if (selection != null) {
+                  editor.setSelection(selection)
+                }
               })
             )
           }

@@ -75,6 +75,16 @@ abstract class HeadlessBase {
 
   abstract toHTML(): string
 
+  readonly hasInnerHTML = (): boolean => this.properties.innerHTML != null
+
+  readonly getInnerHTML = (): string =>
+    (this.properties.innerHTML as string) ?? ''
+
+  readonly getInnerText = (): string =>
+    (this.properties.innerText as string) ?? ''
+
+  readonly hasInnerText = (): boolean => this.properties.innerText != null
+
   readonly hasChildren = (): boolean => this.children.length > 0
 
   readonly hasClasses = (): boolean => this.properties[classKey] != null
@@ -162,7 +172,9 @@ abstract class HeadlessBase {
     return this.properties[classKey] ?? []
   }
   readonly getAttributes = () => {
-    return Object.entries(this.properties)
+    return Object.entries(this.properties).filter(
+      ([key]) => !['innerText', 'innerHTML'].includes(key)
+    )
   }
   readonly getVisibleAttributes = () => {
     return Reflect.ownKeys(this.properties).flatMap(
@@ -354,7 +366,14 @@ export class HeadlessContext implements DOMContext {
     return this.makeChildText('')
   }
   readonly makePortal = (selector: string): DOMContext => {
-    return this.makeChildElement(`$$portal:${selector}`, undefined)
+    const portal = new HeadlessPortal(selector, this.element)
+    this.appendOrInsert(portal)
+    return new HeadlessContext(
+      portal,
+      undefined,
+      this.container,
+      this.providers
+    )
   }
   readonly withProviders = (providers: {
     [K in ProviderMark<unknown>]: unknown

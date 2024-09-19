@@ -289,7 +289,6 @@ async function main() {
         if (breadcrumbs.length > 0) {
           const bc = breadcrumbs[0]
           bc.classList.add('breadcrumbs')
-          // console.log(bc.childNodes)
           for (let i = 0; i < bc.childNodes.length; i++) {
             if (bc.childNodes[i].nodeType === 3 && bc.childNodes[i].nodeValue === ' > ') { // text node
               bc.childNodes[i].nodeValue = ' › '
@@ -312,7 +311,6 @@ async function main() {
           } else {
             anchor.href = `${lib}.${parts.join('.')}.html`
           }
-          // console.log(anchor.href)
         }
         // add ID to headers
         addIdToHeaders(doc)

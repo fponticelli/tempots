@@ -1,42 +1,44 @@
-// import { renderSSR, FetchFunction } from '@tempots/ssr'
 import { App } from '../src/components/app'
 import * as fsp from 'fs/promises'
 import * as fse from 'fs-extra'
 import * as path from 'path'
-import { runHeadless, ProvideGlobalProbe } from '@tempots/dom'
+import { runHeadless } from '@tempots/dom'
+import * as cheerio from 'cheerio';
 
 const main = async () => {
   const htmlTemplate = (async () => {
     const htmlPath = path.resolve(process.cwd(), './dist/index.html')
-    // console.log(`Reading ${htmlPath}`)
     const html = await fsp.readFile(htmlPath, 'utf-8')
     return html
   })()
 
   const jsonToc = (async () => {
     const tocPath = path.resolve(process.cwd(), './public/toc.json')
-    // console.log(`Reading ${tocPath}`)
     const toc = JSON.parse( (await fsp.readFile(tocPath, 'utf-8')))
     return toc
   })()
 
-  const makePoller = (delay: number = 0) => {
+  const makePoller = (delay: number = 0, initialWait: number = 10) => {
     let fetchCount = 0
     let outerResolve: () => void
     let done = new Promise<void>(resolve => {
       outerResolve = resolve
     })
+    let initialTimer = setTimeout(() => {
+      // Resolve if there are no outstanding fetches
+      if (fetchCount === 0) {
+        outerResolve()
+      }
+    }, initialWait)
     const start = () => {
+      clearTimeout(initialTimer)
       fetchCount++
-      console.log('start', fetchCount)
     }
     const end = () => {
       fetchCount--
-      console.log('end', fetchCount)
       if (fetchCount > 0) {
         return
       }
-      console.log('resolve')
       setTimeout(outerResolve, delay)
     }
     return { start, end, done }
@@ -46,20 +48,13 @@ const main = async () => {
     const url = `https://tempots.com${pageUrl}`
     try {
       const toc = await jsonToc
-      const html = await htmlTemplate
-      console.log('### RENDER', url)
+      const $ = cheerio.load(await htmlTemplate)
       const { start, end, done } = makePoller()
-      console.log('poller created')
+
       const makeFetch = (originalFetch) => {
-        return (async (input: RequestInfo, init?: RequestInit) => {
-          console.log('## FETCH', input)
+        return (async (input, init?: RequestInit) => {
           start()
           if (typeof input === 'string' && (input.startsWith('/'))) { // || input.startsWith('https://tempots.com/'))) {
-            // console.log('# FETCH 1: ', input)
-            // if (input.startsWith('https://tempots.com/')) {
-            //   input = input.slice('https://tempots.com'.length)
-            // }
-            // console.log('# FETCH 2: ', input)
             try {
               const file = await fsp.readFile(path.resolve(process.cwd(), `./dist${input}`), 'utf-8')
               return new Response(file, { status: 200 })
@@ -74,39 +69,45 @@ const main = async () => {
         })
       }
       const originalFetch = fetch
-      console.log('### SET FETCH')
-      Reflect.set(globalThis, 'fetch', makeFetch(fetch))
+      global.fetch = makeFetch(originalFetch)
+      // Reflect.set(this, 'fetch', makeFetch(fetch))
       const app = App(toc)
-      console.log('### RENDER', url)
       const { root } = runHeadless(app, url)
-      console.log('### got root')
       // TODO
-      // await done
-      console.log('### awaited done')
+      await done
 
       const portals = root.getPortals()
-      console.log('### got portals')
       portals.forEach(p => {
-        console.log('> PORTAL: ', p.selector, p.hasChildren(), p.hasClasses(), p.hasStyles(), p.hasAttributes(), p.hasHandlers(), p.hasRenderableProperties())
+        if (p.selector === ':root') {
+          $('body').prepend(p.contentToHTML())
+        } else if (p.hasRenderableProperties()) {
+          const el = $(p.selector)
+          if (p.hasInnerHTML()) {
+            el.html(p.getInnerHTML())
+          }
+          if (p.hasInnerText()) {
+            el.text(p.getInnerText())
+          }
+          if (p.hasChildren()) {
+            el.append(p.contentToHTML())
+          }
+          if (p.hasClasses()) {
+            el.addClass(p.getClasses().join(' '))
+          }
+          if (p.hasStyles()) {
+            el.css(p.getStyles())
+          }
+          if (p.hasAttributes()) {
+            el.attr(Object.fromEntries(p.getAttributes()) as Record<string, string>)
+          }
+        }
       })
-      console.log('# DONE', url)
-      Reflect.set(globalThis, 'fetch', originalFetch)
-      console.log('### set fetch back')
-      const result = root.contentToHTML()
-      console.log('# rendered html!')
-      return result
+      global.fetch = originalFetch
+      return $.html()
     } catch (error) {
       console.error('Error rendering', url, error)
       return ''
     }
-    // return renderSSR({
-    //   url,
-    //   html,
-    //   makeApp: () => App(toc),
-    //   selector: 'body',
-    //   makeFetch,
-    //   waitFetch: true,
-    // })
   }
 
   const extractURLs = (html: string) => {
@@ -134,7 +135,7 @@ const main = async () => {
   ])
   const toGenerate = ['/']
   while (toGenerate.length > 0) {
-    console.log('next ...', toGenerate.length)
+    // console.log('next ...', toGenerate.length)
     const url = toGenerate.pop()!
     try {
       const basePath = path.resolve(process.cwd(), './dist')
@@ -146,7 +147,7 @@ const main = async () => {
       }
       generated.add(url)
       if (url !== '/' && await fse.exists(filePath)) {
-        console.log(filePath)
+        // console.log(filePath)
         continue
       }
       // console.log('Render:', url)
@@ -154,12 +155,11 @@ const main = async () => {
       // console.log('after render')
       const urls = filterURLs(extractURLs(html))
       const newUrls = urls.filter(url => !generated.has(url))
-      console.log(newUrls)
       // console.log(newUrls)
       toGenerate.push(...newUrls)
 
       // save html
-      console.log(`#### SAVED TO ${filePath}`)
+      // console.log(`#### SAVED TO ${filePath}`)
 
       await fse.ensureDir(dirPath)
       await fsp.writeFile(filePath, html)
@@ -177,9 +177,6 @@ const main = async () => {
 }
 
 main()
-  .then(() => {
-    console.log('Done')
-  })
   .catch(error => {
     console.error('Error', error)
     process.exit(1)
