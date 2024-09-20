@@ -6,14 +6,21 @@ function getVersion(packagePath) {
 }
 
 function incrementVersion(version, type) {
-  const parts = version.split('.').map(Number)
+  const parts = version.split('.')
   switch (type) {
     case 'major':
-      return `${parts[0] + 1}.0.0`
+      return `${Number(parts[0]) + 1}.0.0`
     case 'minor':
-      return `${parts[0]}.${parts[1] + 1}.0`
+      return `${parts[0]}.${Number(parts[1]) + 1}.0`
     case 'patch':
-      return `${parts[0]}.${parts[1]}.${parts[2] + 1}`
+      return `${parts[0]}.${parts[1]}.${Number(parts[2]) + 1}`
+    case 'next':
+      if (parts.length === 3) {
+        return `${parts[0]}.${parts[1]}.${parts[2]}-next.0`
+      } else {
+        const v = Number(parts[3].split('-')[0]) + 1
+        return `${parts[0]}.${parts[1]}.${parts[2]}.${v}`
+      }
   }
 }
 
@@ -50,9 +57,14 @@ function updateDependencies(newVersion, libName, packageDir) {
 
 function publishToNpm(packageDir) {
   const version = getVersion(path.join(packageDir, 'package.json'))
+  const args = ['--access public']
   const newVersion = `--new-version ${version.trim()}`
+  args.push(newVersion)
+  if(version.includes('next')){
+    args.push('--tag next')
+  } 
 
-  const publishCommand = `yarn publish dist --access public ${newVersion}`
+  const publishCommand = `yarn publish dist ${args.join(' ')}`
   execSync(publishCommand, { stdio: 'inherit' })
 }
 

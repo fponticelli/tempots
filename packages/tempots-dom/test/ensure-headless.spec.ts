@@ -6,11 +6,10 @@ describe("Ensure Headless", () => {
   test("using signal", async () => {
     const s = makeProp<string | null>(null)
     const { root } = runHeadless(
-      Ensure(s, 
+      () => Ensure(s, 
         v => v,
         () => 'x'
-      ),
-      'https://tempots.com'
+      )
     )
     expect(root.contentToHTML()).toStrictEqual('x')
     s.set('y')
@@ -19,23 +18,21 @@ describe("Ensure Headless", () => {
   });
   test("using string literal", () => {
     const { root } = runHeadless(
-      Ensure(
+      () => Ensure(
         'A' as string, 
         v => TextNode(v),
         () => 'x'
-      ),
-      'https://tempots.com'
+      )
     )
     expect(root.contentToHTML()).toStrictEqual('A')
   });
   test("using null literal", () => {
     const { root } = runHeadless(
-      Ensure(
+      () => Ensure(
         null as string | null, 
         v => TextNode(v),
         () => 'x'
-      ),
-      'https://tempots.com'
+      )
     )
     expect(root.contentToHTML()).toStrictEqual('x')
   });

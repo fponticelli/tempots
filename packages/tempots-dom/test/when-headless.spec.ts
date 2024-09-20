@@ -8,12 +8,11 @@ describe("When Headless", () => {
     const spyTrue = vi.fn()
     const spyFalse = vi.fn()
     runHeadless(
-      When(
+      () => When(
         bool,
         OnCtx(spyTrue),
         OnCtx(spyFalse)
-      ),
-      'https://tempots.com'
+      )
     )
     expect(spyTrue).toHaveBeenCalledTimes(0)
     expect(spyFalse).toHaveBeenCalledTimes(1)
@@ -26,23 +25,21 @@ describe("When Headless", () => {
     const spyTrue = vi.fn()
     const spyFalse = vi.fn()
     runHeadless(
-      When(
+      () => When(
         true,
         OnCtx(spyTrue),
         OnCtx(spyFalse)
-      ),
-      'https://tempots.com'
+      )
     )
     expect(spyTrue).toHaveBeenCalledTimes(1)
     expect(spyFalse).toHaveBeenCalledTimes(0)
     
     runHeadless(
-      When(
+      () => When(
         false,
         OnCtx(spyTrue),
         OnCtx(spyFalse)
-      ),
-      'https://tempots.com'
+      )
     )
     expect(spyTrue).toHaveBeenCalledTimes(1)
     expect(spyFalse).toHaveBeenCalledTimes(1)

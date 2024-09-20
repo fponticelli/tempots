@@ -1,7 +1,6 @@
 import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
-// import { _maybeAddTextTracker } from '../dom/ssr'
 import { Value } from '../std/value'
 
 /**
@@ -10,7 +9,6 @@ import { Value } from '../std/value'
 export const _staticText =
   (text: string): Renderable =>
   (ctx: DOMContext) => {
-    // _maybeAddTextTracker(ctx)
     const newCtx = ctx.makeChildText(text)
     return (removeTree: boolean) => newCtx.clear(removeTree)
   }
@@ -21,7 +19,6 @@ export const _staticText =
 export const _signalText =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
-    // _maybeAddTextTracker(ctx)
     const newCtx = ctx.makeChildText(signal.value)
     const clear = signal.on(v => newCtx.setText(v))
     return (removeTree: boolean) => {

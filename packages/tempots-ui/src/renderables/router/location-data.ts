@@ -1,22 +1,5 @@
 import { getWindow, Prop } from '@tempots/dom'
 
-// let URLImpl: typeof URL
-// let URLSearchParamsImpl: typeof URLSearchParams
-
-// if (typeof window !== 'undefined' && window.URL) {
-//   // Running in browser
-//   URLImpl = window.URL
-//   URLSearchParamsImpl = window.URLSearchParams
-// } else if (Reflect.has(globalThis, 'require')) {
-//   // Running in Node.js
-//   const url = Reflect.get(globalThis, 'require')('url')
-
-//   URLImpl = url.URL
-//   URLSearchParamsImpl = url.URLSearchParams
-// } else {
-//   throw new Error('URL and URLSearchParams not found')
-// }
-
 /**
  * Represents the data for a location.
  *

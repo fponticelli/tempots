@@ -68,7 +68,6 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
         description: library.$.description,
         keywords: library.$.keywords as Value<string[] | undefined>,
       }),
-      // attr.class('flex flex-col gap-2'),
       html.h1(attr.class(Styles.heading.large), library.$.title),
       When(
         isRoot,

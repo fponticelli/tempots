@@ -10,7 +10,7 @@ describe("OneOf Headless", () => {
     const spyMountA = vi.fn()
     const spyMountB = vi.fn()
     const { root } = runHeadless(
-      OneOfType(
+      () => OneOfType(
         p,
         {
           'A': (s) => div(
@@ -22,8 +22,7 @@ describe("OneOf Headless", () => {
             'num:', s.at('num').map(String)
           )
         }
-      ),
-      'https://tempots.com'
+      )
     );
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(0)

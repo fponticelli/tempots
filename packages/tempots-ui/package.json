@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "0.22.1",
+  "version": "0.22.1-next.1",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -53,20 +53,23 @@
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
     "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
     "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",
+    "package:next": "node -e 'require(\"./scripts/make.cjs\").update(\"next\")'",
     "npm:prep": "yarn build && cp README.md dist",
     "npm:prep:patch": "yarn package:patch && yarn npm:prep",
     "npm:prep:minor": "yarn package:minor && yarn npm:prep",
     "npm:prep:major": "yarn package:major && yarn npm:prep",
+    "npm:prep:next": "yarn package:next && yarn npm:prep",
     "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
     "npm:publish": "yarn npm:prep:patch && yarn npm:publish:impl",
     "npm:publish:minor": "yarn npm:prep:minor && yarn npm:publish:impl",
-    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
+    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl",
+    "npm:publish:next": "yarn npm:prep:next && yarn npm:publish:impl"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.7"
   },
   "peerDependencies": {
-    "@tempots/dom": "23.0.2",
+    "@tempots/dom": "24.0.0-next.1",
     "@tempots/std": "0.16.0"
   },
   "devDependencies": {

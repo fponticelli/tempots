@@ -5,13 +5,11 @@ import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
-// import { _maybeAddAttributeTracker, _maybeAddClassTracker } from '../dom/ssr'
 import { Value } from '../std/value'
 
 const staticClassName =
   (value: string[]): Renderable =>
   (ctx: DOMContext) => {
-    // _maybeAddClassTracker(ctx)
     ctx.addClasses(value)
     return (removeTree: boolean) => {
       if (removeTree) {
@@ -23,7 +21,6 @@ const staticClassName =
 const signalClassName =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
-    // _maybeAddClassTracker(ctx)
     let previous: string[] = []
     const clear = signal.on(v => {
       ctx.removeClasses(previous)
@@ -42,7 +39,6 @@ const signalClassName =
 const staticAttributeRenderable = <T>(name: string, value: T) => {
   return (ctx: DOMContext) => {
     const { get, set } = ctx.makeAccessors(name)
-    // _maybeAddAttributeTracker(ctx, name)
     const original = get()
     set(value)
     return (removeTree: boolean) => {
@@ -56,7 +52,6 @@ const staticAttributeRenderable = <T>(name: string, value: T) => {
 const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
   return (ctx: DOMContext) => {
     const { get, set } = ctx.makeAccessors(name)
-    // _maybeAddAttributeTracker(ctx, name)
     const original = get()
     const clear = signal.on(set)
     return (removeTree: boolean) => {

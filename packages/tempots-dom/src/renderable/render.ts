@@ -3,7 +3,7 @@ import { DOMContext } from '../dom/dom-context'
 import { _getSelfOrParentElement, _isElement } from '../dom/dom-utils'
 import { BrowserContext } from '../dom/browser-context'
 import { HeadlessContext, HeadlessPortal } from '../dom/headless-context'
-import { makeProp } from '../std/signal'
+import { Value } from '../std/value'
 
 /**
  * Renders the given `renderable` with the provided `ctx` DOM context.
@@ -59,7 +59,6 @@ export const render = (
   }
   if (clear !== false && (doc ?? el.ownerDocument) != null) {
     if (el.nodeType === 1) (el as Element).innerHTML = ''
-    // _clearSSR((doc ?? el.ownerDocument)!)
   }
   const element = _getSelfOrParentElement(el)
   const ref = _isElement(el) ? undefined : el
@@ -67,11 +66,17 @@ export const render = (
   return renderWithContext(node, ctx)
 }
 
-export const runHeadless = (node: Renderable, currentUrl: string) => {
-  const currentURL = makeProp(currentUrl)
-  const root = new HeadlessPortal(':root', undefined)
+export const runHeadless = (
+  makeRenderable: () => Renderable,
+  {
+    startUrl = 'https://example.com',
+    selector = ':root',
+  }: { startUrl?: Value<string>; selector?: string } = {}
+) => {
+  const currentURL = Value.toSignal(startUrl).deriveProp()
+  const root = new HeadlessPortal(selector, undefined)
   const ctx = new HeadlessContext(root, undefined, { currentURL }, {})
-  const clear = renderWithContext(node, ctx)
+  const clear = renderWithContext(makeRenderable(), ctx)
   return {
     clear,
     root,

@@ -6,8 +6,7 @@ describe("ForEach Headless", () => {
   test("with signals", async () => {
     const s = makeProp(['a', 'b', 'c'])
     const { root } = runHeadless(
-      ForEach(s, item => item),
-      'https://tempots.com'
+      () => ForEach(s, item => item)
     )
     expect(root.contentToHTML()).toStrictEqual('abc')
     s.set(['d', 'e', 'f'])
@@ -23,12 +22,11 @@ describe("ForEach Headless", () => {
   test("with separator", async () => {
     const s = makeProp(['A', 'B', 'C'])
     const { root } = runHeadless(
-      ForEach(
+      () => ForEach(
         s,
         (item) => item,
         sep => sep.isLast.map(isLast => `${sep.index}:${sep.isFirst}:${isLast}`)
-      ),
-      'https://tempots.com'
+      )
     )
     expect(root.contentToHTML()).toStrictEqual('A0:true:falseB1:false:trueC')
     s.set(['A', 'B'])
@@ -46,11 +44,10 @@ describe("ForEach Headless", () => {
   });
   test("with literal", async () => {
     const { root, clear } = runHeadless(
-      ForEach(
+      () => ForEach(
         ['a', 'b', 'c'],
         (item) => item
-      ),
-      'https://tempots.com'
+      )
     )
     expect(root.contentToHTML()).toStrictEqual('abc')
     clear()

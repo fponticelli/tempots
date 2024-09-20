@@ -9,7 +9,7 @@ describe("Counter Headless", () => {
   });
   test("increment/decrement", async () => {
     const { node, count } = counter();
-    const { root, clear } = runHeadless(node, 'https://tempots.com/');
+    const { root, clear } = runHeadless(() => node);
     expect(root.contentToHTML()).toStrictEqual(
       '<div id="counter"><div class="even">Count: 0</div><div><button id="decrement">Decrement</button><button id="increment">Increment</button></div></div>'
     );

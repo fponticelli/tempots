@@ -5,7 +5,7 @@ const { div } = html;
 describe("DOM Headless", () => {
   test("div base attributes", () => {
     const node = div(attr.id("test"), attr.class("test"), style.color("red"));
-    const { root } = runHeadless(node, 'https://tempots.com/');
+    const { root } = runHeadless(() => node);
     expect(root.contentToHTML()).toStrictEqual(
       '<div id="test" class="test" style="color: red;"></div>'
     );
@@ -14,7 +14,7 @@ describe("DOM Headless", () => {
   test("div reactive", () => {
     const cls = makeProp("test");
     const node = div(attr.class(cls));
-    const { root, clear } = runHeadless(node, 'https://tempots.com/');
+    const { root, clear } = runHeadless(() => node);
     expect(root.contentToHTML()).toStrictEqual('<div class="test"></div>');
     cls.value = "test2";
     expect(root.contentToHTML()).toStrictEqual('<div class="test2"></div>');
@@ -25,20 +25,20 @@ describe("DOM Headless", () => {
 
   test("onDispose", () => {
     const spy = vi.fn();
-    const { clear } = runHeadless(div(div(OnDispose(spy))), 'https://tempots.com/');
+    const { clear } = runHeadless(() => div(div(OnDispose(spy))));
     expect(spy).toHaveBeenCalledTimes(0);
     clear();
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
   test("add text", () => {
-    const { root } = runHeadless(div("test"), 'https://tempots.com/');
+    const { root } = runHeadless(() => div("test"));
     expect(root.getText()).toStrictEqual("test");
   });
 
   test("add signal text", () => {
     const txt = makeProp("test");
-    const { root, clear } = runHeadless(div(txt), 'https://tempots.com/');
+    const { root, clear } = runHeadless(() => div(txt));
     expect(root.getText()).toStrictEqual("test");
     txt.value = "test2";
     expect(root.getText()).toStrictEqual("test2");
@@ -48,7 +48,7 @@ describe("DOM Headless", () => {
   });
 
   test("add child", () => {
-    const { root } = runHeadless(div(div()), 'https://tempots.com/');
+    const { root } = runHeadless(() => div(div()));
     expect(root.contentToHTML()).toStrictEqual("<div><div></div></div>");
   });
 
@@ -60,7 +60,7 @@ describe("DOM Headless", () => {
     const spyHeadlessCtx = vi.fn();
     const spyDispose = vi.fn();
     const { root } = runHeadless(
-      div(
+      () => div(
         Ensure(cls, s => attr.class(s)),
         Ensure(cls, s =>
           div(
@@ -72,8 +72,7 @@ describe("DOM Headless", () => {
             OnDispose(spyDispose)
           )
         )
-      ),
-      'https://tempots.com/'
+      )
     );
     expect(spyElement).toHaveBeenCalledTimes(0);
     expect(spyCtxMount).toHaveBeenCalledTimes(1);

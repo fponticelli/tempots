@@ -52,10 +52,6 @@ export class BrowserContext implements DOMContext {
      * The `Providers` instance associated with this context.
      */
     readonly providers: Providers
-    // /**
-    //  * A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated
-    //  */
-    // readonly isFirstLevel: boolean
   ) {}
 
   /**
@@ -169,20 +165,8 @@ export class BrowserContext implements DOMContext {
     if (element == null) {
       throw new Error(`Cannot find element by selector for portal: ${selector}`)
     }
-    return this.withElement(element) // .withFirstLevel()
+    return this.withElement(element)
   }
-  // /**
-  //  * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-  //  * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-  //  */
-  // readonly withFirstLevel = (): DOMContext =>
-  //   new BrowserContext(
-  //     this.document,
-  //     this.element,
-  //     this.reference,
-  //     this.providers,
-  //     true
-  //   )
 
   /**
    * Creates a new `DOMContext` instance with the specified reference.
@@ -191,13 +175,7 @@ export class BrowserContext implements DOMContext {
    * @returns A new `DOMContext` instance with the specified reference.
    */
   readonly withReference = (reference: Text | undefined): DOMContext =>
-    new BrowserContext(
-      this.document,
-      this.element,
-      reference,
-      this.providers
-      // this.isFirstLevel
-    )
+    new BrowserContext(this.document, this.element, reference, this.providers)
 
   /**
    * Returns a new HTMLDOMContext instance with the specified providers merged into
@@ -209,16 +187,10 @@ export class BrowserContext implements DOMContext {
   readonly withProviders = (providers: {
     [K in ProviderMark<unknown>]: unknown
   }): DOMContext =>
-    new BrowserContext(
-      this.document,
-      this.element,
-      this.reference,
-      {
-        ...this.providers,
-        ...providers,
-      }
-      // this.isFirstLevel
-    )
+    new BrowserContext(this.document, this.element, this.reference, {
+      ...this.providers,
+      ...providers,
+    })
 
   /**
    * Retrieves a provider for the given provider mark.

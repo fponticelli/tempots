@@ -70,10 +70,8 @@ const main = async () => {
       }
       const originalFetch = fetch
       global.fetch = makeFetch(originalFetch)
-      // Reflect.set(this, 'fetch', makeFetch(fetch))
       const app = App(toc)
       const { root } = runHeadless(app, url)
-      // TODO
       await done
 
       const portals = root.getPortals()
@@ -135,43 +133,33 @@ const main = async () => {
   ])
   const toGenerate = ['/']
   while (toGenerate.length > 0) {
-    // console.log('next ...', toGenerate.length)
     const url = toGenerate.pop()!
     try {
       const basePath = path.resolve(process.cwd(), './dist')
       const filePath = path.join(basePath, url === '/' ? '/index.html' : url)
       const dirPath = path.dirname(filePath)
       if (generated.has(url)) {
-        // console.log('already generated', url)
         continue
       }
       generated.add(url)
       if (url !== '/' && await fse.exists(filePath)) {
-        // console.log(filePath)
         continue
       }
-      // console.log('Render:', url)
       const html = await renderPage(url)
-      // console.log('after render')
       const urls = filterURLs(extractURLs(html))
       const newUrls = urls.filter(url => !generated.has(url))
-      // console.log(newUrls)
       toGenerate.push(...newUrls)
 
       // save html
-      // console.log(`#### SAVED TO ${filePath}`)
 
       await fse.ensureDir(dirPath)
       await fsp.writeFile(filePath, html)
 
-      // console.log('generated', generated)
-      // console.log('toGenerate', toGenerate.length)
     } catch (error) {
       console.error('Error rendering', url, error)
       continue
     }
 
-    // console.log(`Writing ${url}, ${toGenerate.length} to go...`)
   }
   console.log(`Done, processed ${generated.size} files`)
 }

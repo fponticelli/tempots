@@ -9,7 +9,6 @@ import { Fragment } from './fragment'
 import { Empty } from './empty'
 import { attr } from './attribute'
 import { InputTypes } from '../types/html-attributes'
-// import { _addNodeTracker } from '../dom/ssr'
 import { Value } from '../std/value'
 
 /**
@@ -45,9 +44,6 @@ export const renderableOfTNode = (child: TNode): Renderable => {
 export const El = (tagName: string, ...children: TNode[]): Renderable => {
   return (ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, undefined)
-    // if (ctx.isFirstLevel) {
-    //   _addNodeTracker(newCtx)
-    // }
     const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
@@ -69,9 +65,6 @@ export const ElNS =
   (tagName: string, namespace: string, ...children: TNode[]): Renderable =>
   (ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, namespace)
-    // if (ctx.isFirstLevel) {
-    //   _addNodeTracker(newCtx)
-    // }
     const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))

@@ -5,13 +5,13 @@ const { div } = html;
 describe("Inner Headless", () => {
   test("innerHTML", () => {
     const node = div(attr.innerHTML("<b>hello</b>"));
-    const { root } = runHeadless(node, 'https://tempots.com');
+    const { root } = runHeadless(() => node);
     expect(root.contentToHTML()).toStrictEqual("<div><b>hello</b></div>");
   });
 
   test("innerText", () => {
     const node = div(attr.innerText("<b>hello</b>"));
-    const { root } = runHeadless(node, 'https://tempots.com');
+    const { root } = runHeadless(() => node);
     expect(root.getText()).toStrictEqual("<b>hello</b>");
   });
 });

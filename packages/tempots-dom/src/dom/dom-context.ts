@@ -12,8 +12,6 @@ import { HeadlessContext } from './headless-context'
  * @public
  */
 export interface DOMContext {
-  // readonly isFirstLevel: boolean
-
   /**
    * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace and appends it to the current element.
    *

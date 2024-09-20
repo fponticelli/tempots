@@ -31,9 +31,7 @@ async function getDemos(folder: string): Promise<Demo[]> {
   const contents = await Promise.all(
     data.map(async o => {
       const { dir, path } = o
-      // const dom = loadHtml(dir)
       const pack = await loadPackage(dir)
-      // const { title, description, priority } = extractDemoInfo(dom)
       return {
         priority: pack.priority,
         data: {
