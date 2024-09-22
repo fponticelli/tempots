@@ -617,12 +617,24 @@
     lodash.merge "^4.6.2"
     postcss-selector-parser "6.0.10"
 
+"@tempots/dom@*":
+  version "23.0.2"
+  resolved "https://registry.yarnpkg.com/@tempots/dom/-/dom-23.0.2.tgz#ee779b8954a63dc6f456cf077167152f0b2d4f9c"
+  integrity sha512-YxvpQKRUsNZ/gLoU7LzmeFsSrMGTmEyqNO7/dhF0UH/s49xd4UTSUm+iGRVo3RWwd9zxoun4QeLMDWLXLaqmhA==
+
 "@tempots/ssr@*":
   version "0.8.6"
   resolved "https://registry.yarnpkg.com/@tempots/ssr/-/ssr-0.8.6.tgz#6f3180f9fc44e09afed498c85f43a372cf7dac63"
   integrity sha512-R17rSVexDzzZwkODeER36CBprGTozHgBz8mbLCNLUWEzZw5o4MVscPnPXTZtxjd5wd3FyOdk64o9Mk56kGNOaw==
   dependencies:
     happy-dom "^14.12.3"
+
+"@tempots/ui@*":
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/@tempots/ui/-/ui-0.22.1.tgz#4130d419ad35ec1f4e75bbb7058a8cd5ace4aff0"
+  integrity sha512-ebcFJaJJoUewpiC1wEjuoeB5uVfcGrr8HZ/CJgUlyXFRd8N3ibhOQ7EVbc8tbEEJ0d1dI/qHP+L2yxmBkJ9N2w==
+  dependencies:
+    "@floating-ui/dom" "^1.6.7"
 
 "@ts-morph/common@~0.24.0":
   version "0.24.0"
