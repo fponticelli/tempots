@@ -28,7 +28,7 @@ export function Temperature(): Renderable {
   const tchange = makeProp<TempChange>({ unit: 'c', value: '' })
   const clear = tchange.on(tchange => {
     const value = Number(tchange.value)
-    if (tchange.value === '' || !Number.isFinite(value)) {
+    if (tchange.value.trim() === '' || !Number.isFinite(value)) {
       return
     }
     if (tchange.unit === 'c') {

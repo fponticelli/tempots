@@ -1,4 +1,4 @@
-import { NODE_PLACEHOLDER_ATTR } from '../renderable/render'
+import { _NODE_PLACEHOLDER_ATTR } from '../renderable/render'
 import { Prop } from '../std/signal'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
@@ -278,7 +278,7 @@ export class HeadlessElement extends HeadlessBase {
         return ` ${name}="${quote(value as string)}"`
       })
       .join('')
-    const placeholder = generatePlaceholders ? ` ${NODE_PLACEHOLDER_ATTR}` : ''
+    const placeholder = generatePlaceholders ? ` ${_NODE_PLACEHOLDER_ATTR}` : ''
     if (selfClosingTags.has(this.tagName) && children === '') {
       return `<${this.tagName}${ns}${attrs}${placeholder} />`
     }
