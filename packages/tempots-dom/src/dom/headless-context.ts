@@ -1,3 +1,4 @@
+import { NODE_PLACEHOLDER_ATTR } from '../renderable/render'
 import { Prop } from '../std/signal'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
@@ -245,7 +246,7 @@ export class HeadlessElement extends HeadlessBase {
 
   readonly isPortal = (): this is HeadlessPortal => false
 
-  readonly toHTML = (): string => {
+  readonly toHTML = (generatePlaceholders: boolean = false): string => {
     const children = this.children.map(child => child.toHTML()).join('')
     const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
     let innerHTML = null as string | null
@@ -277,10 +278,11 @@ export class HeadlessElement extends HeadlessBase {
         return ` ${name}="${quote(value as string)}"`
       })
       .join('')
+    const placeholder = generatePlaceholders ? ` ${NODE_PLACEHOLDER_ATTR}` : ''
     if (selfClosingTags.has(this.tagName) && children === '') {
-      return `<${this.tagName}${ns}${attrs} />`
+      return `<${this.tagName}${ns}${attrs}${placeholder} />`
     }
-    return `<${this.tagName}${ns}${attrs}>${innerHTML ?? children}</${this.tagName}>`
+    return `<${this.tagName}${ns}${attrs}${placeholder}>${innerHTML ?? children}</${this.tagName}>`
   }
 }
 
@@ -296,8 +298,10 @@ export class HeadlessPortal extends HeadlessBase {
 
   readonly toHTML = (): string => ''
 
-  readonly contentToHTML = (): string => {
-    return this.children.map(child => child.toHTML()).join('')
+  readonly contentToHTML = (generatePlaceholders: boolean = false): string => {
+    return this.children
+      .map(child => child.toHTML(generatePlaceholders))
+      .join('')
   }
 }
 

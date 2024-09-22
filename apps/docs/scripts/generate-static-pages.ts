@@ -70,8 +70,8 @@ const main = async () => {
       }
       const originalFetch = fetch
       global.fetch = makeFetch(originalFetch)
-      const app = App(toc)
-      const { root } = runHeadless(app, url)
+      const makeApp = () => App(toc)
+      const { root } = runHeadless(makeApp, { startUrl: url })
       await done
 
       const portals = root.getPortals()

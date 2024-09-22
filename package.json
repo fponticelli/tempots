@@ -13,6 +13,7 @@
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "test": "turbo test",
+    "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage",
     "npm:publish": "turbo npm:publish"
   },

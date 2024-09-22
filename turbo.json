@@ -30,6 +30,7 @@
     "lint": {},
     "lint:fix": {},
     "test": {},
+    "test:watch": {},
     "test:coverage": {},
     "npm:publish": {
       "dependsOn": [

@@ -1,5 +1,7 @@
 import { Renderable, TNode } from '../types/domain'
 import { UseProvider } from './consumers'
+import { Fragment } from './fragment'
+import { OnDispose } from './on-dispose'
 import { makeProviderMark, WithProvider } from './providers'
 
 /**
@@ -9,7 +11,12 @@ import { makeProviderMark, WithProvider } from './providers'
 export const probeMarker =
   makeProviderMark<(identifier: symbol) => void>('Probe')
 
-const probes = new Map<symbol, number>()
+const probes = new Map<
+  symbol,
+  { counter: number; timeoutId: ReturnType<typeof setTimeout> }
+>()
+
+export type ProbeResolution = 'resolved' | 'timeout'
 
 /**
  * Provides a child component with a probe, which can be used to trigger a callback when all probes with the same identifier are resolved.
@@ -21,31 +28,45 @@ const probes = new Map<symbol, number>()
  * @returns The child component with the probe.
  * @public
  */
-export const ProvideProbe = (
-  identifier: symbol,
-  callback: () => void,
+export const ProvideProbe = ({
+  identifier,
+  callback = () => {},
+  child,
+  timeout = 10,
+}: {
+  identifier: symbol
+  callback?: (resolution: ProbeResolution) => void
   child: TNode
-): Renderable => {
+  timeout?: number
+}): Renderable => {
   if (probes.has(identifier)) {
     throw new Error(`Probe already exists: ${identifier.description}`)
   }
 
-  probes.set(identifier, 0)
+  const timeoutId = setTimeout(() => callback('timeout'), timeout)
+  probes.set(identifier, {
+    counter: 0,
+    timeoutId,
+  })
 
   const probef = (identifier: symbol) => {
-    let probe = probes.get(identifier)
+    clearTimeout(timeoutId)
+    const probe = probes.get(identifier)
     if (probe == null) {
       throw new Error(`Probe not found: ${identifier.description}`)
     }
-    if (--probe === 0) {
-      callback()
+    if (--probe.counter === 0) {
+      callback('resolved')
       probes.delete(identifier)
     } else {
       probes.set(identifier, probe)
     }
   }
 
-  return WithProvider(probeMarker, probef, child)
+  return Fragment(
+    OnDispose(() => clearTimeout(timeoutId)),
+    WithProvider(probeMarker, probef, child)
+  )
 }
 
 /**
@@ -64,9 +85,11 @@ export const UseProbe = (
   return UseProvider(probeMarker, probefn => {
     const probe = probes.get(identifier)
     if (probe == null) {
-      throw new Error(`Probe not found: ${identifier.description}`)
+      return fn(() => {}) // don't do anything if ProvideProbe is not found
+      // throw new Error(`Probe not found: ${identifier.description}`)
     }
-    probes.set(identifier, probe + 1)
+    clearTimeout(probe.timeoutId)
+    probe.counter++
     return fn(() => probefn(identifier))
   })
 }
@@ -83,10 +106,13 @@ const globalProbe = Symbol('globalProbe')
  * @public
  */
 export const ProvideGlobalProbe = (
-  callback: () => void,
+  {
+    callback,
+    timeout,
+  }: { callback?: (resolution: ProbeResolution) => void; timeout?: number },
   child: TNode
 ): Renderable => {
-  return ProvideProbe(globalProbe, callback, child)
+  return ProvideProbe({ identifier: globalProbe, callback, child, timeout })
 }
 
 /**
