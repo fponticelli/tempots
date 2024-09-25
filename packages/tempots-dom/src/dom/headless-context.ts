@@ -2,7 +2,7 @@ import { _NODE_PLACEHOLDER_ATTR } from '../renderable/render'
 import { Prop } from '../std/signal'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
-import { DOMContext } from './dom-context'
+import { DOMContext, HandlerOptions } from './dom-context'
 import { ProviderNotFoundError } from './errors'
 
 const classKey = Symbol('class')
@@ -121,11 +121,20 @@ abstract class HeadlessBase {
   readonly click = (): void => {
     this.trigger('click', {})
   }
-  readonly on = <E>(event: string, listener: (event: E) => void): Clear => {
+  readonly on = <E>(
+    event: string,
+    listener: (event: E) => void,
+    options?: HandlerOptions
+  ): Clear => {
     const handlers = (this.properties[handlerKey] ??= {})
-    const _listener = listener as (event: unknown) => void
+    const _listener = options?.once
+      ? (event: unknown) => {
+          clear()
+          listener(event as E)
+        }
+      : (event: unknown) => listener(event as E)
     handlers[event] = [...(handlers[event] ?? []), _listener]
-    return () => {
+    const clear = () => {
       const listeners = handlers[event] ?? []
       const index = listeners.indexOf(_listener)
       if (index === -1) {
@@ -141,7 +150,17 @@ abstract class HeadlessBase {
       } else {
         handlers[event] = listeners
       }
+
+      if (options?.signal != null) {
+        options.signal.removeEventListener('abort', clear)
+      }
     }
+
+    if (options?.signal != null) {
+      options.signal.addEventListener('abort', clear)
+    }
+
+    return clear
   }
   readonly addClasses = (tokens: string[]): void => {
     if (tokens.length === 0) {

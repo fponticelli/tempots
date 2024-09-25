@@ -1,5 +1,11 @@
 import { GetValueTypes } from '../types/domain'
-import { makeComputed, makeEffect, makeSignal, Signal } from './signal'
+import {
+  ListenerOptions,
+  makeComputed,
+  makeEffect,
+  makeSignal,
+  Signal,
+} from './signal'
 
 /**
  * Represents a value that can either be a `Signal<T>` or a generic type `T`.
@@ -134,7 +140,11 @@ export const makeComputedOf =
  */
 export const makeEffectOf =
   <T extends Value<unknown>[]>(...args: T) =>
-  (fn: (...args: GetValueTypes<T>) => void) => {
+  (fn: (...args: GetValueTypes<T>) => void, options: ListenerOptions = {}) => {
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
-    makeEffect(() => fn(...(args.map(Value.get) as GetValueTypes<T>)), signals)
+    return makeEffect(
+      () => fn(...(args.map(Value.get) as GetValueTypes<T>)),
+      signals,
+      options
+    )
   }

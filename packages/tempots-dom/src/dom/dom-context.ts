@@ -3,6 +3,18 @@ import { BrowserContext } from './browser-context'
 import { HeadlessContext } from './headless-context'
 
 /**
+ * Options for event listeners.
+ *
+ * @public
+ */
+export type HandlerOptions = {
+  once?: boolean
+  signal?: AbortSignal
+  passive?: boolean
+  capture?: boolean
+}
+
+/**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
  * It provides methods and properties to manipulate and interact with the DOM element.
  *
@@ -80,9 +92,14 @@ export interface DOMContext {
    * Adds an event listener to the element.
    * @param event - The event to listen for.
    * @param listener - The listener to call when the event occurs.
+   * @param options - The options for the event listener.
    * @returns A function to remove the event listener.
    */
-  on<E>(event: string, listener: (event: E) => void): Clear
+  on<E>(
+    event: string,
+    listener: (event: E) => void,
+    options?: HandlerOptions
+  ): Clear
 
   /**
    * Adds classes to the element.

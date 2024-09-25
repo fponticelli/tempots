@@ -1,6 +1,6 @@
 import type { Clear, ProviderMark, Providers } from '../types/domain'
 import { _makeGetter, _makeSetter } from './attr'
-import { DOMContext } from './dom-context'
+import { DOMContext, HandlerOptions } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
 import { ProviderNotFoundError } from './errors'
 import { HeadlessContext } from './headless-context'
@@ -246,13 +246,22 @@ export class BrowserContext implements DOMContext {
    * Adds an event listener to the element.
    * @param event - The event to listen for.
    * @param listener - The listener to call when the event occurs.
+   * @param options - The options for the event listener.
    * @returns A function to remove the event listener.
    */
-  readonly on = <E>(event: string, listener: (event: E) => void): Clear => {
-    this.element.addEventListener(event, listener as EventListener)
+  readonly on = <E>(
+    event: string,
+    listener: (event: E) => void,
+    options?: HandlerOptions
+  ): Clear => {
+    this.element.addEventListener(event, listener as EventListener, options)
     return (removeTree: boolean) => {
       if (removeTree) {
-        this.element.removeEventListener(event, listener as EventListener)
+        this.element.removeEventListener(
+          event,
+          listener as EventListener,
+          options
+        )
       }
     }
   }
