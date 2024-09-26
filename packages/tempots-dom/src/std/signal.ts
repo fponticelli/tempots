@@ -86,7 +86,9 @@ export class Signal<T> {
   /**
    * @internal
    */
-  protected readonly _onValueListeners: Array<(value: T) => void> = []
+  protected readonly _onValueListeners: Array<
+    (value: T, previousValue: T | undefined) => void
+  > = []
   /**
    * @internal
    */
@@ -135,16 +137,16 @@ export class Signal<T> {
    * @param options - Options for the listener.
    */
   readonly on = (
-    listener: (value: T) => void,
+    listener: (value: T, previousValue: T | undefined) => void,
     options: ListenerOptions = {}
   ) => {
     if (!options.skipInitial) {
-      listener(this.get())
+      listener(this.get(), undefined)
     }
     const actualListener = options.once
-      ? (value: T) => {
+      ? (value: T, previousValue: T | undefined) => {
           clear()
-          listener(value)
+          listener(value, previousValue)
         }
       : listener
     this._onValueListeners.push(actualListener)
@@ -167,12 +169,13 @@ export class Signal<T> {
    * @internal
    */
   protected readonly _setAndNotify = (newV: T, forceNotifications: boolean) => {
-    const same = this.equals(this._value, newV)
+    const currentValue = this._value
+    const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
     }
     if (forceNotifications || !same) {
-      this._onValueListeners.forEach(l => l(newV))
+      this._onValueListeners.forEach(l => l(newV, currentValue))
     }
   }
 
@@ -536,8 +539,7 @@ export class Computed<T> extends Signal<T> {
   readonly get = () => {
     if (this._isDirty) {
       this._isDirty = false
-      this._value = this._fn()
-      this._setAndNotify(this._value, true)
+      this._setAndNotify(this._fn(), true)
     }
     return this._value
   }

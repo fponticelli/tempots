@@ -130,15 +130,16 @@ describe("Signal", () => {
     expect(c.value).toStrictEqual(6);
     c.on(spy);
     expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(6, undefined);
     p1.set(2);
     await sleep()
     expect(spy).toHaveBeenCalledTimes(2);
-    expect(spy).toHaveBeenCalledWith(7);
+    expect(spy).toHaveBeenCalledWith(7, 6);
     p2.set(3);
     p3.set(4);
     await sleep()
     expect(spy).toHaveBeenCalledTimes(3);
-    expect(spy).toHaveBeenCalledWith(9);
+    expect(spy).toHaveBeenCalledWith(9, 7);
   });
   test("computed with forced get", async () => {
     const p1 = makeProp(1);
@@ -148,18 +149,19 @@ describe("Signal", () => {
     const spy = vi.fn();
     expect(c.value).toStrictEqual(6);
     c.on(spy);
+    expect(spy).toHaveBeenCalledWith(6, undefined);
     expect(spy).toHaveBeenCalledTimes(1);
     p1.set(2);
     expect(c.value).toStrictEqual(7); // forced get
     await sleep()
-    expect(spy).toHaveBeenCalledWith(7);
+    expect(spy).toHaveBeenCalledWith(7, 6);
     expect(spy).toHaveBeenCalledTimes(2);
     p2.set(3);
     p3.set(4);
     expect(c.value).toStrictEqual(9); // forced get
     await sleep()
     expect(spy).toHaveBeenCalledTimes(3);
-    expect(spy).toHaveBeenCalledWith(9);
+    expect(spy).toHaveBeenCalledWith(9, 7);
   });
   test("at", () => {
     const p = makeProp([1, 2, 3]);
