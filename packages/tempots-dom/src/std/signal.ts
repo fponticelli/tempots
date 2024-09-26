@@ -741,10 +741,13 @@ export const makeEffect = (
     : fn
   if (options.skipInitial) {
     let called = false
+    const actualFn2 = actualFn
     actualFn = () => {
-      if (called) return
-      called = true
-      actualFn()
+      if (called) {
+        actualFn2()
+      } else {
+        called = true
+      }
     }
   }
   const signal = makeComputed(actualFn, signals)
