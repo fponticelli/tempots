@@ -13,6 +13,7 @@ export type ExcludeFromStyle =
   | 'length'
   | 'name'
   | number
+  | typeof Symbol.iterator
 
 /**
  * Represents a subset of CSS styles.

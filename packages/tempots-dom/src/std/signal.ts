@@ -422,11 +422,18 @@ export class Signal<T> {
 
   /**
    * Derives a new property from the current signal.
-   * @param autoDisposeProp - Determines whether the derived property should be automatically disposed.
+   * @param options - The options for the derived property.
+   * @param options.autoDisposeProp - Determines whether the derived property should be automatically disposed.
+   * @param options.equals - A function that determines if two values are equal.
    * @returns The derived property.
    */
-  readonly deriveProp = (autoDisposeProp = true) =>
-    this.feedProp(makeProp(this.get()), autoDisposeProp)
+  readonly deriveProp = ({
+    autoDisposeProp = true,
+    equals,
+  }: {
+    autoDisposeProp?: boolean
+    equals?: (a: T, b: T) => boolean
+  } = {}) => this.feedProp(makeProp(this.get(), equals), autoDisposeProp)
 
   /**
    * Returns a signal that emits the count of values received so far.

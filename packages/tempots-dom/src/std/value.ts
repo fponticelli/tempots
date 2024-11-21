@@ -3,7 +3,9 @@ import {
   ListenerOptions,
   makeComputed,
   makeEffect,
+  makeProp,
   makeSignal,
+  Prop,
   Signal,
 } from './signal'
 
@@ -104,6 +106,33 @@ export const Value = {
   dispose: <T>(value: Value<T>): void => {
     if (Signal.is(value)) {
       value.dispose()
+    }
+  },
+
+  /**
+   * Derives a Prop from a Signal.
+   * If the value is a Signal, it returns a new Prop with the derived value.
+   * If the value is not a Signal, it returns a new Prop with the value.
+   * @param value - The value or Signal instance to derive the Prop from.
+   * @param options - The options for the derived Prop.
+   * @param options.autoDisposeProp - Determines whether the derived Prop should be automatically disposed.
+   * @param options.equals - A function that determines if two values are equal.
+   * @returns A Prop instance.
+   */
+  deriveProp: <T>(
+    value: Value<T>,
+    {
+      autoDisposeProp = true,
+      equals,
+    }: {
+      autoDisposeProp?: boolean
+      equals?: (a: T, b: T) => boolean
+    } = {}
+  ): Prop<T> => {
+    if (Signal.is(value)) {
+      return value.deriveProp({ autoDisposeProp, equals })
+    } else {
+      return makeProp(value, equals)
     }
   },
 }

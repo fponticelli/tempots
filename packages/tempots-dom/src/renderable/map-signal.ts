@@ -1,4 +1,4 @@
-import type { Clear, Renderable } from '../types/domain'
+import type { Clear, Renderable, TNode } from '../types/domain'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
@@ -15,13 +15,13 @@ import { Value } from '../std/value'
  *
  * @typeParam T - The type of values emitted by the signal.
  * @param vlaue - The signal or value to map.
- * @param fn - The function to map the signal values to renderable functions.
+ * @param fn - The function to map the signal values to a renderable/TNode.
  * @returns - A new renderable function that represents the mapped signal.
  * @public
  */
 export const MapSignal = <T>(
   value: Value<T>,
-  fn: (value: T) => Renderable
+  fn: (value: T) => TNode
 ): Renderable => {
   if (Signal.is(value)) {
     const signal = value as Signal<T>
