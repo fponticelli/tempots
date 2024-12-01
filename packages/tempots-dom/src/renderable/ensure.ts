@@ -37,14 +37,18 @@ export const Ensure = <T>(
       const newCtx = ctx.makeRef()
       let clear = null as Clear | null
       let hadValue = false
-      const feed = makeProp(null as T | null)
+      let feed: Prop<T> | null = null
       const clearSignal = signal.on(value => {
         if (value == null) {
           clear?.(true)
           clear = renderableOfTNode(otherwise?.() ?? Empty)(newCtx)
           hadValue = false
         } else {
-          feed.value = value
+          if (feed == null) {
+            feed = makeProp<T>(value)
+          } else {
+            feed.value = value
+          }
           if (!hadValue) {
             clear?.(true)
             clear = renderableOfTNode(then(feed as Signal<NonNillable<T>>))(
@@ -55,6 +59,7 @@ export const Ensure = <T>(
         }
       })
       return (removeTree: boolean) => {
+        feed?.dispose()
         clearSignal()
         clear?.(removeTree)
         newCtx.clear(removeTree)
