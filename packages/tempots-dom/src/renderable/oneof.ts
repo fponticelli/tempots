@@ -14,6 +14,15 @@ export type OneOfOptions<T extends Record<string, unknown>> = {
 }
 
 /**
+ * Converts an object to a union of its keys.
+ * @typeParam T - The type of the object.
+ * @public
+ */
+export type ObjectToUnion<T> = {
+  [K in keyof T]: { [P in K]: T[K] }
+}[keyof T]
+
+/**
  * Creates a renderable function that renders different components based on the value of a signal.
  *
  * The signal value should be an object with a single key that matches one of the keys in the `cases` object.
@@ -49,6 +58,7 @@ export const OneOf = <T extends Record<string, unknown>>(
         }
       })
       return (removeTree: boolean) => {
+        matched?.dispose()
         clearSignal()
         newCtx.clear(removeTree)
         clearRenderable?.(removeTree)

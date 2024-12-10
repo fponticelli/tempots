@@ -111,14 +111,14 @@
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
     "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
     "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",
-    "npm:prep": "yarn build && cp README.md dist",
-    "npm:prep:patch": "yarn package:patch && yarn npm:prep",
-    "npm:prep:minor": "yarn package:minor && yarn npm:prep",
-    "npm:prep:major": "yarn package:major && yarn npm:prep",
+    "npm:prep": "pnpm build && cp README.md dist",
+    "npm:prep:patch": "pnpm package:patch && pnpm npm:prep",
+    "npm:prep:minor": "pnpm package:minor && pnpm npm:prep",
+    "npm:prep:major": "pnpm package:major && pnpm npm:prep",
     "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
-    "npm:publish": "yarn npm:prep:patch && yarn npm:publish:impl",
-    "npm:publish:minor": "yarn npm:prep:minor && yarn npm:publish:impl",
-    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
+    "npm:publish": "pnpm npm:prep:patch && pnpm npm:publish:impl",
+    "npm:publish:minor": "pnpm npm:prep:minor && pnpm npm:publish:impl",
+    "npm:publish:major": "pnpm npm:prep:major && pnpm npm:publish:impl"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

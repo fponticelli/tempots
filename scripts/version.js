@@ -64,7 +64,7 @@ function publishToNpm(packageDir) {
     args.push('--tag next')
   } 
 
-  const publishCommand = `yarn publish dist ${args.join(' ')}`
+  const publishCommand = `pnpm publish dist ${args.join(' ')}`
   execSync(publishCommand, { stdio: 'inherit' })
 }
 
