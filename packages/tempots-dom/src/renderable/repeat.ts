@@ -62,6 +62,8 @@ export const Repeat = (
 
         return (removeTree: boolean) => {
           clear()
+          clears.forEach(c => c(removeTree))
+          clears.length = 0
           newCtx.clear(removeTree)
         }
       }
