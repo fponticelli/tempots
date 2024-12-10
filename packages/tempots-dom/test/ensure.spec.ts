@@ -19,6 +19,32 @@ describe("Ensure", () => {
     s.set('y')
     await sleep()
     expect(document.body.innerHTML).toStrictEqual('y')
+    s.set(null)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('x')
+    s.set('z')
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('z')
+  });
+  test("using signal (start from not null)", async () => {
+    const s = makeProp<string | null>('y')
+    render(
+      Ensure(s, 
+        v => v,
+        () => 'x'
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toStrictEqual('y')
+    s.set('z')
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('z')
+    s.set(null)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('x')
+    s.set('z')
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('z')
   });
   test("using string literal", () => {
     render(

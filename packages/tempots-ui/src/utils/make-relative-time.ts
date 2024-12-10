@@ -92,7 +92,7 @@ export const makeRelativeTime = (date: Value<Date>, now?: Value<Date>) => {
   const realNow =
     now != null
       ? Signal.is(now)
-        ? now.map(v => v)
+        ? now.derive()
         : makeProp(now)
       : makeProp(new Date())
 

@@ -436,6 +436,12 @@ export class Signal<T> {
   } = {}) => this.feedProp(makeProp(this.get(), equals), autoDisposeProp)
 
   /**
+   * Derives a new signal from the current signal. Useful to create a new signal that emits the same values as the current signal but can be disposed independently.
+   * @returns A new signal that emits the same values as the current signal.
+   */
+  readonly derive = () => this.map(v => v)
+
+  /**
    * Returns a signal that emits the count of values received so far.
    * @returns A signal that emits the count of values received so far.
    */

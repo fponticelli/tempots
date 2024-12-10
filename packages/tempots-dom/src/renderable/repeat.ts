@@ -42,7 +42,7 @@ export const Repeat = (
         const existings: ElementPosition[] = Array.from(
           { length: times.value },
           (_, i) => i
-        ).map(i => new ElementPosition(i, times))
+        ).map(i => new ElementPosition(i, times.derive()))
         const clears: Clear[] = existings.map(pos =>
           renderableOfTNode(element(pos))(newCtx)
         )
@@ -53,7 +53,7 @@ export const Repeat = (
           }
           for (let i = 0; i < newLength; i++) {
             if (existings[i] == null) {
-              existings[i] = new ElementPosition(i, times)
+              existings[i] = new ElementPosition(i, times.derive())
               const node = renderableOfTNode(element(existings[i]))
               clears[i] = node(newCtx)
             }
