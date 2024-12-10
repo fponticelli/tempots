@@ -57,12 +57,12 @@ function updateDependencies(newVersion, libName, packageDir) {
 
 function publishToNpm(packageDir) {
   const version = getVersion(path.join(packageDir, 'package.json'))
-  const args = ['--access public']
-  const newVersion = `--new-version ${version.trim()}`
-  args.push(newVersion)
+  const args = ['--access public', '--no-git-checks']
   if(version.includes('next')){
     args.push('--tag next')
   } 
+
+  console.log(args.join(' '))
 
   const publishCommand = `pnpm publish dist ${args.join(' ')}`
   execSync(publishCommand, { stdio: 'inherit' })
