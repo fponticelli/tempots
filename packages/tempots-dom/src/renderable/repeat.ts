@@ -39,26 +39,26 @@ export const Repeat = (
     if (Signal.is(times)) {
       return (ctx: DOMContext) => {
         const newCtx = ctx.makeRef()
-        const existings: ElementPosition[] = []
         const clears: Clear[] = []
 
-        const clear = times.on(newLength => {
-          while (newLength < clears.length) {
-            clears.pop()!(true)
-            existings.pop()!.dispose()
+        const disposeListener = times.on(newLength => {
+          const toRemove = clears.splice(newLength)
+          for (const remove of toRemove) {
+            remove(true)
           }
           for (let i = clears.length; i < newLength; i++) {
-            existings[i] = new ElementPosition(i, times.derive())
-            const node = renderableOfTNode(element(existings[i]))
-            clears[i] = node(newCtx)
+            const pos = new ElementPosition(i, times)
+            clears.push(renderableOfTNode(element(pos))(newCtx))
           }
         })
 
         return (removeTree: boolean) => {
-          clears.forEach(c => c(removeTree))
+          disposeListener()
+          for (const clear of clears) {
+            clear(removeTree)
+          }
           clears.length = 0
           newCtx.clear(removeTree)
-          clear()
         }
       }
     } else {

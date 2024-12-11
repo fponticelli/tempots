@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { makeProp, render, Repeat } from "../src";
+import { Fragment, makeProp, render, Repeat } from "../src";
 import { sleep } from "./helper";
 
 describe("Repeat", () => {
@@ -59,4 +59,37 @@ describe("Repeat", () => {
     clear()
     expect(document.body.innerHTML).toStrictEqual('')
   });
+  test("with nested repeat", async () => {
+    const s = makeProp(0)
+    render(
+      Repeat(s, position => Fragment(Repeat(position.total.map(total => total), pos => pos.index.toString()), '!')),
+      document.body
+    )
+    expect(document.body.innerHTML).toStrictEqual('')
+
+    s.set(1)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('0!')
+
+    s.set(2)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('01!01!')
+
+    s.set(3)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('012!012!012!')
+
+    s.set(0)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('')
+
+    s.set(2)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('01!01!')
+
+    s.set(1)
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('0!')
+  });
 });
+
