@@ -38,11 +38,11 @@ html.image(
 )
 ```
 
-You will have noticed that text nodes and attribute values accept both literal values (ex. `'Hello, World!'`) and signals (ex. `titleSignal`). This is because the arguments are types as `Value<T>` which is a union of `T` and `Signal<T>`. `Value<string>` also happens to be part of the `TNode` union.
+You will have noticed that text nodes and attribute values accept both literal values (ex. `'Hello, World!'`) and signals (ex. `titleSignal`). This is because the arguments are typed as `Value<T>` which is a union of `T` and `Signal<T>`. `Value<string>` also happens to be part of the `TNode` union.
 
 ### attr.class
 
-The class attribute is special in the sense that can be used multiple times in the same element.
+The `class` attribute is special in the sense that can be used multiple times in the same element.
 
 ```ts
 const classSignal = signal('class3 class4')
