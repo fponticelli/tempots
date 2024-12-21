@@ -45,7 +45,7 @@ const main = async () => {
   }
 
   const renderPage = async (pageUrl: string) => {
-    const url = `https://tempots.com${pageUrl}`
+    const url = `https://tempo-ts.com${pageUrl}`
     try {
       const toc = await jsonToc
       const $ = cheerio.load(await htmlTemplate)
@@ -54,7 +54,7 @@ const main = async () => {
       const makeFetch = (originalFetch) => {
         return (async (input, init?: RequestInit) => {
           start()
-          if (typeof input === 'string' && (input.startsWith('/'))) { // || input.startsWith('https://tempots.com/'))) {
+          if (typeof input === 'string' && (input.startsWith('/'))) { // || input.startsWith('https://tempo-ts.com/'))) {
             try {
               const file = await fsp.readFile(path.resolve(process.cwd(), `./dist${input}`), 'utf-8')
               return new Response(file, { status: 200 })
@@ -65,7 +65,7 @@ const main = async () => {
               end()
             }
           }
-          return originalFetch(`https://tempots.com${input}`, init).finally(end)
+          return originalFetch(`https://tempo-ts.com${input}`, init).finally(end)
         })
       }
       const originalFetch = fetch

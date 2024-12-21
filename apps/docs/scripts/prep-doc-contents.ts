@@ -323,7 +323,7 @@ async function main() {
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
 
   // CNAME
-  await fsp.writeFile(cnameFile, 'tempots.com')
+  await fsp.writeFile(cnameFile, 'tempo-ts.com')
 
   console.timeEnd('main')
 }
