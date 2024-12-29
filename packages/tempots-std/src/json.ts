@@ -1,4 +1,5 @@
 import { Nothing } from './domain'
+import { Result } from './result'
 
 /**
  * Represents a JSON primitive value.
@@ -56,3 +57,18 @@ export const isJSONPrimitive = (value: JSONValue): value is JSONPrimitive =>
   typeof value === 'boolean' ||
   typeof value === 'number' ||
   value == null
+
+/**
+ * Parses a JSON string into a JSON value.
+ *
+ * @param value - The JSON string to parse.
+ * @returns A result containing the parsed JSON value or an error if parsing fails.
+ * @public
+ */
+export const parseJSON = (value: string): Result<JSONValue, Error> => {
+  try {
+    return Result.success(JSON.parse(value))
+  } catch (error) {
+    return Result.failure(error as Error)
+  }
+}

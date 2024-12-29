@@ -1,7 +1,7 @@
 {
   "name": "@tempots/std",
   "private": false,
-  "version": "0.16.0",
+  "version": "0.16.1",
   "priority": 4,
   "description": "Std library for TypeScript. Natural complement to the Tempo libraries.",
   "keywords": [
@@ -49,6 +49,10 @@
       "import": "./dist/boolean.js",
       "require": "./dist/boolean.cjs"
     },
+    "./deferred": {
+      "import": "./dist/deferred.js",
+      "require": "./dist/deferred.cjs"
+    },
     "./domain": {
       "import": "./dist/domain.js",
       "require": "./dist/domain.cjs"
@@ -92,6 +96,10 @@
     "./string": {
       "import": "./dist/string.js",
       "require": "./dist/string.cjs"
+    },
+    "./timer": {
+      "import": "./dist/timer.js",
+      "require": "./dist/timer.cjs"
     },
     "./validation": {
       "import": "./dist/validation.js",
@@ -159,6 +167,9 @@
       "boolean": [
         "./dist/boolean.d.ts"
       ],
+      "deferred": [
+        "./dist/deferred.d.ts"
+      ],
       "domain": [
         "./dist/domain.d.ts"
       ],
@@ -191,6 +202,9 @@
       ],
       "string": [
         "./dist/string.d.ts"
+      ],
+      "timer": [
+        "./dist/timer.d.ts"
       ],
       "validation": [
         "./dist/validation.d.ts"

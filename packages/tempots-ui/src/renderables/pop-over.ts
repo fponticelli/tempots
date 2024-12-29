@@ -4,9 +4,9 @@ import {
   Value,
   html,
   Portal,
-  When,
   OnBrowserCtx,
   BrowserContext,
+  LazyWhen,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -92,8 +92,7 @@ export const PopOver = ({
     const isOpen = Value.toSignal(open)
     const target = ctx.element
 
-    return When(
-      isOpen,
+    return LazyWhen(isOpen, () =>
       Portal(
         'body',
         html.div(
