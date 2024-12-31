@@ -29,19 +29,20 @@ export const ItemFooter = (item: Signal<Item>) =>
   html.footer(
     When(
       item.map(i => i.type === 'job'),
-      item.at('time_ago'),
-      Fragment(
-        item.at('points').map(v => (v ?? 0).toLocaleString()),
-        ' points by ',
-        LinkRoute({ route: item.at('user').map(Route.user) }),
-        ' ',
-        item.at('time_ago'),
-        ' | ',
-        LinkRoute({
-          route: item.map(i => Route.item(i.id)),
-          children: item.at('comments_count').map(v => v.toLocaleString()),
-        })
-      )
+      () => item.at('time_ago'),
+      () =>
+        Fragment(
+          item.at('points').map(v => (v ?? 0).toLocaleString()),
+          ' points by ',
+          LinkRoute({ route: item.at('user').map(Route.user) }),
+          ' ',
+          item.at('time_ago'),
+          ' | ',
+          LinkRoute({
+            route: item.map(i => Route.item(i.id)),
+            children: item.at('comments_count').map(v => v.toLocaleString()),
+          })
+        )
     )
   )
 

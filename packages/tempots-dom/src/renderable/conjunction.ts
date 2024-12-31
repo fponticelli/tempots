@@ -11,11 +11,11 @@ export type ConjunctionOptions = {
   /**
    * The separator to use for the last element.
    */
-  lastSeparator?: TNode
+  lastSeparator?: () => TNode
   /**
    * The separator to use for the first element.
    */
-  firstSeparator?: TNode
+  firstSeparator?: () => TNode
 }
 
 /**
@@ -27,10 +27,10 @@ export type ConjunctionOptions = {
  * @public
  */
 export const Conjunction =
-  (separator: TNode, options: ConjunctionOptions = {}) =>
+  (separator: () => TNode, options: ConjunctionOptions = {}) =>
   (pos: Signal<ElementPosition>): Renderable => {
-    const firstSeparator = options?.firstSeparator ?? separator
-    const lastSeparator = options?.lastSeparator ?? separator
+    const first = options?.firstSeparator ?? separator
+    const last = options?.lastSeparator ?? separator
     return OneOfValue(
       pos.map(v => {
         if (v.isFirst) {
@@ -42,9 +42,9 @@ export const Conjunction =
         }
       }),
       {
-        first: () => firstSeparator,
-        last: () => lastSeparator,
-        other: () => separator,
+        first,
+        last,
+        other: separator,
       }
     )
   }

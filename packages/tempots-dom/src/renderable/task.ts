@@ -10,7 +10,7 @@ import { Empty } from './empty'
  * @public
  */
 export type TaskOptions<T> = {
-  pending?: TNode
+  pending?: () => TNode
   then: (value: T) => TNode
   error?: (error: unknown) => TNode
 }
@@ -32,7 +32,7 @@ export const Task = <T>(
     return Task(task, { then: options })
   }
   const pending =
-    options.pending != null ? renderableOfTNode(options.pending) : Empty
+    options.pending != null ? renderableOfTNode(options.pending()) : Empty
   const then = options.then
   const error =
     options.error != null

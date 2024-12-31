@@ -10,8 +10,8 @@ describe("When", () => {
     render(
       When(
         bool,
-        OnElement(spyTrue),
-        OnElement(spyFalse)
+        () => OnElement(spyTrue),
+        () => OnElement(spyFalse)
       ),
       document.body
     )
@@ -28,8 +28,8 @@ describe("When", () => {
     render(
       When(
         true,
-        OnElement(spyTrue),
-        OnElement(spyFalse)
+        () => OnElement(spyTrue),
+        () => OnElement(spyFalse)
       ),
       document.body
     )
@@ -39,8 +39,8 @@ describe("When", () => {
     render(
       When(
         false,
-        OnElement(spyTrue),
-        OnElement(spyFalse)
+        () => OnElement(spyTrue),
+        () => OnElement(spyFalse)
       ),
       document.body
     )

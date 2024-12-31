@@ -66,11 +66,9 @@ const Logo = () =>
 
 function HeaderLink({ route, feed }: { route: Signal<Route>; feed: Feed }) {
   const condition = route.map(r => r.type === 'FeedsRoute' && r.feed === feed)
-  const whenTrue = html.span(
-    aria.current('page'),
-    toTitle(Route.feeds(feed, 1))
-  )
-  const whenFalse = LinkRoute({ route: makeSignal(Route.feeds(feed, 1)) })
+  const whenTrue = () =>
+    html.span(aria.current('page'), toTitle(Route.feeds(feed, 1)))
+  const whenFalse = () => LinkRoute({ route: makeSignal(Route.feeds(feed, 1)) })
   return When(condition, whenTrue, whenFalse)
 }
 

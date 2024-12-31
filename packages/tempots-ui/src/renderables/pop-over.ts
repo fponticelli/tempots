@@ -6,7 +6,7 @@ import {
   Portal,
   OnBrowserCtx,
   BrowserContext,
-  LazyWhen,
+  When,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -92,7 +92,7 @@ export const PopOver = ({
     const isOpen = Value.toSignal(open)
     const target = ctx.element
 
-    return LazyWhen(isOpen, () =>
+    return When(isOpen, () =>
       Portal(
         'body',
         html.div(

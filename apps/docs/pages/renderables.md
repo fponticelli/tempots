@@ -103,8 +103,9 @@ Tempo has a set of functions to create conditional renderables. For example, to 
 ```ts
 const showSignal = makeSignal(true)
 
-When(showSignal,
-  html.div('This is visible')
+When(
+  showSignal,
+  () => html.div('This is visible')
 )
 ```
 

@@ -104,6 +104,6 @@ export const InViewport = (
  */
 export const WhenInViewport = (
   mode: InViewportMode,
-  then: TNode,
-  otherwise?: TNode
-) => InViewport(mode, inView => When(inView, then, otherwise ?? Empty))
+  then: () => TNode,
+  otherwise?: () => TNode
+) => InViewport(mode, inView => When(inView, then, otherwise ?? (() => Empty)))

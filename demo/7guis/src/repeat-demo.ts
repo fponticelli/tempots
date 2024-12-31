@@ -51,10 +51,10 @@ export function RepeatDemo(): Renderable {
             flex.row(
               attr.class('gap-2'),
               Txt(loc),
-              When(pos.isFirst, Txt('FIRST, ')),
-              When(pos.isLast, Txt('LAST, ')),
-              When(pos.isOdd, Txt('odd')),
-              When(pos.isEven, Txt('even'))
+              When(pos.isFirst, () => Txt('FIRST, ')),
+              When(pos.isLast, () => Txt('LAST, ')),
+              When(pos.isOdd, () => Txt('odd')),
+              When(pos.isEven, () => Txt('even'))
             )
           )
         },

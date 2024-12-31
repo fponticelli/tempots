@@ -69,8 +69,7 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
         keywords: library.$.keywords as Value<string[] | undefined>,
       }),
       html.h1(attr.class(Styles.heading.large), library.$.title),
-      When(
-        isRoot,
+      When(isRoot, () =>
         Fragment(
           LibraryInfo(library),
           Ensure(

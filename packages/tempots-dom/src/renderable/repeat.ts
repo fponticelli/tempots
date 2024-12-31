@@ -32,7 +32,11 @@ export const Repeat = (
       return Fragment(
         OnDispose(sepPos.dispose),
         renderableOfTNode(element(pos)),
-        When(pos.isLast, Empty, separator(sepPos))
+        When(
+          pos.isLast,
+          () => Empty,
+          () => separator(sepPos)
+        )
       )
     })
   } else {
