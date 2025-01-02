@@ -1,5 +1,5 @@
-const boolProperties = new Set(['checked', 'disabled', 'hidden', 'selected'])
-const boolAttributes = new Set(['contenteditable', 'spellcheck'])
+const boolProperties = new Set(['checked', 'disabled', 'hidden'])
+const boolAttributes = new Set(['selected'])
 
 const numberProperties = new Set([
   'rowSpan',
