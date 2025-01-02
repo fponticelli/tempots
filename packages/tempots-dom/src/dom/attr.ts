@@ -1,4 +1,6 @@
 const boolProperties = new Set(['checked', 'disabled', 'hidden', 'selected'])
+const boolAttributes = new Set(['contenteditable', 'spellcheck'])
+
 const numberProperties = new Set([
   'rowSpan',
   'colSpan',
@@ -28,7 +30,15 @@ const stringProperties = new Set([
  * @internal
  */
 export const _makeSetter = (attributeName: string, element: Element) => {
-  if (boolProperties.has(attributeName)) {
+  if (boolAttributes.has(attributeName)) {
+    return (value: unknown) => {
+      if (value == null || value !== true) {
+        element.removeAttribute(attributeName)
+      } else {
+        element.setAttribute(attributeName, '')
+      }
+    }
+  } else if (boolProperties.has(attributeName)) {
     return (value: unknown) => {
       if (value == null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,7 +102,9 @@ export const _makeSetter = (attributeName: string, element: Element) => {
  * @internal
  */
 export const _makeGetter = (attributeName: string, element: Element) => {
-  if (boolProperties.has(attributeName)) {
+  if (boolAttributes.has(attributeName)) {
+    return () => element.hasAttribute(attributeName)
+  } else if (boolProperties.has(attributeName)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return () => Boolean((element as any)[attributeName])
   } else if (numberProperties.has(attributeName)) {
