@@ -25,14 +25,14 @@ jobs:
       - name: PNPM Install
         run: npm i -g pnpm && pnpm install
       - name: Build Demos
-        run: pnpm build:demos
+        run: pnpm run build:demos
       - name: Assemble Docs
-        run: pnpm docs
+        run: pnpm run docs
       - name: Build Docs
-        run: pnpm build --filter=@tempos/docs
+        run: pnpm run build --filter=@tempos/docs
       - name: Build Pages
         working-directory: apps/docs
-        run: pnpm docs:static
+        run: pnpm run docs:static
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
