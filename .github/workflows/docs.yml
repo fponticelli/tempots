@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '20'
       - name: PNPM Install
-        run: pnpm install
+        run: npm i -g pnpm && pnpm install
       - name: Build Demos
         run: pnpm build:demos
       - name: Assemble Docs
