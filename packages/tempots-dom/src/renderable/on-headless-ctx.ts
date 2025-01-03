@@ -1,6 +1,7 @@
 import { DOMContext } from '../dom/dom-context'
 import { HeadlessContext } from '../dom/headless-context'
-import { Clear, Renderable } from '../types/domain'
+import { Clear, Renderable, TNode } from '../types/domain'
+import { renderableOfTNode } from './element'
 
 /**
  * Returns a renderable function that executes the given function with the current DOMContext as argument.
@@ -10,10 +11,13 @@ import { Clear, Renderable } from '../types/domain'
  * @public
  */
 export const OnHeadlessCtx =
-  (fn: (ctx: HeadlessContext) => Clear): Renderable =>
+  (fn: (ctx: HeadlessContext) => TNode | void): Renderable =>
   (ctx: DOMContext): Clear => {
     if (ctx.isHeadlessDOM()) {
-      return fn(ctx) ?? (() => {})
+      const result = fn(ctx)
+      if (result) {
+        return renderableOfTNode(result)(ctx)
+      }
     }
     return () => {}
   }

@@ -1,12 +1,4 @@
-import {
-  attr,
-  html,
-  OnDispose,
-  makeProp,
-  TNode,
-  Value,
-  OnBrowserCtx,
-} from '@tempots/dom'
+import { attr, html, OnDispose, makeProp, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -41,17 +33,15 @@ export function HtmlToTempo() {
     attr.class(
       'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-[calc(100dvh_-_6rem)] overflow-hidden gap-2'
     ),
-    OnBrowserCtx(ctx =>
-      OnDispose(
-        content.on(html => {
-          try {
-            const tempoStr = htmlToTempo(html)
-            tempo.set(tempoStr)
-          } catch (e) {
-            console.warn('Failed to parse HTML', e)
-          }
-        })
-      )(ctx)
+    OnDispose(
+      content.on(html => {
+        try {
+          const tempoStr = htmlToTempo(html)
+          tempo.set(tempoStr)
+        } catch (e) {
+          console.warn('Failed to parse HTML', e)
+        }
+      })
     ),
     EditorContainer(
       'HTML',

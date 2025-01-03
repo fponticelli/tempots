@@ -223,7 +223,7 @@ html.div(
   OnElement(element => {
     const listener = () => console.log('Clicked')
     element.addEventListener('click', listener)
-    OnDispose(removeTree => {
+    return OnDispose(removeTree => {
       if (removeTree) {
         element.removeEventListener('click', listener)
       }

@@ -9,6 +9,7 @@ import {
   Ensure,
   on,
   OnElement,
+  OnDispose,
 } from '@tempots/dom'
 import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
@@ -128,12 +129,14 @@ export function EmbedHTMLPage(content: Value<string>) {
       html.div(
         attr.class(Styles.prose),
         attr.innerHTML(htmlSignal),
-        OnElement(el => {
-          return htmlSignal.on(() => {
-            updateAnchors(location, el)
-            toc.set(makeTOC(el))
-          })
-        })
+        OnElement(el =>
+          OnDispose(
+            htmlSignal.on(() => {
+              updateAnchors(location, el)
+              toc.set(makeTOC(el))
+            })
+          )
+        )
       ),
       TOCView(location, toc)
     )

@@ -1,4 +1,4 @@
-import { OnElement, Renderable } from '@tempots/dom'
+import { OnDispose, OnElement, Renderable } from '@tempots/dom'
 
 /**
  * Hides the element when it is empty and restores its initial state when necessary.
@@ -10,7 +10,7 @@ import { OnElement, Renderable } from '@tempots/dom'
 export const HiddenWhenEmpty: Renderable = OnElement(el => {
   const initial = el.style.getPropertyValue(':empty')
   el.style.setProperty(':empty', 'display:none')
-  return (removeTree: boolean) => {
+  return OnDispose((removeTree: boolean) => {
     if (removeTree) el.style.setProperty(':empty', initial)
-  }
+  })
 })

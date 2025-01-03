@@ -9,6 +9,7 @@ import {
   Fragment,
   OnElement,
   When,
+  OnDispose,
 } from '@tempots/dom'
 
 /**
@@ -78,7 +79,7 @@ export const InViewport = (
       maps[mode].set(el, inView)
       observer?.observe(el)
 
-      return () => {
+      return OnDispose(() => {
         inView.dispose()
         observer?.unobserve(el)
         maps[mode].delete(el)
@@ -86,7 +87,7 @@ export const InViewport = (
           observers[mode]?.disconnect()
           observers[mode] = null
         }
-      }
+      })
     }),
     renderableOfTNode(fn(inView))
   )

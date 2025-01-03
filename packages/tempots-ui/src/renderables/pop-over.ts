@@ -7,6 +7,7 @@ import {
   OnBrowserCtx,
   BrowserContext,
   When,
+  OnDispose,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -99,24 +100,26 @@ export const PopOver = ({
           OnElement((element: HTMLElement) => {
             const floatingEl = element
             floatingEl.style.position = 'absolute'
-            return autoUpdate(target, floatingEl, () => {
-              computePosition(target, floatingEl, {
-                placement,
-                strategy: 'absolute',
-                middleware: [
-                  flip(),
-                  fuiOffset({ mainAxis, crossAxis }),
-                  shift(),
-                  flip(),
-                ],
-              }).then(({ x, y }) => {
-                floatingEl.style.top = `${y}px`
-                floatingEl.style.left = `${x}px`
+            return OnDispose(
+              autoUpdate(target, floatingEl, () => {
+                computePosition(target, floatingEl, {
+                  placement,
+                  strategy: 'absolute',
+                  middleware: [
+                    flip(),
+                    fuiOffset({ mainAxis, crossAxis }),
+                    shift(),
+                    flip(),
+                  ],
+                }).then(({ x, y }) => {
+                  floatingEl.style.top = `${y}px`
+                  floatingEl.style.left = `${x}px`
+                })
               })
-            })
+            )
           }),
           content()
         )
       )
-    )(ctx)
+    )
   })

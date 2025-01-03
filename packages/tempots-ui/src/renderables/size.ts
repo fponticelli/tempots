@@ -8,6 +8,7 @@ import {
   OnBrowserCtx,
   BrowserContext,
   getWindow,
+  OnDispose,
 } from '@tempots/dom'
 
 /**
@@ -33,10 +34,10 @@ export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
       observer = new ResizeObserver(onResize)
       observer.observe(element)
     }
-    return (removeTree: boolean) => {
+    return OnDispose((removeTree: boolean) => {
       observer?.disconnect()
       clear(removeTree)
-    }
+    })
   })
 
 /**

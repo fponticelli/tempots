@@ -1,4 +1,4 @@
-import { OnElement, type Renderable } from '@tempots/dom'
+import { OnDispose, OnElement, type Renderable } from '@tempots/dom'
 
 /**
  * Creates a renderable function that automatically selects the content of an input element after a specified delay.
@@ -11,5 +11,5 @@ export const AutoSelect = (delay: number = 10): Renderable =>
     const timeout = setTimeout(() => {
       ;(el as HTMLInputElement)?.select()
     }, delay)
-    return () => clearTimeout(timeout)
+    return OnDispose(() => clearTimeout(timeout))
   })

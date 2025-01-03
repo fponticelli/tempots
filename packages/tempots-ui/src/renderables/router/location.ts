@@ -29,18 +29,18 @@ export const LocationProviderMarker =
  */
 export const ProvideLocation = (child: TNode) => {
   return Fragment(
-    OnBrowserCtx(ctx => {
+    OnBrowserCtx(() => {
       return Async(
         import('./browser-location').then(mod => mod.ProvideBrowserLocation),
         ProvideBrowserLocation => ProvideBrowserLocation(child)
-      )(ctx)
+      )
     }),
     OnHeadlessCtx(ctx => {
       return Async(
         import('./headless-location').then(mod => mod.ProvideHeadlessLocation),
         ProvideHeadlessLocation =>
           ProvideHeadlessLocation(ctx.container.currentURL, child)
-      )(ctx)
+      )
     })
   )
 }

@@ -1,4 +1,12 @@
-import { attr, html, OnElement, Signal, Task, Value } from '@tempots/dom'
+import {
+  attr,
+  html,
+  OnDispose,
+  OnElement,
+  Signal,
+  Task,
+  Value,
+} from '@tempots/dom'
 
 function throttle<T extends (...args: unknown[]) => void>(
   fn: T,
@@ -159,10 +167,7 @@ export function MonacoEditor({
             editor.focus()
           }
 
-          return () => {
-            disposers.forEach(dispose => dispose())
-            editor.dispose()
-          }
+          return OnDispose(...disposers, editor.dispose)
         })
     )
   )
