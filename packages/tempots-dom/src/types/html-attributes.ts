@@ -43,7 +43,7 @@ export type HTMLAttributes = {
   formaction: string
   headers: string
   height: string
-  hidden: string
+  hidden: 'until-found' | 'hidden' | ''
   high: string
   href: string
   hreflang: string

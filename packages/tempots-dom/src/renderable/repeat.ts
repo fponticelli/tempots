@@ -1,5 +1,4 @@
 import { DOMContext } from '../dom/dom-context'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { ElementPosition } from '../std/element-position'
 import { Signal, makeSignal } from '../std/signal'
 import { Value } from '../std/value'
@@ -7,7 +6,7 @@ import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
-import { OnUnmount } from './onunmount'
+import { OnDispose } from './on-dispose'
 import { When } from './when'
 
 /**
@@ -31,41 +30,39 @@ export const Repeat = (
         pos.total.map(v => v - 1)
       )
       return Fragment(
-        OnUnmount(sepPos.dispose),
+        OnDispose(sepPos.dispose),
         renderableOfTNode(element(pos)),
-        When(pos.isLast, Empty, separator(sepPos))
+        When(
+          pos.isLast,
+          () => Empty,
+          () => separator(sepPos)
+        )
       )
     })
   } else {
     if (Signal.is(times)) {
       return (ctx: DOMContext) => {
-        ctx = ctx.makeRef()
-        const existings: ElementPosition[] = Array.from(
-          { length: times.value },
-          (_, i) => i
-        ).map(i => new ElementPosition(i, times))
-        const clears: Clear[] = existings.map(pos =>
-          renderableOfTNode(element(pos))(ctx)
-        )
-        const clear = times.on(newLength => {
-          while (newLength < clears.length) {
-            existings.pop()!.dispose()
-            clears.pop()!(true)
+        const newCtx = ctx.makeRef()
+        const clears: Clear[] = []
+
+        const disposeListener = times.on(newLength => {
+          const toRemove = clears.splice(newLength)
+          for (const remove of toRemove) {
+            remove(true)
           }
-          for (let i = 0; i < newLength; i++) {
-            if (existings[i] == null) {
-              existings[i] = new ElementPosition(i, times)
-              const node = renderableOfTNode(element(existings[i]))
-              clears[i] = node(ctx)
-            }
+          for (let i = clears.length; i < newLength; i++) {
+            const pos = new ElementPosition(i, times)
+            clears.push(renderableOfTNode(element(pos))(newCtx))
           }
         })
 
         return (removeTree: boolean) => {
-          clear()
-          if (removeTree && ctx.reference) {
-            _removeDOMNode(ctx.reference)
+          disposeListener()
+          for (const clear of clears) {
+            clear(removeTree)
           }
+          clears.length = 0
+          newCtx.clear(removeTree)
         }
       }
     } else {

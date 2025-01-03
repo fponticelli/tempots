@@ -4,10 +4,8 @@ import { ElementPosition } from '../std/element-position'
 import { Repeat } from './repeat'
 import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
-import { Empty } from './empty'
-import { OnUnmount } from './onunmount'
+import { OnDispose } from './on-dispose'
 import { Value } from '../std/value'
-import { When } from './when'
 
 /**
  * Renders a list of items based on a signal of arrays.
@@ -24,27 +22,17 @@ export const ForEach = <T>(
   item: (value: Signal<T>, position: ElementPosition) => TNode,
   separator?: (pos: ElementPosition) => TNode
 ): Renderable => {
-  if (separator != null) {
-    return ForEach(value, (v, pos) => {
-      const sepPos = new ElementPosition(
-        pos.index,
-        pos.total.map(v => v - 1)
-      )
-      return Fragment([
-        OnUnmount(sepPos.dispose),
-        renderableOfTNode(item(v, pos)),
-        When(pos.isLast, Empty, separator(sepPos)),
-      ])
-    })
-  } else {
-    const times = Value.map(value, arr => arr.length)
-    const arr = Value.toSignal(value)
-    return Repeat(times, pos => {
+  const times = Value.map(value, arr => arr.length)
+  const arr = Value.toSignal(value)
+  return Repeat(
+    times,
+    pos => {
       const signal = arr.map(v => v[pos.index])
       return Fragment(
-        OnUnmount(signal.dispose),
+        OnDispose(signal.dispose),
         renderableOfTNode(item(signal, pos))
       )
-    })
-  }
+    },
+    separator
+  )
 }

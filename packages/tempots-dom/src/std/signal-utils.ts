@@ -1,3 +1,4 @@
+import { getWindow } from '../dom/window'
 import { RemoveSignals } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import {
@@ -180,7 +181,7 @@ export type StorageOptions<T> = {
 export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
   storedProp({
     ...options,
-    store: window?.localStorage ?? new MemoryStore(),
+    store: getWindow()?.localStorage ?? new MemoryStore(),
   })
 
 /**
@@ -193,7 +194,7 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
 export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
   storedProp({
     ...options,
-    store: window?.sessionStorage ?? new MemoryStore(),
+    store: getWindow()?.sessionStorage ?? new MemoryStore(),
   })
 
 function raf(fn: FrameRequestCallback) {

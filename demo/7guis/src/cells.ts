@@ -199,33 +199,35 @@ export function Cells(): Renderable {
                 Cell(
                   When(
                     editing.map(editing => editing === key),
-                    InputText(
-                      AutoSelect(),
-                      attr.class('w-full min-w-20 h-7'),
-                      attr.value(cellValue.formula),
-                      on.blur(
-                        emitValue(text => {
-                          if (text !== cellValue.formula.value) {
-                            cellValue.formula.set(text)
+                    () =>
+                      InputText(
+                        AutoSelect(),
+                        attr.class('w-full min-w-20 h-7'),
+                        attr.value(cellValue.formula),
+                        on.blur(
+                          emitValue(text => {
+                            if (text !== cellValue.formula.value) {
+                              cellValue.formula.set(text)
+                            }
+                            editing.set(null)
+                          })
+                        ),
+                        on.keydown((e: KeyboardEvent) => {
+                          if (e.key === 'Enter') {
+                            editing.set(null)
                           }
-                          editing.set(null)
                         })
                       ),
-                      on.keydown((e: KeyboardEvent) => {
-                        if (e.key === 'Enter') {
-                          editing.set(null)
-                        }
-                      })
-                    ),
-                    html.div(
-                      attr.class(
-                        'w-full h-full min-h-7 p-0.5 overflow-hidden whitespace-nowrap'
-                      ),
-                      on.dblclick(() => {
-                        editing.set(key)
-                      }),
-                      Txt(cellValue.value)
-                    )
+                    () =>
+                      html.div(
+                        attr.class(
+                          'w-full h-full min-h-7 p-0.5 overflow-hidden whitespace-nowrap'
+                        ),
+                        on.dblclick(() => {
+                          editing.set(key)
+                        }),
+                        Txt(cellValue.value)
+                      )
                   )
                 )
               )

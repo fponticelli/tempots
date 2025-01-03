@@ -1,5 +1,13 @@
 import { GetValueTypes } from '../types/domain'
-import { makeComputed, makeEffect, makeSignal, Signal } from './signal'
+import {
+  ListenerOptions,
+  makeComputed,
+  makeEffect,
+  makeProp,
+  makeSignal,
+  Prop,
+  Signal,
+} from './signal'
 
 /**
  * Represents a value that can either be a `Signal<T>` or a generic type `T`.
@@ -100,6 +108,33 @@ export const Value = {
       value.dispose()
     }
   },
+
+  /**
+   * Derives a Prop from a Signal.
+   * If the value is a Signal, it returns a new Prop with the derived value.
+   * If the value is not a Signal, it returns a new Prop with the value.
+   * @param value - The value or Signal instance to derive the Prop from.
+   * @param options - The options for the derived Prop.
+   * @param options.autoDisposeProp - Determines whether the derived Prop should be automatically disposed.
+   * @param options.equals - A function that determines if two values are equal.
+   * @returns A Prop instance.
+   */
+  deriveProp: <T>(
+    value: Value<T>,
+    {
+      autoDisposeProp = true,
+      equals,
+    }: {
+      autoDisposeProp?: boolean
+      equals?: (a: T, b: T) => boolean
+    } = {}
+  ): Prop<T> => {
+    if (Signal.is(value)) {
+      return value.deriveProp({ autoDisposeProp, equals })
+    } else {
+      return makeProp(value, equals)
+    }
+  },
 }
 
 /**
@@ -134,7 +169,11 @@ export const makeComputedOf =
  */
 export const makeEffectOf =
   <T extends Value<unknown>[]>(...args: T) =>
-  (fn: (...args: GetValueTypes<T>) => void) => {
+  (fn: (...args: GetValueTypes<T>) => void, options: ListenerOptions = {}) => {
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
-    makeEffect(() => fn(...(args.map(Value.get) as GetValueTypes<T>)), signals)
+    return makeEffect(
+      () => fn(...(args.map(Value.get) as GetValueTypes<T>)),
+      signals,
+      options
+    )
   }

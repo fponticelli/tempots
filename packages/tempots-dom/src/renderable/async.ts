@@ -10,7 +10,7 @@ export type AsyncOptions<T> = {
   /**
    * The node to render while the promise is pending.
    */
-  pending?: TNode
+  pending?: () => TNode
   /**
    * The node to render when the promise is resolved.
    *

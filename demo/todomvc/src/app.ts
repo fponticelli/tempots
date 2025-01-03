@@ -132,8 +132,7 @@ export const App = () => {
                       )
                     )
                   ),
-                  When(
-                    isEditing,
+                  When(isEditing, () =>
                     html.input(
                       AutoSelect(),
                       attr.class('edit'),
@@ -208,11 +207,12 @@ export const App = () => {
             ),
             When(
               state.map(({ todos }) => countCompleted(todos) > 0),
-              html.button(
-                attr.class('clear-completed'),
-                on.click(() => dispatch({ type: 'ClearCompleted' })),
-                'Clear completed'
-              )
+              () =>
+                html.button(
+                  attr.class('clear-completed'),
+                  on.click(() => dispatch({ type: 'ClearCompleted' })),
+                  'Clear completed'
+                )
             )
           )
         )

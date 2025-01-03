@@ -1,7 +1,5 @@
 import {
   attr,
-  OnCtx,
-  DOMContext,
   ForEach,
   html,
   makeProp,
@@ -10,6 +8,8 @@ import {
   Value,
   Ensure,
   on,
+  OnElement,
+  OnDispose,
 } from '@tempots/dom'
 import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
@@ -129,12 +129,14 @@ export function EmbedHTMLPage(content: Value<string>) {
       html.div(
         attr.class(Styles.prose),
         attr.innerHTML(htmlSignal),
-        OnCtx((ctx: DOMContext) => {
-          return htmlSignal.on(() => {
-            updateAnchors(location, ctx.element as HTMLElement)
-            toc.set(makeTOC(ctx.element as HTMLElement))
-          })
-        })
+        OnElement(el =>
+          OnDispose(
+            htmlSignal.on(() => {
+              updateAnchors(location, el)
+              toc.set(makeTOC(el))
+            })
+          )
+        )
       ),
       TOCView(location, toc)
     )

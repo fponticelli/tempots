@@ -1,6 +1,5 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { _removeDOMNode } from '../dom/dom-utils'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 
@@ -11,7 +10,7 @@ import { Empty } from './empty'
  * @public
  */
 export type TaskOptions<T> = {
-  pending?: TNode
+  pending?: () => TNode
   then: (value: T) => TNode
   error?: (error: unknown) => TNode
 }
@@ -33,7 +32,7 @@ export const Task = <T>(
     return Task(task, { then: options })
   }
   const pending =
-    options.pending != null ? renderableOfTNode(options.pending) : Empty
+    options.pending != null ? renderableOfTNode(options.pending()) : Empty
   const then = options.then
   const error =
     options.error != null
@@ -42,26 +41,24 @@ export const Task = <T>(
   return (ctx: DOMContext) => {
     let active = true
     const promise = task()
-    ctx = ctx.makeRef()
-    let clear = renderableOfTNode(pending)(ctx)
+    const newCtx = ctx.makeRef()
+    let clear = renderableOfTNode(pending)(newCtx)
     promise.then(
       value => {
         if (!active) return
         clear(true)
-        clear = renderableOfTNode(then(value))(ctx)
+        clear = renderableOfTNode(then(value))(newCtx)
       },
       e => {
         if (!active) return
         clear(true)
-        clear = renderableOfTNode(error(e))(ctx)
+        clear = renderableOfTNode(error(e))(newCtx)
       }
     )
     return (removeTree: boolean) => {
       active = false
       clear(removeTree)
-      if (removeTree && ctx.reference) {
-        _removeDOMNode(ctx.reference)
-      }
+      newCtx.clear(removeTree)
     }
   }
 }

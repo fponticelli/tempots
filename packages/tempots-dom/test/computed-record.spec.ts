@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { GetValueType, makeComputedRecord, makeProp } from "../src";
+import { makeComputedRecord, makeProp } from "../src";
 import { sleep } from "./helper";
 
 describe("computedRecord", () => {

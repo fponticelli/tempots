@@ -7,7 +7,9 @@ import { Value } from '../std/value'
  * @returns A function that clears the rendered content.
  * @public
  */
-export type Renderable = (ctx: DOMContext) => Clear
+export type Renderable<CTX extends DOMContext = DOMContext> = (
+  ctx: CTX
+) => Clear
 
 /**
  * Represents a node in the rendering tree.

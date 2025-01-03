@@ -16,9 +16,9 @@ describe("Prop", () => {
     const spy = vi.fn();
     const cancel = p.on(spy);
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith(1);
+    expect(spy).toHaveBeenCalledWith(1, undefined);
     p.set(2);
-    expect(spy).toHaveBeenCalledWith(2);
+    expect(spy).toHaveBeenCalledWith(2, 1);
     expect(spy).toHaveBeenCalledTimes(2);
     cancel();
     p.set(3);
@@ -29,7 +29,7 @@ describe("Prop", () => {
     const spy = vi.fn();
     p.on(spy);
     p.update(v => v + 1);
-    expect(spy).toHaveBeenCalledWith(2);
+    expect(spy).toHaveBeenCalledWith(2, 1);
     expect(p.value).toStrictEqual(2);
   });
   test('reducer will set value and call listeners', () => {
@@ -38,7 +38,7 @@ describe("Prop", () => {
     p.on(spy);
     const reduce = p.reducer((v: number, a: number) => v + a);
     reduce(2);
-    expect(spy).toHaveBeenCalledWith(3);
+    expect(spy).toHaveBeenCalledWith(3, 1);
     expect(p.value).toStrictEqual(3);
   });
   test('atProp should return a prop with the value at the given index', () => {

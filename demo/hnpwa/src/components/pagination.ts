@@ -31,14 +31,15 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
     html.section(
       When(
         page.map(v => v === 1),
-        html.span(attr.class('inactive'), 'Previous'),
-        LinkRoute({
-          route: makeComputed(
-            () => Route.feeds(feed.value, page.value),
-            [feed, page]
-          ),
-          children: 'Previous',
-        })
+        () => html.span(attr.class('inactive'), 'Previous'),
+        () =>
+          LinkRoute({
+            route: makeComputed(
+              () => Route.feeds(feed.value, page.value),
+              [feed, page]
+            ),
+            children: 'Previous',
+          })
       )
     ),
     html.nav(
@@ -47,14 +48,15 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
         res =>
           When(
             res.map(({ current, page }) => current === page),
-            html.span(aria.current('page'), res.at('page').map(String)),
-            LinkRoute({
-              route: makeComputed(
-                () => Route.feeds(res.value.feed, res.value.page),
-                [res]
-              ),
-              children: res.at('page').map(String),
-            })
+            () => html.span(aria.current('page'), res.at('page').map(String)),
+            () =>
+              LinkRoute({
+                route: makeComputed(
+                  () => Route.feeds(res.value.feed, res.value.page),
+                  [res]
+                ),
+                children: res.at('page').map(String),
+              })
           )
       )
     ),
@@ -67,14 +69,15 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
     html.section(
       When(
         makeComputed(() => maxPage(feed.value) === page.value, [feed, page]),
-        html.span(attr.class('inactive'), 'Next'),
-        LinkRoute({
-          route: makeComputed(
-            () => Route.feeds(feed.value, page.value + 1),
-            [feed, page]
-          ),
-          children: 'Next',
-        })
+        () => html.span(attr.class('inactive'), 'Next'),
+        () =>
+          LinkRoute({
+            route: makeComputed(
+              () => Route.feeds(feed.value, page.value + 1),
+              [feed, page]
+            ),
+            children: 'Next',
+          })
       )
     )
   )

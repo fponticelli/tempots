@@ -27,21 +27,23 @@ export function MenuLink({
   const isActive = active.map(a => a === href)
   return When(
     isActive,
-    html.span(
-      attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600'
+    () =>
+      html.span(
+        attr.class(
+          'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600'
+        ),
+        icon,
+        label
       ),
-      icon,
-      label
-    ),
-    Anchor(
-      href,
-      attr.class(
-        'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
-      ),
-      icon,
-      label
-    )
+    () =>
+      Anchor(
+        href,
+        attr.class(
+          'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
+        ),
+        icon,
+        label
+      )
   )
 }
 
@@ -65,22 +67,24 @@ export function SectionLink({
   const isActive = active.map(a => a === href)
   return When(
     isActive,
-    html.span(
-      attr.class(
-        'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
+    () =>
+      html.span(
+        attr.class(
+          'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
+        ),
+        FakeIcon(icon),
+        html.span(attr.class('truncate'), label)
       ),
-      FakeIcon(icon),
-      html.span(attr.class('truncate'), label)
-    ),
-    Anchor(
-      href,
-      attr.class(
-        'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
-      ),
-      external ? attr.target('_blank') : null,
-      FakeIcon(icon),
-      html.span(attr.class('truncate'), label)
-    )
+    () =>
+      Anchor(
+        href,
+        attr.class(
+          'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
+        ),
+        external ? attr.target('_blank') : null,
+        FakeIcon(icon),
+        html.span(attr.class('truncate'), label)
+      )
   )
 }
 
@@ -130,7 +134,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
         ),
         html.li(
           Anchor(
-            '/all-libraries.html',
+            '/libraries.html',
             attr.class(Styles.sidebar.heading),
             'Libraries'
           ),
@@ -168,11 +172,7 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          Anchor(
-            '/all-demos.html',
-            attr.class(Styles.sidebar.heading),
-            'Demos'
-          ),
+          Anchor('/demos.html', attr.class(Styles.sidebar.heading), 'Demos'),
           html.ul(
             attr.role('list'),
             attr.class('-mx-2 mt-2'),

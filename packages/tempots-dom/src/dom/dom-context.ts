@@ -1,4 +1,18 @@
-import type { ProviderMark, Providers } from '../types/domain'
+import type { Clear, ProviderMark } from '../types/domain'
+import { BrowserContext } from './browser-context'
+import { HeadlessContext } from './headless-context'
+
+/**
+ * Options for event listeners.
+ *
+ * @public
+ */
+export type HandlerOptions = {
+  once?: boolean
+  signal?: AbortSignal
+  passive?: boolean
+  capture?: boolean
+}
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
@@ -9,162 +23,48 @@ import type { ProviderMark, Providers } from '../types/domain'
  *
  * @public
  */
-export class DOMContext {
+export interface DOMContext {
   /**
-   * Creates a new `DOMContext` instance for the given `Element` and optional reference `Node`.
-   *
-   * @param element - The `Element` to create the `DOMContext` for.
-   * @param ref - An optional reference `Node` to associate with the `DOMContext`.
-   * @returns A new `DOMContext` instance.
-   */
-  static of(element: Element, ref?: Node | undefined): DOMContext {
-    return new DOMContext(element.ownerDocument, element, ref, {}, true)
-  }
-
-  /**
-   * Constructs a new `DOMContext` instance.
-   *
-   * @param document - The `Document` instance associated with this context.
-   * @param element - The `Element` instance associated with this context.
-   * @param reference - An optional `Node` instance that serves as a reference for this context.
-   * @param providers - The `Providers` instance associated with this context.
-   * @param isFirstLevel - A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated DOM.
-   */
-  constructor(
-    /**
-     * The `Document` instance associated with this context.
-     */
-    readonly document: Document,
-    /**
-     * The `Element` instance associated with this context.
-     */
-    readonly element: Element,
-    /**
-     * An optional `Node` instance that serves as a reference for this context.
-     */
-    readonly reference: Node | undefined,
-    /**
-     * The `Providers` instance associated with this context.
-     */
-    readonly providers: Providers,
-    /**
-     * A boolean value indicating whether this context is at the first level, meaning the outermost node in the generated
-     */
-    readonly isFirstLevel: boolean
-  ) {}
-
-  /**
-   * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace.
+   * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace and appends it to the current element.
    *
    * @param tagName - The tag name of the element to create.
    * @param namespace - The namespace URI to create the element in, or `undefined` to create a standard HTML element.
    * @returns The newly created element.
    */
-  readonly createElement = (
-    tagName: string,
-    namespace: string | undefined
-  ): Element => {
-    if (namespace !== undefined) {
-      return this.document.createElementNS(namespace, tagName)
-    } else {
-      return this.document.createElement(tagName)
-    }
-  }
+  makeChildElement(tagName: string, namespace: string | undefined): DOMContext
 
   /**
-   * Creates a new text node with the specified text content.
+   * Creates a new text node with the specified text content and appends it to the current element.
    * @param text - The text content for the new text node.
-   * @returns A new `Text` node with the specified text content.
+   * @returns A new `DOMContext` with a reference to the new text node.
    */
-  readonly createText = (text: string): Text =>
-    this.document.createTextNode(text)
+  makeChildText(text: string): DOMContext
+
+  /**
+   * Sets the text content of the current element.
+   * @param text - The text content to set.
+   */
+  setText(text: string): void
+
+  /**
+   * Gets the text content of the current element or text node.
+   * @returns The text content of the current element or text node.
+   */
+  getText(): string
 
   /**
    * Creates a new `DOMContext` with a reference to a newly created text node.
    * The text node is appended or inserted to the current `DOMContext`.
    * The new `DOMContext` with the reference is returned.
    */
-  readonly makeRef = (): DOMContext => {
-    const ref = this.createText('')
-    this.appendOrInsert(ref)
-    return this.withReference(ref)
-  }
+  makeRef(): DOMContext
 
   /**
-   * Appends or inserts a child node to the element, depending on whether a reference node is provided.
-   *
-   * @param child - The child node to append or insert.
+   * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
+   * @param selector - The CSS selector for the target DOM element.
+   * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
-  readonly appendOrInsert = (child: Node) => {
-    if (this.reference === undefined) {
-      this.element.appendChild(child)
-    } else {
-      this.element.insertBefore(child, this.reference)
-    }
-  }
-
-  /**
-   * Creates a new `DOMContext` instance with the provided `document`.
-   *
-   * @param document - The `Document` to use for the `DOMContext`.
-   * @returns A new `DOMContext` instance.
-   */
-  readonly withDocument = (document: Document): DOMContext =>
-    new DOMContext(document, this.element, this.reference, this.providers, true)
-
-  /**
-   * Creates a new `DOMContext` instance with the provided `element`.
-   * @param element - The DOM element to use in the new `DOMContext` instance.
-   * @returns A new `DOMContext` instance with the provided `element`.
-   */
-  readonly withElement = (element: Element): DOMContext =>
-    new DOMContext(this.document, element, undefined, this.providers, false)
-
-  /**
-   * Creates a new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-   * @returns A new `DOMContext` instance with the `isFirstLevel` property set to `true`.
-   */
-  readonly withFirstLevel = (): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      this.reference,
-      this.providers,
-      true
-    )
-
-  /**
-   * Creates a new `DOMContext` instance with the specified reference.
-   *
-   * @param reference - The optional `Text` node to use as the reference for the new `DOMContext`.
-   * @returns A new `DOMContext` instance with the specified reference.
-   */
-  readonly withReference = (reference: Text | undefined): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      reference,
-      this.providers,
-      this.isFirstLevel
-    )
-
-  /** Creates a new DOMContext with the provided provider value.
-   *
-   * @param mark - The provider mark to associate the value with.
-   * @param value - The value to set for the provider.
-   * @returns A new DOMContext with the updated providers.
-   */
-  readonly withProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      this.reference,
-      {
-        ...this.providers,
-        [mark]: value,
-      },
-      this.isFirstLevel
-    )
+  makePortal(selector: string): DOMContext
 
   /**
    * Returns a new DOMContext instance with the specified providers merged into
@@ -173,19 +73,9 @@ export class DOMContext {
    * @param providers - An object containing the providers to be merged into the existing providers.
    * @returns A new DOMContext instance with the merged providers.
    */
-  readonly withProviders = (providers: {
+  withProviders(providers: {
     [K in ProviderMark<unknown>]: unknown
-  }): DOMContext =>
-    new DOMContext(
-      this.document,
-      this.element,
-      this.reference,
-      {
-        ...this.providers,
-        ...providers,
-      },
-      this.isFirstLevel
-    )
+  }): DOMContext
 
   /**
    * Retrieves a provider for the given provider mark.
@@ -194,22 +84,74 @@ export class DOMContext {
    * @returns The provider for the given mark.
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
-  readonly getProvider = <T>(mark: ProviderMark<T>): T => {
-    if (this.providers[mark] === undefined) {
-      throw new ProviderNotFoundError(mark)
-    }
+  getProvider<T>(mark: ProviderMark<T>): T
 
-    return this.providers[mark]! as T
-  }
-}
+  clear(removeTree: boolean): void
 
-/**
- * Error thrown when a provider is not found.
- *
- * @public
- */
-export class ProviderNotFoundError extends Error {
-  constructor(mark: ProviderMark<unknown>) {
-    super(`Provider not found: ${mark.description}`)
+  /**
+   * Adds an event listener to the element.
+   * @param event - The event to listen for.
+   * @param listener - The listener to call when the event occurs.
+   * @param options - The options for the event listener.
+   * @returns A function to remove the event listener.
+   */
+  on<E>(
+    event: string,
+    listener: (event: E) => void,
+    options?: HandlerOptions
+  ): Clear
+
+  /**
+   * Adds classes to the element.
+   * @param tokens - The class names to add.
+   */
+  addClasses(tokens: string[]): void
+
+  /**
+   * Removes classes from the element.
+   * @param tokens - The class names to remove.
+   */
+  removeClasses(tokens: string[]): void
+
+  /**
+   * Gets the classes of the element.
+   * @returns The classes of the element.
+   */
+  getClasses(): string[]
+
+  /**
+   * Returns `true` if the context is a browser DOM context.
+   * @returns `true` if the context is a browser DOM context.
+   */
+  isBrowserDOM(): this is BrowserContext
+
+  /**
+   * Returns `true` if the context is a headless DOM context.
+   * @returns `true` if the context is a headless DOM context.
+   */
+  isHeadlessDOM(): this is HeadlessContext
+
+  /**
+   * Sets the style of the element.
+   * @param name - The name of the style to set.
+   * @param value - The value of the style to set.
+   */
+  setStyle(name: string, value: string): void
+
+  /**
+   * Gets the style of the element.
+   * @param name - The name of the style to get.
+   * @returns The value of the style.
+   */
+  getStyle(name: string): string
+
+  /**
+   * Returns an object with methods to get and set the value of a property or attribute.
+   * @param name - The name of the property to create accessors for.
+   * @returns An object with methods to get and set the value of the property.
+   */
+  makeAccessors(name: string): {
+    get(): unknown
+    set(value: unknown): void
   }
 }

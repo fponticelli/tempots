@@ -23,7 +23,7 @@ export const _removeDOMNode = (node: Node) => {
  * @returns The `Element` for the given `node`.
  * @internal
  */
-export const _getSelfOrParentElement = (node: Node): Element =>
+export const _getSelfOrParentElement = (node: Node): HTMLElement =>
   _isElement(node) ? node : node.parentElement!
 
 /**
@@ -33,4 +33,5 @@ export const _getSelfOrParentElement = (node: Node): Element =>
  * @returns `true` if the `node` is an `Element`, `false` otherwise.
  * @internal
  */
-export const _isElement = (node: Node): node is Element => node.nodeType === 1 // Node.ELEMENT_NODE
+export const _isElement = (node: Node): node is HTMLElement =>
+  node.nodeType === 1 // Node.ELEMENT_NODE

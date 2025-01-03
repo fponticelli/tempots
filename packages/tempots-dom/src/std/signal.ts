@@ -17,6 +17,12 @@ export type AtGetter<T> = {
   [K in keyof T]-?: Signal<T[K]>
 }
 
+export type ListenerOptions = {
+  skipInitial?: boolean
+  once?: boolean
+  abortSignal?: AbortSignal
+}
+
 /**
  * Represents a signal that holds a value and notifies its listeners when the value changes.
  * @typeParam T - The type of the value held by the signal.
@@ -80,7 +86,9 @@ export class Signal<T> {
   /**
    * @internal
    */
-  protected readonly _onValueListeners: Array<(value: T) => void> = []
+  protected readonly _onValueListeners: Array<
+    (value: T, previousValue: T | undefined) => void
+  > = []
   /**
    * @internal
    */
@@ -126,25 +134,48 @@ export class Signal<T> {
    * Returns a function that can be called to unregister the listener.
    *
    * @param listener - The listener function to be called when the value of the signal changes.
+   * @param options - Options for the listener.
    */
-  readonly on = (listener: (value: T) => void) => {
-    listener(this.get())
-    this._onValueListeners.push(listener)
-    return () => {
-      this._onValueListeners.splice(this._onValueListeners.indexOf(listener), 1)
+  readonly on = (
+    listener: (value: T, previousValue: T | undefined) => void,
+    options: ListenerOptions = {}
+  ) => {
+    if (!options.skipInitial) {
+      listener(this.get(), undefined)
     }
+    const actualListener = options.once
+      ? (value: T, previousValue: T | undefined) => {
+          clear()
+          listener(value, previousValue)
+        }
+      : listener
+    this._onValueListeners.push(actualListener)
+    const clear = () => {
+      this._onValueListeners.splice(
+        this._onValueListeners.indexOf(actualListener),
+        1
+      )
+      if (options.abortSignal != null) {
+        options.abortSignal.removeEventListener('abort', clear)
+      }
+    }
+    if (options.abortSignal != null) {
+      options.abortSignal.addEventListener('abort', clear)
+    }
+    return clear
   }
 
   /**
    * @internal
    */
   protected readonly _setAndNotify = (newV: T, forceNotifications: boolean) => {
-    const same = this.equals(this._value, newV)
+    const currentValue = this._value
+    const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
     }
     if (forceNotifications || !same) {
-      this._onValueListeners.forEach(l => l(newV))
+      this._onValueListeners.forEach(l => l(newV, currentValue))
     }
   }
 
@@ -391,11 +422,24 @@ export class Signal<T> {
 
   /**
    * Derives a new property from the current signal.
-   * @param autoDisposeProp - Determines whether the derived property should be automatically disposed.
+   * @param options - The options for the derived property.
+   * @param options.autoDisposeProp - Determines whether the derived property should be automatically disposed.
+   * @param options.equals - A function that determines if two values are equal.
    * @returns The derived property.
    */
-  readonly deriveProp = (autoDisposeProp = true) =>
-    this.feedProp(makeProp(this.get()), autoDisposeProp)
+  readonly deriveProp = ({
+    autoDisposeProp = true,
+    equals,
+  }: {
+    autoDisposeProp?: boolean
+    equals?: (a: T, b: T) => boolean
+  } = {}) => this.feedProp(makeProp(this.get(), equals), autoDisposeProp)
+
+  /**
+   * Derives a new signal from the current signal. Useful to create a new signal that emits the same values as the current signal but can be disposed independently.
+   * @returns A new signal that emits the same values as the current signal.
+   */
+  readonly derive = () => this.map(v => v)
 
   /**
    * Returns a signal that emits the count of values received so far.
@@ -508,8 +552,7 @@ export class Computed<T> extends Signal<T> {
   readonly get = () => {
     if (this._isDirty) {
       this._isDirty = false
-      this._value = this._fn()
-      this._setAndNotify(this._value, true)
+      this._setAndNotify(this._fn(), true)
     }
     return this._value
   }
@@ -700,8 +743,40 @@ export const makeComputed = <T>(
  * @returns A disposable object that can be used to stop the effect.
  * @public
  */
-export const makeEffect = (fn: () => void, signals: Array<AnySignal>) =>
-  makeComputed(fn, signals).dispose
+export const makeEffect = (
+  fn: () => void,
+  signals: Array<AnySignal>,
+  options: ListenerOptions = {}
+) => {
+  let actualFn = options.once
+    ? () => {
+        clear()
+        fn()
+      }
+    : fn
+  if (options.skipInitial) {
+    let called = false
+    const actualFn2 = actualFn
+    actualFn = () => {
+      if (called) {
+        actualFn2()
+      } else {
+        called = true
+      }
+    }
+  }
+  const signal = makeComputed(actualFn, signals)
+  const clear = () => {
+    signal.dispose()
+    if (options.abortSignal != null) {
+      options.abortSignal.removeEventListener('abort', clear)
+    }
+  }
+  if (options.abortSignal != null) {
+    options.abortSignal.addEventListener('abort', clear)
+  }
+  return clear
+}
 /**
  * Creates a new Prop object with the specified value and equality function.
  *

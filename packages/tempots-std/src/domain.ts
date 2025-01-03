@@ -46,7 +46,6 @@ export type Compare<T> = (a: T, b: T) => number
  * @typeParam T - The original type.
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type Id<T> = {} & { [P in keyof T]: T[P] }
 
 /**

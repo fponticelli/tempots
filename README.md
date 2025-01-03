@@ -4,14 +4,15 @@
 [![npm @tempots/ui](https://img.shields.io/npm/v/@tempots/ui?label=@tempots/ui)](https://www.npmjs.com/package/@tempots/ui)
 [![GitHub stars](https://img.shields.io/github/stars/fponticelli/tempots?label=Star%20me%20on%20Github&style=social)](https://github.com/fponticelli/tempots)
 
-[Project Homepage](https://tempots.com/)
+[Project Homepage](https://tempo-ts.com/)
 
 Tempo is a framework to build dynamic frontend applications.
 
-[HNPWA demo](https://tempots.com/demos/hnpwa/index.html)
+[HNPWA demo](https://tempo-ts.com/demos/hnpwa/index.html)
 
-[7GUIs](https://tempots.com/demos/7guis/index.html)
+[7GUIs](https://tempo-ts.com/demos/7guis/index.html)
 
-[TODO MVC demo](https://tempots.com/demos/todomvc/index.html)
+[TODO MVC demo](https://tempo-ts.com/demos/todomvc/index.html)
 
-[Counter App](https://tempots.com/demos/counter/index.html)
+[Counter App](https://tempo-ts.com/demos/counter/index.html)
+

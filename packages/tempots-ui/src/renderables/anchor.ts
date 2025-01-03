@@ -1,5 +1,6 @@
 import { attr, TNode, html, on, Signal, Value, Renderable } from '@tempots/dom'
-import { setLocationFromUrl, UseLocation } from './router/location'
+import { UseLocation } from './router/location'
+import { setLocationFromUrl } from './router/location-data'
 import {
   handleAnchorClick,
   HandleAnchorClickOptions,

@@ -1,7 +1,7 @@
 import { Txt } from './components/txt'
 import {
   emitValue,
-  OnUnmount,
+  OnDispose,
   Signal,
   attr,
   on,
@@ -28,7 +28,7 @@ export function Temperature(): Renderable {
   const tchange = makeProp<TempChange>({ unit: 'c', value: '' })
   const clear = tchange.on(tchange => {
     const value = Number(tchange.value)
-    if (tchange.value === '' || !Number.isFinite(value)) {
+    if (tchange.value.trim() === '' || !Number.isFinite(value)) {
       return
     }
     if (tchange.unit === 'c') {
@@ -38,7 +38,7 @@ export function Temperature(): Renderable {
     }
   })
   return flex.col(
-    OnUnmount(clear),
+    OnDispose(clear),
     attr.class('gap-2'),
     flex.row(
       attr.class('gap-2 items-center'),

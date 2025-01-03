@@ -3,20 +3,17 @@ import type { MathMLTags } from '../types/mathml-tags'
 import type { NValue, Renderable } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal } from '../std/signal'
-import { _makeGetter, _makeSetter } from '../dom/attr'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
-import { _maybeAddAttributeTracker, _maybeAddClassTracker } from '../dom/ssr'
 import { Value } from '../std/value'
 
 const staticClassName =
   (value: string[]): Renderable =>
   (ctx: DOMContext) => {
-    _maybeAddClassTracker(ctx)
-    ctx.element.classList.add(...value)
+    ctx.addClasses(value)
     return (removeTree: boolean) => {
       if (removeTree) {
-        ctx.element.classList.remove(...value)
+        ctx.removeClasses(value)
       }
     }
   }
@@ -24,49 +21,43 @@ const staticClassName =
 const signalClassName =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
-    _maybeAddClassTracker(ctx)
-    const element = ctx.element
     let previous: string[] = []
     const clear = signal.on(v => {
-      previous.forEach(p => element.classList.remove(p))
+      ctx.removeClasses(previous)
       previous = (v ?? '').split(' ').filter(v => v.length > 0)
-      element.classList.add(...previous)
+      ctx.addClasses(previous)
     })
     return (removeTree: boolean) => {
       clear()
       if (removeTree) {
-        previous.forEach(p => element.classList.remove(p))
+        ctx.removeClasses(previous)
       }
       previous.length = 0
     }
   }
 
 const staticAttributeRenderable = <T>(name: string, value: T) => {
-  const setter = _makeSetter(name)
-  const getter = _makeGetter(name)
   return (ctx: DOMContext) => {
-    _maybeAddAttributeTracker(ctx, name)
-    const original = getter(ctx.element)
-    setter(ctx.element, value)
+    const { get, set } = ctx.makeAccessors(name)
+    const original = get()
+    set(value)
     return (removeTree: boolean) => {
       if (removeTree) {
-        setter(ctx.element, original)
+        set(original)
       }
     }
   }
 }
 
 const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
-  const setter = _makeSetter(name)
-  const getter = _makeGetter(name)
   return (ctx: DOMContext) => {
-    _maybeAddAttributeTracker(ctx, name)
-    const original = getter(ctx.element)
-    const clear = signal.on(v => setter(ctx.element, v))
+    const { get, set } = ctx.makeAccessors(name)
+    const original = get()
+    const clear = signal.on(set)
     return (removeTree: boolean) => {
       clear()
       if (removeTree) {
-        setter(ctx.element, original)
+        set(original)
       }
     }
   }

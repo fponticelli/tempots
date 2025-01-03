@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "0.22.0",
+  "version": "1.0.1",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -53,44 +53,47 @@
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
     "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
     "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",
-    "npm:prep": "yarn build && cp README.md dist",
-    "npm:prep:patch": "yarn package:patch && yarn npm:prep",
-    "npm:prep:minor": "yarn package:minor && yarn npm:prep",
-    "npm:prep:major": "yarn package:major && yarn npm:prep",
+    "package:next": "node -e 'require(\"./scripts/make.cjs\").update(\"next\")'",
+    "npm:prep": "pnpm build && cp README.md dist",
+    "npm:prep:patch": "pnpm package:patch && pnpm npm:prep",
+    "npm:prep:minor": "pnpm package:minor && pnpm npm:prep",
+    "npm:prep:major": "pnpm package:major && pnpm npm:prep",
+    "npm:prep:next": "pnpm package:next && pnpm npm:prep",
     "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
-    "npm:publish": "yarn npm:prep:patch && yarn npm:publish:impl",
-    "npm:publish:minor": "yarn npm:prep:minor && yarn npm:publish:impl",
-    "npm:publish:major": "yarn npm:prep:major && yarn npm:publish:impl"
+    "npm:publish": "pnpm npm:prep:patch && pnpm npm:publish:impl",
+    "npm:publish:minor": "pnpm npm:prep:minor && pnpm npm:publish:impl",
+    "npm:publish:major": "pnpm npm:prep:major && pnpm npm:publish:impl",
+    "npm:publish:next": "pnpm npm:prep:next && pnpm npm:publish:impl"
   },
   "dependencies": {
+    "@tempots/dom": "workspace:*",
+    "@tempots/std": "workspace:*",
     "@floating-ui/dom": "^1.6.7"
   },
   "peerDependencies": {
-    "@tempots/dom": "23.0.2",
-    "@tempots/std": "0.16.0"
+    "@tempots/std": "0.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "@microsoft/api-documenter": "^7.25.6",
     "@microsoft/api-extractor": "^7.47.1",
-    "@tempots/dom": "*",
-    "@tempots/std": "*",
     "@types/node": "^20.12.7",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "@vitest/coverage-v8": "^1.5.0",
-    "eslint": "^9.1.1",
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "eslint": "^9.10.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
     "glob": "^10.3.12",
     "globals": "^15.0.0",
     "happy-dom": "^14.12.3",
-    "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
-    "typescript-eslint": "^7.7.1",
+    "typescript-eslint": "^8.6.0",
     "vite": "^5.3.6",
     "vite-plugin-dts": "^4.0.2",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^1.5.0"
+    "vitest": "^2.0.5"
   }
 }

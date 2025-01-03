@@ -59,4 +59,29 @@ describe("ForEach", () => {
     clear()
     expect(document.body.innerHTML).toStrictEqual('')
   });
+  test("nested foreach", async () => {
+    const s = makeProp([['a', 'b'], ['c', 'd']])
+    render(
+      ForEach(s, items => ForEach(items, item => item)),
+      document.body
+    )
+    expect(document.body.innerHTML).toStrictEqual('abcd')
+
+    s.set([['a', 'b'], ['c', 'd', 'e']])
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('abcde')
+    
+    s.set([['a', 'b'], ['c', 'd', 'e'], ['f', 'g', 'h']])
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('abcdefgh')
+
+    s.set([['a', 'b'], ['c', 'd', 'e'], ['f', 'g']])
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('abcdefg')
+
+    s.set([['a'], ['f']])
+    await sleep()
+    expect(document.body.innerHTML).toStrictEqual('af')
+  });
 });
+

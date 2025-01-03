@@ -5,6 +5,10 @@ import {
   TNode,
   Size,
   renderableOfTNode,
+  OnBrowserCtx,
+  BrowserContext,
+  getWindow,
+  OnDispose,
 } from '@tempots/dom'
 
 /**
@@ -14,24 +18,27 @@ import {
  * @returns A function that takes a DOMContext and returns a renderable function.
  * @public
  */
-export const ElementSize =
-  (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
-    const el = ctx.element
-    const size = makeProp({ width: el.clientWidth, height: el.clientHeight })
+export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
+  OnBrowserCtx((ctx: BrowserContext) => {
+    const { element } = ctx
+    const size = makeProp({
+      width: element.clientWidth,
+      height: element.clientHeight,
+    })
     const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
-      size.set({ width: el.clientWidth, height: el.clientHeight })
+      size.set({ width: element.clientWidth, height: element.clientHeight })
     }
     let observer: ResizeObserver
     if (typeof ResizeObserver === 'function') {
       observer = new ResizeObserver(onResize)
-      observer.observe(el)
+      observer.observe(element)
     }
-    return (removeTree: boolean) => {
+    return OnDispose((removeTree: boolean) => {
       observer?.disconnect()
       clear(removeTree)
-    }
-  }
+    })
+  })
 
 /**
  * Creates a renderable function that monitors the window size and invokes the provided function with the current size.
@@ -41,20 +48,21 @@ export const ElementSize =
  */
 export const WindowSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
+    const win = getWindow()
     const size = makeProp({
-      width: window?.innerWidth ?? 0,
-      height: window?.innerHeight ?? 0,
+      width: win?.innerWidth ?? 0,
+      height: win?.innerHeight ?? 0,
     })
     const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
       size.set({
-        width: window?.innerWidth ?? 0,
-        height: window?.innerHeight ?? 0,
+        width: win?.innerWidth ?? 0,
+        height: win?.innerHeight ?? 0,
       })
     }
-    window?.addEventListener('resize', onResize)
+    win?.addEventListener('resize', onResize)
     return (removeTree: boolean) => {
-      window?.removeEventListener('resize', onResize)
+      win?.removeEventListener('resize', onResize)
       clear(removeTree)
     }
   }

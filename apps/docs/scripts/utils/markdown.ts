@@ -12,23 +12,7 @@ const marked = new Marked(
       return hljs.highlight(code, { language }).value;
     }
   })
-);
-
-// const renameHtml = (path: string) => {
-//   const hasLeadingHash = path.startsWith('#')
-//   const parts = path.split('#').filter(a => !!a)
-//   if (!parts[0].endsWith('.html')) return path
-//   function processPart(part: string) {
-//     return part
-//       .split('.')
-//       .map(p => p.replace(/^_+|_+$/g, ''))
-//       .join('.')
-//   }
-//   const res = parts[0].split('/').map(processPart).join('/')
-//   return (hasLeadingHash ? [''] : [])
-//     .concat([res].concat(parts.slice(1)))
-//     .join('#')
-// }
+)
 
 function getComments(el: Element) {
   const arr = [] as Node[]

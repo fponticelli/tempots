@@ -46,16 +46,15 @@ const consumersRenderable =
     fn: (providers: ToProviders<T>) => TNode
   ): Renderable =>
   (ctx: DOMContext) => {
-    const providers = Object.values(marks).reduce((providers, mark) => {
-      const provider = ctx.getProvider(mark)
-      if (provider == null) {
-        throw new Error(`No provider found for mark: ${mark.description}`)
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(providers as any)[mark] = provider
-      return providers
-    }, {} as ToProviders<T>)
-    return renderableOfTNode(fn(providers))(ctx)
+    const passedProviders = Object.values(marks).reduce(
+      (providersAcc, mark) => {
+        const provider = ctx.getProvider(mark)
+        Reflect.set(providersAcc, mark, provider)
+        return providersAcc
+      },
+      {} as ToProviders<T>
+    )
+    return renderableOfTNode(fn(passedProviders))(ctx)
   }
 
 /**
@@ -70,18 +69,18 @@ export type UseMany<C extends Record<string, Consumer<unknown>>> = {
 /**
  * Creates a renderable function that consumes data from multiple consumers and renders the result.
  *
- * @param consumers - An object containing consumer functions.
+ * @param providers - An object containing consumer functions.
  * @param fn - A function that receives the data from the consumers and returns a renderable function.
  * @returns A renderable function that can be called with a DOMContext and returns a cleanup function.
  * @public
  */
 export const Use = <C extends Record<string, Consumer<unknown>>>(
-  consumers: C,
+  providers: C,
   fn: (data: UseMany<C>) => Renderable
 ): Renderable => {
   return (ctx: DOMContext) => {
     const clears = [] as ((removeTree: boolean) => void)[]
-    const data = Object.entries(consumers).reduce(
+    const data = Object.entries(providers).reduce(
       (acc, [key, f]) => {
         clears.push(
           f(value => {

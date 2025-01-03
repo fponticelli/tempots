@@ -15,7 +15,7 @@ const demoFolderDst = path.join(pubFolder, 'demos')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
 const librariesFolderSrc = path.join(rootFolder, 'packages')
-const libraries = ['tempots-dom', 'tempots-ssr', 'tempots-std', 'tempots-color', 'tempots-ui']
+const libraries = ['tempots-dom', 'tempots-std', 'tempots-color', 'tempots-ui']
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')
@@ -31,9 +31,7 @@ async function getDemos(folder: string): Promise<Demo[]> {
   const contents = await Promise.all(
     data.map(async o => {
       const { dir, path } = o
-      // const dom = loadHtml(dir)
       const pack = await loadPackage(dir)
-      // const { title, description, priority } = extractDemoInfo(dom)
       return {
         priority: pack.priority,
         data: {
@@ -289,7 +287,6 @@ async function main() {
         if (breadcrumbs.length > 0) {
           const bc = breadcrumbs[0]
           bc.classList.add('breadcrumbs')
-          // console.log(bc.childNodes)
           for (let i = 0; i < bc.childNodes.length; i++) {
             if (bc.childNodes[i].nodeType === 3 && bc.childNodes[i].nodeValue === ' > ') { // text node
               bc.childNodes[i].nodeValue = ' › '
@@ -312,7 +309,6 @@ async function main() {
           } else {
             anchor.href = `${lib}.${parts.join('.')}.html`
           }
-          // console.log(anchor.href)
         }
         // add ID to headers
         addIdToHeaders(doc)
@@ -327,9 +323,9 @@ async function main() {
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
 
   // CNAME
-  await fsp.writeFile(cnameFile, 'tempots.com')
+  await fsp.writeFile(cnameFile, 'tempo-ts.com')
 
   console.timeEnd('main')
 }
 
-main()
+await main()

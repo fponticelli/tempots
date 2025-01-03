@@ -1,11 +1,13 @@
 import {
   TNode,
-  DOMContext,
-  OnMount,
+  OnElement,
   Value,
   html,
   Portal,
+  OnBrowserCtx,
+  BrowserContext,
   When,
+  OnDispose,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -81,43 +83,43 @@ export type PopOverOptions = {
  * @returns The rendered PopOver component.
  * @public
  */
-export const PopOver =
-  ({
-    content,
-    open,
-    placement,
-    offset: { mainAxis, crossAxis } = { mainAxis: 0, crossAxis: 0 },
-  }: PopOverOptions) =>
-  (ctx: DOMContext) => {
-    const target = ctx.element
+export const PopOver = ({
+  content,
+  open,
+  placement,
+  offset: { mainAxis, crossAxis } = { mainAxis: 0, crossAxis: 0 },
+}: PopOverOptions) =>
+  OnBrowserCtx((ctx: BrowserContext) => {
     const isOpen = Value.toSignal(open)
+    const target = ctx.element
 
-    return When(
-      isOpen,
+    return When(isOpen, () =>
       Portal(
         'body',
         html.div(
-          OnMount((element: HTMLElement) => {
+          OnElement((element: HTMLElement) => {
             const floatingEl = element
             floatingEl.style.position = 'absolute'
-            return autoUpdate(target, floatingEl, () => {
-              computePosition(target, floatingEl, {
-                placement,
-                strategy: 'absolute',
-                middleware: [
-                  flip(),
-                  fuiOffset({ mainAxis, crossAxis }),
-                  shift(),
-                  flip(),
-                ],
-              }).then(({ x, y }) => {
-                floatingEl.style.top = `${y}px`
-                floatingEl.style.left = `${x}px`
+            return OnDispose(
+              autoUpdate(target, floatingEl, () => {
+                computePosition(target, floatingEl, {
+                  placement,
+                  strategy: 'absolute',
+                  middleware: [
+                    flip(),
+                    fuiOffset({ mainAxis, crossAxis }),
+                    shift(),
+                    flip(),
+                  ],
+                }).then(({ x, y }) => {
+                  floatingEl.style.top = `${y}px`
+                  floatingEl.style.left = `${x}px`
+                })
               })
-            })
+            )
           }),
           content()
         )
       )
-    )(ctx)
-  }
+    )
+  })

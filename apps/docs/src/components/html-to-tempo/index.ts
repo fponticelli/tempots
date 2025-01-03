@@ -1,12 +1,4 @@
-import {
-  attr,
-  html,
-  OnUnmount,
-  makeProp,
-  TNode,
-  Value,
-  isSSR,
-} from '@tempots/dom'
+import { attr, html, OnDispose, makeProp, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -32,6 +24,7 @@ export function HtmlToTempo() {
   )
   const tempo = makeProp('')
   return html.div(
+    attr.class('h-full p-4 flex flex-col gap-2'),
     HTMLTitle('Tempo • HTML to Tempo'),
     OpenGraph({
       title: 'HTML to Tempo • Tempo',
@@ -40,10 +33,10 @@ export function HtmlToTempo() {
     attr.class(
       'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-[calc(100dvh_-_6rem)] overflow-hidden gap-2'
     ),
-    OnUnmount(
+    OnDispose(
       content.on(html => {
         try {
-          const tempoStr = isSSR() ? '' : htmlToTempo(html)
+          const tempoStr = htmlToTempo(html)
           tempo.set(tempoStr)
         } catch (e) {
           console.warn('Failed to parse HTML', e)
