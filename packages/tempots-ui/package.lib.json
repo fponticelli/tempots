@@ -1,6 +1,6 @@
 {
   "name": "@tempots/ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -40,6 +40,6 @@
     "@floating-ui/dom": "^1.6.7"
   },
   "peerDependencies": {
-    "@tempots/std": "0.16.1"
+    "@tempots/std": "0.17.0"
   }
 }
