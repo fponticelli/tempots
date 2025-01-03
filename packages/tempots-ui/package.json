@@ -87,7 +87,7 @@
     "prettier": "^3.3.3",
     "glob": "^10.3.12",
     "globals": "^15.0.0",
-    "happy-dom": "^14.12.3",
+    "happy-dom": "16.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.6.0",
