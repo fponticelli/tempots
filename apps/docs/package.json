@@ -17,7 +17,7 @@
     "@tempots/dom": "workspace:*",
     "@tempots/std": "workspace:*",
     "@tempots/ui": "workspace:*",
-    "happy-dom": "^14.12.3"
+    "happy-dom": "^15.10.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
