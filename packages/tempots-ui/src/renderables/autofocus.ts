@@ -1,4 +1,5 @@
 import { OnDispose, OnElement, type Renderable } from '@tempots/dom'
+import { delayed } from '@tempots/std'
 
 /**
  * Creates a renderable function that focuses on the element after a specified delay.
@@ -8,9 +9,4 @@ import { OnDispose, OnElement, type Renderable } from '@tempots/dom'
  * @public
  */
 export const AutoFocus = (delay: number = 10): Renderable =>
-  OnElement(el => {
-    const timeout = setTimeout(() => {
-      el?.focus()
-    }, delay)
-    return OnDispose(() => clearTimeout(timeout))
-  })
+  OnElement(el => OnDispose(delayed(() => el?.focus(), delay)))

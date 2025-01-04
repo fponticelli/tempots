@@ -101,8 +101,8 @@ export const PopOver = ({
             const floatingEl = element
             floatingEl.style.position = 'absolute'
             return OnDispose(
-              autoUpdate(target, floatingEl, () => {
-                computePosition(target, floatingEl, {
+              autoUpdate(target, floatingEl, async () => {
+                const { x, y } = await computePosition(target, floatingEl, {
                   placement,
                   strategy: 'absolute',
                   middleware: [
@@ -111,10 +111,9 @@ export const PopOver = ({
                     shift(),
                     flip(),
                   ],
-                }).then(({ x, y }) => {
-                  floatingEl.style.top = `${y}px`
-                  floatingEl.style.left = `${x}px`
                 })
+                floatingEl.style.top = `${y}px`
+                floatingEl.style.left = `${x}px`
               })
             )
           }),
