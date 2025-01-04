@@ -1,4 +1,5 @@
-import { makeComputedOf, Prop, Value, makeProp, Signal } from '@tempots/dom'
+import { makeComputedOf, Value, makeProp, Signal } from '@tempots/dom'
+import { interval } from '@tempots/std'
 
 const MINUTE = 60 * 1000
 const HOUR = 60 * MINUTE
@@ -72,7 +73,33 @@ function format(
   }
 }
 
-export function timeDiffToString(diffInMillis: number): string {
+/**
+ * Creates a signal that automatically updates with the current time at a specified frequency.
+ * The signal will clean up its interval when disposed.
+ *
+ * @param frequency - Milliseconds between updates (defaults to 1000ms/1 second)
+ * @returns A Value<Date> that updates with the current time at the specified frequency
+ * @public
+ */
+export const makeNowSignal = (frequency: number = 1000): Value<Date> => {
+  const now = makeProp(new Date())
+  const clear = interval(() => now.set(new Date()), frequency)
+  now.onDispose(clear)
+  return now
+}
+
+/**
+ * Converts a time difference in milliseconds to a human-readable relative time string.
+ *
+ * @param diffInMillis - The time difference in milliseconds. Negative values indicate past times,
+ *                       positive values indicate future times.
+ * @returns A human-readable string representing the relative time difference:
+ *          - For very recent times (< 1 minute): "just now" or "in a moment"
+ *          - For other times: formatted strings like "2 minutes ago", "in 3 hours", "yesterday", etc.
+ * @throws {Error} Should never throw due to the Infinity max value in units array
+ * @public
+ */
+export const timeDiffToString = (diffInMillis: number): string => {
   const diff = Math.abs(diffInMillis)
   if (diff < MINUTE) {
     return diffInMillis < 0 ? 'just now' : 'in a moment'
@@ -88,32 +115,71 @@ export function timeDiffToString(diffInMillis: number): string {
   }
 }
 
-export const makeRelativeTime = (date: Value<Date>, now?: Value<Date>) => {
+/**
+ * Creates a signal that computes the time difference in milliseconds between a target date and a reference date.
+ *
+ * @param date - The target date to compare
+ * @param options - Configuration options
+ * @param options.now - Optional reference date signal (defaults to current time)
+ * @param options.frequency - Update frequency in milliseconds when using default current time (defaults to 10000ms/10 seconds)
+ * @returns A signal containing the time difference in milliseconds. Negative values indicate past times,
+ *          positive values indicate future times. The signal will clean up its resources when disposed.
+ * @public
+ */
+export const makeRelativeTimeMillisSignal = (
+  date: Value<Date>,
+  { now, frequency = 10000 }: { now?: Value<Date>; frequency?: number } = {}
+) => {
   const realNow =
     now != null
       ? Signal.is(now)
         ? now.derive()
         : makeProp(now)
-      : makeProp(new Date())
+      : makeNowSignal(frequency)
 
   const diff = makeComputedOf(
     date,
     realNow
-  )((date, now) => {
-    const diff = date.getTime() - now.getTime()
-    return timeDiffToString(diff)
-  })
-
-  const intervalId = Prop.is(realNow)
-    ? setInterval(() => realNow.set(new Date()), 5000)
-    : undefined
-
-  diff.onDispose(() => {
-    if (intervalId != null) {
-      clearInterval(intervalId)
-    }
-    realNow.dispose()
-  })
+  )((date, now) => date.getTime() - now.getTime())
+  diff.onDispose(() => Value.dispose(realNow))
 
   return diff
 }
+
+/**
+ * Creates a signal that computes a human-readable relative time string between a target date and a reference date.
+ *
+ * @param date - The target date to compare
+ * @param options - Configuration options
+ * @param options.now - Optional reference date signal (defaults to current time)
+ * @param options.frequency - Update frequency in milliseconds when using default current time (defaults to 10000ms/10 seconds)
+ * @returns A signal containing a human-readable relative time string (e.g., "2 minutes ago", "in 3 hours").
+ *          The signal will clean up its resources when disposed.
+ * @public
+ */
+export const makeRelativeTimeSignal = (
+  date: Value<Date>,
+  options: { now?: Value<Date>; frequency?: number } = {}
+) => {
+  const signal = makeRelativeTimeMillisSignal(date, options)
+  const diff = signal.map(timeDiffToString)
+  diff.onDispose(signal.dispose)
+  return diff
+}
+
+/**
+ * Creates a signal that computes a human-readable relative time string between a target date and a reference date.
+ *
+ * @param date - The target date to compare
+ * @param options - Configuration options
+ * @param options.now - Optional reference date signal (defaults to current time)
+ * @param options.frequency - Update frequency in milliseconds when using default current time (defaults to 10000ms/10 seconds)
+ * @returns A signal containing a human-readable relative time string (e.g., "2 minutes ago", "in 3 hours").
+ *          The signal will clean up its resources when disposed.
+ * @deprecated Use makeRelativeTimeSignal instead
+ * @public
+ */
+export const makeRelativeTime = (
+  date: Value<Date>,
+  options: { now?: Value<Date>; frequency?: number } = {}
+) => makeRelativeTimeSignal(date, options)
