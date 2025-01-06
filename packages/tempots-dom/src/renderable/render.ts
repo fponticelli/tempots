@@ -56,7 +56,6 @@ export const render = (
   parent: Node | string,
   { doc, clear, disposeWithParent = true }: RenderOptions = {}
 ) => {
-  console.time('render')
   const el =
     typeof parent === 'string'
       ? (doc ?? document).querySelector(parent)
@@ -89,7 +88,6 @@ export const render = (
       attributes: false,
     })
   }
-  console.timeEnd('render')
   return () => {
     disposeObserver?.disconnect()
     clearDOM(true)
