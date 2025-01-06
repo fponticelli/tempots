@@ -19,7 +19,7 @@ import { Value } from '../std/value'
  */
 export const renderWithContext = (renderable: Renderable, ctx: DOMContext) => {
   const clear = renderable(ctx)
-  return () => clear(true)
+  return (removeTree: boolean = true) => clear(removeTree)
 }
 
 /**
@@ -35,6 +35,10 @@ export type RenderOptions = {
    * Whether to clear the document before rendering. This is useful when the page has been pre-rendered on the server.
    */
   clear?: boolean
+  /**
+   * Whether to dispose the renderable when the parent element is removed from the DOM.
+   */
+  disposeWithParent?: boolean
 }
 
 /**
@@ -50,8 +54,9 @@ export type RenderOptions = {
 export const render = (
   node: Renderable,
   parent: Node | string,
-  { doc, clear }: RenderOptions = {}
+  { doc, clear, disposeWithParent = true }: RenderOptions = {}
 ) => {
+  console.time('render')
   const el =
     typeof parent === 'string'
       ? (doc ?? document).querySelector(parent)
@@ -67,7 +72,28 @@ export const render = (
   const element = _getSelfOrParentElement(el)
   const ref = _isElement(el) ? undefined : el
   const ctx = BrowserContext.of(element, ref)
-  return renderWithContext(node, ctx)
+  const clearDOM = renderWithContext(node, ctx)
+  let disposeObserver: MutationObserver | undefined
+  if (disposeWithParent) {
+    disposeObserver = new MutationObserver(e => {
+      e[0]?.removedNodes.forEach(node => {
+        if (node === el) {
+          clearDOM(el.nodeType !== Node.ELEMENT_NODE)
+          disposeObserver?.disconnect()
+        }
+      })
+    })
+    disposeObserver.observe(el.parentElement!, {
+      childList: true,
+      subtree: false,
+      attributes: false,
+    })
+  }
+  console.timeEnd('render')
+  return () => {
+    disposeObserver?.disconnect()
+    clearDOM(true)
+  }
 }
 
 /**

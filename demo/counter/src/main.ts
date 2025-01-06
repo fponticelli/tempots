@@ -25,4 +25,4 @@ function App(): Renderable {
   )
 }
 
-render(App(), document.body)
+render(App(), document.getElementById('app')!)
