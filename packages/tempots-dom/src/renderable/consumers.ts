@@ -76,7 +76,7 @@ export type UseMany<C extends Record<string, Consumer<unknown>>> = {
  */
 export const Use = <C extends Record<string, Consumer<unknown>>>(
   providers: C,
-  fn: (data: UseMany<C>) => Renderable
+  fn: (data: UseMany<C>) => TNode
 ): Renderable => {
   return (ctx: DOMContext) => {
     const clears = [] as ((removeTree: boolean) => void)[]
@@ -94,7 +94,7 @@ export const Use = <C extends Record<string, Consumer<unknown>>>(
         [K in keyof C]: C[K] extends Consumer<infer V> ? V : never
       }
     )
-    clears.push(fn(data)(ctx))
+    clears.push(renderableOfTNode(fn(data))(ctx))
     return (removeTree: boolean) => {
       clears.forEach(f => f(removeTree))
     }

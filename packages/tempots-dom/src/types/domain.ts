@@ -16,7 +16,12 @@ export type Renderable<CTX extends DOMContext = DOMContext> = (
  * It can be a renderable element, a string value, undefined, null, or an array of renderable elements.
  * @public
  */
-export type TNode = Renderable | Value<string> | undefined | null | Renderable[]
+export type TNode<CTX extends DOMContext = DOMContext> =
+  | Renderable<CTX>
+  | Value<string>
+  | undefined
+  | null
+  | Renderable<CTX>[]
 /**
  * Represents a function that clears a resource.
  * @param removeTree - A boolean value indicating whether to remove the tree associated with the resource.
