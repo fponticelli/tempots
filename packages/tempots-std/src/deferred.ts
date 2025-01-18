@@ -7,7 +7,7 @@
  * const { promise, resolve, reject } = deferred<number>()
  *
  * promise.then((value) => {
- *   console.log(value)
+ *   console.warn(value)
  * })
  *
  * resolve(42)

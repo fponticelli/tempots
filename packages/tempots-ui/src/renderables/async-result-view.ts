@@ -1,9 +1,6 @@
 import {
   TNode,
   Empty,
-  Fragment,
-  OnDispose,
-  makeSignal,
   Signal,
   Value,
   OneOfType,
@@ -67,19 +64,14 @@ export const AsyncResultView = <T, E>(
   }
   const fail =
     options.failure ??
-    ((error: Signal<E>) =>
-      Fragment(
-        OnDispose(error.on(console.error)),
-        error.map(error => `Error: ${error}`)
-      ))
+    ((error: Signal<E>) => error.map(error => `Error: ${error}`))
   const success = options.success
   const loading = options.loading ?? (() => Empty)
   const notAsked = options.notAsked ?? (() => Empty)
   return OneOfType(Value.toSignal(result), {
     AsyncSuccess: s => success(s.$.value),
     AsyncFailure: e => fail(e.$.error),
-    Loading: s =>
-      loading(s.$.previousValue ?? makeSignal<T | undefined>(undefined)),
+    Loading: s => loading(s.map(v => v.previousValue)),
     NotAsked: notAsked,
   })
 }

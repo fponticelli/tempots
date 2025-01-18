@@ -48,13 +48,12 @@ export const OneOf = <T extends Record<string, unknown>>(
       let currentKey: keyof T | undefined
       const clearSignal = keySignal.on(newKey => {
         if (newKey !== currentKey) {
+          currentKey = newKey
           matched?.dispose()
           clearRenderable?.(true)
           matched = match.map(value => value[newKey])
-
           const child = cases[newKey](matched)
           clearRenderable = renderableOfTNode(child)(newCtx)
-          currentKey = newKey
         }
       })
       return (removeTree: boolean) => {

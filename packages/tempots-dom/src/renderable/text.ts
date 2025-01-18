@@ -10,7 +10,7 @@ export const _staticText =
   (text: string): Renderable =>
   (ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(text)
-    return (removeTree: boolean) => newCtx.clear(removeTree)
+    return newCtx.clear
   }
 
 /**
@@ -20,9 +20,9 @@ export const _signalText =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(signal.value)
-    const clear = signal.on(v => newCtx.setText(v))
+    const dispose = signal.on(newCtx.setText)
     return (removeTree: boolean) => {
-      clear()
+      dispose()
       newCtx.clear(removeTree)
     }
   }

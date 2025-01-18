@@ -6,7 +6,7 @@
  * @example
  * ```ts
  * // Delay a function for 1 second
- * const cancel = delayed(() => console.log('Hello!'), 1000);
+ * const cancel = delayed(() => console.warn('Hello!'), 1000);
  *
  * // Cancel the delayed execution if needed
  * cancel();
@@ -26,7 +26,7 @@ export const delayed = (fn: () => void, ms: number) => {
  * @example
  * ```ts
  * // Execute a function every 2 seconds
- * const stop = interval(() => console.log('Tick'), 2000);
+ * const stop = interval(() => console.warn('Tick'), 2000);
  *
  * // Stop the interval after some time
  * setTimeout(() => stop(), 10000);
@@ -116,7 +116,7 @@ export interface ThrottledFunction<T extends unknown[]> {
  * ```ts
  * // Create a throttled function that executes at most once every second
  * const throttledScroll = throttle(1000, () => {
- *   console.log('Scroll event handled');
+ *   console.warn('Scroll event handled');
  * });
  *
  * // Attach to scroll event

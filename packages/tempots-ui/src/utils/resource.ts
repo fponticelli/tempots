@@ -42,38 +42,23 @@ export interface ResourceLoadOptions<R, V, E> {
 }
 
 /**
- * Options for creating a resource, including the request signal, load function, and error converter.
- *
- * @template R - The type of the request.
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
- * @public
- */
-export interface MakeResourceOptions<R, V, E> {
-  /** A signal representing the request to load the resource. */
-  readonly request: Signal<R>
-  /** A function to load the resource, returning a promise of the value. */
-  readonly load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>
-  /** A function to convert an unknown error into a specific error type. */
-  readonly convertError: (error: unknown) => E
-}
-
-/**
  * Creates an asynchronous resource that can be loaded, reloaded, and disposed of.
  *
  * @template R - The type of the request.
  * @template V - The type of the value when the resource is successfully loaded.
  * @template E - The type of the error when the resource fails to load.
  *
- * @param {MakeResourceOptions<R, V, E>} options - The options for creating the resource.
- * @returns {AsyncResource<V, E>} The created asynchronous resource.
+ * @param request - The request to load the resource.
+ * @param load - The function to load the resource.
+ * @param convertError - The function to convert an unknown error into a specific error type.
+ * @returns The created asynchronous resource.
  * @public
  */
-export const makeResource = <R, V, E>({
-  request,
-  load,
-  convertError,
-}: MakeResourceOptions<R, V, E>): AsyncResource<V, E> => {
+export const makeResource = <R, V, E>(
+  request: Signal<R>,
+  load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>,
+  convertError: (error: unknown) => E
+): AsyncResource<V, E> => {
   const status = makeProp<AsyncResult<V, E>>(AsyncResult.notAsked)
   const value = status.map(r =>
     AsyncResult.isSuccess(r) ? r.value : undefined
@@ -99,6 +84,10 @@ export const makeResource = <R, V, E>({
     status.set(AsyncResult.loading(AsyncResult.getOrUndefined(previous)))
     try {
       const result = await load({ request: req, abortSignal, previous })
+      // forces a delay when load is synchronous
+      // without this, the status.set(Loading) gets triggered again with an undefined value
+      // TODO: not sure if this is the best solution
+      await Promise.resolve()
       abortController = undefined
       status.set(AsyncResult.success(result))
     } catch (error) {

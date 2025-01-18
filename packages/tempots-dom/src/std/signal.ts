@@ -169,6 +169,7 @@ export class Signal<T> {
    * @internal
    */
   protected readonly _setAndNotify = (newV: T, forceNotifications: boolean) => {
+    if (this._disposed) return
     const currentValue = this._value
     const same = this.equals(currentValue, newV)
     if (!same) {
@@ -540,7 +541,7 @@ export class Computed<T> extends Signal<T> {
   protected readonly _scheduleNotify = () => {
     const count = ++this._scheduleCount
     queue(() => {
-      if (this._scheduleCount !== count || this._disposed !== false) return
+      if (this._scheduleCount !== count || this._disposed) return
       if (this._isDirty) {
         this._isDirty = false
         this._setAndNotify(this._fn(), false)
