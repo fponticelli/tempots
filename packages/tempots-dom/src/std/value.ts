@@ -161,6 +161,24 @@ export const makeComputedOf =
   }
 
 /**
+ * Joins a set of signals into a single signal that emits a record of the values.
+ * @param values - The set of signals to join as a record of `Value`s.
+ * @returns A signal that emits a record of the values.
+ * @public
+ */
+export const joinSignals = <T extends Record<string, Value<unknown>>>(
+  values: T
+): Signal<Record<keyof T, T[keyof T]>> => {
+  const keys = Object.keys(values) as (keyof T)[]
+  return makeComputedOf(...Object.values(values))(
+    (...args) =>
+      Object.fromEntries(
+        keys.map((key, index) => [key, args[index]])
+      ) as Record<keyof T, T[keyof T]>
+  )
+}
+
+/**
  * Creates an effect that depends on other signals or literal values and updates when any of the dependencies change.
  *
  * @param args - The array of signals or literal values that the effect depends on.

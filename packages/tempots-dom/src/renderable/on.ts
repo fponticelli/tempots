@@ -101,6 +101,29 @@ export const emitValueAsDate = (fn: (date: Date) => void) => {
 }
 
 /**
+ * Converts the value of an HTML input element to a Date object or null and emits it using the provided callback function.
+ * @param fn - The callback function to be called with the converted Date object or null.
+ * @returns A function that can be used as an event handler for input events.
+ * @public
+ */
+export const emitValueAsNullableDate = (fn: (date: Date | null) => void) => {
+  return (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.value === '') {
+      fn(null)
+      return
+    }
+    const parts = target.value.split('-')
+    const date = new Date(
+      Number(parts[0]),
+      Number(parts[1]) - 1,
+      Number(parts[2].substring(0, 2))
+    )
+    fn(date)
+  }
+}
+
+/**
  * Emits the value of an HTMLInputElement as a Date object.
  * @param fn - The callback function to be called with the emitted Date object.
  * @returns The event handler function.
@@ -123,6 +146,40 @@ export const emitValueAsDateTime = (fn: (date: Date) => void) => {
     date.setHours(Number(time[0]))
     date.setMinutes(Number(time[1]))
     date.setSeconds(Number(time[2]))
+    fn(date)
+  }
+}
+
+/**
+ * Emits the value of an HTMLInputElement as a Date object or null.
+ * @param fn - The callback function to be called with the emitted Date object or null.
+ * @returns The event handler function.
+ * @public
+ */
+export const emitValueAsNullableDateTime = (
+  fn: (date: Date | null) => void
+) => {
+  return (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.value === '') {
+      fn(null)
+      return
+    }
+    const parts = target.value.split('T')
+    if (parts.length !== 2) {
+      fn(null)
+      return
+    }
+    const dateParts = parts[0]!.split('-')
+    const date = new Date(
+      Number(dateParts[0]),
+      Number(dateParts[1]) - 1,
+      Number(dateParts[2])
+    )
+    const time = parts[1]!.split(':')
+    date.setHours(Number(time[0] ?? 0))
+    date.setMinutes(Number(time[1] ?? 0))
+    date.setSeconds(Number(time[2] ?? 0))
     fn(date)
   }
 }
