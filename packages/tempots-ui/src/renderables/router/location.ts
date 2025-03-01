@@ -7,8 +7,8 @@ import {
   makeProp,
   Prop,
   UseProvider,
-  OnBrowserCtx,
-  OnHeadlessCtx,
+  WithBrowserCtx,
+  WithHeadlessCtx,
   Async,
 } from '@tempots/dom'
 import { LocationData } from './location-data'
@@ -27,15 +27,15 @@ export const LocationProviderMarker =
  * @returns The wrapped component with the location context.
  * @public
  */
-export const ProvideLocation = (child: TNode) => {
+export const SetLocation = (child: (location: Prop<LocationData>) => TNode) => {
   return Fragment(
-    OnBrowserCtx(() => {
+    WithBrowserCtx(() => {
       return Async(
         import('./browser-location').then(mod => mod.ProvideBrowserLocation),
         ProvideBrowserLocation => ProvideBrowserLocation(child)
       )
     }),
-    OnHeadlessCtx(ctx => {
+    WithHeadlessCtx(ctx => {
       return Async(
         import('./headless-location').then(mod => mod.ProvideHeadlessLocation),
         ProvideHeadlessLocation =>

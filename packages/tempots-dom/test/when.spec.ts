@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, OnElement, render, When } from "../src";
+import { makeProp, WithElement, render, When } from "../src";
 import { sleep } from "./helper";
 
 describe("When", () => {
@@ -10,8 +10,8 @@ describe("When", () => {
     render(
       When(
         bool,
-        () => OnElement(spyTrue),
-        () => OnElement(spyFalse)
+        () => WithElement(spyTrue),
+        () => WithElement(spyFalse)
       ),
       document.body
     )
@@ -28,8 +28,8 @@ describe("When", () => {
     render(
       When(
         true,
-        () => OnElement(spyTrue),
-        () => OnElement(spyFalse)
+        () => WithElement(spyTrue),
+        () => WithElement(spyFalse)
       ),
       document.body
     )
@@ -39,8 +39,8 @@ describe("When", () => {
     render(
       When(
         false,
-        () => OnElement(spyTrue),
-        () => OnElement(spyFalse)
+        () => WithElement(spyTrue),
+        () => WithElement(spyFalse)
       ),
       document.body
     )

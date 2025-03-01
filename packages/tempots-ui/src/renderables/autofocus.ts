@@ -1,4 +1,4 @@
-import { OnDispose, OnElement, type Renderable } from '@tempots/dom'
+import { OnDispose, WithElement, type Renderable } from '@tempots/dom'
 import { delayed } from '@tempots/std'
 
 /**
@@ -9,4 +9,4 @@ import { delayed } from '@tempots/std'
  * @public
  */
 export const AutoFocus = (delay: number = 10): Renderable =>
-  OnElement(el => OnDispose(delayed(() => el?.focus(), delay)))
+  WithElement(el => OnDispose(delayed(() => el?.focus(), delay)))

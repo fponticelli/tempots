@@ -1,10 +1,10 @@
 import {
   TNode,
-  OnElement,
+  WithElement,
   Value,
   html,
   Portal,
-  OnBrowserCtx,
+  WithBrowserCtx,
   BrowserContext,
   When,
   OnDispose,
@@ -89,7 +89,7 @@ export const PopOver = ({
   placement,
   offset: { mainAxis, crossAxis } = { mainAxis: 0, crossAxis: 0 },
 }: PopOverOptions) =>
-  OnBrowserCtx((ctx: BrowserContext) => {
+  WithBrowserCtx((ctx: BrowserContext) => {
     const isOpen = Value.toSignal(open)
     const target = ctx.element
 
@@ -97,7 +97,7 @@ export const PopOver = ({
       Portal(
         'body',
         html.div(
-          OnElement((element: HTMLElement) => {
+          WithElement((element: HTMLElement) => {
             const floatingEl = element
             floatingEl.style.position = 'absolute'
             return OnDispose(

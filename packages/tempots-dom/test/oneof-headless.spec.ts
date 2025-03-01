@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, runHeadless, html, OneOfType, OnCtx } from "../src";
+import { makeProp, runHeadless, html, OneOfType, WithCtx } from "../src";
 import { sleep } from "./helper";
 import { Letter } from "./oneof.spec";
 const { div } = html
@@ -14,11 +14,11 @@ describe("OneOf Headless", () => {
         p,
         {
           'A': (s) => div(
-            OnCtx(spyMountA),
+            WithCtx(spyMountA),
             s.at('text')
           ),
           'B': (s) => div(
-            OnCtx(spyMountB),
+            WithCtx(spyMountB),
             'num:', s.at('num').map(String)
           )
         }

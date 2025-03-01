@@ -6,9 +6,9 @@ import {
   Fragment,
   OnDispose,
   makeProviderMark,
-  WithProvider,
   Renderable,
   getWindow,
+  SetProvider,
 } from '@tempots/dom'
 
 /**
@@ -37,23 +37,22 @@ export const appearanceMarker =
  * @returns The child component with the appearance context.
  * @public
  */
-export const ProvideAppearance = (child: TNode): Renderable => {
+export const ProvideAppearance = (
+  child: (appearance: Signal<AppearanceType>) => TNode
+): Renderable => {
   const win = getWindow()
-  const isDark =
-    win != null &&
-    win.matchMedia != null &&
-    win.matchMedia('(prefers-color-scheme: dark)').matches
-  const appearance = makeProp<AppearanceType>(isDark ? 'dark' : 'light')
-  const onChange = (e: MediaQueryListEvent) => {
-    appearance.set(e.matches ? 'dark' : 'light')
-  }
   const matcher =
     win != null && win.matchMedia != null
       ? win.matchMedia('(prefers-color-scheme: dark)')
       : undefined
+  const isDark = matcher?.matches ?? false
+  const appearance = makeProp<AppearanceType>(isDark ? 'dark' : 'light')
+  const onChange = (e: MediaQueryListEvent) => {
+    appearance.set(e.matches ? 'dark' : 'light')
+  }
   matcher?.addEventListener('change', onChange)
   return Fragment(
-    WithProvider(appearanceMarker, appearance, child),
+    SetProvider(appearanceMarker, appearance, child),
     OnDispose(() => matcher?.removeEventListener('change', onChange))
   )
 }

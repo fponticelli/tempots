@@ -1,4 +1,4 @@
-import { ProvideLocation, Router } from '@tempots/ui'
+import { SetLocation, Router } from '@tempots/ui'
 import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
@@ -58,7 +58,7 @@ export const AppRouter = (toc: Toc) => {
 }
 
 export function App(toc: Toc) {
-  return ProvideLocation(
+  return SetLocation(() =>
     PageLayout({
       sidebar: SideBar(toc),
       main: AppRouter(toc),

@@ -178,18 +178,16 @@ export class BrowserContext implements DOMContext {
     new BrowserContext(this.document, this.element, reference, this.providers)
 
   /**
-   * Returns a new HTMLDOMContext instance with the specified providers merged into
-   * the existing providers.
+   * Sets a provider for the given provider mark.
    *
-   * @param providers - An object containing the providers to be merged into the existing providers.
-   * @returns A new HTMLDOMContext instance with the merged providers.
+   * @param mark - The provider mark to set the provider for.
+   * @param value - The provider to set for the given mark.
+   * @returns A new `DOMContext` instance with the specified provider.
    */
-  readonly withProviders = (providers: {
-    [K in ProviderMark<unknown>]: unknown
-  }): DOMContext =>
+  readonly setProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
     new BrowserContext(this.document, this.element, this.reference, {
       ...this.providers,
-      ...providers,
+      [mark]: value,
     })
 
   /**

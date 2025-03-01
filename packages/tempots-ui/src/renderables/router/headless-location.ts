@@ -1,4 +1,4 @@
-import { TNode, Fragment, OnDispose, Prop, WithProvider } from '@tempots/dom'
+import { TNode, Fragment, OnDispose, Prop, SetProvider } from '@tempots/dom'
 import { LocationProviderMarker } from './location'
 import { LocationData, locationFromURL, urlFromLocation } from './location-data'
 
@@ -16,7 +16,10 @@ export const isAbsoluteURL = (url: string) => {
  * @returns The wrapped component with the location context.
  * @public
  */
-export const ProvideHeadlessLocation = (url: Prop<string>, child: TNode) => {
+export const ProvideHeadlessLocation = (
+  url: Prop<string>,
+  child: (location: Prop<LocationData>) => TNode
+) => {
   const location = url.iso(
     (newUrl: string) => locationFromURL(newUrl),
     (data: LocationData) => {
@@ -31,6 +34,6 @@ export const ProvideHeadlessLocation = (url: Prop<string>, child: TNode) => {
 
   return Fragment(
     OnDispose(location.dispose),
-    WithProvider(LocationProviderMarker, location, child)
+    SetProvider(LocationProviderMarker, location, child)
   )
 }

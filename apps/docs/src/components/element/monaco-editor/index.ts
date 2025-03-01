@@ -2,7 +2,7 @@ import {
   attr,
   html,
   OnDispose,
-  OnElement,
+  WithElement,
   Signal,
   Task,
   Value,
@@ -101,7 +101,7 @@ export function MonacoEditor({
     Task(
       () => loadAssetsInOrder(SCRIPTS),
       () =>
-        OnElement((el: HTMLElement) => {
+        WithElement((el: HTMLElement) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const monaco = (window as any)
             .monaco as typeof import('monaco-editor')

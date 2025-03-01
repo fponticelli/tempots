@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { attr, html, style, render, makeProp, OnDispose, Ensure, OnElement, OnCtx, OnBrowserCtx, OnHeadlessCtx } from "../src";
+import { attr, html, style, render, makeProp, OnDispose, Ensure, WithElement, WithCtx, WithBrowserCtx, WithHeadlessCtx } from "../src";
 const { div } = html;
 
 describe("DOM", () => {
@@ -68,10 +68,10 @@ describe("DOM", () => {
         Ensure(cls, s =>
           div(
             s,
-            OnElement(spyElement),
-            OnCtx(spyCtxMount),
-            OnBrowserCtx(spyBrowserCtx),
-            OnHeadlessCtx(spyHeadlessCtx),
+            WithElement(spyElement),
+            WithCtx(spyCtxMount),
+            WithBrowserCtx(spyBrowserCtx),
+            WithHeadlessCtx(spyHeadlessCtx),
             OnDispose(spyDispose)
           )
         )

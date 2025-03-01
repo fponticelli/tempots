@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, OnCtx, runHeadless, When } from "../src";
+import { makeProp, WithCtx, runHeadless, When } from "../src";
 import { sleep } from "./helper";
 
 describe("When Headless", () => {
@@ -10,8 +10,8 @@ describe("When Headless", () => {
     runHeadless(
       () => When(
         bool,
-        () => OnCtx(spyTrue),
-        () => OnCtx(spyFalse)
+        () => WithCtx(spyTrue),
+        () => WithCtx(spyFalse)
       )
     )
     expect(spyTrue).toHaveBeenCalledTimes(0)
@@ -27,8 +27,8 @@ describe("When Headless", () => {
     runHeadless(
       () => When(
         true,
-        () => OnCtx(spyTrue),
-        () => OnCtx(spyFalse)
+        () => WithCtx(spyTrue),
+        () => WithCtx(spyFalse)
       )
     )
     expect(spyTrue).toHaveBeenCalledTimes(1)
@@ -37,8 +37,8 @@ describe("When Headless", () => {
     runHeadless(
       () => When(
         false,
-        () => OnCtx(spyTrue),
-        () => OnCtx(spyFalse)
+        () => WithCtx(spyTrue),
+        () => WithCtx(spyFalse)
       )
     )
     expect(spyTrue).toHaveBeenCalledTimes(1)

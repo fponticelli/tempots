@@ -7,7 +7,7 @@ import {
   renderableOfTNode,
   Empty,
   Fragment,
-  OnElement,
+  WithElement,
   When,
   OnDispose,
 } from '@tempots/dom'
@@ -71,7 +71,7 @@ export const InViewport = (
 ): Renderable => {
   const inView = makeProp(false)
   return Fragment(
-    OnElement((el: HTMLElement) => {
+    WithElement((el: HTMLElement) => {
       const observer =
         typeof IntersectionObserver !== 'undefined'
           ? ensureObserver(mode)

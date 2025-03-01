@@ -1,4 +1,4 @@
-import { OnDispose, OnElement, Renderable } from '@tempots/dom'
+import { OnDispose, WithElement, Renderable } from '@tempots/dom'
 
 /**
  * Hides the element when it is empty and restores its initial state when necessary.
@@ -7,7 +7,7 @@ import { OnDispose, OnElement, Renderable } from '@tempots/dom'
  * @returns A function that can be used to restore the initial state of the element.
  * @public
  */
-export const HiddenWhenEmpty: Renderable = OnElement(el => {
+export const HiddenWhenEmpty: Renderable = WithElement(el => {
   const initial = el.style.getPropertyValue(':empty')
   el.style.setProperty(':empty', 'display:none')
   return OnDispose((removeTree: boolean) => {

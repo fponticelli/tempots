@@ -8,7 +8,7 @@ import {
   Value,
   Ensure,
   on,
-  OnElement,
+  WithElement,
   OnDispose,
 } from '@tempots/dom'
 import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
@@ -129,7 +129,7 @@ export function EmbedHTMLPage(content: Value<string>) {
       html.div(
         attr.class(Styles.prose),
         attr.innerHTML(htmlSignal),
-        OnElement(el =>
+        WithElement(el =>
           OnDispose(
             htmlSignal.on(() => {
               updateAnchors(location, el)

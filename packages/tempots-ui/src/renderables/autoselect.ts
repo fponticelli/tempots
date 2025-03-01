@@ -1,4 +1,4 @@
-import { OnDispose, OnElement, type Renderable } from '@tempots/dom'
+import { OnDispose, WithElement, type Renderable } from '@tempots/dom'
 import { delayed } from '@tempots/std'
 
 /**
@@ -8,7 +8,7 @@ import { delayed } from '@tempots/std'
  * @public
  */
 export const AutoSelect = (delay: number = 10): Renderable =>
-  OnElement((el: HTMLInputElement) => {
+  WithElement((el: HTMLInputElement) => {
     const clear = delayed(() => el.select(), delay)
     return OnDispose(clear)
   })

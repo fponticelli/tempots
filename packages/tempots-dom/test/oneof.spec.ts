@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, render, html, OnElement, OneOfType } from "../src";
+import { makeProp, render, html, WithElement, OneOfType } from "../src";
 import { sleep } from "./helper";
 const { div } = html
 
@@ -25,11 +25,11 @@ describe("OneOf", () => {
         p,
         {
           'A': (s) => div(
-            OnElement(spyMountA),
+            WithElement(spyMountA),
             s.at('text')
           ),
           'B': (s) => div(
-            OnElement(spyMountB),
+            WithElement(spyMountB),
             'num:', s.at('num').map(String)
           )
         }

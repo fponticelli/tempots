@@ -4,8 +4,8 @@ import {
   OnDispose,
   makeProp,
   Prop,
-  WithProvider,
   getWindow,
+  SetProvider,
 } from '@tempots/dom'
 import {
   LocationData,
@@ -80,11 +80,13 @@ export const _makeLocationProp = (): Prop<LocationData> => {
  * @returns The wrapped component with the location context.
  * @public
  */
-export const ProvideBrowserLocation = (child: TNode) => {
+export const ProvideBrowserLocation = (
+  child: (location: Prop<LocationData>) => TNode
+) => {
   const location = _makeLocationProp()
 
   return Fragment(
     OnDispose(location.dispose),
-    WithProvider(LocationProviderMarker, location, child)
+    SetProvider(LocationProviderMarker, location, child)
   )
 }

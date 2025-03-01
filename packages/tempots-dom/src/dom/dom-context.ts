@@ -15,6 +15,17 @@ export type HandlerOptions = {
 }
 
 /**
+ * Creates a unique symbol that can be used as a provider mark for a specific type `T`.
+ * The provider mark is used to identify the provider of a value of type `T` in a dependency injection system.
+ *
+ * @param identifier - A string that uniquely identifies the provider.
+ * @returns A unique symbol that can be used as a provider mark.
+ * @public
+ */
+export const makeProviderMark = <T>(identifier: string): ProviderMark<T> =>
+  Symbol(identifier) as ProviderMark<T>
+
+/**
  * `DOMContext` is an immutable class that represents the context of a DOM element.
  * It provides methods and properties to manipulate and interact with the DOM element.
  *
@@ -67,17 +78,6 @@ export interface DOMContext {
   makePortal(selector: string): DOMContext
 
   /**
-   * Returns a new DOMContext instance with the specified providers merged into
-   * the existing providers.
-   *
-   * @param providers - An object containing the providers to be merged into the existing providers.
-   * @returns A new DOMContext instance with the merged providers.
-   */
-  withProviders(providers: {
-    [K in ProviderMark<unknown>]: unknown
-  }): DOMContext
-
-  /**
    * Retrieves a provider for the given provider mark.
    *
    * @param mark - The provider mark to retrieve the provider for.
@@ -85,6 +85,14 @@ export interface DOMContext {
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
   getProvider<T>(mark: ProviderMark<T>): T
+
+  /**
+   * Sets a provider for the given provider mark.
+   *
+   * @param mark - The provider mark to set the provider for.
+   * @param value - The provider to set for the given mark.
+   */
+  setProvider<T>(mark: ProviderMark<T>, value: T): DOMContext
 
   clear(removeTree: boolean): void
 

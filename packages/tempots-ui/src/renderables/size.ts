@@ -5,7 +5,7 @@ import {
   TNode,
   Size,
   renderableOfTNode,
-  OnBrowserCtx,
+  WithBrowserCtx,
   BrowserContext,
   getWindow,
   OnDispose,
@@ -19,7 +19,7 @@ import {
  * @public
  */
 export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
-  OnBrowserCtx((ctx: BrowserContext) => {
+  WithBrowserCtx((ctx: BrowserContext) => {
     const { element } = ctx
     const size = makeProp({
       width: element.clientWidth,

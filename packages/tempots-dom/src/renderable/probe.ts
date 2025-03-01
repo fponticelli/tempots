@@ -1,8 +1,8 @@
+import { makeProviderMark } from '../dom/dom-context'
 import { Renderable, TNode } from '../types/domain'
-import { UseProvider } from './consumers'
 import { Fragment } from './fragment'
 import { OnDispose } from './on-dispose'
-import { makeProviderMark, WithProvider } from './providers'
+import { SetProvider, UseProvider } from './with-provider'
 
 /**
  * A provider mark for a signal representing the current appearance type.
@@ -65,7 +65,9 @@ export const ProvideProbe = ({
 
   return Fragment(
     OnDispose(() => clearTimeout(timeoutId)),
-    WithProvider(probeMarker, probef, child)
+    SetProvider(probeMarker, probef, () => {
+      return child
+    })
   )
 }
 
