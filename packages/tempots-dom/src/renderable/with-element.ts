@@ -1,4 +1,5 @@
-import { WithElement } from './with-element'
+import type { Renderable, TNode } from '../types/domain'
+import { WithBrowserCtx } from './with-browser-ctx'
 
 /**
  * Executes a callback function when the parent element is mounted in the DOM.
@@ -11,6 +12,7 @@ import { WithElement } from './with-element'
  * @param fn - The callback function to be executed.
  * @returns - The renderable function.
  * @public
- * @deprecated Use `WithElement` instead.
  */
-export const OnElement = WithElement
+export const WithElement = <T extends HTMLElement>(
+  fn: (element: T) => TNode | void
+): Renderable => WithBrowserCtx(ctx => fn(ctx.element as T))

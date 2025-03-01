@@ -122,14 +122,27 @@ export interface DOMContext {
   /**
    * Returns `true` if the context is a browser DOM context.
    * @returns `true` if the context is a browser DOM context.
+   * @deprecated Use `isBrowser()` instead.
    */
   isBrowserDOM(): this is BrowserContext
+
+  /**
+   * Returns `true` if the context is a browser DOM context.
+   * @returns `true` if the context is a browser DOM context.
+   */
+  isBrowser(): this is BrowserContext
 
   /**
    * Returns `true` if the context is a headless DOM context.
    * @returns `true` if the context is a headless DOM context.
    */
   isHeadlessDOM(): this is HeadlessContext
+
+  /**
+   * Returns `true` if the context is a headless context.
+   * @returns `true` if the context is a headless context.
+   */
+  isHeadless(): this is HeadlessContext
 
   /**
    * Sets the style of the element.

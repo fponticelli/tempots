@@ -269,14 +269,27 @@ export class BrowserContext implements DOMContext {
   /**
    * Returns `true` if the context is a browser DOM context.
    * @returns `true` if the context is a browser DOM context.
+   * @deprecated Use `isBrowser()` instead.
    */
   readonly isBrowserDOM = (): this is BrowserContext => true
+
+  /**
+   * Returns `true` if the context is a browser context.
+   * @returns `true` if the context is a browser context.
+   */
+  readonly isBrowser = (): this is BrowserContext => true
 
   /**
    * Returns `true` if the context is a headless DOM context.
    * @returns `true` if the context is a headless DOM context.
    */
   readonly isHeadlessDOM = (): this is HeadlessContext => false
+
+  /**
+   * Returns `true` if the context is a headless context.
+   * @returns `true` if the context is a headless context.
+   */
+  readonly isHeadless = (): this is HeadlessContext => false
 
   /**
    * Sets the style of the element.

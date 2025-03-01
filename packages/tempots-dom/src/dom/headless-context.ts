@@ -430,7 +430,9 @@ export class HeadlessContext implements DOMContext {
     this.element.removeClasses(tokens)
   readonly getClasses = (): string[] => this.element.getClasses()
   readonly isBrowserDOM = (): this is BrowserContext => false
+  readonly isBrowser = (): this is BrowserContext => false
   readonly isHeadlessDOM = (): this is HeadlessContext => true
+  readonly isHeadless = (): this is HeadlessContext => true
   readonly setStyle = (name: string, value: string): void =>
     this.element.setStyle(name, value)
   readonly getStyle = (name: string): string => this.element.getStyle(name)
