@@ -4,7 +4,7 @@ import {
   DOMContext,
   Fragment,
   makeProviderMark,
-  makeProp,
+  prop,
   Prop,
   UseProvider,
   WithBrowserCtx,
@@ -55,7 +55,7 @@ export const UseLocation = (fn: (location: Prop<LocationData>) => TNode) =>
   UseProvider(LocationProviderMarker, (location: Prop<LocationData>) => {
     // prevents accidentally disposing of the source location prop
     return (ctx: DOMContext) => {
-      const derived = makeProp(location.value, location.equals)
+      const derived = prop(location.value, location.equals)
       location.feedProp(derived)
       derived.on(location.set)
       const clear = renderableOfTNode(fn(derived))(ctx)

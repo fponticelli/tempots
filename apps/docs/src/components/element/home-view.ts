@@ -1,4 +1,4 @@
-import { attr, html, makeSignal } from '@tempots/dom'
+import { attr, html, signal } from '@tempots/dom'
 import { CommitsShield } from './commits-shield'
 import { PageView } from './page-view'
 import { Page } from '../../model/domain'
@@ -12,6 +12,6 @@ export function HomeView(page: Page) {
       GithubStars('fponticelli', 'tempots'),
       CommitsShield('fponticelli', 'tempots')
     ),
-    PageView(makeSignal(page))
+    PageView(signal(page))
   )
 }

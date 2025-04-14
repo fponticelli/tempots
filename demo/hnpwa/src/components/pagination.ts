@@ -1,12 +1,4 @@
-import {
-  aria,
-  attr,
-  makeComputed,
-  ForEach,
-  html,
-  Signal,
-  When,
-} from '@tempots/dom'
+import { aria, attr, computed, ForEach, html, Signal, When } from '@tempots/dom'
 import { Feed, maxPage, Route } from '../route'
 import { LinkRoute } from './link-route'
 
@@ -34,7 +26,7 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
         () => html.span(attr.class('inactive'), 'Previous'),
         () =>
           LinkRoute({
-            route: makeComputed(
+            route: computed(
               () => Route.feeds(feed.value, page.value),
               [feed, page]
             ),
@@ -44,14 +36,14 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
     ),
     html.nav(
       ForEach(
-        makeComputed(() => pageRange(feed.value, page.value), [feed, page]),
+        computed(() => pageRange(feed.value, page.value), [feed, page]),
         res =>
           When(
             res.map(({ current, page }) => current === page),
             () => html.span(aria.current('page'), res.at('page').map(String)),
             () =>
               LinkRoute({
-                route: makeComputed(
+                route: computed(
                   () => Route.feeds(res.value.feed, res.value.page),
                   [res]
                 ),
@@ -68,11 +60,11 @@ export const Pagination = ({ feed, page }: PaginationProps) =>
     ),
     html.section(
       When(
-        makeComputed(() => maxPage(feed.value) === page.value, [feed, page]),
+        computed(() => maxPage(feed.value) === page.value, [feed, page]),
         () => html.span(attr.class('inactive'), 'Next'),
         () =>
           LinkRoute({
-            route: makeComputed(
+            route: computed(
               () => Route.feeds(feed.value, page.value + 1),
               [feed, page]
             ),

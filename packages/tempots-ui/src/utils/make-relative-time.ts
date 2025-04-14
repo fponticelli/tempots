@@ -1,4 +1,4 @@
-import { makeComputedOf, Value, makeProp, Signal } from '@tempots/dom'
+import { computedOf, Value, prop, Signal } from '@tempots/dom'
 import { interval } from '@tempots/std'
 
 const MINUTE = 60 * 1000
@@ -81,8 +81,8 @@ function format(
  * @returns A Value<Date> that updates with the current time at the specified frequency
  * @public
  */
-export const makeNowSignal = (frequency: number = 1000): Value<Date> => {
-  const now = makeProp(new Date())
+export const nowSignal = (frequency: number = 1000): Signal<Date> => {
+  const now = prop(new Date())
   const clear = interval(() => now.set(new Date()), frequency)
   now.onDispose(clear)
   return now
@@ -126,7 +126,7 @@ export const timeDiffToString = (diffInMillis: number): string => {
  *          positive values indicate future times. The signal will clean up its resources when disposed.
  * @public
  */
-export const makeRelativeTimeMillisSignal = (
+export const relativeTimeMillisSignal = (
   date: Value<Date>,
   { now, frequency = 10000 }: { now?: Value<Date>; frequency?: number } = {}
 ) => {
@@ -134,10 +134,10 @@ export const makeRelativeTimeMillisSignal = (
     now != null
       ? Signal.is(now)
         ? now.derive()
-        : makeProp(now)
-      : makeNowSignal(frequency)
+        : prop(now)
+      : nowSignal(frequency)
 
-  const diff = makeComputedOf(
+  const diff = computedOf(
     date,
     realNow
   )((date, now) => date.getTime() - now.getTime())
@@ -157,11 +157,11 @@ export const makeRelativeTimeMillisSignal = (
  *          The signal will clean up its resources when disposed.
  * @public
  */
-export const makeRelativeTimeSignal = (
+export const relativeTimeSignal = (
   date: Value<Date>,
   options: { now?: Value<Date>; frequency?: number } = {}
 ) => {
-  const signal = makeRelativeTimeMillisSignal(date, options)
+  const signal = relativeTimeMillisSignal(date, options)
   const diff = signal.map(timeDiffToString)
   diff.onDispose(signal.dispose)
   return diff
@@ -179,7 +179,7 @@ export const makeRelativeTimeSignal = (
  * @deprecated Use makeRelativeTimeSignal instead
  * @public
  */
-export const makeRelativeTime = (
+export const relativeTime = (
   date: Value<Date>,
   options: { now?: Value<Date>; frequency?: number } = {}
-) => makeRelativeTimeSignal(date, options)
+) => relativeTimeSignal(date, options)

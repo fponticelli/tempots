@@ -1,4 +1,4 @@
-import { attr, html, OnDispose, makeProp, TNode, Value } from '@tempots/dom'
+import { attr, html, OnDispose, prop, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -19,10 +19,10 @@ export function EditorContainer(
 }
 
 export function HtmlToTempo() {
-  const content = makeProp(
+  const content = prop(
     '<div class="message">\n  Hello World!\n  <br/>\n  How are <b>you</b>?\n</div>'
   )
-  const tempo = makeProp('')
+  const tempo = prop('')
   return html.div(
     attr.class('h-full p-4 flex flex-col gap-2'),
     HTMLTitle('Tempo • HTML to Tempo'),

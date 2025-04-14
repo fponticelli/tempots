@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { attr, html, style, makeProp, OnDispose, Ensure, WithElement, runHeadless, WithCtx, WithBrowserCtx, WithHeadlessCtx } from "../src";
+import { attr, html, style, prop, OnDispose, Ensure, WithElement, runHeadless, WithCtx, WithBrowserCtx, WithHeadlessCtx } from "../src";
 const { div } = html;
 
 describe("DOM Headless", () => {
@@ -12,7 +12,7 @@ describe("DOM Headless", () => {
   });
 
   test("div reactive", () => {
-    const cls = makeProp("test");
+    const cls = prop("test");
     const node = div(attr.class(cls));
     const { root, clear } = runHeadless(() => node);
     expect(root.contentToHTML()).toStrictEqual('<div class="test"></div>');
@@ -37,7 +37,7 @@ describe("DOM Headless", () => {
   });
 
   test("add signal text", () => {
-    const txt = makeProp("test");
+    const txt = prop("test");
     const { root, clear } = runHeadless(() => div(txt));
     expect(root.getText()).toStrictEqual("test");
     txt.value = "test2";
@@ -53,7 +53,7 @@ describe("DOM Headless", () => {
   });
 
   test("when", () => {
-    const cls = makeProp("test" as string | null);
+    const cls = prop("test" as string | null);
     const spyElement = vi.fn();
     const spyCtxMount = vi.fn();
     const spyBrowserCtx = vi.fn();

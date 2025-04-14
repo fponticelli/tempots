@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { attr, html, style, render, makeProp, OnDispose, Ensure, WithElement, WithCtx, WithBrowserCtx, WithHeadlessCtx } from "../src";
+import { attr, html, style, render, prop, OnDispose, Ensure, WithElement, WithCtx, WithBrowserCtx, WithHeadlessCtx } from "../src";
 const { div } = html;
 
 describe("DOM", () => {
@@ -15,7 +15,7 @@ describe("DOM", () => {
   });
 
   test("div reactive", () => {
-    const cls = makeProp("test");
+    const cls = prop("test");
     const node = div(attr.class(cls));
     const clear = render(node, document.body);
     expect(document.body.innerHTML).toStrictEqual('<div class="test"></div>');
@@ -40,7 +40,7 @@ describe("DOM", () => {
   });
 
   test("add signal text", () => {
-    const txt = makeProp("test");
+    const txt = prop("test");
     const clear = render(div(txt), document.body);
     expect(document.body.innerText).toStrictEqual("test");
     txt.value = "test2";
@@ -56,7 +56,7 @@ describe("DOM", () => {
   });
 
   test("when", () => {
-    const cls = makeProp("test" as string | null);
+    const cls = prop("test" as string | null);
     const spyElement = vi.fn();
     const spyCtxMount = vi.fn();
     const spyBrowserCtx = vi.fn();

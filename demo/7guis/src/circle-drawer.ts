@@ -5,9 +5,9 @@ import {
   svgAttr,
   on,
   type Renderable,
-  makeProp,
+  prop,
   Signal,
-  makeComputed,
+  computed,
   ForEach,
   emitValueAsNumber,
 } from '@tempots/dom'
@@ -41,13 +41,13 @@ type Action = AddCircle | ChangeRadius
 const DEFAULT_RADIUS = 10
 
 export function CircleDrawer(): Renderable {
-  const circles = makeProp<Circle[]>([])
-  const undoHistory = makeProp<Action[]>([])
-  const redoHistory = makeProp<Action[]>([])
-  const currentId = makeProp<string | null>(null)
+  const circles = prop<Circle[]>([])
+  const undoHistory = prop<Action[]>([])
+  const redoHistory = prop<Action[]>([])
+  const currentId = prop<string | null>(null)
   const undoDisabled = undoHistory.map(v => v.length === 0)
   const redoDisabled = redoHistory.map(v => v.length === 0)
-  const radius = makeProp(DEFAULT_RADIUS)
+  const radius = prop(DEFAULT_RADIUS)
   function addCircle(x: number, y: number, r: number) {
     const id = String(circles.value.length)
     circles.update(circles => [...circles, { id, x, y, r }])
@@ -188,7 +188,7 @@ export function CircleDrawer(): Renderable {
           }
         }),
         ForEach(circles, ($circle: Signal<Circle>) => {
-          const selectedClass = makeComputed(
+          const selectedClass = computed(
             (): string =>
               currentId.value === $circle.value.id ? 'fill-red-600' : '',
             [currentId, $circle]

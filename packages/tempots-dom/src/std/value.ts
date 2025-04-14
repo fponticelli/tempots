@@ -1,10 +1,10 @@
 import { GetValueTypes } from '../types/domain'
 import {
   ListenerOptions,
-  makeComputed,
-  makeEffect,
-  makeProp,
-  makeSignal,
+  computed,
+  effect,
+  prop,
+  signal,
   Prop,
   Signal,
 } from './signal'
@@ -53,7 +53,7 @@ export const Value = {
     if (Signal.is(value)) {
       return value
     } else {
-      return makeSignal(value, equals)
+      return signal(value, equals)
     }
   },
 
@@ -132,7 +132,7 @@ export const Value = {
     if (Signal.is(value)) {
       return value.deriveProp({ autoDisposeProp, equals })
     } else {
-      return makeProp(value, equals)
+      return prop(value, equals)
     }
   },
 }
@@ -146,14 +146,14 @@ export const Value = {
  * @returns - The computed signal.
  * @public
  */
-export const makeComputedOf =
+export const computedOf =
   <T extends Value<unknown>[]>(...args: T) =>
   <O>(
     fn: (...args: GetValueTypes<T>) => O,
     equals?: (a: O, b: O) => boolean
   ) => {
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
-    return makeComputed(
+    return computed(
       () => fn(...(args.map(arg => Value.get(arg)) as GetValueTypes<T>)),
       signals,
       equals
@@ -168,13 +168,13 @@ export const makeComputedOf =
  */
 export const joinSignals = <T extends Record<string, Value<unknown>>>(
   values: T
-): Signal<Record<keyof T, T[keyof T]>> => {
+): Signal<{ [K in keyof T]: T[K] }> => {
   const keys = Object.keys(values) as (keyof T)[]
-  return makeComputedOf(...Object.values(values))(
+  return computedOf(...Object.values(values))(
     (...args) =>
-      Object.fromEntries(
-        keys.map((key, index) => [key, args[index]])
-      ) as Record<keyof T, T[keyof T]>
+      Object.fromEntries(keys.map((key, index) => [key, args[index]])) as {
+        [K in keyof T]: T[K]
+      }
   )
 }
 
@@ -185,11 +185,11 @@ export const joinSignals = <T extends Record<string, Value<unknown>>>(
  * @returns A disposable object that can be used to stop the effect.
  * @public
  */
-export const makeEffectOf =
+export const effectOf =
   <T extends Value<unknown>[]>(...args: T) =>
   (fn: (...args: GetValueTypes<T>) => void, options: ListenerOptions = {}) => {
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
-    return makeEffect(
+    return effect(
       () => fn(...(args.map(Value.get) as GetValueTypes<T>)),
       signals,
       options

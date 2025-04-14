@@ -363,7 +363,7 @@ export class Signal<T> {
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
-    const p = makeProp(alt, equals)
+    const p = prop(alt, equals)
     let count = 0
     let abortController = new AbortController()
     p.onDispose(
@@ -434,7 +434,7 @@ export class Signal<T> {
   }: {
     autoDisposeProp?: boolean
     equals?: (a: T, b: T) => boolean
-  } = {}) => this.feedProp(makeProp(this.get(), equals), autoDisposeProp)
+  } = {}) => this.feedProp(prop(this.get(), equals), autoDisposeProp)
 
   /**
    * Derives a new signal from the current signal. Useful to create a new signal that emits the same values as the current signal but can be disposed independently.
@@ -726,7 +726,7 @@ export class Prop<T> extends Signal<T> {
  * @returns - The computed signal.
  * @public
  */
-export const makeComputed = <T>(
+export const computed = <T>(
   fn: () => T,
   dependencies: Array<AnySignal>,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
@@ -744,7 +744,7 @@ export const makeComputed = <T>(
  * @returns A disposable object that can be used to stop the effect.
  * @public
  */
-export const makeEffect = (
+export const effect = (
   fn: () => void,
   signals: Array<AnySignal>,
   options: ListenerOptions = {}
@@ -766,7 +766,7 @@ export const makeEffect = (
       }
     }
   }
-  const signal = makeComputed(actualFn, signals)
+  const signal = computed(actualFn, signals)
   const clear = () => {
     signal.dispose()
     if (options.abortSignal != null) {
@@ -787,7 +787,7 @@ export const makeEffect = (
  * @returns A new Prop object.
  * @public
  */
-export const makeProp = <T>(
+export const prop = <T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Prop<T> => new Prop(value, equals)
@@ -801,7 +801,7 @@ export const makeProp = <T>(
  * @returns A new Signal instance.
  * @public
  */
-export const makeSignal = <T>(
+export const signal = <T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
 ): Signal<T> => new Signal(value, equals)

@@ -1,6 +1,6 @@
 import { DOMContext } from '../dom/dom-context'
 import { ElementPosition } from '../std/element-position'
-import { Signal, makeSignal } from '../std/signal'
+import { Signal, signal } from '../std/signal'
 import { Value } from '../std/value'
 import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
@@ -68,7 +68,7 @@ export const Repeat = (
     } else {
       return Fragment(
         ...Array.from({ length: times }, (_, i) => i).map(i =>
-          renderableOfTNode(element(new ElementPosition(i, makeSignal(times))))
+          renderableOfTNode(element(new ElementPosition(i, signal(times))))
         )
       )
     }

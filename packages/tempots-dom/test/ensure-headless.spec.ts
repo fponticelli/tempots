@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { Ensure, makeProp, runHeadless, TextNode } from "../src";
+import { Ensure, prop, runHeadless, TextNode } from "../src";
 import { sleep } from "./helper";
 
 describe("Ensure Headless", () => {
   test("using signal", async () => {
-    const s = makeProp<string | null>(null)
+    const s = prop<string | null>(null)
     const { root } = runHeadless(
       () => Ensure(s, 
         v => v,

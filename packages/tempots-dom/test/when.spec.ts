@@ -1,10 +1,10 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, WithElement, render, When } from "../src";
+import { prop, WithElement, render, When } from "../src";
 import { sleep } from "./helper";
 
 describe("When", () => {
   test("with signal", async () => {
-    const bool = makeProp(false)
+    const bool = prop(false)
     const spyTrue = vi.fn()
     const spyFalse = vi.fn()
     render(

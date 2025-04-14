@@ -3,7 +3,7 @@ import {
   attr,
   type Renderable,
   on,
-  makeProp,
+  prop,
   html,
   ForEach,
   OnDispose,
@@ -51,7 +51,7 @@ function easeOutCubic(p: number) {
 }
 
 export function ForEachDemo(): Renderable {
-  const accounts = makeProp(makeAccounts(10))
+  const accounts = prop(makeAccounts(10))
   const count = accounts.map(v => v.length)
   const deleteDisabled = count.map(c => c === 0)
 

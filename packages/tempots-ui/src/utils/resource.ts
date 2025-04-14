@@ -1,4 +1,4 @@
-import { makeProp, Signal } from '@tempots/dom'
+import { prop, Signal } from '@tempots/dom'
 import { AsyncResult } from '@tempots/std'
 
 /**
@@ -59,7 +59,7 @@ export const makeResource = <R, V, E>(
   load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>,
   convertError: (error: unknown) => E
 ): AsyncResource<V, E> => {
-  const status = makeProp<AsyncResult<V, E>>(AsyncResult.notAsked)
+  const status = prop<AsyncResult<V, E>>(AsyncResult.notAsked)
   const value = status.map(r =>
     AsyncResult.isSuccess(r) ? r.value : undefined
   )

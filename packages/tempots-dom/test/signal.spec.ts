@@ -1,30 +1,30 @@
 import { describe, expect, test, vi } from "vitest";
 import {
-  makeComputed,
-  makeEffect,
-  makeSignal,
-  makeProp,
+  computed,
+  effect,
+  signal,
+  prop,
   Signal,
   Prop,
   Computed,
   sessionStorageProp,
   localStorageProp,
   animateSignal,
-  makeComputedOf,
-  makeEffectOf,
+  computedOf,
+  effectOf,
   Value,
 } from "../src";
 import { sleep } from "./helper";
 
 describe("Signal", () => {
   test("signal basics", () => {
-    const s = makeSignal(1);
+    const s = signal(1);
     expect(s.value).toStrictEqual(1);
     expect(s.get()).toStrictEqual(1);
   });
   test("is", () => {
-    const p = makeProp(1);
-    const s = makeSignal(1);
+    const p = prop(1);
+    const s = signal(1);
     const c = s.map(v => v + 1);
 
     expect(Prop.is(p)).toStrictEqual(true);
@@ -40,7 +40,7 @@ describe("Signal", () => {
     expect(Computed.is(c)).toStrictEqual(true);
   });
   test("hasListeners", () => {
-    const s = makeSignal(1);
+    const s = signal(1);
     expect(s.hasListeners()).toStrictEqual(false);
     const cancel = s.on(() => {});
     expect(s.hasListeners()).toStrictEqual(true);
@@ -48,7 +48,7 @@ describe("Signal", () => {
     expect(s.hasListeners()).toStrictEqual(false);
   });
   test("hasListeners with computed", () => {
-    const s = makeSignal(1);
+    const s = signal(1);
     const c = s.map(v => v + 1);
     expect(s.hasListeners()).toStrictEqual(true);
     expect(c.hasListeners()).toStrictEqual(false);
@@ -56,14 +56,14 @@ describe("Signal", () => {
     expect(s.hasListeners()).toStrictEqual(false);
   });
   test("map", () => {
-    const p = makeProp(1);
+    const p = prop(1);
     const c = p.map(v => v + 1);
     expect(c.value).toStrictEqual(2);
     p.set(2);
     expect(c.value).toStrictEqual(3);
   });
   test("filter", () => {
-    const p = makeProp(1);
+    const p = prop(1);
     const c1 = p.filter(v => v % 2 === 0, 0);
     expect(c1.value).toStrictEqual(0);
     p.set(2);
@@ -78,8 +78,8 @@ describe("Signal", () => {
     expect(c2.value).toStrictEqual(4);
   });
   test("Value.maybeToSignal", () => {
-    const p = makeProp(1);
-    const s = makeSignal(1);
+    const p = prop(1);
+    const s = signal(1);
     const c = p.map(v => v + 1);
     expect(Value.maybeToSignal(p)).toStrictEqual(p);
     expect(Value.maybeToSignal(s)).toStrictEqual(s);
@@ -90,8 +90,8 @@ describe("Signal", () => {
     expect(Value.maybeToSignal(undefined)).toBeUndefined();
   });
   test("Value.toSignal", () => {
-    const p = makeProp(1);
-    const s = makeSignal(1);
+    const p = prop(1);
+    const s = signal(1);
     const c = p.map(v => v + 1);
     expect(Value.toSignal(p)).toStrictEqual(p);
     expect(Value.toSignal(s)).toStrictEqual(s);
@@ -100,14 +100,14 @@ describe("Signal", () => {
     expect(Value.toSignal(v)).toBeInstanceOf(Signal);
   });
   test("flatMap", () => {
-    const p = makeProp(1);
-    const c = p.flatMap(v => makeSignal(v + 1));
+    const p = prop(1);
+    const c = p.flatMap(v => signal(v + 1));
     expect(c.value).toStrictEqual(2);
     p.set(2);
     expect(c.value).toStrictEqual(3);
   });
   test("tap", async () => {
-    const p = makeProp(1);
+    const p = prop(1);
     const spy = vi.fn();
     const c = p.tap(spy);
     await sleep()
@@ -122,10 +122,10 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
   test("computed", async () => {
-    const p1 = makeProp(1);
-    const p2 = makeProp(2);
-    const p3 = makeProp(3);
-    const c = makeComputed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
+    const p1 = prop(1);
+    const p2 = prop(2);
+    const p3 = prop(3);
+    const c = computed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
     const spy = vi.fn();
     expect(c.value).toStrictEqual(6);
     c.on(spy);
@@ -142,10 +142,10 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledWith(9, 7);
   });
   test("computed with forced get", async () => {
-    const p1 = makeProp(1);
-    const p2 = makeProp(2);
-    const p3 = makeProp(3);
-    const c = makeComputed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
+    const p1 = prop(1);
+    const p2 = prop(2);
+    const p3 = prop(3);
+    const c = computed(() => p1.value + p2.value + p3.value, [p1, p2, p3]);
     const spy = vi.fn();
     expect(c.value).toStrictEqual(6);
     c.on(spy);
@@ -164,14 +164,14 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledWith(9, 7);
   });
   test("at", () => {
-    const p = makeProp([1, 2, 3]);
+    const p = prop([1, 2, 3]);
     const c = p.at(1);
     expect(c.value).toStrictEqual(2);
     p.set([4, 5, 6]);
     expect(c.value).toStrictEqual(5);
   });
   test("filterMap", () => {
-    const p = makeProp(1);
+    const p = prop(1);
     const c = p.filterMap(
       v => (Math.trunc(v) === v ? (v % 2 === 0 ? "even" : "odd") : undefined),
       "odd"
@@ -185,7 +185,7 @@ describe("Signal", () => {
     expect(c.value).toStrictEqual("odd");
   });
   test("mapAsync", async () => {
-    const p = makeProp(1);
+    const p = prop(1);
     const c = p.mapAsync(v => Promise.resolve(v + 1), 0);
     expect(c.value).toStrictEqual(0);
     p.set(2);
@@ -194,14 +194,14 @@ describe("Signal", () => {
     expect(c.value).toStrictEqual(3);
   });
   test("mapAsync with error", async () => {
-    const p = makeProp(1);
+    const p = prop(1);
     const c = p.mapAsync(v => Promise.reject("error"), 0, _ => 2);
     expect(c.value).toStrictEqual(0);
     await sleep()
     expect(c.value).toStrictEqual(2);
   });
   test("deriveProp", () => {
-    const p1 = makeProp(1);
+    const p1 = prop(1);
     const p2 = p1.deriveProp();
     expect(p2.value).toStrictEqual(1);
     p1.set(2);
@@ -213,7 +213,7 @@ describe("Signal", () => {
     expect(p2.value).toStrictEqual(4);
   });
   test("count", async () => {
-    const p = makeProp("a");
+    const p = prop("a");
     const c = p.count();
     expect(c.value).toStrictEqual(1);
     p.set("b");
@@ -222,10 +222,10 @@ describe("Signal", () => {
     expect(c.value).toStrictEqual(3);
   });
   test("effect", async () => {
-    const p1 = makeProp(1);
-    const p2 = makeProp(2);
+    const p1 = prop(1);
+    const p2 = prop(2);
     let value = 0;
-    const clear = makeEffect(
+    const clear = effect(
       () => {
         value = p1.value + p2.value;
       },
@@ -279,7 +279,7 @@ describe("Signal", () => {
   // Disabling because it is flaky
   // test("animateSignal", async () => {
   //   const duration = 40
-  //   const source = makeProp(10);
+  //   const source = prop(10);
   //   const animated = animateSignal(
   //     source, {
   //       initialValue: 0,
@@ -295,7 +295,7 @@ describe("Signal", () => {
   // })
   test("interrupt animateSignal", async () => {
     const duration = 40
-    const source = makeProp(10);
+    const source = prop(10);
     const animated = animateSignal(
       source, {
         initialValue: 0,
@@ -312,7 +312,7 @@ describe("Signal", () => {
     expect(animated.value).toBeLessThan(10);
   })
   test("Signal.mapAsync", async() => {
-    const p = makeProp(1)
+    const p = prop(1)
     const spy = vi.fn()
     const s = p.mapAsync(v => {
       spy(v)
@@ -340,32 +340,32 @@ describe("Signal", () => {
     await sleep()
     expect(s.value).toStrictEqual(2);
   })
-  test("makeComputedOf signals", () => {
-    const p1 = makeProp(1);
-    const p2 = makeProp(2);
-    const c = makeComputedOf(p1, p2)((a, b) => a + b);
+  test("computedOf signals", () => {
+    const p1 = prop(1);
+    const p2 = prop(2);
+    const c = computedOf(p1, p2)((a, b) => a + b);
     expect(c.value).toStrictEqual(3);
     p1.set(2);
     expect(c.value).toStrictEqual(4);
     p2.set(3);
     expect(c.value).toStrictEqual(5);
   })
-  test("makeComputedOf literals", () => {
-    const c = makeComputedOf(1, 2)((a, b) => a + b);
+  test("computedOf literals", () => {
+    const c = computedOf(1, 2)((a, b) => a + b);
     expect(c.value).toStrictEqual(3);
   })
-  test("makeComputedOf mixed", () => {
-    const p1 = makeProp(1);
-    const c = makeComputedOf(p1, 2)((a, b) => a + b);
+  test("computedOf mixed", () => {
+    const p1 = prop(1);
+    const c = computedOf(p1, 2)((a, b) => a + b);
     expect(c.value).toStrictEqual(3);
     p1.set(2);
     expect(c.value).toStrictEqual(4);
   })
-  test("makeEffectOf", async () => {
-    const p1 = makeProp(1);
-    const p2 = makeProp(2);
+  test("effectOf", async () => {
+    const p1 = prop(1);
+    const p2 = prop(2);
     const spy = vi.fn();
-    makeEffectOf(p1, p2)((a, b) => {
+    effectOf(p1, p2)((a, b) => {
       spy(a, b);
     });
     await sleep()
@@ -380,19 +380,19 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledTimes(3);
     expect(spy).toHaveBeenCalledWith(2, 3);
   })
-  test("makeEffectOf with literals", async () => {
+  test("effectOf with literals", async () => {
     const spy = vi.fn();
-    makeEffectOf(1, 2)((a, b) => {
+    effectOf(1, 2)((a, b) => {
       spy(a, b);
     });
     await sleep()
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(1, 2);
   })
-  test("makeEffectOf with mixed", async () => {
-    const p1 = makeProp(1);
+  test("effectOf with mixed", async () => {
+    const p1 = prop(1);
     const spy = vi.fn();
-    makeEffectOf(p1, 2)((a, b) => {
+    effectOf(p1, 2)((a, b) => {
       spy(a, b);
     });
     await sleep()

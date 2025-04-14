@@ -1,7 +1,7 @@
-import { attr, html, Renderable, on, makeProp, render } from '@tempots/dom'
+import { attr, html, Renderable, on, prop, render } from '@tempots/dom'
 
 function App(): Renderable {
-  const count = makeProp(0)
+  const count = prop(0)
   const disabled = count.map(v => v === 0)
   return html.div(
     attr.class('app'),

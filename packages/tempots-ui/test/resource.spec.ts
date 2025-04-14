@@ -1,4 +1,4 @@
-import { makeProp, render } from "@tempots/dom"
+import { prop, render } from "@tempots/dom"
 import { Resource } from "../src/renderables/resource"
 import { beforeEach, describe, expect, test } from "vitest"
 import { sleep } from "@tempots/std"
@@ -9,7 +9,7 @@ describe("resource", () => {
   })
 
   test("resource basics", async () => {
-    const request = makeProp(1)
+    const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       await sleep(5)
       if (request > 2) {
@@ -46,7 +46,7 @@ describe("resource", () => {
   })
 
   test("resource basics sync", async () => {
-    const request = makeProp(1)
+    const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       if (request > 2) {
         throw "test"
@@ -78,7 +78,7 @@ describe("resource", () => {
   })
 
   test("resource no default loading", async () => {
-    const request = makeProp(1)
+    const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       if (request > 2) {
         throw "test"

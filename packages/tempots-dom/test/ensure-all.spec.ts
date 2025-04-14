@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { EnsureAll, Fragment, makeProp, render, TextNode } from "../src";
+import { EnsureAll, Fragment, prop, render, TextNode } from "../src";
 
 describe("EnsureAll", () => {
   beforeEach(() => {
     document.body.innerHTML = ''
   })
   test("using null signals", async () => {
-    const a = makeProp<string | null>(null)
-    const b = makeProp<number | null>(null)
-    const c = makeProp<boolean | null>(null)
+    const a = prop<string | null>(null)
+    const b = prop<number | null>(null)
+    const c = prop<boolean | null>(null)
     render(
       EnsureAll(a, b, c)((a, b, c) => Fragment(
         a,
@@ -32,9 +32,9 @@ describe("EnsureAll", () => {
     expect(document.body.innerHTML).toStrictEqual('c2true')
   });
   test("using non-null signals", async () => {
-    const a = makeProp<string | null>('a')
-    const b = makeProp<number | null>(2)
-    const c = makeProp<boolean | null>(true)
+    const a = prop<string | null>('a')
+    const b = prop<number | null>(2)
+    const c = prop<boolean | null>(true)
     render(
       EnsureAll(a, b, c)((a, b, c) => Fragment(
         a,

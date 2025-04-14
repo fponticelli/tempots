@@ -1,6 +1,6 @@
 import {
   Signal,
-  makeProp,
+  prop,
   TNode,
   UseProvider,
   Fragment,
@@ -46,7 +46,7 @@ export const ProvideAppearance = (
       ? win.matchMedia('(prefers-color-scheme: dark)')
       : undefined
   const isDark = matcher?.matches ?? false
-  const appearance = makeProp<AppearanceType>(isDark ? 'dark' : 'light')
+  const appearance = prop<AppearanceType>(isDark ? 'dark' : 'light')
   const onChange = (e: MediaQueryListEvent) => {
     appearance.set(e.matches ? 'dark' : 'light')
   }

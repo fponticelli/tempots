@@ -1,5 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
-import { Computed, makeSignal, Signal } from '../std/signal'
+import { Computed, signal, Signal } from '../std/signal'
 import { Value } from '../std/value'
 import { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
@@ -65,7 +65,7 @@ export const OneOf = <T extends Record<string, unknown>>(
     }
   }
   const key = Object.keys(match)[0] as keyof T
-  return renderableOfTNode(cases[key](makeSignal(match[key])))
+  return renderableOfTNode(cases[key](signal(match[key])))
 }
 
 /**

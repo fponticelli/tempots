@@ -1,7 +1,7 @@
 import {
   DOMContext,
   Signal,
-  makeProp,
+  prop,
   TNode,
   Size,
   renderableOfTNode,
@@ -21,7 +21,7 @@ import {
 export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
   WithBrowserCtx((ctx: BrowserContext) => {
     const { element } = ctx
-    const size = makeProp({
+    const size = prop({
       width: element.clientWidth,
       height: element.clientHeight,
     })
@@ -49,7 +49,7 @@ export const ElementSize = (fn: (size: Signal<Size>) => TNode) =>
 export const WindowSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
     const win = getWindow()
-    const size = makeProp({
+    const size = prop({
       width: win?.innerWidth ?? 0,
       height: win?.innerHeight ?? 0,
     })

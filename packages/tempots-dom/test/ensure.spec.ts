@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { Ensure, makeProp, render, TextNode } from "../src";
+import { Ensure, prop, render, TextNode } from "../src";
 import { sleep } from "./helper";
 
 describe("Ensure", () => {
@@ -7,7 +7,7 @@ describe("Ensure", () => {
     document.body.innerHTML = ''
   })
   test("using signal", async () => {
-    const s = makeProp<string | null>(null)
+    const s = prop<string | null>(null)
     render(
       Ensure(s, 
         v => v,
@@ -27,7 +27,7 @@ describe("Ensure", () => {
     expect(document.body.innerHTML).toStrictEqual('z')
   });
   test("using signal (start from not null)", async () => {
-    const s = makeProp<string | null>('y')
+    const s = prop<string | null>('y')
     render(
       Ensure(s, 
         v => v,

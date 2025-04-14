@@ -21,5 +21,5 @@ export class Ticker extends Prop<number> {
  * @returns A new Ticker instance that only updates when the value changes
  * @public
  */
-export const makeTicker = (initial: number = 0) =>
+export const ticker = (initial: number = 0) =>
   new Ticker(initial, (a, b) => a === b)

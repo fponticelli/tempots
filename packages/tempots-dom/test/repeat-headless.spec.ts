@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { makeProp, runHeadless, Repeat } from "../src";
+import { prop, runHeadless, Repeat } from "../src";
 import { sleep } from "./helper";
 
 describe("Repeat Headless", () => {
   test("with signals", async () => {
-    const s = makeProp(3)
+    const s = prop(3)
     const { root } = runHeadless(
       () => Repeat(s, item => String(item.counter))
     )
@@ -20,7 +20,7 @@ describe("Repeat Headless", () => {
     expect(root.contentToHTML()).toStrictEqual('1')
   });
   test("with separator", async () => {
-    const s = makeProp(3)
+    const s = prop(3)
     const { root } = runHeadless(
       () => Repeat(
         s,

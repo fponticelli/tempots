@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { Fragment, makeProp, render, Repeat } from "../src";
+import { Fragment, prop, render, Repeat } from "../src";
 import { sleep } from "./helper";
 
 describe("Repeat", () => {
@@ -7,7 +7,7 @@ describe("Repeat", () => {
     document.body.innerHTML = ''
   })
   test("with signals", async () => {
-    const s = makeProp(3)
+    const s = prop(3)
     render(
       Repeat(s, item => String(item.counter)),
       document.body
@@ -24,7 +24,7 @@ describe("Repeat", () => {
     expect(document.body.innerHTML).toStrictEqual('1')
   });
   test("with separator", async () => {
-    const s = makeProp(3)
+    const s = prop(3)
     render(
       Repeat(
         s,
@@ -60,7 +60,7 @@ describe("Repeat", () => {
     expect(document.body.innerHTML).toStrictEqual('')
   });
   test("with nested repeat", async () => {
-    const s = makeProp(0)
+    const s = prop(0)
     render(
       Repeat(s, position => Fragment(Repeat(position.total.map(total => total), pos => pos.index.toString()), '!')),
       document.body

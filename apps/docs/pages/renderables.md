@@ -101,7 +101,7 @@ Tempo provides functions to bind `Props` to input elements. For example, to bind
 Tempo has a set of functions to create conditional renderables. For example, to render a `div` element only if a condition is met, use `When` (or `Unless` for its negation).
 
 ```ts
-const showSignal = makeSignal(true)
+const showSignal = signal(true)
 
 When(
   showSignal,
@@ -118,7 +118,7 @@ An interesting aspect of conditionals in Tempo, is that there is no DOM rebuildi
 In TypeScript it is common to work with values that can be `null` or `undefined`. To render a value only if it is not `null` or `undefined`, use `Ensure`.
 
 ```ts
-const valueSignal = makeSignal<string | null>('Hello, World!')
+const valueSignal = signal<string | null>('Hello, World!')
 
 Ensure(
   valueSignal,
@@ -135,7 +135,7 @@ For more complicated pattern matching you can use one of the `OneOf` renderables
 ```ts
 type MyType = { kind: 'A', text: string } | { kind: 'B', value: number }
 
-const valueSignal = makeSignal<MyType>({ kind: 'A', text: 'Hello, World!' })
+const valueSignal = signal<MyType>({ kind: 'A', text: 'Hello, World!' })
 
 OneOfKind(valueSignal, {
   A: v => html.div('A: ', v.$.text),
@@ -148,7 +148,7 @@ OneOfKind(valueSignal, {
 Of course you can also render lists of elements. Tempo provides a set of functions to create loops. For example, to render a list of `div` elements, use `ForEach`.
 
 ```ts
-const itemsSignal = makeSignal(['Item 1', 'Item 2', 'Item 3'])
+const itemsSignal = signal(['Item 1', 'Item 2', 'Item 3'])
 
 ForEach(
   itemsSignal,
@@ -167,7 +167,7 @@ The renderable function takes two arguments. The first is a signal that represen
 You can wrap your loop in a `NotEmpty` renderable if you want to ensure that the list is not empty. This is useful in the case of structures like `UL` or `OL` where an empty list would not be desired.
 
 ```ts
-const itemsSignal = makeSignal(['Item 1', 'Item 2', 'Item 3'])
+const itemsSignal = signal(['Item 1', 'Item 2', 'Item 3'])
 
 NotEmpty(
   itemsSignal,
@@ -185,7 +185,7 @@ NotEmpty(
 `Repeat` takes a signal that represents the number of times to repeat the renderable. It is useful when you want to repeat a renderable a fixed number of times.
 
 ```ts
-const countSignal = makeSignal(3)
+const countSignal = signal(3)
 
 Repeat(
   countSignal,
@@ -248,7 +248,7 @@ const PreferencesMark = makeProviderMark<Preferences>('Preferences')
 
 const MyComponent = WithProvider(
   PreferencesMark,
-  makeSignal({ theme: 'bubbly' }),
+  signal({ theme: 'bubbly' }),
   html.div(
     UseProvider(PreferencesMark, value => html.div(value.$.theme))
   )
@@ -259,7 +259,7 @@ When creating reusable providers, you probably want to wrap them in a provider f
 
 ```ts
 const PreferencesProvider = (node: TNode) => {
-  const preferences = makeSignal<Preferences>({ theme: 'bubbly' })
+  const preferences = signal<Preferences>({ theme: 'bubbly' })
   return WithProvider(
     PreferencesMark,
     preferences,
@@ -310,7 +310,7 @@ html.div(
 Often you will want to refetch when some parameter changes.
 
 ```ts
-const idSignal = makeSignal(1)
+const idSignal = signal(1)
 
 const dataSignal = idSignal.mapAsync<string | null>(
   async (id) => {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { ForEach, makeProp, render } from "../src";
+import { ForEach, prop, render } from "../src";
 import { sleep } from "./helper";
 
 describe("ForEach", () => {
@@ -7,7 +7,7 @@ describe("ForEach", () => {
     document.body.innerHTML = ''
   })
   test("with signals", async () => {
-    const s = makeProp(['a', 'b', 'c'])
+    const s = prop(['a', 'b', 'c'])
     render(
       ForEach(s, item => item),
       document.body
@@ -24,7 +24,7 @@ describe("ForEach", () => {
     expect(document.body.innerHTML).toStrictEqual('a')
   });
   test("with separator", async () => {
-    const s = makeProp(['A', 'B', 'C'])
+    const s = prop(['A', 'B', 'C'])
     render(
       ForEach(
         s,
@@ -60,7 +60,7 @@ describe("ForEach", () => {
     expect(document.body.innerHTML).toStrictEqual('')
   });
   test("nested foreach", async () => {
-    const s = makeProp([['a', 'b'], ['c', 'd']])
+    const s = prop([['a', 'b'], ['c', 'd']])
     render(
       ForEach(s, items => ForEach(items, item => item)),
       document.body

@@ -5,7 +5,7 @@ import {
   attr,
   type Renderable,
   on,
-  makeProp,
+  prop,
   render,
   Fragment,
   Portal,
@@ -54,7 +54,7 @@ function demoButton(demo: Demo, currentDemo: Prop<Demo>): Renderable {
 }
 
 export function App(): Renderable {
-  const currentDemo = makeProp<Demo>('Temperature')
+  const currentDemo = prop<Demo>('Temperature')
   return Fragment(
     Portal(
       'body',

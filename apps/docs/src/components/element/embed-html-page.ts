@@ -2,7 +2,7 @@ import {
   attr,
   ForEach,
   html,
-  makeProp,
+  prop,
   Prop,
   Signal,
   Value,
@@ -120,7 +120,7 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
 
 export function EmbedHTMLPage(content: Value<string>) {
   const htmlSignal = Value.toSignal(content)
-  const toc = makeProp<TOCItem[]>([])
+  const toc = prop<TOCItem[]>([])
   return UseLocation(location =>
     html.div(
       attr.class(

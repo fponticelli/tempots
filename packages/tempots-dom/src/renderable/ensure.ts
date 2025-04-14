@@ -1,6 +1,6 @@
 import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Prop, Signal, makeProp, makeSignal } from '../std/signal'
+import { Prop, Signal, prop, signal } from '../std/signal'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Value } from '../std/value'
@@ -47,7 +47,7 @@ export const Ensure = <T>(
           feed = null
         } else {
           if (feed == null) {
-            feed = makeProp<T>(value)
+            feed = prop<T>(value)
           } else {
             feed.value = value
           }
@@ -76,7 +76,7 @@ export const Ensure = <T>(
       }
       return Empty
     }
-    return renderableOfTNode(then(makeSignal(literal)))
+    return renderableOfTNode(then(signal(literal)))
   }
 }
 
@@ -123,13 +123,13 @@ export const EnsureAll =
         Signal.is(v) ? v.value != null : v != null
       )
       let clear: Clear | null = null
-      const allHadValues = makeProp(feedValues.every(v => v))
+      const allHadValues = prop(feedValues.every(v => v))
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const makeOrAssignSignal = (signal: Signal<any>, index: number) => {
         if (signal.value != null) {
           if (feed[index] == null) {
-            const newSignal = makeProp(signal.value)
+            const newSignal = prop(signal.value)
             feed[index] = newSignal
           } else {
             feed[index].value = signal.value
@@ -143,7 +143,7 @@ export const EnsureAll =
       let counter = signals.length - 1
       const clearFeeds = signals.map((signal, index) => {
         if (!Signal.is(signal)) {
-          const litSignal = makeProp(signal as NonNillable<T[number]>)
+          const litSignal = prop(signal as NonNillable<T[number]>)
           feed[index] = litSignal
           return () => {}
         }

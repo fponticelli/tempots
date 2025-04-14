@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { ForEach, makeProp, runHeadless } from "../src";
+import { ForEach, prop, runHeadless } from "../src";
 import { sleep } from "./helper";
 
 describe("ForEach Headless", () => {
   test("with signals", async () => {
-    const s = makeProp(['a', 'b', 'c'])
+    const s = prop(['a', 'b', 'c'])
     const { root } = runHeadless(
       () => ForEach(s, item => item)
     )
@@ -20,7 +20,7 @@ describe("ForEach Headless", () => {
     expect(root.contentToHTML()).toStrictEqual('a')
   });
   test("with separator", async () => {
-    const s = makeProp(['A', 'B', 'C'])
+    const s = prop(['A', 'B', 'C'])
     const { root } = runHeadless(
       () => ForEach(
         s,

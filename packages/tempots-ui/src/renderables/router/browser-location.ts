@@ -2,7 +2,7 @@ import {
   TNode,
   Fragment,
   OnDispose,
-  makeProp,
+  prop,
   Prop,
   getWindow,
   SetProvider,
@@ -19,7 +19,7 @@ import { LocationProviderMarker } from './location'
  * @returns The location object representing the current browser location.
  * @internal
  */
-export const _makeLocation = (): LocationData => {
+const _getLocation = (): LocationData => {
   const win = getWindow()
   const hash =
     win?.location.hash === ''
@@ -41,8 +41,8 @@ export const _makeLocation = (): LocationData => {
  * @returns The location prop.
  * @internal
  */
-export const _makeLocationProp = (): Prop<LocationData> => {
-  const location = makeProp(_makeLocation(), areLocationsEqual)
+const _makeLocationProp = (): Prop<LocationData> => {
+  const location = prop(_getLocation(), areLocationsEqual)
 
   const win = getWindow()
 

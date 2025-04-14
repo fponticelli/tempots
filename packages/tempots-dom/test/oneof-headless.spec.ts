@@ -1,12 +1,12 @@
 import { describe, expect, test, vi } from "vitest";
-import { makeProp, runHeadless, html, OneOfType, WithCtx } from "../src";
+import { prop, runHeadless, html, OneOfType, WithCtx } from "../src";
 import { sleep } from "./helper";
 import { Letter } from "./oneof.spec";
 const { div } = html
 
 describe("OneOf Headless", () => {
   test("type", async () => {
-    const p = makeProp<Letter>({ type: "A", text: "a" });
+    const p = prop<Letter>({ type: "A", text: "a" });
     const spyMountA = vi.fn()
     const spyMountB = vi.fn()
     const { root } = runHeadless(
