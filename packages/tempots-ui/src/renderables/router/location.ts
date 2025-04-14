@@ -27,7 +27,9 @@ export const LocationProviderMarker =
  * @returns The wrapped component with the location context.
  * @public
  */
-export const SetLocation = (child: (location: Prop<LocationData>) => TNode) => {
+export const ProvideLocation = (
+  child: (location: Prop<LocationData>) => TNode
+) => {
   return Fragment(
     WithBrowserCtx(() => {
       return Async(
