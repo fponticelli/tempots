@@ -1,18 +1,9 @@
-import {
-  TNode,
-  Fragment,
-  OnDispose,
-  prop,
-  Prop,
-  getWindow,
-  SetProvider,
-} from '@tempots/dom'
+import { prop, getWindow } from '@tempots/dom'
 import {
   LocationData,
   areLocationsEqual,
   urlFromLocation,
 } from './location-data'
-import { LocationProviderMarker } from './location'
 
 /**
  * Creates a location object based on the current browser location.
@@ -41,7 +32,7 @@ const _getLocation = (): LocationData => {
  * @returns The location prop.
  * @internal
  */
-const _makeLocationProp = (): Prop<LocationData> => {
+export const makeBrowserLocationProp = () => {
   const location = prop(_getLocation(), areLocationsEqual)
 
   const win = getWindow()
@@ -71,22 +62,8 @@ const _makeLocationProp = (): Prop<LocationData> => {
     win?.history.pushState({}, '', urlFromLocation(location))
   })
 
-  return location
-}
-
-/**
- * Provides the location context to the child component.
- * @param child - The child component to be wrapped with the location context.
- * @returns The wrapped component with the location context.
- * @public
- */
-export const ProvideBrowserLocation = (
-  child: (location: Prop<LocationData>) => TNode
-) => {
-  const location = _makeLocationProp()
-
-  return Fragment(
-    OnDispose(location.dispose),
-    SetProvider(LocationProviderMarker, location, child)
-  )
+  return {
+    value: location,
+    dispose: location.dispose,
+  }
 }

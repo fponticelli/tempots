@@ -1,5 +1,5 @@
-import { Fragment, Portal, Value, attr, signal } from '@tempots/dom'
-import { UseLocation, urlFromLocation } from '@tempots/ui'
+import { Fragment, Portal, Value, attr, signal, Use } from '@tempots/dom'
+import { Location, urlFromLocation } from '@tempots/ui'
 
 export type OpenGraphProps = {
   readonly title: Value<string>
@@ -20,7 +20,7 @@ export function OpenGraph(props: OpenGraphProps) {
     }
   )
 
-  return UseLocation(location =>
+  return Use(Location, location =>
     Fragment(
       Portal(
         'meta[property="og:url"]',

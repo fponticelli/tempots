@@ -184,10 +184,14 @@ export class BrowserContext implements DOMContext {
    * @param value - The provider to set for the given mark.
    * @returns A new `DOMContext` instance with the specified provider.
    */
-  readonly setProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
+  readonly setProvider = <T>(
+    mark: ProviderMark<T>,
+    value: T,
+    onUse: undefined | (() => void)
+  ): DOMContext =>
     new BrowserContext(this.document, this.element, this.reference, {
       ...this.providers,
-      [mark]: value,
+      [mark]: [value, onUse],
     })
 
   /**
@@ -197,12 +201,12 @@ export class BrowserContext implements DOMContext {
    * @returns The provider for the given mark.
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
-  readonly getProvider = <T>(mark: ProviderMark<T>): T => {
+  readonly getProvider = <T>(mark: ProviderMark<T>) => {
     if (this.providers[mark] === undefined) {
       throw new ProviderNotFoundError(mark)
     }
 
-    return this.providers[mark]! as T
+    return this.providers[mark]! as [T, undefined | (() => void)]
   }
 
   readonly clear = (removeTree: boolean) => {
@@ -314,5 +318,9 @@ export class BrowserContext implements DOMContext {
       get: _makeGetter(name, this.element),
       set: _makeSetter(name, this.element),
     }
+  }
+
+  readonly getWindow = () => {
+    return this.document.defaultView!
   }
 }

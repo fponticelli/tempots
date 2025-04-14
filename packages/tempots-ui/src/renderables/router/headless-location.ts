@@ -1,5 +1,4 @@
-import { TNode, Fragment, OnDispose, Prop, SetProvider } from '@tempots/dom'
-import { LocationProviderMarker } from './location'
+import { HeadlessContext } from '@tempots/dom'
 import { LocationData, locationFromURL, urlFromLocation } from './location-data'
 
 export const isAbsoluteURL = (url: string) => {
@@ -16,24 +15,18 @@ export const isAbsoluteURL = (url: string) => {
  * @returns The wrapped component with the location context.
  * @public
  */
-export const ProvideHeadlessLocation = (
-  url: Prop<string>,
-  child: (location: Prop<LocationData>) => TNode
-) => {
-  const location = url.iso(
+export const makeHeadlessLocationProp = (ctx: HeadlessContext) => {
+  const currentUrl = ctx.container.currentURL
+  const value = currentUrl.iso(
     (newUrl: string) => locationFromURL(newUrl),
     (data: LocationData) => {
       if (isAbsoluteURL(data.pathname)) {
         return urlFromLocation(data)
       }
-      const nurl = new URL(data.pathname, url.value)
+      const nurl = new URL(data.pathname, currentUrl.value)
       const pathname = nurl.origin + nurl.pathname
       return urlFromLocation({ ...data, pathname: pathname })
     }
   )
-
-  return Fragment(
-    OnDispose(location.dispose),
-    SetProvider(LocationProviderMarker, location, child)
-  )
+  return { value, dispose: value.dispose }
 }

@@ -1,5 +1,14 @@
-import { attr, TNode, html, on, Signal, Value, Renderable } from '@tempots/dom'
-import { UseLocation } from './router/location'
+import {
+  attr,
+  TNode,
+  html,
+  on,
+  Signal,
+  Value,
+  Renderable,
+  Use,
+} from '@tempots/dom'
+import { Location } from './router/location'
 import { setLocationFromUrl } from './router/location-data'
 import {
   handleAnchorClick,
@@ -52,7 +61,7 @@ export const Anchor = (
     return Anchor({ href: hrefOrOptions as Value<string> }, ...children)
   }
   const { href, ...options } = hrefOrOptions as AnchorOptions
-  return UseLocation(location => {
+  return Use(Location, location => {
     return html.a(
       on.click(
         handleAnchorClick(() => {

@@ -1,14 +1,9 @@
 import {
   Signal,
   prop,
-  TNode,
-  UseProvider,
-  Fragment,
-  OnDispose,
   makeProviderMark,
-  Renderable,
   getWindow,
-  SetProvider,
+  Provider,
 } from '@tempots/dom'
 
 /**
@@ -19,14 +14,7 @@ import {
 export type AppearanceType = 'light' | 'dark'
 
 /**
- * A provider mark for a signal representing the current appearance type.
- * @public
- */
-export const appearanceMarker =
-  makeProviderMark<Signal<AppearanceType>>('Appearance')
-
-/**
- * Provides a child component with an appearance context, which can be used to
+ * A provider that provides a child component with an appearance context, which can be used to
  * determine the current appearance (light or dark) based on the user's system
  * preferences.
  *
@@ -37,34 +25,22 @@ export const appearanceMarker =
  * @returns The child component with the appearance context.
  * @public
  */
-export const ProvideAppearance = (
-  child: (appearance: Signal<AppearanceType>) => TNode
-): Renderable => {
-  const win = getWindow()
-  const matcher =
-    win != null && win.matchMedia != null
-      ? win.matchMedia('(prefers-color-scheme: dark)')
-      : undefined
-  const isDark = matcher?.matches ?? false
-  const appearance = prop<AppearanceType>(isDark ? 'dark' : 'light')
-  const onChange = (e: MediaQueryListEvent) => {
-    appearance.set(e.matches ? 'dark' : 'light')
-  }
-  matcher?.addEventListener('change', onChange)
-  return Fragment(
-    SetProvider(appearanceMarker, appearance, child),
-    OnDispose(() => matcher?.removeEventListener('change', onChange))
-  )
+export const Appearance: Provider<Signal<AppearanceType>> = {
+  mark: makeProviderMark<Signal<AppearanceType>>('Appearance'),
+  create: () => {
+    const win = getWindow()
+    const matcher =
+      win != null && win.matchMedia != null
+        ? win.matchMedia('(prefers-color-scheme: dark)')
+        : undefined
+    const isDark = matcher?.matches ?? false
+    const value = prop<AppearanceType>(isDark ? 'dark' : 'light')
+    const onChange = (e: MediaQueryListEvent) =>
+      value.set(e.matches ? 'dark' : 'light')
+    matcher?.addEventListener('change', onChange)
+    return {
+      value,
+      dispose: () => matcher?.removeEventListener('change', onChange),
+    }
+  },
 }
-
-/**
- * Makes the AppearanceType available to the child component by consuming the signal provided by the parent.
- * The result of the function is returned as the final output.
- *
- * @param fn - A function that accepts the `AppearanceType` signal and returns a `TNode` element.
- * @returns The `TNode` element returned by the provided function.
- * @public
- */
-export const UseAppearance = (
-  fn: (appearance: Signal<AppearanceType>) => TNode
-): TNode => UseProvider(appearanceMarker, fn)

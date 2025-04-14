@@ -1,4 +1,4 @@
-import { ProvideLocation, Router } from '@tempots/ui'
+import { Location, Router } from '@tempots/ui'
 import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
@@ -11,6 +11,7 @@ import { ToolsView } from './element/tools-view'
 import { LibrariesView } from './element/libraries-view'
 import { DemosView } from './element/demos-view'
 import { HomeView } from './element/home-view'
+import { Provide } from '@tempots/dom'
 
 function mapPathToLibraryPageURL(path: string) {
   if (path.startsWith('/library/')) {
@@ -58,7 +59,7 @@ export const AppRouter = (toc: Toc) => {
 }
 
 export function App(toc: Toc) {
-  return ProvideLocation(() =>
+  return Provide(Location, {}, () =>
     PageLayout({
       sidebar: SideBar(toc),
       main: AppRouter(toc),

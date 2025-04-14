@@ -6,6 +6,7 @@ import {
   Fragment,
   html,
   Signal,
+  Use,
   Value,
   When,
 } from '@tempots/dom'
@@ -15,7 +16,7 @@ import { NPMShield } from './npm-shield'
 import { Tag } from './tag'
 import { EmbedHTMLPage } from './embed-html-page'
 import { CheckCode } from './check-code'
-import { HTMLTitle, UseLocation } from '@tempots/ui'
+import { HTMLTitle, Location } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
 import { EmbedHTMLFragmentFromURL } from './embed-html-fragment'
 
@@ -50,7 +51,7 @@ export function LibraryInfo(library: Value<Library>) {
 }
 
 export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
-  return UseLocation(location => {
+  return Use(Location, location => {
     const library = data.$.library
     const path = data.$.path
     const isRoot = path.map(v => v == null)

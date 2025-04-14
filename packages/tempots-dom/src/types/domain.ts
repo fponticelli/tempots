@@ -40,7 +40,10 @@ export type ProviderMark<T> = symbol & { readonly __type: T }
  * The keys of the record are ProviderMark types, and the values are of unknown type.
  * @public
  */
-export type Providers = Record<ProviderMark<unknown>, unknown>
+export type Providers = Record<
+  ProviderMark<unknown>,
+  [unknown, undefined | (() => void)]
+>
 
 /**
  * Represents the size of an object with width and height.

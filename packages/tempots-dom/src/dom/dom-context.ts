@@ -84,7 +84,7 @@ export interface DOMContext {
    * @returns The provider for the given mark.
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
-  getProvider<T>(mark: ProviderMark<T>): T
+  getProvider<T>(mark: ProviderMark<T>): [T, undefined | (() => void)]
 
   /**
    * Sets a provider for the given provider mark.
@@ -92,7 +92,11 @@ export interface DOMContext {
    * @param mark - The provider mark to set the provider for.
    * @param value - The provider to set for the given mark.
    */
-  setProvider<T>(mark: ProviderMark<T>, value: T): DOMContext
+  setProvider<T>(
+    mark: ProviderMark<T>,
+    value: T,
+    onUse: undefined | (() => void)
+  ): DOMContext
 
   clear(removeTree: boolean): void
 

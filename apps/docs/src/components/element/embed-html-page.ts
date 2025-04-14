@@ -8,10 +8,11 @@ import {
   Value,
   Ensure,
   on,
+  Use,
   WithElement,
   OnDispose,
 } from '@tempots/dom'
-import { UseLocation, LocationData, handleAnchorClick } from '@tempots/ui'
+import { Location, LocationData, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
 
@@ -121,7 +122,7 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
 export function EmbedHTMLPage(content: Value<string>) {
   const htmlSignal = Value.toSignal(content)
   const toc = prop<TOCItem[]>([])
-  return UseLocation(location =>
+  return Use(Location, location =>
     html.div(
       attr.class(
         'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'

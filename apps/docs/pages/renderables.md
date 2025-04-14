@@ -236,21 +236,26 @@ html.div(
 
 You can use `Fragment` where a single renderable is expected but you want to render multiple components. Similarly, you can use `Empty` to fill a slot with nothing.
 
-## Providers and Consumers
+## Providers
 
-To simplify the structure of a larger project, it is often useful to use a Provider/Consumer pattern. In a high-level component, you can provide a value (or function, or signal, or anything really) that is consumed by a lower-level component. You can use `WithProvider` to provide a single value, and `UseProvider` to consume it.
+To simplify the structure of a larger project, it is often useful to use a Provide/Use pattern. In a high-level component, you can provide a value (or function, or signal, or anything really) that is consumed by a lower-level component. You can use `Provide` to provide a single value, and `Use` to consume it.
 
-They both required a `ProviderMark` to be passed as the first argument. This is a unique symbol that is used to identify the provider. You can use `makeProviderMark` to create a unique mark for your own provider/consumer.
+A provider is a simple object that knows how to provide a context value and how to identify itself.
 
 ```ts
-type Preferences = Signal<{ theme: string }>
-const PreferencesMark = makeProviderMark<Preferences>('Preferences')
+const Preferences = {
+  mark: makeProviderMark<Signal<Preferences>>('Preferences')
+  create: () => {
+    const preferences = signal({ theme: 'bubbly' })
+    // the implementation, it must return an object with
+    return { value: preferences, dispose: preference.dispose }
+  }
+}
 
-const MyComponent = WithProvider(
-  PreferencesMark,
-  signal({ theme: 'bubbly' }),
-  html.div(
-    UseProvider(PreferencesMark, value => html.div(value.$.theme))
+const MyComponent = Provide(
+  Preferences,
+  () => html.div(
+    Use(Preferences, value => html.div(value.$.theme))
   )
 )
 ```

@@ -406,18 +406,24 @@ export class HeadlessContext implements DOMContext {
    * @param value - The provider to set for the given mark.
    * @returns A new `DOMContext` instance with the specified provider.
    */
-  readonly setProvider = <T>(mark: ProviderMark<T>, value: T): DOMContext =>
+  readonly setProvider = <T>(
+    mark: ProviderMark<T>,
+    value: T,
+    onUse: undefined | (() => void)
+  ): DOMContext =>
     new HeadlessContext(this.element, this.reference, this.container, {
       ...this.providers,
-      [mark]: value,
+      [mark]: [value, onUse],
     })
 
-  readonly getProvider = <T>(mark: ProviderMark<T>): T => {
+  readonly getProvider = <T>(
+    mark: ProviderMark<T>
+  ): [T, undefined | (() => void)] => {
     if (this.providers[mark] === undefined) {
       throw new ProviderNotFoundError(mark)
     }
 
-    return this.providers[mark]! as T
+    return this.providers[mark]! as [T, undefined | (() => void)]
   }
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
