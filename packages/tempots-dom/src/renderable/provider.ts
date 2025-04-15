@@ -5,21 +5,6 @@ import { Fragment } from './fragment'
 import { OnDispose } from './on-dispose'
 
 /**
- * Converts a tuple type `T` into an array of `Provider` types.
- * If `T` is an empty tuple, returns an empty array.
- * If `T` has only one element, returns an array with a single `Provider`.
- * If `T` has more than one element, recursively converts each element into a `Provider` and returns an array.
- * @public
- */
-export type ToArrayOfProviders<T extends unknown[]> = T extends []
-  ? []
-  : T extends [infer K]
-    ? [Provider<K>]
-    : T extends [infer K, ...infer R]
-      ? [Provider<K>, ...ToArrayOfProviders<R>]
-      : never
-
-/**
  * Converts an array of `Provider` types `T` into an array of their corresponding types.
  * @public
  */
@@ -35,7 +20,8 @@ export type ToProviderTypes<T extends unknown[]> = T extends []
  * Represents a provider for a specific type `T`.
  * @public
  */
-export type Provider<T, O extends object = object> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Provider<T, O = any> = {
   /** The provider mark. */
   mark: ProviderMark<T>
   /** The function to create the provider. */
@@ -51,12 +37,11 @@ export type Provider<T, O extends object = object> = {
  */
 export type ProviderOptions = {
   /** The function to use a provider. */
-  use: <T, O extends object = object>(provider: Provider<T, O>) => T
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  use: <T, O = any>(provider: Provider<T, O>) => T
   /** The function to set a provider. */
-  set: <T, O extends object = object>(
-    provider: Provider<T, O>,
-    options?: O
-  ) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  set: <T, O = any>(provider: Provider<T, O>, options?: O) => void
 }
 
 /**
@@ -103,15 +88,14 @@ export const WithProvider =
  * @param options - The options to pass to the provider.
  * @param child - The child renderable to return.
  */
-export const Provide = <T, O extends object>(
+export const Provide = <T, O>(
   provider: Provider<T, O>,
   options: O,
-  child: (value: T) => TNode
+  child: () => TNode
 ): Renderable =>
-  WithProvider(({ set, use }) => {
+  WithProvider(({ set }) => {
     set(provider, options)
-    const value = use(provider)
-    return child(value)
+    return child()
   })
 
 /**
@@ -135,7 +119,7 @@ export const Use = <T>(
  * @param child - The child renderable to return.
  */
 export const UseMany =
-  <T extends unknown[]>(...providers: ToArrayOfProviders<T>) =>
+  <T extends Provider<unknown>[]>(...providers: T) =>
   (child: (...values: ToProviderTypes<T>) => TNode): Renderable =>
     WithProvider(({ use }) => {
       const args = providers.map(use) as ToProviderTypes<T>

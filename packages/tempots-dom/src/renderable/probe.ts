@@ -47,10 +47,10 @@ export const makeProbe = (
           clearTimeout(timeoutId)
           probes.delete(identifier)
         },
-        onUse: () => {
-          obj.counter++
-        },
+        onUse: () => obj.counter++,
       }
     },
   }
 }
+
+export const GlobalProbe = makeProbe(Symbol('GlobalProbe'))
