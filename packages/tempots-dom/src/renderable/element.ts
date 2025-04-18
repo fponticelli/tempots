@@ -17,7 +17,9 @@ import { Value } from '../std/value'
  * @returns The corresponding Renderable.
  * @public
  */
-export const renderableOfTNode = (child: TNode): Renderable => {
+export const renderableOfTNode = <T extends DOMContext>(
+  child: TNode<T>
+): Renderable<T> => {
   if (child == null) {
     return Empty
   } else if (Array.isArray(child)) {

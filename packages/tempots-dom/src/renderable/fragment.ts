@@ -14,8 +14,8 @@ import { renderableOfTNode } from './element'
  * @public
  */
 export const Fragment =
-  (...children: TNode[]): Renderable =>
-  (ctx: DOMContext) => {
+  <T extends DOMContext>(...children: TNode<T>[]): Renderable<T> =>
+  (ctx: T) => {
     const clears = children.map(child => renderableOfTNode(child)(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(removeTree))
