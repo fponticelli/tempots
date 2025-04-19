@@ -59,17 +59,23 @@ export const WithProvider =
   (fn: (ctx: ProviderOptions) => TNode | void): Renderable =>
   (ctx: DOMContext): Clear => {
     let newCtx = ctx
+    function getCtx() {
+      return newCtx
+    }
+    function setCtx(ctx: DOMContext) {
+      newCtx = ctx
+    }
     const disposers: (() => void)[] = []
     const result = fn({
       use: ({ mark }) => {
-        const [value, onUse] = newCtx.getProvider(mark)
+        const [value, onUse] = getCtx().getProvider(mark)
         onUse?.()
         return value
       },
       set: ({ mark, create }, options) => {
-        const { value, dispose, onUse } = create(options, newCtx)
+        const { value, dispose, onUse } = create(options, getCtx())
         disposers.push(dispose)
-        newCtx = newCtx.setProvider(mark, value, onUse)
+        setCtx(getCtx().setProvider(mark, value, onUse))
       },
     })
     if (result == null) {
@@ -78,7 +84,7 @@ export const WithProvider =
     return Fragment(
       renderableOfTNode(result),
       OnDispose(() => disposers.forEach(fn => fn()))
-    )(newCtx)
+    )(getCtx())
   }
 
 /**
