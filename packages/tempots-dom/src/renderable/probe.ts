@@ -31,7 +31,8 @@ export const makeProbe = (
         clearTimeout(timeoutId)
         const probe = probes.get(identifier)
         if (probe == null) {
-          throw new Error(`Probe not found: ${identifier.description}`)
+          // probe has been cleared
+          return
         }
         if (--probe.counter === 0) {
           callback('resolved')

@@ -113,10 +113,7 @@ export const Provide = <T, O>(
 export const Use = <T>(
   provider: Provider<T>,
   child: (provider: T) => TNode
-): Renderable =>
-  WithProvider(({ use }) => {
-    return child(use(provider))
-  })
+): Renderable => WithProvider(({ use }) => child(use(provider)))
 
 /**
  * Returns a renderable function that uses a provider for the given provider marks and returns a child renderable.
