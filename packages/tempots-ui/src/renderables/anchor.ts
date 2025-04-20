@@ -15,6 +15,7 @@ import {
   HandleAnchorClickOptions,
 } from '../dom/handle-anchor-click'
 import { Merge } from '@tempots/std'
+import { withViewTransition } from '../utils/view-transition'
 
 /**
  * Options for configuring an anchor element.
@@ -27,6 +28,10 @@ export type AnchorOptions = Merge<
      * Can be a string or a Signal containing a string.
      */
     href: Value<string>
+    /**
+     * Whether to use a view transition when navigating to the anchor.
+     */
+    withViewTransition?: boolean
   },
   HandleAnchorClickOptions
 >
@@ -60,12 +65,22 @@ export const Anchor = (
   ) {
     return Anchor({ href: hrefOrOptions as Value<string> }, ...children)
   }
-  const { href, ...options } = hrefOrOptions as AnchorOptions
+  const {
+    href,
+    withViewTransition: useViewTransition,
+    ...options
+  } = hrefOrOptions as AnchorOptions
   return Use(Location, location => {
     return html.a(
       on.click(
         handleAnchorClick(() => {
-          setLocationFromUrl(location, Value.get(href))
+          if (useViewTransition == true) {
+            withViewTransition(() => {
+              setLocationFromUrl(location, Value.get(href))
+            })
+          } else {
+            setLocationFromUrl(location, Value.get(href))
+          }
           return true
         }, options)
       ),

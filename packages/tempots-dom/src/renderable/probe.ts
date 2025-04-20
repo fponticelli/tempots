@@ -6,7 +6,7 @@ const probes = new Map<
   { counter: number; timeoutId: ReturnType<typeof setTimeout> }
 >()
 
-export type ProbeResolution = 'resolved' | 'timeout'
+export type ProbeResolution = 'resolved' | 'timeout' | 'disposed'
 
 export type ProbeOptions = {
   callback?: (resolution: ProbeResolution) => void
@@ -19,11 +19,16 @@ export const makeProbe = (
   return {
     mark: makeProviderMark<() => void>(`Probe(${identifier.description})`),
     create: ({ callback = () => {}, timeout = 10 }: ProbeOptions = {}) => {
+      const wrappedCallback = (type: ProbeResolution) => {
+        clearTimeout(timeoutId)
+        probes.delete(identifier)
+        callback(type)
+      }
       if (probes.has(identifier)) {
         throw new Error(`Probe already exists: ${identifier.description}`)
       }
 
-      const timeoutId = setTimeout(() => callback('timeout'), timeout)
+      const timeoutId = setTimeout(() => wrappedCallback('timeout'), timeout)
       const obj = { counter: 0, timeoutId }
       probes.set(identifier, obj)
 
@@ -35,19 +40,13 @@ export const makeProbe = (
           return
         }
         if (--probe.counter === 0) {
-          callback('resolved')
-          probes.delete(identifier)
-        } else {
-          probes.set(identifier, probe)
+          wrappedCallback('resolved')
         }
       }
 
       return {
         value: probef,
-        dispose: () => {
-          clearTimeout(timeoutId)
-          probes.delete(identifier)
-        },
+        dispose: () => wrappedCallback('disposed'),
         onUse: () => obj.counter++,
       }
     },
