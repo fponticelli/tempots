@@ -189,9 +189,14 @@ const countSignal = signal(3)
 
 Repeat(
   countSignal,
-  pos => html.div(pos.$.counter.map(String))
+  pos => html.div(
+    `${pos.counter} of `,
+    pos.$.total.map(String)
+  )
 )
 ```
+
+`counter` is a fixed value so it is not wrapped in a signal but `total` is a signal as it can vary when `countSignal` changes.
 
 If you know ahead of time the number and content of the elements, you can use a regular loop to create an array of renderables.
 
