@@ -29,7 +29,7 @@ function render(
 `renderWithContext()` is a more atomic operation that requires an already instantiated `DOMContext`. Like `render` it returns a `cancel` function.
 
 ```ts
-function renderWithContext(node: Renderable, ctx: DOMContext): () =&gt; void
+function renderWithContext(node: Renderable, ctx: DOMContext): () => void
 ```
 
 ## Next Steps

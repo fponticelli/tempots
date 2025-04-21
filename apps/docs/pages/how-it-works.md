@@ -10,8 +10,8 @@ description: Learn how Tempo works under the hood.
 The core of Tempo is the `Renderable` type. A `Renderable` is a function with the following signature:
 
 ```ts
-type Renderable = (context: DOMContext) =&gt; Clear
-type Clear = (removeTree: boolean) =&gt; void
+type Renderable = (context: DOMContext) => Clear
+type Clear = (removeTree: boolean) => void
 ```
 
 The `Renderable` function takes a `DOMContext` object, which provides access to the DOM and other utilities. The function returns a `Clear` function that removes the rendered template from the DOM.
@@ -20,11 +20,11 @@ This simple signature offers flexibility and ease of use. For instance, consider
 
 ```ts
 export const Fragment =
-  (...children: TNode[]): Renderable =&gt;
-  (ctx: DOMContext) =&gt; {
-    const clears = children.map(child =&gt; renderableOfTNode(child)(ctx))
-    return (removeTree: boolean) =&gt; {
-      clears.forEach(clear =&gt; clear(removeTree))
+  (...children: TNode[]): Renderable =>
+  (ctx: DOMContext) => {
+    const clears = children.map(child => renderableOfTNode(child)(ctx))
+    return (removeTree: boolean) => {
+      clears.forEach(clear => clear(removeTree))
     }
   }
 ```
