@@ -243,7 +243,7 @@ You can use `Fragment` where a single renderable is expected but you want to ren
 
 ## Providers
 
-To simplify the structure of a larger project, it is often useful to use a Provide/Use pattern. In a high-level component, you can provide a value (or function, or signal, or anything really) that is consumed by a lower-level component. You can use `Provide` to provide a single value, and `Use` to consume it.
+To simplify the structure of a larger project, it is often useful to use a Provide/Use pattern. In a high-level component, you can provide a value (or function, or signal, or anything really) that is consumed by a lower-level component. You can use `Provide` to provide a single value (or a record or a function), and `Use` to consume it.
 
 A provider is a simple object that knows how to provide a context value and how to identify itself.
 
@@ -256,43 +256,31 @@ const Preferences = {
     return { value: preferences, dispose: preference.dispose }
   }
 }
+```
 
+The provider can be made available this way:
+
+```ts
 const MyComponent = Provide(
   Preferences,
-  () => html.div(
-    Use(Preferences, value => html.div(value.$.theme))
-  )
+  () => html.div(...)
 )
 ```
 
-When creating reusable providers, you probably want to wrap them in a provider function. This function has generally the signature `(node: TNode) => Renderable`.
+And  it can be used this way:
 
 ```ts
-const PreferencesProvider = (node: TNode) => {
-  const preferences = signal<Preferences>({ theme: 'bubbly' })
-  return WithProvider(
-    PreferencesMark,
-    preferences,
-    node
-  )
-}
+Use(Preferences, value => html.div(value.$.theme))
 ```
 
-Similarly on the consumer side, you can have:
+If you want to `set` and/or `use` multiple providers at once, you can use `WithProvider`.
 
 ```ts
-const UsePreferences = (fn: (preferences: Signal<Preference>) => TNode) =>
-  UseProvider(PreferencesMark, fn)
-```
-
-Now you can use them together for easy access to the preferences:
-
-```ts
-PreferencesProvider(
-  html.div(
-    UsePreferences(preferences => html.div(preferences.$.theme))
-  )
-)
+WithProvider(({ set, use }) => {
+  set(Preferences, {})
+  const preferences = use(Preferences)
+  return html.div(preferences.$.theme)
+})
 ```
 
 ## Asynchrnous Operations
