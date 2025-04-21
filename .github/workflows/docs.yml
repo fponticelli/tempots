@@ -24,6 +24,8 @@ jobs:
           node-version: '20'
       - name: PNPM Install
         run: npm i -g pnpm && pnpm install
+      - name: Build Dependencies
+        run: pnpm run build --filter="@tempots/std" --filter="@tempots/dom"
       - name: Build Demos
         run: pnpm run build:demos
       - name: Assemble Docs

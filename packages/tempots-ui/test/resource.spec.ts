@@ -54,7 +54,7 @@ describe("resource", () => {
       return request
     }
     const convertError = String
-    const renderable = Resource({ 
+    const renderable = Resource({
       request,
       load,
       mapError: convertError
