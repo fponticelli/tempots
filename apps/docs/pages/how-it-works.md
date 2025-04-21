@@ -41,7 +41,7 @@ html.div(TextNode('Hello World'))
 
 ### Clear
 
-The `Clear` function removes the rendered template from the DOM. Its argument, `removeTree`, indicates whether to remove all DOM modifications and side effects such as clearing an interval or timeout (`true`) or only side effects (`false`).
+The `Clear` function removes the rendered template from the DOM. Its argument, `removeTree`, indicates whether to remove side effects, such as clearing an interval or timeout, and all DOM modifications (`true`) or only side effects (`false`).
 
 ### TNode
 

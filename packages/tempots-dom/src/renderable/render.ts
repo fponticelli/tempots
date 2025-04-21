@@ -77,8 +77,8 @@ export const render = (
     disposeObserver = new MutationObserver(e => {
       e[0]?.removedNodes.forEach(node => {
         if (node === el) {
-          clearDOM(el.nodeType !== Node.ELEMENT_NODE)
           disposeObserver?.disconnect()
+          clearDOM(el.nodeType !== Node.ELEMENT_NODE)
         }
       })
     })
@@ -95,6 +95,21 @@ export const render = (
 }
 
 /**
+ * Options for running a headless environment.
+ * @public
+ */
+export type HeadlessOptions = {
+  /**
+   * The initial URL for the headless environment.
+   */
+  startUrl?: Value<string>
+  /**
+   * The selector used to find the root element in the headless environment.
+   */
+  selector: string
+}
+
+/**
  * Runs a renderable function in a headless environment.
  *
  * @param makeRenderable - A function that returns a Renderable to be rendered in the headless environment.
@@ -106,10 +121,9 @@ export const render = (
  */
 export const runHeadless = (
   makeRenderable: () => Renderable,
-  {
-    startUrl = 'https://example.com',
-    selector = ':root',
-  }: { startUrl?: Value<string>; selector?: string } = {}
+  { startUrl = 'https://example.com', selector }: HeadlessOptions = {
+    selector: 'body',
+  }
 ) => {
   const currentURL = Value.toSignal(startUrl).deriveProp()
   const root = new HeadlessPortal(selector, undefined)
@@ -155,9 +169,7 @@ const ATTRS_PLACEHOLDER_ATTR = 'data-tts-attrs'
  * const renderWithCheerio = (html: string, root: HeadlessPortal) => {
  *   const $ = cheerio.load(html)
  *
- *   // eslint-disable-next-line @typescript-eslint/no-explicit-any
  *   const adapter = new HeadlessAdapter<cheerio.Cheerio<any>>({
- *     // eslint-disable-next-line @typescript-eslint/no-explicit-any
  *     select: (selector: string): cheerio.Cheerio<any>[] => [$(selector)],
  *     getAttribute: (el, name: string) => el.attr(name) ?? null,
  *     setAttribute: (el, name: string, value: string | null) => {

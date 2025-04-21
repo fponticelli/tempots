@@ -8,7 +8,10 @@ description: Reusing Renderables allow an efficient workflow that minimize code 
 A reusable Renderable or Component can be exported as either a constant value or a function.
 
 ```ts
-const Logo = html.div(attr.class('logo'), html.img(attr.src('logo.png')))
+const Logo = html.div(
+  attr.class('logo'),
+  html.img(attr.src('logo.png'))
+)
 ```
 
 In this example, `Logo` is a reusable component. The content of the component remains the same; it doesn’t change. However, it is still reusable because it doesn’t generate a new DOM unless it is `render`ed. It can be applied multiple times in different locations, making it versatile across applications.
@@ -18,7 +21,10 @@ Using a capitalized name for your component is a common convention to indicate t
 You can create a component that is still constant and reusable but has dynamic content.
 
 ```ts
-const UserView = Async(fetchUser(), (user) => html.div(user.name))
+const UserView = Async(
+  fetchUser(),
+  (user) => html.div(user.name)
+)
 ```
 
 The rendered content of the component is dynamic and depends on the result of the `fetchUser()` promise but the promise is executed only once for any instantiation of the component.
@@ -44,7 +50,10 @@ Now, any time the `user` signal changes, the DOM will be updated. Notice that th
 To get the best of both worlds, you can use `Value<T>`.
 
 ```ts
-const UserView = (user: Value<User>) => html.div(Value.map(user, (user) => user.name))
+const UserView = (user: Value<User>) =>
+  html.div(
+    Value.map(user, ({ name }) => name)
+  )
 ```
 
 `Value<T>` is a union type that can be either a `Signal<T>` or a `T`. It is a convenient way to work with signals and values in the same way. `Value.map` is used to map a `Value<T>` to a new `Value<O>`.
