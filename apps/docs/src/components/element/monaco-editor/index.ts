@@ -167,7 +167,7 @@ export function MonacoEditor({
             editor.focus()
           }
 
-          return OnDispose(...disposers, editor.dispose)
+          return OnDispose(editor.dispose, ...disposers)
         })
     )
   )
