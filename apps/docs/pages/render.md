@@ -40,4 +40,3 @@ Check the API documentation for the Tempo libraries:
 - [@tempots/dom](/library/tempots-dom.html)
 - [@tempots/std](/library/tempots-std.html)
 - [@tempots/ui](/library/tempots-ui.html)
-- [@tempots/color](/library/tempots-color.html)

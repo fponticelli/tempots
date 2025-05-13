@@ -25,7 +25,6 @@ Beside [@tempots/dom](/library/tempots-dom.html), tempo provides a set of librar
 
 - [@tempots/std](/library/tempots-std.html): Provides a set of utility functions and types commonly used.
 - [@tempots/ui](/library/tempots-ui.html): Provides a set of low-level reusable Renderables (UI components).
-- [@tempots/color](/library/tempots-color.html): Provides a set of immutable color classes and functions to convert between color spaces.
 
 ## Check the demos
 
