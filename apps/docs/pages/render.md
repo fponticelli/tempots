@@ -35,7 +35,14 @@ function renderWithContext(node: Renderable, ctx: DOMContext): () => void
 
 ## Next Steps
 
-Check the API documentation for the Tempo libraries:
+Check out these resources:
+
+- [Explore Examples & Best Practices](/page/examples.html)
+- [Troubleshooting & FAQ](/page/troubleshooting.html)
+- [Standard Library](/page/std-library.html)
+- [UI Components](/page/ui-components.html)
+
+Or explore the API documentation for the Tempo libraries:
 
 - [@tempots/dom](/library/tempots-dom.html)
 - [@tempots/std](/library/tempots-std.html)

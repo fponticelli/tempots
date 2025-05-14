@@ -19,16 +19,31 @@ description: This is the documentation site for Tempo. Tempo is a modern, open-s
 
 To get started, see the [Quick Start](/page/quick-start.html) guide.
 
-## Other libraries
+## Documentation
 
-Beside [@tempots/dom](/library/tempots-dom.html), tempo provides a set of libraries to help you build your applications:
+- [Quick Start](/page/quick-start.html): Get started with Tempo in a few simple steps
+- [Installation](/page/installation.html): Install Tempo using npm or yarn
+- [How It Works](/page/how-it-works.html): Learn how Tempo works under the hood
+- [Renderables](/page/renderables.html): The building blocks of Tempo applications
+- [Signals](/page/signals.html): Reactive state management
+- [Build your own Renderables](/page/components.html): Create reusable components
+- [Providers](/page/providers.html): Dependency injection and context sharing
+- [Examples & Best Practices](/page/examples.html): Common patterns and best practices
+- [Troubleshooting & FAQ](/page/troubleshooting.html): Common issues and solutions
 
-- [@tempots/std](/library/tempots-std.html): Provides a set of utility functions and types commonly used.
-- [@tempots/ui](/library/tempots-ui.html): Provides a set of low-level reusable Renderables (UI components).
+## Libraries
 
-## Check the demos
+Tempo provides a set of libraries to help you build your applications:
 
-- [Hackers News PWA](/demo/hnpwa.html)
-- [7GUIs](/demo/7guis.html)
-- [TodoMVC](/demo/todomvc.html)
-- [Counter Demo](/demo/counter.html)
+- [@tempots/dom](/library/tempots-dom.html): The core UI framework
+- [@tempots/std](/library/tempots-std.html): A [standard library](/page/std-library.html) with utility functions and types
+- [@tempots/ui](/library/tempots-ui.html): A collection of [reusable UI components](/page/ui-components.html)
+
+## Demos
+
+See Tempo in action with these demo applications:
+
+- [Hackers News PWA](/demo/hnpwa.html): A Hacker News reader
+- [7GUIs](/demo/7guis.html): Implementation of the 7GUIs benchmark
+- [TodoMVC](/demo/todomvc.html): The classic TodoMVC example
+- [Counter Demo](/demo/counter.html): A simple counter application

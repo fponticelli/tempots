@@ -29,7 +29,7 @@ export const Fragment =
   }
 ```
 
-In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Signal&lt;string&gt;`, `Prop&lt;string&gt;`, `Computed&lt;string&gt;`, `string`, `undefined`, `null`, or an `Array&lt;Renderable&gt;`. The `renderableOfTNode` function helps convert a `TNode` to a `Renderable`.
+In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Signal<string>`, `Prop<string>`, `Computed<string>`, `string`, `undefined`, `null`, or an `Array<Renderable>`. The `renderableOfTNode` function helps convert a `TNode` to a `Renderable`.
 
 Using `TNode` makes the API more flexible and allows for a more declarative syntax.
 
@@ -69,4 +69,6 @@ Additionally, `DOMContext` contains a collection of providers for shared state b
 - [Learn more about Renderables](/page/renderables.html)
 - [Learn more about Signals](/page/signals.html)
 - [Learn more about Building your own Renderables](/page/components.html)
+- [Explore the Standard Library](/page/std-library.html)
+- [Discover UI Components](/page/ui-components.html)
 - [Learn more about render](/page/render.html)

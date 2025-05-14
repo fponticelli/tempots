@@ -25,4 +25,5 @@ Tempo is written in TypeScript so types are generated and included in the packag
 - [Learn more about Renderables](/page/renderables.html)
 - [Learn more about Signals](/page/signals.html)
 - [Learn more about Building your own Renderables](/page/components.html)
+- [Explore Examples & Best Practices](/page/examples.html)
 - [Learn more about render](/page/render.html)

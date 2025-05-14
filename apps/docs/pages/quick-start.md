@@ -68,7 +68,7 @@ What about ``count.map(v => `count: ${v}`)``? This is a `Computed` signal that i
 
 Events are handled by using the functions associated to the `on` object. The `on.click()` function creates an event listener for the `click` event.
 
-Note that differently from other frameworks, Tempo does not make a distinction between children nodes, attributes, properties, or event handlers. Everything satisfies the same `Renderable` type and `Renderable`s can be nested in any component that accept children. This brings a lot of flexibility and simplicity to the API. One exmaple is that you can use the `Portal` component not just to render the content of a selected element but also change/add to its attributes, classes and event handlers.
+Note that differently from other frameworks, Tempo does not make a distinction between children nodes, attributes, properties, or event handlers. Everything satisfies the same `Renderable` type and `Renderable`s can be nested in any component that accept children. This brings a lot of flexibility and simplicity to the API. One example is that you can use the `Portal` component not just to render the content of a selected element but also change/add to its attributes, classes and event handlers.
 
 ## Next Steps
 

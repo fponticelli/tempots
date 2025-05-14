@@ -64,4 +64,6 @@ If you want to create components that take multiple arguments or options, you ca
 
 ## Next Steps
 
+- [Discover UI Components](/page/ui-components.html)
+- [Explore Examples & Best Practices](/page/examples.html)
 - [Learn more about render](/page/render.html)

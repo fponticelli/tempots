@@ -13,9 +13,9 @@ The Renderable functions use the convention of starting with a capital letter. T
 
 To create HTML or SVG elements, use the `html` and `svg` objects. Each of them contains the full list of available tags as functions. For example, to create a `div` element, use `html.div()`. To create a `circle` element, use `svg.circle()`.
 
-These functions take an arbitrary number of `TNode` arguments. A `TNode` can be a string, a `Signal&lt;string&gt;`, a `Renderable`, a `Renderable[]` or `null`/`undefined`.
+These functions take an arbitrary number of `TNode` arguments. A `TNode` can be a string, a `Signal<string>`, a `Renderable`, a `Renderable[]` or `null`/`undefined`.
 
-To create text nodes, you can just pass a `string` or a `Signal&lt;string&gt;` where a `TNode` is expected. Alternatively you can be explicit and use the `TextNode()` function.
+To create text nodes, you can just pass a `string` or a `Signal<string>` where a `TNode` is expected. Alternatively you can be explicit and use the `TextNode()` function.
 
 ```ts
 const titleSignal = signal('Hello, World!')
@@ -249,11 +249,11 @@ A provider is a simple object that knows how to provide a context value and how 
 
 ```ts
 const Preferences = {
-  mark: makeProviderMark<Signal<Preferences>>('Preferences')
+  mark: makeProviderMark<Signal<Preferences>>('Preferences'),
   create: () => {
     const preferences = signal({ theme: 'bubbly' })
     // the implementation, it must return an object with
-    return { value: preferences, dispose: preference.dispose }
+    return { value: preferences, dispose: preferences.dispose }
   }
 }
 ```
@@ -263,6 +263,7 @@ The provider can be made available this way:
 ```ts
 const MyComponent = Provide(
   Preferences,
+  {}, // options (can be empty)
   () => html.div(...)
 )
 ```
@@ -283,7 +284,7 @@ WithProvider(({ set, use }) => {
 })
 ```
 
-## Asynchrnous Operations
+## Asynchronous Operations
 
 If you are dealing with asynchronous operations, you can use `Async` to render a promise or `Task` to render a function that returns a promise. More likely than not you will want to use a combination of `Signal`s and `Promise` to define your UI. Let's take as an example loading from an API.
 
@@ -291,7 +292,7 @@ If you are dealing with asynchronous operations, you can use `Async` to render a
 const dataSignal = Signal.ofPromise<string | null>(
   async () => {
     const res = await fetch('https://api.example.com/data')
-    return r.text()
+    return res.text()
   },
   null // this is the default state before the promise resolves
 )
@@ -313,7 +314,7 @@ const idSignal = signal(1)
 const dataSignal = idSignal.mapAsync<string | null>(
   async (id) => {
     const res = await fetch(`https://api.example.com/data/${id}`)
-    return r.text()
+    return res.text()
   },
   null // this is the default state before the promise resolves
 )
@@ -334,4 +335,7 @@ export const HTMLTitle = (title: Value<string>) =>
 
 - [Learn more about Signals](/page/signals.html)
 - [Learn more about Building your own Renderables](/page/components.html)
+- [Learn more about Providers](/page/providers.html)
+- [Discover UI Components](/page/ui-components.html)
+- [Explore Examples & Best Practices](/page/examples.html)
 - [Learn more about render](/page/render.html)

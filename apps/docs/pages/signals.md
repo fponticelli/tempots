@@ -15,18 +15,18 @@ To create a signal, use the `signal()`, `prop()`, and `computed()` (or `computed
 
 ```tsx
 // create a signal that cannot be updated
-const signal = signal(0)
+const s = signal(0)
 
 // create a signal that can be updated
-const prop = prop(0)
-prop.value = 1
-console.log(prop.value) // 1
+const p = prop(0)
+p.value = 1
+console.log(p.value) // 1
 
 // create a computed signal
-const computed = computed(() => signal.value + prop.value, [signal, prop])
+const c1 = computed(() => s.value + p.value, [s, p])
 
 // or
-const computed = computedOf(signal, prop)((s, p) => s + p)
+const c2 = computedOf(s, p)((s, p) => s + p)
 ```
 
 When you create a Computed signal, you need to provide a function that returns the value of the signal. The function will be called whenever the dependency signals in the second argument change. There is no magic here, if you don't provide the dependency signals, the computed signal will not update.
@@ -80,4 +80,7 @@ The `at()` function is equivalent to `$` and it takes the key as an argument.
 ## Next Steps
 
 - [Learn more about Building your own Renderables](/page/components.html)
+- [Explore the Standard Library](/page/std-library.html)
+- [Explore Examples & Best Practices](/page/examples.html)
+- [Troubleshooting & FAQ](/page/troubleshooting.html)
 - [Learn more about render](/page/render.html)
