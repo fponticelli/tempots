@@ -84,14 +84,19 @@ export function domToTempo(node: Node, indent = 0): string[] {
 export function htmlToTempo(html: string) {
   const body = parseHTML(html)
   const children = Array.from(body.childNodes)
+  let result: string
+
   if (children.length === 1) {
     const value = domToTempo(children[0]).join('\n')
     if (value.endsWith(',')) {
-      return value.slice(0, -1)
+      result = value.slice(0, -1)
     } else {
-      return value
+      result = value
     }
   } else {
-    return `Fragment(\n${children.map(v => domToTempo(v, 1).join('\n')).join(',\n')}\n)`
+    result = `Fragment(\n${children.map(v => domToTempo(v, 1).join('\n')).join(',\n')}\n)`
   }
+
+  // Add import statement for @tempots/dom
+  return `import { html, attr } from '@tempots/dom'\n\n${result}`
 }
