@@ -307,7 +307,7 @@ export class HeadlessElement extends HeadlessBase {
 
 export class HeadlessPortal extends HeadlessBase {
   constructor(
-    readonly selector: string,
+    readonly selector: string | HTMLElement,
     parent: HeadlessBase | undefined
   ) {
     super(parent)
@@ -388,7 +388,7 @@ export class HeadlessContext implements DOMContext {
   readonly makeRef = (): DOMContext => {
     return this.makeChildText('')
   }
-  readonly makePortal = (selector: string): DOMContext => {
+  readonly makePortal = (selector: string | HTMLElement): DOMContext => {
     const portal = new HeadlessPortal(selector, this.element)
     this.appendOrInsert(portal)
     return new HeadlessContext(

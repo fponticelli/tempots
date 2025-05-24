@@ -14,7 +14,7 @@ import { renderWithContext } from './render'
  * @public
  */
 export const Portal =
-  (selector: string, node: TNode): Renderable =>
+  (selector: string | HTMLElement, node: TNode): Renderable =>
   (ctx: DOMContext) => {
     const portalCtx = ctx.makePortal(selector)
     return renderWithContext(renderableOfTNode(node), portalCtx)

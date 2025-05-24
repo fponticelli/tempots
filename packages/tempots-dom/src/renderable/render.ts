@@ -1,4 +1,4 @@
-import type { Renderable } from '../types/domain'
+import type { Providers, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import {
   _getSelfOrParentElement,
@@ -39,6 +39,10 @@ export type RenderOptions = {
    * Whether to dispose the renderable when the parent element is removed from the DOM.
    */
   disposeWithParent?: boolean
+  /**
+   * The providers to use for the renderable.
+   */
+  providers?: Providers
 }
 
 /**
@@ -54,7 +58,7 @@ export type RenderOptions = {
 export const render = (
   node: Renderable,
   parent: Node | string,
-  { doc, clear, disposeWithParent = true }: RenderOptions = {}
+  { doc, clear, disposeWithParent = true, providers = {} }: RenderOptions = {}
 ) => {
   const el =
     typeof parent === 'string'
@@ -70,7 +74,7 @@ export const render = (
   }
   const element = _getSelfOrParentElement(el)
   const ref = _isElement(el) ? undefined : el
-  const ctx = BrowserContext.of(element, ref)
+  const ctx = BrowserContext.of(element, ref, providers)
   const clearDOM = renderWithContext(node, ctx)
   let disposeObserver: MutationObserver | undefined
   if (disposeWithParent) {
@@ -107,6 +111,10 @@ export type HeadlessOptions = {
    * The selector used to find the root element in the headless environment.
    */
   selector: string
+  /**
+   * The providers to use for the renderable.
+   */
+  providers?: Providers
 }
 
 /**
@@ -121,13 +129,17 @@ export type HeadlessOptions = {
  */
 export const runHeadless = (
   makeRenderable: () => Renderable,
-  { startUrl = 'https://example.com', selector }: HeadlessOptions = {
+  {
+    startUrl = 'https://example.com',
+    selector,
+    providers = {},
+  }: HeadlessOptions = {
     selector: 'body',
   }
 ) => {
   const currentURL = Value.toSignal(startUrl).deriveProp()
   const root = new HeadlessPortal(selector, undefined)
-  const ctx = new HeadlessContext(root, undefined, { currentURL }, {})
+  const ctx = new HeadlessContext(root, undefined, { currentURL }, providers)
   const clear = renderWithContext(makeRenderable(), ctx)
   return {
     clear,
@@ -339,7 +351,11 @@ export class HeadlessAdapter<EL> {
   readonly setFromRoot = (root: HeadlessPortal, setPlaceholders: boolean) => {
     const portals = root.getPortals()
     portals.forEach(portal => {
-      for (const el of this.select(portal.selector)) {
+      const els =
+        typeof portal.selector === 'string'
+          ? (this.select(portal.selector) as EL[])
+          : [portal.selector as EL]
+      for (const el of els) {
         if (el == null) {
           throw new Error(
             `Cannot find element by selector for render: ${portal.selector}`

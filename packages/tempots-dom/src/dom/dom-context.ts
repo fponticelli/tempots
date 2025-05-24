@@ -75,7 +75,7 @@ export interface DOMContext {
    * @param selector - The CSS selector for the target DOM element.
    * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
-  makePortal(selector: string): DOMContext
+  makePortal(selector: string | HTMLElement): DOMContext
 
   /**
    * Retrieves a provider for the given provider mark.

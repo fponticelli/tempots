@@ -19,11 +19,16 @@ export class BrowserContext implements DOMContext {
    * Creates a new `DOMContext` instance for the given `Element` and optional reference `Node`.
    *
    * @param element - The `HTMLElement` to create the `DOMContext` for.
-   * @param ref - An optional reference `Node` to associate with the `DOMContext`.
+   * @param ref - A reference `Node` to associate with the `DOMContext` or undefined .
+   * @param providers - The providers to associate with the `DOMContext`.
    * @returns A new `DOMContext` instance.
    */
-  static of(element: HTMLElement, ref?: Node | undefined): DOMContext {
-    return new BrowserContext(element.ownerDocument, element, ref, {})
+  static of(
+    element: HTMLElement,
+    ref: Node | undefined,
+    providers: Providers
+  ): DOMContext {
+    return new BrowserContext(element.ownerDocument, element, ref, providers)
   }
 
   /**
@@ -160,8 +165,11 @@ export class BrowserContext implements DOMContext {
    * @param selector - The CSS selector for the target DOM element.
    * @returns A new `DOMContext` instance with a reference to the selected DOM element.
    */
-  readonly makePortal = (selector: string): DOMContext => {
-    const element = this.document.querySelector(selector) as HTMLElement | null
+  readonly makePortal = (selector: string | HTMLElement): DOMContext => {
+    const element =
+      typeof selector === 'string'
+        ? (this.document.querySelector(selector) as HTMLElement | null)
+        : selector
     if (element == null) {
       throw new Error(`Cannot find element by selector for portal: ${selector}`)
     }
