@@ -214,7 +214,11 @@ export class BrowserContext implements DOMContext {
       throw new ProviderNotFoundError(mark)
     }
 
-    return this.providers[mark]! as [T, undefined | (() => void)]
+    const [value, onUse] = this.providers[mark]! as [
+      T,
+      undefined | (() => void),
+    ]
+    return { value, onUse }
   }
 
   readonly clear = (removeTree: boolean) => {

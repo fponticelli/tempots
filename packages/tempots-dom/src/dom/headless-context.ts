@@ -417,14 +417,16 @@ export class HeadlessContext implements DOMContext {
       [mark]: [value, onUse],
     })
 
-  readonly getProvider = <T>(
-    mark: ProviderMark<T>
-  ): [T, undefined | (() => void)] => {
+  readonly getProvider = <T>(mark: ProviderMark<T>) => {
     if (this.providers[mark] === undefined) {
       throw new ProviderNotFoundError(mark)
     }
 
-    return this.providers[mark]! as [T, undefined | (() => void)]
+    const [value, onUse] = this.providers[mark]! as [
+      T,
+      undefined | (() => void),
+    ]
+    return { value, onUse }
   }
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {

@@ -68,7 +68,7 @@ export const WithProvider =
     const disposers: (() => void)[] = []
     const result = fn({
       use: ({ mark }) => {
-        const [value, onUse] = getCtx().getProvider(mark)
+        const { value, onUse } = getCtx().getProvider(mark)
         onUse?.()
         return value
       },

@@ -84,7 +84,7 @@ export interface DOMContext {
    * @returns The provider for the given mark.
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
-  getProvider<T>(mark: ProviderMark<T>): [T, undefined | (() => void)]
+  getProvider<T>(mark: ProviderMark<T>): { value: T; onUse?: () => void }
 
   /**
    * Sets a provider for the given provider mark.
