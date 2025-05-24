@@ -123,16 +123,17 @@ abstract class HeadlessBase {
   }
   readonly on = <E>(
     event: string,
-    listener: (event: E) => void,
+    listener: (event: E, ctx: HeadlessContext) => void,
+    ctx: HeadlessContext,
     options?: HandlerOptions
   ): Clear => {
     const handlers = (this.properties[handlerKey] ??= {})
     const _listener = options?.once
       ? (event: unknown) => {
           clear()
-          listener(event as E)
+          listener(event as E, ctx)
         }
-      : (event: unknown) => listener(event as E)
+      : (event: unknown) => listener(event as E, ctx)
     handlers[event] = [...(handlers[event] ?? []), _listener]
     const clear = () => {
       const listeners = handlers[event] ?? []
@@ -434,8 +435,10 @@ export class HeadlessContext implements DOMContext {
       }
     }
   }
-  readonly on = <E>(event: string, listener: (event: E) => void): Clear =>
-    this.element.on(event, listener)
+  readonly on = <E>(
+    event: string,
+    listener: (event: E, ctx: HeadlessContext) => void
+  ): Clear => this.element.on(event, listener, this)
   readonly addClasses = (tokens: string[]): void =>
     this.element.addClasses(tokens)
   readonly removeClasses = (tokens: string[]): void =>

@@ -5,7 +5,7 @@ import { DOMContext, HandlerOptions } from '../dom/dom-context'
 const handler =
   <T extends Event>(
     name: string,
-    handler: (event: T) => void,
+    handler: (event: T, ctx: DOMContext) => void,
     options?: HandlerOptions
   ): Renderable =>
   (ctx: DOMContext) =>
@@ -16,14 +16,14 @@ const handler =
  * @param fn - The callback function to be executed when the checkbox is clicked.
  * @alpha
  */
-export const OnChecked = (fn: (event: boolean) => void) =>
-  handler('click', (e: Event) => {
+export const OnChecked = (fn: (event: boolean, ctx: DOMContext) => void) =>
+  handler('click', (e: Event, ctx: DOMContext) => {
     e.preventDefault()
     const input = e.target as HTMLInputElement
     setTimeout(() => {
       const value = input.ownerDocument != null ? input?.checked : undefined
       if (value != null) {
-        fn(!value)
+        fn(!value, ctx)
       }
     }, 0)
   })
@@ -35,7 +35,7 @@ export const OnChecked = (fn: (event: boolean) => void) =>
 export const on = new Proxy(
   {} as {
     [EN in keyof HTMLEvents]: (
-      handler: (event: HTMLEvents[EN]) => void
+      handler: (event: HTMLEvents[EN], ctx: DOMContext) => void
     ) => Renderable
   },
   {
@@ -45,7 +45,8 @@ export const on = new Proxy(
      * @returns A `Renderable` function that adds the event listener to the element.
      */
     get: (_, name: keyof HTMLEvents) => {
-      return (fn: (event: HTMLEvents[typeof name]) => void) => handler(name, fn)
+      return (fn: (event: HTMLEvents[typeof name], ctx: DOMContext) => void) =>
+        handler(name, fn)
     },
   }
 )

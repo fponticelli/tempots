@@ -109,7 +109,7 @@ export interface DOMContext {
    */
   on<E>(
     event: string,
-    listener: (event: E) => void,
+    listener: (event: E, ctx: DOMContext) => void,
     options?: HandlerOptions
   ): Clear
 

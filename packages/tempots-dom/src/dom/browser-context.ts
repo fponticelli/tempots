@@ -261,17 +261,14 @@ export class BrowserContext implements DOMContext {
    */
   readonly on = <E>(
     event: string,
-    listener: (event: E) => void,
+    listener: (event: E, ctx: BrowserContext) => void,
     options?: HandlerOptions
   ): Clear => {
-    this.element.addEventListener(event, listener as EventListener, options)
+    const handler = (event: Event) => listener(event as E, this)
+    this.element.addEventListener(event, handler, options)
     return (removeTree: boolean) => {
       if (removeTree) {
-        this.element.removeEventListener(
-          event,
-          listener as EventListener,
-          options
-        )
+        this.element.removeEventListener(event, handler, options)
       }
     }
   }
