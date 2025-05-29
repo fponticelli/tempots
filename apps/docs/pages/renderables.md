@@ -174,8 +174,7 @@ NotEmpty(
   items => html.ul(
     ForEach(
       items,
-      item => html.li(item),
-      html.br()
+      item => html.li(item)
     ),
   ),
   () => 'No items'
