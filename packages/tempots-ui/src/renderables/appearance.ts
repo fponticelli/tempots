@@ -28,19 +28,35 @@ export type AppearanceType = 'light' | 'dark'
 export const Appearance: Provider<Signal<AppearanceType>> = {
   mark: makeProviderMark<Signal<AppearanceType>>('Appearance'),
   create: () => {
-    const win = getWindow()
-    const matcher =
-      win != null && win.matchMedia != null
-        ? win.matchMedia('(prefers-color-scheme: dark)')
-        : undefined
-    const isDark = matcher?.matches ?? false
-    const value = prop<AppearanceType>(isDark ? 'dark' : 'light')
-    const onChange = (e: MediaQueryListEvent) =>
-      value.set(e.matches ? 'dark' : 'light')
-    matcher?.addEventListener('change', onChange)
+    const value = useAppearence()
     return {
       value,
-      dispose: () => matcher?.removeEventListener('change', onChange),
+      dispose: value.dispose,
     }
   },
+}
+
+/**
+ * Creates a signal that represents the current appearance (light or dark) based on the user's system
+ * preferences.
+ *
+ * The appearance is updated whenever the user's system preferences change, and the signal is cleaned
+ * up when it is no longer needed.
+ *
+ * @returns A signal representing the current appearance.
+ * @public
+ */
+export function useAppearence() {
+  const win = getWindow()
+  const matcher =
+    win != null && win.matchMedia != null
+      ? win.matchMedia('(prefers-color-scheme: dark)')
+      : undefined
+  const isDark = matcher?.matches ?? false
+  const value = prop<AppearanceType>(isDark ? 'dark' : 'light')
+  const onChange = (e: MediaQueryListEvent) =>
+    value.set(e.matches ? 'dark' : 'light')
+  matcher?.addEventListener('change', onChange)
+  value.onDispose(() => matcher?.removeEventListener('change', onChange))
+  return value as Signal<AppearanceType>
 }

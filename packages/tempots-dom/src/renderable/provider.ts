@@ -28,7 +28,11 @@ export type Provider<T, O = any> = {
   create: (
     options: O | undefined,
     ctx: DOMContext
-  ) => { value: T; dispose: () => void; onUse?: () => void }
+  ) => {
+    value: T
+    dispose: () => void
+    onUse?: () => void
+  }
 }
 
 /**
@@ -56,7 +60,7 @@ export type ProviderOptions = {
  * @public
  */
 export const WithProvider =
-  (fn: (ctx: ProviderOptions) => TNode | void): Renderable =>
+  (fn: (opts: ProviderOptions) => TNode | void): Renderable =>
   (ctx: DOMContext): Clear => {
     let newCtx = ctx
     function getCtx() {
