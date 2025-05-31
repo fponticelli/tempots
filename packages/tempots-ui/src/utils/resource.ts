@@ -1,4 +1,4 @@
-import { prop, Signal } from '@tempots/dom'
+import { prop, Signal, Value } from '@tempots/dom'
 import { AsyncResult } from '@tempots/std'
 
 /**
@@ -55,7 +55,7 @@ export interface ResourceLoadOptions<R, V, E> {
  * @public
  */
 export const makeResource = <R, V, E>(
-  request: Signal<R>,
+  request: Value<R>,
   load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>,
   convertError: (error: unknown) => E
 ): AsyncResource<V, E> => {
@@ -97,7 +97,7 @@ export const makeResource = <R, V, E>(
   }
 
   /** Reloads the resource using the current request. */
-  const reload = () => runLoad(request.get())
+  const reload = () => runLoad(Value.get(request))
 
   /** Disposes of the resource, aborting any ongoing requests and cleaning up. */
   const dispose = () => {
@@ -106,7 +106,7 @@ export const makeResource = <R, V, E>(
     status.dispose()
   }
 
-  status.onDispose(request.on(runLoad))
+  status.onDispose(Value.on(request, runLoad))
 
   return {
     status,

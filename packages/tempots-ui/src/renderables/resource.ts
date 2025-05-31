@@ -1,4 +1,11 @@
-import { Fragment, OnDispose, Renderable, Signal, TNode } from '@tempots/dom'
+import {
+  Fragment,
+  OnDispose,
+  Renderable,
+  Signal,
+  TNode,
+  Value,
+} from '@tempots/dom'
 import {
   AsyncResource,
   makeResource,
@@ -68,7 +75,7 @@ export const Resource = <R, V, E = unknown>({
   load,
   mapError = v => v as E,
 }: {
-  request: Signal<R>
+  request: Value<R>
   load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>
   mapError?: (error: unknown) => E
 }): ((displayOptions: ResourceDisplayOptions<V, E>) => Renderable) => {

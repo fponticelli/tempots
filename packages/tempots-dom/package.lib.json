@@ -1,6 +1,6 @@
 {
   "name": "@tempots/dom",
-  "version": "26.10.0",
+  "version": "26.11.0",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
