@@ -57,16 +57,21 @@ function ensureObserver(mode: InViewportMode): IntersectionObserver {
   return observers[mode]!
 }
 
+export type InViewportOptions = {
+  mode?: InViewportMode
+  once?: boolean
+}
+
 /**
  * Creates a renderable component that tracks whether the element is in the viewport.
  *
- * @param mode - The mode for tracking the element's visibility in the viewport.
+ * @param options - The options for the `InViewport` component.
  * @param fn - A function that returns the renderable component based on the visibility signal.
  * @returns The renderable component that tracks the element's visibility in the viewport.
  * @public
  */
 export const InViewport = (
-  mode: InViewportMode,
+  { mode = 'partial', once = false }: InViewportOptions,
   fn: (value: Signal<boolean>) => TNode
 ): Renderable => {
   const inView = prop(false)
@@ -79,14 +84,28 @@ export const InViewport = (
       maps[mode].set(el, inView)
       observer?.observe(el)
 
-      return OnDispose(() => {
-        inView.dispose()
+      function unwire() {
         observer?.unobserve(el)
         maps[mode].delete(el)
         if (maps[mode].size === 0) {
           observers[mode]?.disconnect()
           observers[mode] = null
         }
+      }
+
+      let clearOnce: (() => void) | null = null
+      if (once) {
+        clearOnce = inView.on(value => {
+          if (value) {
+            unwire()
+          }
+        })
+      }
+
+      return OnDispose(() => {
+        inView.dispose()
+        unwire()
+        clearOnce?.()
       })
     }),
     renderableOfTNode(fn(inView))
@@ -97,14 +116,15 @@ export const InViewport = (
  * Executes the provided `then` function when the element is in the viewport.
  * Optionally, executes the `otherwise` function when the element is not in the viewport.
  *
- * @param mode - The mode to determine when the element is considered in the viewport.
+ * @param options - The options for the `InViewport` component.
  * @param then - The function to execute when the element is in the viewport.
  * @param otherwise - The function to execute when the element is not in the viewport.
  * @returns The result of executing the `then` function or the `otherwise` function.
  * @public
  */
 export const WhenInViewport = (
-  mode: InViewportMode,
+  options: InViewportOptions,
   then: () => TNode,
   otherwise?: () => TNode
-) => InViewport(mode, inView => When(inView, then, otherwise ?? (() => Empty)))
+) =>
+  InViewport(options, inView => When(inView, then, otherwise ?? (() => Empty)))

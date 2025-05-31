@@ -38,7 +38,7 @@ const focusedInput = html.input(
 
 // Create an element that detects when it's in the viewport
 const lazyLoadedContent = InViewport(
-  { threshold: 0.5 }, // Options for intersection observer
+  {}, // Options for intersection observer
   (isVisible) => isVisible.value
     ? html.div('Content is visible!')
     : html.div('Loading...')
