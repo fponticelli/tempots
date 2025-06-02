@@ -6,11 +6,47 @@ import { ProviderNotFoundError } from './errors'
 import { HeadlessContext } from './headless-context'
 
 /**
- * `DOMContext` is an immutable class that represents the context of a DOM element.
- * It provides methods and properties to manipulate and interact with the DOM element.
+ * Browser implementation of DOMContext for real DOM manipulation in web browsers.
  *
- * A reference in a DOMContext is to mark a position within a set of sibblings.
- * It is used to insert new elements before the reference.
+ * BrowserContext provides a comprehensive API for creating, manipulating, and managing
+ * DOM elements in a browser environment. It handles element creation, text nodes,
+ * event listeners, styling, and provider management while maintaining immutability
+ * through context chaining.
+ *
+ * The context uses a reference system to track insertion points within sibling elements,
+ * allowing precise control over where new elements are inserted in the DOM tree.
+ *
+ * @example
+ * ```typescript
+ * // Create a context for the document body
+ * const ctx = BrowserContext.of(document.body, undefined, {})
+ *
+ * // Create child elements
+ * const divCtx = ctx.makeChildElement('div', undefined)
+ * const textCtx = divCtx.makeChildText('Hello, World!')
+ *
+ * // Add event listeners
+ * divCtx.on('click', (event, ctx) => {
+ *   console.log('Div clicked!', event.target)
+ * })
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Working with providers
+ * const themeProvider = makeProviderMark<string>('theme')
+ * const ctxWithProvider = ctx.setProvider(themeProvider, 'dark', undefined)
+ *
+ * // Later retrieve the provider
+ * const { value: theme } = ctxWithProvider.getProvider(themeProvider)
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Portal to different DOM location
+ * const modalCtx = ctx.makePortal('#modal-root')
+ * const modalContent = modalCtx.makeChildElement('div', undefined)
+ * ```
  *
  * @public
  */
@@ -78,11 +114,26 @@ export class BrowserContext implements DOMContext {
   }
 
   /**
-   * Creates a new DOM element (eg: HTML or SVG) with the specified tag name and namespace and appends it to the current element.
+   * Creates a new child element and appends it to the current element, returning a new context.
    *
-   * @param tagName - The tag name of the element to create.
-   * @param namespace - The namespace URI to create the element in, or `undefined` to create a standard HTML element.
-   * @returns The newly created element.
+   * This method creates a new DOM element with the specified tag name and namespace,
+   * appends it to the current element, and returns a new DOMContext focused on the
+   * newly created child element. This is the primary method for building DOM trees.
+   *
+   * @example
+   * ```typescript
+   * // Create HTML elements
+   * const divCtx = ctx.makeChildElement('div', undefined)
+   * const spanCtx = divCtx.makeChildElement('span', undefined)
+   *
+   * // Create SVG elements
+   * const svgCtx = ctx.makeChildElement('svg', 'http://www.w3.org/2000/svg')
+   * const circleCtx = svgCtx.makeChildElement('circle', 'http://www.w3.org/2000/svg')
+   * ```
+   *
+   * @param tagName - The tag name of the element to create (e.g., 'div', 'span', 'svg')
+   * @param namespace - The namespace URI for the element, or undefined for HTML elements
+   * @returns A new DOMContext focused on the newly created child element
    */
   readonly makeChildElement = (
     tagName: string,
@@ -161,9 +212,48 @@ export class BrowserContext implements DOMContext {
     new BrowserContext(this.document, element, undefined, this.providers)
 
   /**
-   * Creates a new `DOMContext` instance with a reference to a DOM element selected by the provided `selector`.
-   * @param selector - The CSS selector for the target DOM element.
-   * @returns A new `DOMContext` instance with a reference to the selected DOM element.
+   * Creates a portal to render content in a different part of the DOM tree.
+   *
+   * Portals allow you to render child components into a DOM node that exists outside
+   * the parent component's DOM hierarchy. This is useful for modals, tooltips,
+   * dropdowns, and other UI elements that need to break out of their container's
+   * styling or z-index context.
+   *
+   * @example
+   * ```typescript
+   * // Portal to a modal container
+   * const modalCtx = ctx.makePortal('#modal-root')
+   * const modal = modalCtx.makeChildElement('div', undefined)
+   *
+   * // Add modal content
+   * modal.makeChildText('This renders in #modal-root')
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Portal to an existing element reference
+   * const tooltipContainer = document.getElementById('tooltip-container')!
+   * const tooltipCtx = ctx.makePortal(tooltipContainer)
+   *
+   * // Render tooltip content
+   * const tooltip = tooltipCtx.makeChildElement('div', undefined)
+   * tooltip.addClasses(['tooltip', 'tooltip-top'])
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Portal for dropdown menu
+   * const dropdownCtx = ctx.makePortal('body') // Render at body level
+   * const dropdown = dropdownCtx.makeChildElement('div', undefined)
+   * dropdown.addClasses(['dropdown-menu'])
+   * dropdown.setStyle('position', 'absolute')
+   * dropdown.setStyle('top', '100px')
+   * dropdown.setStyle('left', '50px')
+   * ```
+   *
+   * @param selector - CSS selector string or HTMLElement reference for the portal target
+   * @returns A new DOMContext focused on the portal target element
+   * @throws {Error} When the selector doesn't match any element in the document
    */
   readonly makePortal = (selector: string | HTMLElement): DOMContext => {
     const element =

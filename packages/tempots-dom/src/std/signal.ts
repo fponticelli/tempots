@@ -24,20 +24,81 @@ export type ListenerOptions = {
 }
 
 /**
- * Represents a signal that holds a value and notifies its listeners when the value changes.
- * @typeParam T - The type of the value held by the signal.
+ * A reactive signal that holds a value and notifies listeners when the value changes.
+ *
+ * Signals are the foundation of Tempo's reactive system. They provide a way to create
+ * reactive data that automatically updates the UI when changed. Signals can be observed,
+ * transformed, and composed to create complex reactive behaviors.
+ *
+ * @example
+ * ```typescript
+ * // Create a signal with an initial value
+ * const count = new Signal(0, (a, b) => a === b)
+ *
+ * // Listen to changes
+ * const unsubscribe = count.on((newValue, oldValue) => {
+ *   console.log(`Count changed from ${oldValue} to ${newValue}`)
+ * })
+ *
+ * // Transform the signal
+ * const doubled = count.map(n => n * 2)
+ * const isEven = count.map(n => n % 2 === 0)
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Create a signal from a Promise
+ * const userSignal = Signal.ofPromise(
+ *   fetch('/api/user').then(r => r.json()),
+ *   null, // initial value
+ *   error => ({ error: error.message }) // error recovery
+ * )
+ * ```
+ *
+ * @typeParam T - The type of the value held by the signal
  * @public
  */
 export class Signal<T> {
   /**
-   * Creates a Signal that holds the result of a Promise.
+   * Creates a Signal that holds the result of a Promise, with proper error handling.
    *
-   * @typeParam O - The type of the value returned by the Promise.
-   * @param promise - The Promise to use to feed the Signal.
-   * @param init - The initial value of the Signal before the Promise resolves.
-   * @param recover - A function to recover from Promise rejection and provide an alternative value for the Signal.
-   * @param equals - A function to compare two values of type O for equality. Defaults to strict equality (===).
-   * @returns - A Signal that represents the result of the Promise.
+   * This static method creates a signal that starts with an initial value and updates
+   * when the promise resolves. If the promise rejects, an optional recovery function
+   * can provide a fallback value.
+   *
+   * @example
+   * ```typescript
+   * // Basic usage with API call
+   * const userData = Signal.ofPromise(
+   *   fetch('/api/user').then(r => r.json()),
+   *   { loading: true }, // initial state
+   *   error => ({ error: error.message, loading: false }) // error recovery
+   * )
+   *
+   * // Use in UI
+   * Ensure(userData,
+   *   (user) => html.div('Welcome, ', user.map(u => u.name)),
+   *   () => html.div('Loading...')
+   * )
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With custom equality function
+   * const config = Signal.ofPromise(
+   *   loadConfig(),
+   *   {},
+   *   () => ({}),
+   *   (a, b) => JSON.stringify(a) === JSON.stringify(b) // deep equality
+   * )
+   * ```
+   *
+   * @typeParam O - The type of the value returned by the Promise
+   * @param promise - The Promise to use to feed the Signal
+   * @param init - The initial value of the Signal before the Promise resolves
+   * @param recover - Optional function to recover from Promise rejection and provide an alternative value
+   * @param equals - Function to compare two values for equality (defaults to strict equality)
+   * @returns A Signal that represents the result of the Promise
    */
   static readonly ofPromise = <O>(
     promise: Promise<O>,
@@ -212,13 +273,54 @@ export class Signal<T> {
   }
 
   /**
-   * Returns a new Computed instance that applies the given mapping function to the value of this Signal.
-   * The mapping function is called whenever the value of this Signal changes.
+   * Creates a new computed signal by applying a transformation function to this signal's value.
    *
-   * @typeParam O - The type of the mapped value.
-   * @param fn - The mapping function to apply to the value of this Signal.
-   * @param equals - Optional equality function to determine if two mapped values are equal.
-   * @returns - A new Computed instance with the mapped value.
+   * The `map` method is one of the most commonly used signal operations. It creates a new
+   * computed signal that automatically updates whenever the source signal changes. The
+   * transformation function is called with the current value and should return the new value.
+   *
+   * @example
+   * ```typescript
+   * const count = prop(5)
+   *
+   * // Transform to different types
+   * const doubled = count.map(n => n * 2)
+   * const message = count.map(n => `Count is ${n}`)
+   * const isEven = count.map(n => n % 2 === 0)
+   *
+   * // Use in UI
+   * html.div(
+   *   html.div('Original: ', count.map(String)),
+   *   html.div('Doubled: ', doubled.map(String)),
+   *   html.div('Message: ', message),
+   *   html.div('Is even: ', isEven.map(String))
+   * )
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // Chain multiple transformations
+   * const user = prop({ name: 'John', age: 30 })
+   * const greeting = user
+   *   .map(u => u.name)
+   *   .map(name => name.toUpperCase())
+   *   .map(name => `Hello, ${name}!`)
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With custom equality function for objects
+   * const items = prop([{ id: 1, name: 'Item 1' }])
+   * const itemNames = items.map(
+   *   items => items.map(item => item.name),
+   *   (a, b) => JSON.stringify(a) === JSON.stringify(b) // deep equality
+   * )
+   * ```
+   *
+   * @typeParam O - The type of the transformed value
+   * @param fn - Function that transforms the signal's value to a new value
+   * @param equals - Optional function to determine if two transformed values are equal (defaults to strict equality)
+   * @returns A new computed signal with the transformed value
    */
   readonly map = <O>(
     fn: (value: T) => O,

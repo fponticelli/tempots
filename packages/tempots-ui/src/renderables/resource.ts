@@ -58,16 +58,123 @@ export const ResourceDisplay = <V, E>(
 }
 
 /**
- * Creates and displays an asynchronous resource.
+ * Creates a reactive resource component for handling asynchronous data loading.
  *
- * @template R - The type of the request.
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * This component provides a declarative way to handle async operations with proper
+ * loading, success, and error states. It automatically manages the lifecycle of
+ * async requests and provides reload functionality.
  *
- * @param request - The request to load the resource.
- * @param load - The function to load the resource.
- * @param convertError - The function to convert an unknown error into a specific error type.
- * @returns A function that takes display options and returns a node representing the current state of the resource.
+ * @example
+ * ```typescript
+ * // Basic API data loading
+ * const userId = prop(1)
+ *
+ * const UserProfile = Resource({
+ *   request: userId,
+ *   load: async ({ request }) => {
+ *     const response = await fetch(`/api/users/${request}`)
+ *     if (!response.ok) throw new Error('Failed to load user')
+ *     return response.json()
+ *   }
+ * })({
+ *   loading: () => html.div('Loading user...'),
+ *   failure: (error, reload) => html.div(
+ *     'Error: ', error,
+ *     html.button(on.click(reload), 'Retry')
+ *   ),
+ *   success: (user) => html.div(
+ *     html.h2(user.map(u => u.name)),
+ *     html.p(user.map(u => u.email))
+ *   )
+ * })
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Resource with dependencies
+ * const searchQuery = prop('')
+ * const filters = prop({ category: 'all', sort: 'name' })
+ *
+ * const SearchResults = Resource({
+ *   request: computed(() => ({
+ *     query: searchQuery.value,
+ *     ...filters.value
+ *   })),
+ *   load: async ({ request, abortSignal }) => {
+ *     const params = new URLSearchParams(request)
+ *     const response = await fetch(`/api/search?${params}`, {
+ *       signal: abortSignal
+ *     })
+ *     return response.json()
+ *   },
+ *   mapError: (error) => error instanceof Error ? error.message : 'Unknown error'
+ * })({
+ *   loading: (previous) => html.div(
+ *     'Searching...',
+ *     previous.value && html.div('Previous results:', previous.value.length)
+ *   ),
+ *   failure: (error, reload) => html.div(
+ *     attr.class('error'),
+ *     'Search failed: ', error,
+ *     html.button(on.click(reload), 'Try again')
+ *   ),
+ *   success: (results, reload) => html.div(
+ *     html.button(on.click(reload), 'Refresh'),
+ *     ForEach(results, result => SearchResultItem(result))
+ *   )
+ * })
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // File upload resource
+ * const selectedFile = prop<File | null>(null)
+ *
+ * const FileUpload = Resource({
+ *   request: selectedFile,
+ *   load: async ({ request }) => {
+ *     if (!request) throw new Error('No file selected')
+ *
+ *     const formData = new FormData()
+ *     formData.append('file', request)
+ *
+ *     const response = await fetch('/api/upload', {
+ *       method: 'POST',
+ *       body: formData
+ *     })
+ *
+ *     if (!response.ok) throw new Error('Upload failed')
+ *     return response.json()
+ *   }
+ * })({
+ *   loading: () => html.div(
+ *     attr.class('upload-progress'),
+ *     'Uploading file...'
+ *   ),
+ *   failure: (error, reload) => html.div(
+ *     attr.class('upload-error'),
+ *     'Upload failed: ', error,
+ *     html.button(on.click(reload), 'Retry upload')
+ *   ),
+ *   success: (result) => html.div(
+ *     attr.class('upload-success'),
+ *     'File uploaded successfully!',
+ *     html.a(
+ *       attr.href(result.map(r => r.url)),
+ *       'View file'
+ *     )
+ *   )
+ * })
+ * ```
+ *
+ * @template R - The type of the request parameter
+ * @template V - The type of the successful result value
+ * @template E - The type of the error (defaults to unknown)
+ * @param config - Configuration object for the resource
+ * @param config.request - Signal or value representing the request parameters
+ * @param config.load - Async function that loads the resource
+ * @param config.mapError - Optional function to transform errors into a specific type
+ * @returns Function that takes display options and returns a renderable component
  * @public
  */
 export const Resource = <R, V, E = unknown>({

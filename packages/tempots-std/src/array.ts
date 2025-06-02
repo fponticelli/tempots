@@ -6,26 +6,95 @@ import type { Compare, Maybe, Nothing, Primitive } from './domain'
 import { objectKeys } from './object'
 
 /**
- * Applies a function to each element of an array and returns a new array with the results.
+ * Transforms each element of an array using a mapping function, returning a new array.
  *
- * @typeParam A - The type of the elements in the input array.
- * @typeParam B - The type of the elements in the output array.
- * @param arr - The input array.
- * @param f - The function to apply to each element.
- * @returns The new array with the results of applying the function to each element.
+ * This is a functional programming utility that creates a new array by applying a transformation
+ * function to each element of the input array. The original array is not modified.
+ *
+ * @example
+ * ```typescript
+ * // Transform numbers to strings
+ * const numbers = [1, 2, 3, 4, 5]
+ * const strings = mapArray(numbers, n => `Number: ${n}`)
+ * // Result: ['Number: 1', 'Number: 2', 'Number: 3', 'Number: 4', 'Number: 5']
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Transform objects with index
+ * const users = [{ name: 'Alice' }, { name: 'Bob' }]
+ * const indexed = mapArray(users, (user, index) => ({
+ *   ...user,
+ *   id: index + 1
+ * }))
+ * // Result: [{ name: 'Alice', id: 1 }, { name: 'Bob', id: 2 }]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Use with signals in Tempo
+ * const items = prop([1, 2, 3])
+ * const doubled = items.map(arr => mapArray(arr, n => n * 2))
+ * ```
+ *
+ * @typeParam A - The type of elements in the input array
+ * @typeParam B - The type of elements in the output array
+ * @param arr - The input array to transform
+ * @param f - Function that transforms each element (receives element and index)
+ * @returns A new array with the transformed elements
  * @public
  */
 export const mapArray = <A, B>(arr: A[], f: (a: A, index: number) => B): B[] =>
   Array.from({ length: arr.length }, (_, i) => f(arr[i], i))
 
 /**
- * Applies a mapping function to each element of an array and flattens the result.
+ * Transforms each element of an array into an array, then flattens all results into a single array.
  *
- * @param arr - The input array.
- * @param f - The mapping function to apply to each element of the array.
- * @returns A new array with the flattened result of applying the mapping function to each element of the input array.
- * @typeParam A - The type of the elements in the input array.
- * @typeParam B - The type of the elements in the resulting flattened array.
+ * This function combines mapping and flattening operations. It applies a transformation function
+ * to each element that returns an array, then concatenates all the resulting arrays into one.
+ * This is useful for operations that need to expand elements into multiple items.
+ *
+ * @example
+ * ```typescript
+ * // Split strings and flatten
+ * const sentences = ['hello world', 'foo bar', 'baz qux']
+ * const words = flatMapArray(sentences, sentence => sentence.split(' '))
+ * // Result: ['hello', 'world', 'foo', 'bar', 'baz', 'qux']
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Expand objects into multiple items
+ * const users = [
+ *   { name: 'Alice', skills: ['JS', 'TS'] },
+ *   { name: 'Bob', skills: ['Python', 'Go'] }
+ * ]
+ * const allSkills = flatMapArray(users, user =>
+ *   user.skills.map(skill => ({ user: user.name, skill }))
+ * )
+ * // Result: [
+ * //   { user: 'Alice', skill: 'JS' },
+ * //   { user: 'Alice', skill: 'TS' },
+ * //   { user: 'Bob', skill: 'Python' },
+ * //   { user: 'Bob', skill: 'Go' }
+ * // ]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Generate ranges
+ * const ranges = [2, 3, 1]
+ * const numbers = flatMapArray(ranges, n =>
+ *   Array.from({ length: n }, (_, i) => i)
+ * )
+ * // Result: [0, 1, 0, 1, 2, 0]
+ * ```
+ *
+ * @typeParam A - The type of elements in the input array
+ * @typeParam B - The type of elements in the resulting flattened array
+ * @param arr - The input array to transform and flatten
+ * @param f - Function that transforms each element into an array
+ * @returns A new flattened array containing all elements from the transformation results
  * @public
  */
 export const flatMapArray = <A, B>(arr: A[], f: (a: A) => B[]): B[] => {
@@ -100,12 +169,43 @@ export const arrayHasValues = <T>(arr: T[]): arr is [T, ...T[]] =>
   arr.length > 0
 
 /**
- * Filters the elements of an array based on a predicate function.
+ * Creates a new array containing only elements that satisfy the predicate function.
  *
- * @typeParam T - The type of the elements in the array.
- * @param arr - The array to filter.
- * @param predicate - The predicate function used to filter the elements.
- * @returns The filtered array.
+ * This function provides a functional approach to filtering arrays, creating a new array
+ * without modifying the original. Elements are included in the result only if the predicate
+ * function returns `true` for that element.
+ *
+ * @example
+ * ```typescript
+ * // Filter even numbers
+ * const numbers = [1, 2, 3, 4, 5, 6]
+ * const evenNumbers = filterArray(numbers, n => n % 2 === 0)
+ * // Result: [2, 4, 6]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Filter objects by property
+ * const users = [
+ *   { name: 'Alice', active: true },
+ *   { name: 'Bob', active: false },
+ *   { name: 'Charlie', active: true }
+ * ]
+ * const activeUsers = filterArray(users, user => user.active)
+ * // Result: [{ name: 'Alice', active: true }, { name: 'Charlie', active: true }]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Use with signals in Tempo
+ * const allItems = prop([1, 2, 3, 4, 5])
+ * const evenItems = allItems.map(arr => filterArray(arr, n => n % 2 === 0))
+ * ```
+ *
+ * @typeParam T - The type of elements in the array
+ * @param arr - The array to filter
+ * @param predicate - Function that tests each element (returns true to include the element)
+ * @returns A new array containing only elements that satisfy the predicate
  * @public
  */
 export const filterArray = <T>(arr: T[], predicate: (v: T) => boolean): T[] => {
@@ -161,14 +261,50 @@ export const filterNullsFromArray = <T>(arr: Array<T | Nothing>): T[] =>
 export const flattenArray = <T>(arr: T[][]): T[] => ([] as T[]).concat(...arr)
 
 /**
- * Applies a function to each element of an array, accumulating the result from left to right.
+ * Reduces an array to a single value by applying an accumulator function from left to right.
  *
- * @typeParam T - The type of the array elements.
- * @typeParam B - The type of the accumulator.
- * @param arr - The array to iterate over.
- * @param f - The function to apply to each element.
- * @param b - The initial value of the accumulator.
- * @returns The accumulated result.
+ * This function processes each element of the array in order, passing the current accumulator
+ * value and the current element to the reducer function. The result becomes the new accumulator
+ * value for the next iteration.
+ *
+ * @example
+ * ```typescript
+ * // Sum all numbers
+ * const numbers = [1, 2, 3, 4, 5]
+ * const sum = foldLeftArray(numbers, (acc, curr) => acc + curr, 0)
+ * // Result: 15
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Build an object from array
+ * const items = ['apple', 'banana', 'cherry']
+ * const indexed = foldLeftArray(
+ *   items,
+ *   (acc, item, index) => ({ ...acc, [index]: item }),
+ *   {} as Record<number, string>
+ * )
+ * // Result: { 0: 'apple', 1: 'banana', 2: 'cherry' }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Count occurrences
+ * const words = ['apple', 'banana', 'apple', 'cherry', 'banana', 'apple']
+ * const counts = foldLeftArray(
+ *   words,
+ *   (acc, word) => ({ ...acc, [word]: (acc[word] || 0) + 1 }),
+ *   {} as Record<string, number>
+ * )
+ * // Result: { apple: 3, banana: 2, cherry: 1 }
+ * ```
+ *
+ * @typeParam T - The type of elements in the array
+ * @typeParam B - The type of the accumulator value
+ * @param arr - The array to reduce
+ * @param f - Function that combines the accumulator with each element
+ * @param b - The initial accumulator value
+ * @returns The final accumulated result
  * @public
  */
 export const foldLeftArray = <T, B>(
@@ -325,23 +461,106 @@ export const createFilledArray = <A>(length: number, value: A): A[] =>
   generateArray(length, () => value)
 
 /**
- * Returns an array containing only the distinct primitive values from the input array.
+ * Removes duplicate primitive values from an array, returning only unique values.
  *
- * @typeParam T - The type of the input array elements.
- * @param values - The input array.
- * @returns An array containing only the distinct primitive values from the input array.
+ * This function uses JavaScript's Set to efficiently remove duplicates from arrays
+ * containing primitive values (strings, numbers, booleans, symbols). The order of
+ * first occurrence is preserved.
+ *
+ * @example
+ * ```typescript
+ * // Remove duplicate numbers
+ * const numbers = [1, 2, 2, 3, 1, 4, 3]
+ * const unique = uniquePrimitives(numbers)
+ * // Result: [1, 2, 3, 4]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Remove duplicate strings
+ * const tags = ['react', 'vue', 'react', 'angular', 'vue']
+ * const uniqueTags = uniquePrimitives(tags)
+ * // Result: ['react', 'vue', 'angular']
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Mixed primitive types
+ * const mixed = [1, '1', true, 1, 'hello', true, '1']
+ * const uniqueMixed = uniquePrimitives(mixed)
+ * // Result: [1, '1', true, 'hello']
+ * ```
+ *
+ * @typeParam T - The type of primitive elements in the array
+ * @param values - The input array containing primitive values
+ * @returns A new array with duplicate values removed, preserving order of first occurrence
  * @public
  */
 export const uniquePrimitives = <T extends Primitive>(values: T[]): T[] =>
   Array.from(new Set(values))
 
 /**
- * Returns an array of distinct elements from the input array based on the provided predicate.
+ * Removes duplicate objects from an array based on a key extraction function.
  *
- * @typeParam T - The type of elements in the input array.
- * @param values - The input array.
- * @param predicate - The predicate function used to determine uniqueness.
- * @returns An array of distinct elements.
+ * This function removes duplicates from arrays of objects by extracting a primitive
+ * key from each object and using that key to determine uniqueness. When duplicates
+ * are found, the first occurrence is kept.
+ *
+ * @example
+ * ```typescript
+ * // Remove users with duplicate IDs
+ * const users = [
+ *   { id: 1, name: 'Alice' },
+ *   { id: 2, name: 'Bob' },
+ *   { id: 1, name: 'Alice Clone' },
+ *   { id: 3, name: 'Charlie' }
+ * ]
+ * const uniqueUsers = uniqueByPrimitive(users, user => user.id)
+ * // Result: [
+ * //   { id: 1, name: 'Alice' },
+ * //   { id: 2, name: 'Bob' },
+ * //   { id: 3, name: 'Charlie' }
+ * // ]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Remove products with duplicate names
+ * const products = [
+ *   { name: 'Laptop', price: 1000 },
+ *   { name: 'Mouse', price: 25 },
+ *   { name: 'Laptop', price: 1200 },
+ *   { name: 'Keyboard', price: 75 }
+ * ]
+ * const uniqueProducts = uniqueByPrimitive(products, p => p.name)
+ * // Result: [
+ * //   { name: 'Laptop', price: 1000 },
+ * //   { name: 'Mouse', price: 25 },
+ * //   { name: 'Keyboard', price: 75 }
+ * // ]
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Use with complex key extraction
+ * const events = [
+ *   { date: '2023-01-01', type: 'click' },
+ *   { date: '2023-01-01', type: 'hover' },
+ *   { date: '2023-01-01', type: 'click' },
+ *   { date: '2023-01-02', type: 'click' }
+ * ]
+ * const uniqueEvents = uniqueByPrimitive(events, e => `${e.date}-${e.type}`)
+ * // Result: [
+ * //   { date: '2023-01-01', type: 'click' },
+ * //   { date: '2023-01-01', type: 'hover' },
+ * //   { date: '2023-01-02', type: 'click' }
+ * // ]
+ * ```
+ *
+ * @typeParam T - The type of elements in the input array
+ * @param values - The input array containing objects to deduplicate
+ * @param predicate - Function that extracts a primitive key from each element for comparison
+ * @returns A new array with duplicate elements removed based on the extracted key
  * @public
  */
 export const uniqueByPrimitive = <T>(

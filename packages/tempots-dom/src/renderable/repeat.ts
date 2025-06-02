@@ -10,12 +10,70 @@ import { OnDispose } from './on-dispose'
 import { When } from './when'
 
 /**
- * Creates a renderable function that repeats a given element a specified number of times.
+ * Renders content a specified number of times, with each iteration receiving position information.
  *
- * @param times - A signal representing the number of times the element should be repeated.
- * @param element - A function that returns the element to be repeated, based on the current index.
- * @param separator - (Optional) A function that returns the separator element to be inserted between repeated elements.
- * @returns A renderable function that renders the repeated elements.
+ * This function is useful for generating repeated UI elements based on a count rather than an array.
+ * Each iteration receives an `ElementPosition` object that provides the current index and position
+ * information relative to the total count.
+ *
+ * @example
+ * ```typescript
+ * // Create a simple numbered list
+ * const count = prop(5)
+ *
+ * Repeat(count,
+ *   (position) => html.div(
+ *     `Item ${position.index + 1} of ${position.total.value}`,
+ *     position.isFirst ? ' (first)' : '',
+ *     position.isLast ? ' (last)' : ''
+ *   )
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Create a star rating component
+ * const rating = prop(3)
+ * const maxStars = 5
+ *
+ * Repeat(maxStars,
+ *   (position) => html.span(
+ *     attr.class(position.index < rating.value ? 'star-filled' : 'star-empty'),
+ *     '★'
+ *   )
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With separators between items
+ * Repeat(3,
+ *   (position) => html.span(`Item ${position.index}`),
+ *   () => html.span(' | ') // Separator
+ * )
+ * // Renders: Item 0 | Item 1 | Item 2
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Dynamic count that updates the UI
+ * const itemCount = prop(2)
+ *
+ * html.div(
+ *   html.button(
+ *     on.click(() => itemCount.value++),
+ *     'Add Item'
+ *   ),
+ *   Repeat(itemCount,
+ *     (position) => html.div(`Dynamic item ${position.index + 1}`)
+ *   )
+ * )
+ * ```
+ *
+ * @param times - A signal or number representing how many times to repeat the content
+ * @param element - Function that returns content for each iteration, receives position information
+ * @param separator - Optional function that returns content to place between iterations
+ * @returns A renderable that displays the repeated content
  * @public
  */
 export const Repeat = (

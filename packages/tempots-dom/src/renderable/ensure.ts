@@ -17,13 +17,39 @@ export type Merge<A, B> = Id<A & B>
 export type NonNillable<T> = Merge<T, {}>
 
 /**
- * Represents a function that ensures a signal has a value before rendering a TNode.
+ * Conditionally renders content based on whether a value is non-null/non-undefined.
  *
- * @typeParam T - The type of the signal value.
- * @param value - The signal or literal that may hold a value of type T or null or undefined.
- * @param then - The function that returns a TNode when the signal has a value. It takes a signal of the non-nullable type of T.
- * @param otherwise - The function that returns a TNode when the signal does not have a value.
- * @returns A renderable function that ensures the signal has a value before rendering a TNode.
+ * This function provides a type-safe way to handle nullable values in your UI. It only
+ * renders the `then` content when the value is not null or undefined, and optionally
+ * renders alternative content when the value is null/undefined.
+ *
+ * @example
+ * ```typescript
+ * // With a signal that might be null
+ * const user = prop<User | null>(null)
+ *
+ * Ensure(user,
+ *   (userSignal) => html.div('Welcome, ', userSignal.map(u => u.name)),
+ *   () => html.div('Please log in')
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With a literal value
+ * const maybeData = getData() // returns string | null
+ *
+ * Ensure(maybeData,
+ *   (dataSignal) => html.div('Data: ', dataSignal),
+ *   () => html.div('No data available')
+ * )
+ * ```
+ *
+ * @typeParam T - The type of the value when it's not null/undefined
+ * @param value - A signal or literal value that may be null or undefined
+ * @param then - Function that receives a signal of the non-nullable value and returns content to render
+ * @param otherwise - Optional function that returns content to render when value is null/undefined
+ * @returns A renderable that conditionally displays content based on the value's nullability
  * @public
  */
 export const Ensure = <T>(
@@ -81,10 +107,47 @@ export const Ensure = <T>(
 }
 
 /**
- * Ensures that all signals have a value before rendering a TNode.
+ * Conditionally renders content only when ALL provided values are non-null/non-undefined.
  *
- * @param signals - The signals to ensure have a value.
- * @returns A renderable function that ensures all signals have a value before rendering a TNode.
+ * This function is useful when you need multiple values to be present before rendering content.
+ * It waits for all values to be non-null/non-undefined before calling the callback function.
+ * If any value becomes null/undefined, it will render the `otherwise` content instead.
+ *
+ * @example
+ * ```typescript
+ * const user = prop<User | null>(null)
+ * const profile = prop<Profile | null>(null)
+ * const settings = prop<Settings | null>(null)
+ *
+ * EnsureAll(user, profile, settings)(
+ *   (userSignal, profileSignal, settingsSignal) => html.div(
+ *     html.h1('Dashboard'),
+ *     html.div('User: ', userSignal.map(u => u.name)),
+ *     html.div('Profile: ', profileSignal.map(p => p.bio)),
+ *     html.div('Theme: ', settingsSignal.map(s => s.theme))
+ *   ),
+ *   () => html.div('Loading user data...')
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Mix of signals and literal values
+ * const apiData = prop<Data | null>(null)
+ * const staticConfig = { theme: 'dark' }
+ *
+ * EnsureAll(apiData, staticConfig)(
+ *   (dataSignal, configSignal) => html.div(
+ *     'Data loaded with theme: ',
+ *     configSignal.map(c => c.theme)
+ *   ),
+ *   () => html.div('Waiting for data...')
+ * )
+ * ```
+ *
+ * @typeParam T - Tuple type representing the types of all input values
+ * @param signals - Variable number of values (signals or literals) that may be null/undefined
+ * @returns A function that takes a callback and optional otherwise function, returning a renderable
  * @public
  */
 export const EnsureAll =

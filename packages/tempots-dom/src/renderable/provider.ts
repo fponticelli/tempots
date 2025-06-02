@@ -92,11 +92,67 @@ export const WithProvider =
   }
 
 /**
- * Returns a renderable function that sets a provider for the given provider mark and returns a child renderable.
+ * Makes a provider available to all child components in the component tree.
  *
- * @param provider - The provider to set.
- * @param options - The options to pass to the provider.
- * @param child - The child renderable to return.
+ * This function creates a provider context that child components can access using `Use`.
+ * The provider is automatically disposed when the component is unmounted.
+ *
+ * @example
+ * ```typescript
+ * // Create a theme provider
+ * const ThemeProvider: Provider<Signal<string>> = {
+ *   mark: makeProviderMark<Signal<string>>('Theme'),
+ *   create: () => {
+ *     const theme = prop('light')
+ *     return {
+ *       value: theme,
+ *       dispose: () => theme.dispose()
+ *     }
+ *   }
+ * }
+ *
+ * // Provide the theme to child components
+ * const App = () =>
+ *   Provide(
+ *     ThemeProvider,
+ *     {}, // options
+ *     () => html.div(
+ *       html.h1('My App'),
+ *       ThemeToggle(), // Can access the theme
+ *       MainContent()  // Can also access the theme
+ *     )
+ *   )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Provider with options
+ * const ConfigProvider: Provider<Config, { apiUrl: string }> = {
+ *   mark: makeProviderMark<Config>('Config'),
+ *   create: (options) => {
+ *     const config = new Config(options.apiUrl)
+ *     return {
+ *       value: config,
+ *       dispose: () => config.cleanup()
+ *     }
+ *   }
+ * }
+ *
+ * // Provide with specific options
+ * Provide(
+ *   ConfigProvider,
+ *   { apiUrl: 'https://api.example.com' },
+ *   () => AppContent()
+ * )
+ * ```
+ *
+ * @template T - The type of value provided by the provider
+ * @template O - The type of options passed to the provider
+ * @param provider - The provider definition containing mark and create function
+ * @param options - Options to pass to the provider's create function
+ * @param child - Function that returns the child components that can access the provider
+ * @returns A renderable that provides the value to its children
+ * @public
  */
 export const Provide = <T, O>(
   provider: Provider<T, O>,
@@ -109,10 +165,59 @@ export const Provide = <T, O>(
   })
 
 /**
- * Returns a renderable function that uses a provider for the given provider mark and returns a child renderable.
+ * Consumes a provider value and makes it available to a child component.
  *
- * @param provider - The provider mark to use the provider for.
- * @param child - The child renderable to return.
+ * This function looks up a provider in the component tree and passes its value
+ * to the child function. The provider must have been made available by a parent
+ * component using `Provide`.
+ *
+ * @example
+ * ```typescript
+ * // Use a theme provider
+ * const ThemeToggle = () =>
+ *   Use(
+ *     ThemeProvider,
+ *     (theme) => html.button(
+ *       on.click(() => {
+ *         theme.value = theme.value === 'light' ? 'dark' : 'light'
+ *       }),
+ *       'Current theme: ', theme
+ *     )
+ *   )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Use multiple properties from a provider
+ * const UserProfile = () =>
+ *   Use(
+ *     UserProvider,
+ *     (user) => html.div(
+ *       html.h2('Welcome, ', user.map(u => u.name)),
+ *       html.p('Email: ', user.map(u => u.email)),
+ *       html.p('Role: ', user.map(u => u.role))
+ *     )
+ *   )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Use provider in conditional rendering
+ * const ConditionalContent = () =>
+ *   Use(
+ *     AuthProvider,
+ *     (auth) => auth.map(a => a.isLoggedIn)
+ *       ? html.div('Welcome back!')
+ *       : html.div('Please log in')
+ *   )
+ * ```
+ *
+ * @template T - The type of value provided by the provider
+ * @param provider - The provider to consume (must be available in parent components)
+ * @param child - Function that receives the provider value and returns content to render
+ * @returns A renderable that consumes the provider and renders the child content
+ * @throws {ProviderNotFoundError} When the provider is not found in the component tree
+ * @public
  */
 export const Use = <T>(
   provider: Provider<T>,
@@ -120,10 +225,75 @@ export const Use = <T>(
 ): Renderable => WithProvider(({ use }) => child(use(provider)))
 
 /**
- * Returns a renderable function that uses a provider for the given provider marks and returns a child renderable.
+ * Consumes multiple providers and makes their values available to a child component.
  *
- * @param providers - The provider marks to use the providers for.
- * @param child - The child renderable to return.
+ * This function is a convenience wrapper for consuming multiple providers at once.
+ * It's equivalent to nesting multiple `Use` calls but provides a cleaner API when
+ * you need access to several providers simultaneously.
+ *
+ * @example
+ * ```typescript
+ * // Use multiple providers together
+ * const Dashboard = () =>
+ *   UseMany(
+ *     UserProvider,
+ *     ThemeProvider,
+ *     ConfigProvider
+ *   )(
+ *     (user, theme, config) => html.div(
+ *       attr.class(theme.map(t => `theme-${t}`)),
+ *       html.h1('Dashboard for ', user.map(u => u.name)),
+ *       html.p('API URL: ', config.map(c => c.apiUrl)),
+ *       html.p('Current theme: ', theme)
+ *     )
+ *   )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Equivalent to nested Use calls
+ * const Dashboard = () =>
+ *   Use(UserProvider, user =>
+ *     Use(ThemeProvider, theme =>
+ *       Use(ConfigProvider, config =>
+ *         html.div(
+ *           // Same content as above
+ *         )
+ *       )
+ *     )
+ *   )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Type-safe access to multiple providers
+ * const SettingsPanel = () =>
+ *   UseMany(
+ *     PreferencesProvider,
+ *     UserProvider
+ *   )(
+ *     (preferences, user) => html.div(
+ *       html.h2('Settings for ', user.map(u => u.name)),
+ *       html.label(
+ *         'Theme: ',
+ *         html.select(
+ *           attr.value(preferences.map(p => p.theme)),
+ *           on.change(emitValue(value => {
+ *             preferences.update(p => ({ ...p, theme: value }))
+ *           })),
+ *           html.option(attr.value('light'), 'Light'),
+ *           html.option(attr.value('dark'), 'Dark')
+ *         )
+ *       )
+ *     )
+ *   )
+ * ```
+ *
+ * @template T - Tuple type representing the types of all providers
+ * @param providers - Variable number of providers to consume
+ * @returns Function that takes a child function and returns a renderable
+ * @throws {ProviderNotFoundError} When any of the providers is not found in the component tree
+ * @public
  */
 export const UseMany =
   <T extends Provider<unknown>[]>(...providers: T) =>

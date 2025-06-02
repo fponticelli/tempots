@@ -29,7 +29,59 @@ export const OnChecked = (fn: (event: boolean, ctx: DOMContext) => void) =>
   })
 
 /**
- * Represents a collection of HTML event handlers that can be attached to an element.
+ * Provides type-safe event handlers for all HTML events.
+ *
+ * The `on` object is a proxy that provides access to all standard HTML events with proper
+ * TypeScript typing. Each event handler receives the native event object and the DOM context.
+ *
+ * @example
+ * ```typescript
+ * // Basic click handler
+ * html.button(
+ *   on.click((event, ctx) => {
+ *     console.log('Button clicked!', event.target)
+ *   }),
+ *   'Click me'
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Input event with value extraction
+ * const text = prop('')
+ *
+ * html.input(
+ *   attr.value(text),
+ *   on.input((event) => {
+ *     text.value = (event.target as HTMLInputElement).value
+ *   })
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Multiple event handlers on same element
+ * html.div(
+ *   on.mouseenter(() => console.log('Mouse entered')),
+ *   on.mouseleave(() => console.log('Mouse left')),
+ *   on.click(() => console.log('Clicked')),
+ *   'Hover and click me'
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Keyboard event handling
+ * html.input(
+ *   on.keydown((event) => {
+ *     if (event.key === 'Enter') {
+ *       console.log('Enter pressed!')
+ *       event.preventDefault()
+ *     }
+ *   })
+ * )
+ * ```
+ *
  * @public
  */
 export const on = new Proxy(
@@ -52,10 +104,37 @@ export const on = new Proxy(
 )
 
 /**
- * Creates an event handler that emits the value of an HTMLInputElement.
+ * Creates an event handler that extracts and emits the string value from an input element.
  *
- * @param fn - The callback function that will receive the emitted value.
- * @returns An event handler function that can be attached to an event listener.
+ * This utility simplifies handling input events by automatically extracting the value
+ * from the target element and passing it to your callback function.
+ *
+ * @example
+ * ```typescript
+ * const name = prop('')
+ *
+ * html.input(
+ *   attr.value(name),
+ *   on.input(emitValue(value => name.value = value))
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With textarea
+ * const description = prop('')
+ *
+ * html.textarea(
+ *   attr.value(description),
+ *   on.input(emitValue(value => {
+ *     description.value = value
+ *     console.log('Description updated:', value)
+ *   }))
+ * )
+ * ```
+ *
+ * @param fn - Callback function that receives the input element's string value
+ * @returns Event handler function that can be used with event listeners
  * @public
  */
 export const emitValue = (fn: (text: string) => void) => {
@@ -66,10 +145,43 @@ export const emitValue = (fn: (text: string) => void) => {
 }
 
 /**
- * Calls the provided function with the value of an HTMLInputElement as a number.
+ * Creates an event handler that extracts and emits the numeric value from an input element.
  *
- * @param fn - The function to be called with the value as a number.
- * @returns A function that can be used as an event handler.
+ * This utility automatically converts the input's value to a number using the browser's
+ * built-in `valueAsNumber` property, which handles number inputs correctly and returns
+ * `NaN` for invalid numeric values.
+ *
+ * @example
+ * ```typescript
+ * const age = prop(0)
+ *
+ * html.input(
+ *   attr.type('number'),
+ *   attr.value(age.map(String)),
+ *   on.input(emitValueAsNumber(value => {
+ *     if (!isNaN(value)) {
+ *       age.value = value
+ *     }
+ *   }))
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With range input
+ * const volume = prop(50)
+ *
+ * html.input(
+ *   attr.type('range'),
+ *   attr.min('0'),
+ *   attr.max('100'),
+ *   attr.value(volume.map(String)),
+ *   on.input(emitValueAsNumber(value => volume.value = value))
+ * )
+ * ```
+ *
+ * @param fn - Callback function that receives the input element's numeric value (may be NaN)
+ * @returns Event handler function that can be used with event listeners
  * @public
  */
 export const emitValueAsNumber = (fn: (num: number) => void) => {
@@ -186,9 +298,55 @@ export const emitValueAsNullableDateTime = (
 }
 
 /**
- * Calls the provided function with the checked value of the event target.
- * @param fn - The function to be called with the checked value.
- * @returns A function that takes an event and calls the provided function with the checked value of the event target.
+ * Creates an event handler that extracts and emits the checked state from a checkbox or radio input.
+ *
+ * This utility simplifies handling checkbox and radio button state changes by automatically
+ * extracting the `checked` property from the target element.
+ *
+ * @example
+ * ```typescript
+ * const isEnabled = prop(false)
+ *
+ * html.input(
+ *   attr.type('checkbox'),
+ *   attr.checked(isEnabled),
+ *   on.change(emitChecked(checked => isEnabled.value = checked))
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With radio buttons
+ * const selectedOption = prop('')
+ *
+ * html.div(
+ *   html.label(
+ *     html.input(
+ *       attr.type('radio'),
+ *       attr.name('option'),
+ *       attr.value('A'),
+ *       on.change(emitChecked(checked => {
+ *         if (checked) selectedOption.value = 'A'
+ *       }))
+ *     ),
+ *     'Option A'
+ *   ),
+ *   html.label(
+ *     html.input(
+ *       attr.type('radio'),
+ *       attr.name('option'),
+ *       attr.value('B'),
+ *       on.change(emitChecked(checked => {
+ *         if (checked) selectedOption.value = 'B'
+ *       }))
+ *     ),
+ *     'Option B'
+ *   )
+ * )
+ * ```
+ *
+ * @param fn - Callback function that receives the input element's checked state
+ * @returns Event handler function that can be used with event listeners
  * @public
  */
 export const emitChecked = (fn: (checked: boolean) => void) => {
