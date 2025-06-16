@@ -1,7 +1,7 @@
 ---
 title: Build your own Renderables
 order: 60
-description: Reusing Renderables allow an efficient workflow that minimize code duplication and bugs.
+description: Reusing Renderables allow an efficient workflow that minimizes code duplication and bugs.
 ---
 # Build your own Renderables or Components
 
