@@ -28,7 +28,7 @@ export type AppearanceType = 'light' | 'dark'
 export const Appearance: Provider<Signal<AppearanceType>> = {
   mark: makeProviderMark<Signal<AppearanceType>>('Appearance'),
   create: () => {
-    const value = useAppearence()
+    const value = useAppearance()
     return {
       value,
       dispose: value.dispose,
@@ -46,7 +46,7 @@ export const Appearance: Provider<Signal<AppearanceType>> = {
  * @returns A signal representing the current appearance.
  * @public
  */
-export function useAppearence() {
+export function useAppearance() {
   const win = getWindow()
   const matcher =
     win != null && win.matchMedia != null

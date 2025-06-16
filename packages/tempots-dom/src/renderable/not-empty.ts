@@ -12,7 +12,7 @@ import { OneOf } from './oneof'
  * @typeParam T - The type of elements in the array.
  * @param value - The signal or literal containing the array.
  * @param display - The component to display when the array is non-empty.
- * @param whenEmpty- The component to display when the array is empty.
+ * @param whenEmpty - The component to display when the array is empty.
  * @returns - The renderable component.
  * @public
  */

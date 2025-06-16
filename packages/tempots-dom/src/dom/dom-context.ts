@@ -29,7 +29,7 @@ export const makeProviderMark = <T>(identifier: string): ProviderMark<T> =>
  * `DOMContext` is an immutable class that represents the context of a DOM element.
  * It provides methods and properties to manipulate and interact with the DOM element.
  *
- * A reference in a DOMContext is to mark a position within a set of sibblings.
+ * A reference in a DOMContext is to mark a position within a set of siblings.
  * It is used to insert new elements before the reference.
  *
  * @public
