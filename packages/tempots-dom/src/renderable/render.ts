@@ -82,7 +82,8 @@ export const render = (
       e[0]?.removedNodes.forEach(node => {
         if (node === el) {
           disposeObserver?.disconnect()
-          clearDOM(el.nodeType !== Node.ELEMENT_NODE)
+          // 1 == Node.ELEMENT_NODE
+          clearDOM(el.nodeType !== 1)
         }
       })
     })

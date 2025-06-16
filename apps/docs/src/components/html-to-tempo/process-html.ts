@@ -44,7 +44,8 @@ export function domToTempo(node: Node, indent = 0): string[] {
         ) +
         ',',
     ]
-  } else if (node.nodeType === Node.ELEMENT_NODE) {
+    // 1 == Node.ELEMENT_NODE
+  } else if (node.nodeType === 1) {
     const el = node as Element
     const tagName = el.tagName.toLowerCase()
     const attributes = Array.from(el.attributes)
