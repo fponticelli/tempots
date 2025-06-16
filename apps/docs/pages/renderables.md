@@ -130,7 +130,59 @@ Unlike `When`, `Ensure` takes a function that returns a renderable. This functio
 
 ### OneOf
 
-For more complicated pattern matching you can use one of the `OneOf` renderables. You generally match on the value of an object field. For that you can use `OneOfField`, `OneOfKind`, or `OneOfType`.
+
+`OneOf` helpers allow matching a signal and rendering a branch based on its
+value.  Several variations exist depending on what you want to match.
+
+```ts
+const status = signal<{ loading: true } | { error: string }>({ loading: true })
+
+OneOf(status, {
+  loading: () => html.div('Loading...'),
+  error: e => html.div('Error:', e)
+})
+```
+
+#### OneOfValue
+
+```ts
+const mode = signal<'view' | 'edit'>('view')
+
+OneOfValue(mode, {
+  view: () => html.div('Viewing'),
+  edit: () => html.div('Editing')
+})
+```
+
+#### OneOfTuple
+
+```ts
+const pair = signal(['A', 1] as ['A' | 'B', number])
+
+OneOfTuple(pair, {
+  A: n => html.div('A:', n.map(String)),
+  B: n => html.div('B:', n.map(String))
+})
+```
+
+#### OneOfField
+
+```ts
+type State =
+  | { state: 'loading' }
+  | { state: 'error', message: string }
+  | { state: 'ready', content: string }
+
+const state = signal<State>({ state: 'loading' })
+
+OneOfField(state, 'state', {
+  loading: () => html.div('Loading...'),
+  error: s => html.div('Error:', s.$.message),
+  ready: s => html.div('Ready:', s.$.content)
+})
+```
+
+#### OneOfKind
 
 ```ts
 type MyType = { kind: 'A', text: string } | { kind: 'B', value: number }
@@ -138,8 +190,21 @@ type MyType = { kind: 'A', text: string } | { kind: 'B', value: number }
 const valueSignal = signal<MyType>({ kind: 'A', text: 'Hello, World!' })
 
 OneOfKind(valueSignal, {
-  A: v => html.div('A: ', v.$.text),
-  B: v => html.div('B: ', v.$.value.map(String))
+  A: v => html.div('A:', v.$.text),
+  B: v => html.div('B:', v.$.value.map(String))
+})
+```
+
+#### OneOfType
+
+```ts
+type Msg = { type: 'inc', value: number } | { type: 'dec', value: number }
+
+const msg = signal<Msg>({ type: 'inc', value: 1 })
+
+OneOfType(msg, {
+  inc: m => html.div('Inc', m.$.value.map(String)),
+  dec: m => html.div('Dec', m.$.value.map(String))
 })
 ```
 
