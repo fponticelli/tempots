@@ -27,3 +27,6 @@ packages/*/docs/
 .turbo/**
 
 vite.config.js.timestamp-*
+
+# Temporary version files for publish confirmation
+.temp-old-version

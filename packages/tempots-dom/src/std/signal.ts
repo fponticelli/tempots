@@ -655,7 +655,7 @@ export class Computed<T> extends Signal<T> {
   readonly get = () => {
     if (this._isDirty) {
       this._isDirty = false
-      this._setAndNotify(this._fn(), true)
+      this._setAndNotify(this._fn(), false)
     }
     return this._value
   }

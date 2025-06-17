@@ -8,9 +8,9 @@ function update(mode) {
   return updateLibVersion(cwd, mode)
 }
 
-function publish() {
+async function publish() {
   const cwd = process.cwd()
-  publishToNpm(cwd)
+  await publishToNpm(cwd)
 }
 
 module.exports = { update, publish }

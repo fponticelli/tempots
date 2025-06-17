@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { prop, render, html, WithElement, OneOf, OneOfType, OneOfValue, OneOfTuple, OneOfField, OneOfKind } from "../src";
 import { sleep } from "./helper";
 const { div } = html
@@ -136,7 +136,7 @@ describe("OneOf", () => {
     type Status = { loading: true } | { error: string }
     const status = prop<Status>({ loading: true })
     render(
-      OneOf(status, {
+      OneOf<Status>(status, {
         loading: () => div('Loading...'),
         error: e => div('Error:', e)
       }),
