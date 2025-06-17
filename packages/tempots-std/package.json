@@ -101,6 +101,10 @@
       "import": "./dist/timer.js",
       "require": "./dist/timer.cjs"
     },
+    "./union": {
+      "import": "./dist/union.js",
+      "require": "./dist/union.cjs"
+    },
     "./validation": {
       "import": "./dist/validation.js",
       "require": "./dist/validation.cjs"
@@ -205,6 +209,9 @@
       ],
       "timer": [
         "./dist/timer.d.ts"
+      ],
+      "union": [
+        "./dist/union.d.ts"
       ],
       "validation": [
         "./dist/validation.d.ts"

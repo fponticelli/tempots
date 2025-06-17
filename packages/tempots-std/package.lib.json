@@ -93,6 +93,10 @@
       "import": "./timer.js",
       "require": "./timer.cjs"
     },
+    "./union": {
+      "import": "./union.js",
+      "require": "./union.cjs"
+    },
     "./validation": {
       "import": "./validation.js",
       "require": "./validation.cjs"
@@ -158,6 +162,9 @@
       ],
       "timer": [
         "./timer.d.ts"
+      ],
+      "union": [
+        "./union.d.ts"
       ],
       "validation": [
         "./validation.d.ts"
