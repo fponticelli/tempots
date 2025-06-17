@@ -108,10 +108,10 @@ export class Signal<T> {
   ): Signal<O> => {
     const signal = new Signal(init, equals)
     promise
-      .then(value => signal._setAndNotify(value, false))
+      .then(value => signal._setAndNotify(value))
       .catch(error => {
         if (recover != null) {
-          signal._setAndNotify(recover(error), false)
+          signal._setAndNotify(recover(error))
         } else {
           console.error(
             'Unhandled promise rejection in Signal.ofPromise:',
@@ -229,14 +229,14 @@ export class Signal<T> {
   /**
    * @internal
    */
-  protected readonly _setAndNotify = (newV: T, forceNotifications: boolean) => {
+  protected readonly _setAndNotify = (newV: T) => {
     if (this._disposed) return
     const currentValue = this._value
     const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
     }
-    if (forceNotifications || !same) {
+    if (!same) {
       this._onValueListeners.forEach(l => l(newV, currentValue))
     }
   }
@@ -646,7 +646,7 @@ export class Computed<T> extends Signal<T> {
       if (this._scheduleCount !== count || this._disposed) return
       if (this._isDirty) {
         this._isDirty = false
-        this._setAndNotify(this._fn(), false)
+        this._setAndNotify(this._fn())
       }
     })
   }
@@ -655,7 +655,7 @@ export class Computed<T> extends Signal<T> {
   readonly get = () => {
     if (this._isDirty) {
       this._isDirty = false
-      this._setAndNotify(this._fn(), false)
+      this._setAndNotify(this._fn())
     }
     return this._value
   }
@@ -734,7 +734,7 @@ export class Prop<T> extends Signal<T> {
    * @param value - The new value of the property.
    */
   readonly set = (value: T) => {
-    this._setAndNotify(value, false)
+    this._setAndNotify(value)
   }
 
   /**
@@ -742,7 +742,7 @@ export class Prop<T> extends Signal<T> {
    * @param fn - The function to apply to the current value.
    */
   readonly update = (fn: (value: T) => T) => {
-    this._setAndNotify(fn(this.get()), false)
+    this._setAndNotify(fn(this.get()))
   }
 
   /**
@@ -790,7 +790,7 @@ export class Prop<T> extends Signal<T> {
   ) => {
     const prop = new Prop(to(this.get()), equals)
     prop.onDispose(this.on(value => prop.set(to(value))))
-    prop.on(value => this._setAndNotify(from(value), false))
+    prop.on(value => this._setAndNotify(from(value)))
     return prop
   }
 
@@ -814,7 +814,7 @@ export class Prop<T> extends Signal<T> {
   }
 
   set value(value: T) {
-    this._setAndNotify(value, false)
+    this._setAndNotify(value)
   }
 }
 
