@@ -94,9 +94,23 @@ async function confirmPublish(packageName, oldVersion, newVersion) {
 function getOldVersionFromGit(packageDir) {
   try {
     const packageJsonPath = path.join(packageDir, 'package.json')
-    const relativePath = path.relative(process.cwd(), packageJsonPath)
+
+    // Find the git repository root
+    const gitRoot = execSync('git rev-parse --show-toplevel', {
+      encoding: 'utf8',
+      stdio: 'pipe',
+      cwd: packageDir
+    }).trim()
+
+    // Get the relative path from git root to package.json
+    const relativePath = path.relative(gitRoot, packageJsonPath)
     const gitCommand = `git show HEAD:${relativePath}`
-    const oldPackageJson = execSync(gitCommand, { encoding: 'utf8', stdio: 'pipe' })
+
+    const oldPackageJson = execSync(gitCommand, {
+      encoding: 'utf8',
+      stdio: 'pipe',
+      cwd: gitRoot
+    })
     return JSON.parse(oldPackageJson).version
   } catch (error) {
     // If we can't get the old version from git, return null
@@ -110,23 +124,23 @@ async function publishToNpm(packageDir, oldVersion = null) {
   const packageJson = require(packageJsonPath)
   const packageName = packageJson.name
 
-  // Try to get old version from various sources
+  // Try to get old version from various sources (in priority order)
   let versionToShow = oldVersion
   if (!versionToShow) {
-    // Try to get from git
-    versionToShow = getOldVersionFromGit(packageDir)
-  }
-  if (!versionToShow) {
-    // Try to get from a temporary file we might have created
+    // First priority: Try to get from a temporary file we might have created
     const tempVersionFile = path.join(packageDir, '.temp-old-version')
     try {
       versionToShow = require('fs').readFileSync(tempVersionFile, 'utf8').trim()
       // Clean up the temp file
       require('fs').unlinkSync(tempVersionFile)
     } catch (error) {
-      // If all else fails, show current version as old version (not ideal but better than nothing)
-      versionToShow = version
+      // Second priority: Try to get from git
+      versionToShow = getOldVersionFromGit(packageDir)
     }
+  }
+  if (!versionToShow) {
+    // If all else fails, show current version as old version (not ideal but better than nothing)
+    versionToShow = version
   }
 
   // Show confirmation dialog

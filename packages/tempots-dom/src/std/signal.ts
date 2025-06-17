@@ -235,8 +235,6 @@ export class Signal<T> {
     const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
-    }
-    if (!same) {
       this._onValueListeners.forEach(l => l(newV, currentValue))
     }
   }

@@ -20,7 +20,7 @@ Package: @tempots/dom
 Old version: 4.0.2
 New version: 4.0.3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Do you want to proceed with publishing? (Y/n): 
+Do you want to proceed with publishing? (Y/n):
 ```
 
 ## Skipping confirmation
@@ -39,11 +39,13 @@ pnpm npm:publish --no-confirm
 
 ## How version detection works
 
-The system tries to detect the old version in this order:
+The system tries to detect the old version in this priority order:
 
-1. **From temporary file**: Created during the version update process
-2. **From Git**: Retrieves the previous version from the last commit
+1. **From temporary file**: Created during the version update process (highest priority)
+2. **From Git**: Retrieves the previous version from the last commit (fallback)
 3. **Fallback**: Uses the current version (not ideal, but prevents errors)
+
+The temporary file approach ensures accuracy when using the standard publish workflow (`npm:publish`, `npm:publish:minor`, etc.) since it captures the exact version before the update.
 
 ## Integration with existing workflows
 
