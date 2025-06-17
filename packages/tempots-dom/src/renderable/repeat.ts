@@ -88,7 +88,7 @@ export const Repeat = (
         pos.total.map(v => v - 1)
       )
       return Fragment(
-        OnDispose(sepPos.dispose),
+        OnDispose(sepPos.dispose, pos.dispose),
         renderableOfTNode(element(pos)),
         When(
           pos.isLast,
@@ -110,7 +110,12 @@ export const Repeat = (
           }
           for (let i = clears.length; i < newLength; i++) {
             const pos = new ElementPosition(i, times)
-            clears.push(renderableOfTNode(element(pos))(newCtx))
+            clears.push(
+              Fragment(
+                OnDispose(pos.dispose),
+                renderableOfTNode(element(pos))
+              )(newCtx)
+            )
           }
         })
 
@@ -125,9 +130,13 @@ export const Repeat = (
       }
     } else {
       return Fragment(
-        ...Array.from({ length: times }, (_, i) => i).map(i =>
-          renderableOfTNode(element(new ElementPosition(i, signal(times))))
-        )
+        ...Array.from({ length: times }, (_, i) => i).map(i => {
+          const pos = new ElementPosition(i, signal(times))
+          return Fragment(
+            OnDispose(pos.dispose),
+            renderableOfTNode(element(pos))
+          )
+        })
       )
     }
   }

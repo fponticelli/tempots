@@ -60,6 +60,7 @@ export class ElementPosition {
   }
 
   readonly dispose = () => {
-    this.total.dispose()
+    this.#lastSignal?.dispose()
+    this.#lastSignal = undefined
   }
 }
