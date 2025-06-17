@@ -129,9 +129,10 @@ export const Repeat = (
         }
       }
     } else {
+      const length = signal(times)
       return Fragment(
         ...Array.from({ length: times }, (_, i) => i).map(i => {
-          const pos = new ElementPosition(i, signal(times))
+          const pos = new ElementPosition(i, length)
           return Fragment(
             OnDispose(pos.dispose),
             renderableOfTNode(element(pos))
