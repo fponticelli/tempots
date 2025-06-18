@@ -100,16 +100,17 @@ export const Repeat = (
   } else {
     if (Signal.is(times)) {
       return (ctx: DOMContext) => {
+        const derived = times.derive()
         const newCtx = ctx.makeRef()
         const clears: Clear[] = []
 
-        const disposeListener = times.on(newLength => {
+        derived.on(newLength => {
           const toRemove = clears.splice(newLength)
           for (const remove of toRemove) {
             remove(true)
           }
           for (let i = clears.length; i < newLength; i++) {
-            const pos = new ElementPosition(i, times)
+            const pos = new ElementPosition(i, derived)
             clears.push(
               Fragment(
                 OnDispose(pos.dispose),
@@ -120,7 +121,7 @@ export const Repeat = (
         })
 
         return (removeTree: boolean) => {
-          disposeListener()
+          derived.dispose()
           for (const clear of clears) {
             clear(removeTree)
           }
