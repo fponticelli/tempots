@@ -178,6 +178,16 @@ git commit -m "docs: update README with new examples"
 - Prefer explicit types over `any`
 - Use JSDoc comments for public APIs
 - Follow existing naming conventions
+#### Equality terminology
+
+Use the following naming scheme for equality related features:
+
+- **equal** – For modules and standalone functions that perform equality checks. Example: `strictEqual`, `deepEqual`.
+- **equals** – For parameters or properties that accept an equality function. Example: `signal(value, equals)`.
+- **equality** – Use in documentation when referring to the concept or a custom equality function.
+
+Keeping these terms consistent improves readability across the project.
+
 
 ### Formatting
 

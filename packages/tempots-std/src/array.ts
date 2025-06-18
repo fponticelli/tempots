@@ -131,19 +131,19 @@ export const arrayTail = <A>(arr: A[]): A[] => arr.slice(1)
  * @typeParam T - The type of elements in the arrays.
  * @param a - The first array.
  * @param b - The second array.
- * @param equality - The custom equality function to compare elements.
+ * @param equals - The custom equality function to compare elements.
  * @returns Returns `true` if the arrays are equal, `false` otherwise.
  * @public
  */
 export const areArraysEqual = <T>(
   a: T[],
   b: T[],
-  equality: (a: T, b: T) => boolean
+  equals: (a: T, b: T) => boolean
 ): boolean => {
   if (a.length !== b.length) return false
   else {
     for (let i = 0; i < a.length; i++) {
-      if (!equality(a[i], b[i])) return false
+      if (!equals(a[i], b[i])) return false
     }
     return true
   }

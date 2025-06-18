@@ -313,7 +313,7 @@ export const interpolateAngleCCW = (
 
 /**
  * number numbers can sometime introduce tiny errors even for simple operations.
- * `nearEquals` compares two floats using a tiny tollerance (last optional
+ * `nearEqual` compares two floats using a tiny tollerance (last optional
  * argument). By default it is defined as `EPSILON`.
  *
  * @param a - The first number to compare.
@@ -323,12 +323,12 @@ export const interpolateAngleCCW = (
  * @public
  * @example
  * ```ts
- * nearEquals(5, 5.000000000000001) // returns true
- * nearEquals(5, 5.000000000001) // returns false
- * nearEquals(5, 5.000000000001, 1e-9) // returns true
+ * nearEqual(5, 5.000000000000001) // returns true
+ * nearEqual(5, 5.000000000001) // returns false
+ * nearEqual(5, 5.000000000001, 1e-9) // returns true
  * ```
  **/
-export const nearEquals = (
+export const nearEqual = (
   a: number,
   b: number,
   tollerance = EPSILON
