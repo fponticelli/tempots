@@ -10,7 +10,7 @@ import {
   getWindow,
   OnDispose,
 } from '@tempots/dom'
-import { nearEquals } from '@tempots/std'
+import { nearEqual } from '@tempots/std'
 
 /**
  * Represents a rectangle with position and dimensions.
@@ -195,10 +195,10 @@ export class Rect {
    */
   readonly equals = (other: Rect) => {
     return (
-      nearEquals(this.left, other.left) &&
-      nearEquals(this.top, other.top) &&
-      nearEquals(this.width, other.width) &&
-      nearEquals(this.height, other.height)
+      nearEqual(this.left, other.left) &&
+      nearEqual(this.top, other.top) &&
+      nearEqual(this.width, other.width) &&
+      nearEqual(this.height, other.height)
     )
   }
 }
