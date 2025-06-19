@@ -169,29 +169,29 @@ describe("Repeat", () => {
   });
 
   test("based on array", async () => {
-    const s = prop([] as number[])
-    const l = s.map(v => v.length)
+    const list = prop([] as number[])
+    const length = list.map(v => v.length)
 
     render(
-      Repeat(l, item => {
+      Repeat(length, item => {
         return Fragment(
-          computedOf(item.counter, l)((counter, len) =>
+          computedOf(item.counter, length)((counter, len) =>
             `[${counter}:${len}]`
           ),
         )
-      }),
+      }, pos => pos.isLast.map((v): string => v ? '!' : '-') ),
       document.body
     )
     expect(document.body.innerHTML).toStrictEqual('')
-    s.set([1, 2])
+    list.set([1, 2])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:2][2:2]')
-    s.set([1])
+    expect(document.body.innerHTML).toStrictEqual('[1:2]![2:2]')
+    list.set([1])
     await sleep()
     expect(document.body.innerHTML).toStrictEqual('[1:1]')
-    s.set([1, 2, 3, 4])
+    list.set([1, 2, 3, 4])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:4][2:4][3:4][4:4]')
+    expect(document.body.innerHTML).toStrictEqual('[1:4]-[2:4]-[3:4]![4:4]')
   })
 });
 

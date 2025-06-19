@@ -88,7 +88,7 @@ export const Repeat = (
         pos.total.map(v => v - 1)
       )
       return Fragment(
-        OnDispose(sepPos.dispose, pos.dispose),
+        OnDispose(sepPos.dispose),
         renderableOfTNode(element(pos)),
         When(
           pos.isLast,
@@ -100,17 +100,17 @@ export const Repeat = (
   } else {
     if (Signal.is(times)) {
       return (ctx: DOMContext) => {
-        const derived = times.derive()
+        const length = times.derive()
         const newCtx = ctx.makeRef()
         const clears: Clear[] = []
 
-        derived.on(newLength => {
+        length.on(newLength => {
           const toRemove = clears.splice(newLength)
           for (const remove of toRemove) {
             remove(true)
           }
           for (let i = clears.length; i < newLength; i++) {
-            const pos = new ElementPosition(i, derived)
+            const pos = new ElementPosition(i, length)
             clears.push(
               Fragment(
                 OnDispose(pos.dispose),
@@ -121,7 +121,7 @@ export const Repeat = (
         })
 
         return (removeTree: boolean) => {
-          derived.dispose()
+          length.dispose()
           for (const clear of clears) {
             clear(removeTree)
           }
