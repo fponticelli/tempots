@@ -8,6 +8,7 @@ import {
   BrowserContext,
   When,
   OnDispose,
+  effectOf,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -57,13 +58,13 @@ export type PopOverOptions = {
    * Specifies the placement of the PopOver.
    * This is an optional property.
    */
-  readonly placement?: Placement
+  readonly placement?: Value<Placement>
 
   /**
    * Specifies the offset of the PopOver.
    * This is an optional property.
    */
-  readonly offset?: {
+  readonly offset?: Value<{
     /**
      * Specifies the offset on the main axis.
      */
@@ -73,7 +74,7 @@ export type PopOverOptions = {
      * Specifies the offset on the cross axis.
      */
     readonly crossAxis?: number
-  }
+  }>
 }
 
 /**
@@ -86,12 +87,15 @@ export type PopOverOptions = {
 export const PopOver = ({
   content,
   open,
-  placement,
-  offset: { mainAxis, crossAxis } = { mainAxis: 0, crossAxis: 0 },
+  placement = 'top',
+  offset = { mainAxis: 0, crossAxis: 0 },
 }: PopOverOptions) =>
   WithBrowserCtx((ctx: BrowserContext) => {
     const isOpen = Value.toSignal(open)
     const target = ctx.element
+    const offsetSignal = Value.toSignal(offset)
+    const mainAxis = offsetSignal.$.mainAxis.map(v => v ?? 0)
+    const crossAxis = offsetSignal.$.crossAxis.map(v => v ?? 0)
 
     return When(isOpen, () =>
       Portal(
@@ -100,21 +104,31 @@ export const PopOver = ({
           WithElement((element: HTMLElement) => {
             const floatingEl = element
             floatingEl.style.position = 'absolute'
-            return OnDispose(
-              autoUpdate(target, floatingEl, async () => {
-                const { x, y } = await computePosition(target, floatingEl, {
-                  placement,
-                  strategy: 'absolute',
-                  middleware: [
-                    flip(),
-                    fuiOffset({ mainAxis, crossAxis }),
-                    shift(),
-                    flip(),
-                  ],
-                })
-                floatingEl.style.top = `${y}px`
-                floatingEl.style.left = `${x}px`
+            async function updatePosition() {
+              const { x, y } = await computePosition(target, floatingEl, {
+                placement: Value.get(placement),
+                strategy: 'absolute',
+                middleware: [
+                  flip(),
+                  fuiOffset({
+                    mainAxis: mainAxis.value,
+                    crossAxis: crossAxis.value,
+                  }),
+                  shift(),
+                  flip(),
+                ],
               })
+              floatingEl.style.top = `${y}px`
+              floatingEl.style.left = `${x}px`
+            }
+            const cancel = effectOf(
+              mainAxis,
+              crossAxis,
+              placement
+            )(updatePosition)
+            return OnDispose(
+              autoUpdate(target, floatingEl, updatePosition),
+              cancel
             )
           }),
           content()
