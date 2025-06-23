@@ -107,13 +107,13 @@ export const PopOver = ({
             floatingEl.style.position = 'absolute'
             async function updatePosition() {
               const { x, y } = await computePosition(target, floatingEl, {
-                placement: placement.value,
+                placement: placement.get(),
                 strategy: 'absolute',
                 middleware: [
                   flip(),
                   fuiOffset({
-                    mainAxis: mainAxis.value,
-                    crossAxis: crossAxis.value,
+                    mainAxis: mainAxis.get(),
+                    crossAxis: crossAxis.get(),
                   }),
                   shift(),
                   flip(),

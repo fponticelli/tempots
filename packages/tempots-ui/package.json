@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "4.2.1",
+  "version": "4.2.4",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -60,18 +60,18 @@
     "npm:prep:major": "pnpm package:major && pnpm npm:prep",
     "npm:prep:next": "pnpm package:next && pnpm npm:prep",
     "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
-    "npm:publish": "pnpm package:patch && pnpm npm:publish:impl",
-    "npm:publish:minor": "pnpm package:minor && pnpm npm:publish:impl",
-    "npm:publish:major": "pnpm package:major && pnpm npm:publish:impl",
-    "npm:publish:next": "pnpm package:next && pnpm npm:publish:impl"
+    "npm:publish": "pnpm npm:prep && pnpm package:patch && pnpm npm:publish:impl",
+    "npm:publish:minor": "pnpm npm:prep && pnpm package:minor && pnpm npm:publish:impl",
+    "npm:publish:major": "pnpm npm:prep && pnpm package:major && pnpm npm:publish:impl",
+    "npm:publish:next": "pnpm npm:prep && pnpm package:next && pnpm npm:publish:impl"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.6.7",
+    "@floating-ui/dom": "1.7.1",
     "@tempots/dom": "workspace:*",
     "@tempots/std": "workspace:*"
   },
   "peerDependencies": {
-    "@tempots/std": "0.18.0"
+    "@tempots/std": "0.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
