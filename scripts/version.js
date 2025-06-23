@@ -247,6 +247,12 @@ async function publishToNpm(packageDir, oldVersion = null) {
     applyVersionUpdate(packageDir)
     // Refresh the version after update
     currentVersion = getVersion(packageJsonPath)
+
+    // Rebuild the package with the new version
+    console.log('🔨 Rebuilding package with updated version...')
+    const { execSync } = require('child_process')
+    execSync('pnpm build', { cwd: packageDir, stdio: 'inherit' })
+    execSync('cp README.md dist', { cwd: packageDir, stdio: 'inherit' })
   }
 
   const args = ['--access public', '--no-git-checks']

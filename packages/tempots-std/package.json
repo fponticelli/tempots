@@ -130,10 +130,10 @@
     "npm:prep:major": "pnpm package:major && pnpm npm:prep",
     "npm:prep:next": "pnpm package:next && pnpm npm:prep",
     "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
-    "npm:publish": "pnpm npm:prep:patch && pnpm npm:publish:impl",
-    "npm:publish:minor": "pnpm npm:prep:minor && pnpm npm:publish:impl",
-    "npm:publish:major": "pnpm npm:prep:major && pnpm npm:publish:impl",
-    "npm:publish:next": "pnpm npm:prep:next && pnpm npm:publish:impl"
+    "npm:publish": "pnpm package:patch && pnpm npm:publish:impl",
+    "npm:publish:minor": "pnpm package:minor && pnpm npm:publish:impl",
+    "npm:publish:major": "pnpm package:major && pnpm npm:publish:impl",
+    "npm:publish:next": "pnpm package:next && pnpm npm:publish:impl"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
