@@ -3,6 +3,9 @@ const { execSync } = require('child_process')
 const readline = require('readline')
 
 function getVersion(packagePath) {
+  // Clear the require cache to ensure we get the latest version
+  const absolutePath = require.resolve(packagePath)
+  delete require.cache[absolutePath]
   return require(packagePath).version
 }
 
@@ -16,11 +19,18 @@ function incrementVersion(version, type) {
     case 'patch':
       return `${parts[0]}.${parts[1]}.${Number(parts[2]) + 1}`
     case 'next':
-      if (parts.length === 3) {
+      if (version.includes('-next.')) {
+        // Next version like 1.0.0-next.0 -> 1.0.0-next.1
+        const [baseVersion, nextPart] = version.split('-next.')
+        const nextNumber = Number(nextPart) + 1
+        return `${baseVersion}-next.${nextNumber}`
+      } else if (parts.length === 3) {
+        // Standard version like 1.0.0 -> 1.0.0-next.0
         return `${parts[0]}.${parts[1]}.${parts[2]}-next.0`
       } else {
-        const v = Number(parts[3].split('-')[0]) + 1
-        return `${parts[0]}.${parts[1]}.${parts[2]}.${v}`
+        // Fallback: treat as patch increment for other pre-release formats
+        const patchPart = parts[2].split('-')[0] // Extract just the patch number before any pre-release suffix
+        return `${parts[0]}.${parts[1]}.${Number(patchPart) + 1}`
       }
   }
 }
@@ -48,6 +58,61 @@ function updateLibVersion(packageDir, type) {
   saveVersion(packagePath, newVersion)
   saveVersion(publishPackagePath, newVersion, { peerDependencies })
   return { oldVersion, newVersion }
+}
+
+function prepareVersionUpdate(packageDir, type) {
+  const packagePath = path.join(packageDir, 'package.json')
+  const oldVersion = getVersion(packagePath)
+  const newVersion = incrementVersion(oldVersion, type)
+
+  // Store version update info for later use
+  const versionUpdateFile = path.join(packageDir, '.temp-version-update')
+  const updateInfo = {
+    oldVersion,
+    newVersion,
+    type,
+    packageDir
+  }
+  require('fs').writeFileSync(versionUpdateFile, JSON.stringify(updateInfo, null, 2))
+
+  return { oldVersion, newVersion }
+}
+
+function applyVersionUpdate(packageDir) {
+  const versionUpdateFile = path.join(packageDir, '.temp-version-update')
+
+  try {
+    const updateInfo = JSON.parse(require('fs').readFileSync(versionUpdateFile, 'utf8'))
+    const { newVersion } = updateInfo
+
+    // Now actually update the versions
+    const packagePath = path.join(packageDir, 'package.json')
+    const publishPackagePath = path.join(packageDir, 'package.lib.json')
+    const peerDependencies = getLibDependencies(packagePath)
+
+    saveVersion(packagePath, newVersion)
+    saveVersion(publishPackagePath, newVersion, { peerDependencies })
+
+    // Update dependencies in other packages if needed
+    if (packageDir.includes('tempots-std')) {
+      const dependencies = ['tempots-ui'].map(name => path.join(packageDir, `../${name}`))
+      for(const dep of dependencies) {
+        updateDependencies(newVersion, '@tempots/std', dep)
+      }
+    } else if (packageDir.includes('tempots-dom')) {
+      const dependencies = ['tempots-ui'].map(name => path.join(packageDir, `../${name}`))
+      for(const dep of dependencies) {
+        updateDependencies(newVersion, '@tempots/dom', dep)
+      }
+    }
+
+    // Clean up the temp file
+    require('fs').unlinkSync(versionUpdateFile)
+
+    return updateInfo
+  } catch (error) {
+    throw new Error(`Failed to apply version update: ${error.message}`)
+  }
 }
 
 function updateDependencies(newVersion, libName, packageDir) {
@@ -120,37 +185,72 @@ function getOldVersionFromGit(packageDir) {
 
 async function publishToNpm(packageDir, oldVersion = null) {
   const packageJsonPath = path.join(packageDir, 'package.json')
-  const version = getVersion(packageJsonPath)
   const packageJson = require(packageJsonPath)
   const packageName = packageJson.name
 
-  // Try to get old version from various sources (in priority order)
-  let versionToShow = oldVersion
-  if (!versionToShow) {
-    // First priority: Try to get from a temporary file we might have created
-    const tempVersionFile = path.join(packageDir, '.temp-old-version')
-    try {
-      versionToShow = require('fs').readFileSync(tempVersionFile, 'utf8').trim()
-      // Clean up the temp file
-      require('fs').unlinkSync(tempVersionFile)
-    } catch (error) {
-      // Second priority: Try to get from git
-      versionToShow = getOldVersionFromGit(packageDir)
-    }
+  // Check if we have a pending version update
+  const versionUpdateFile = path.join(packageDir, '.temp-version-update')
+  let versionInfo = null
+  let currentVersion = getVersion(packageJsonPath)
+
+  try {
+    const updateInfoRaw = require('fs').readFileSync(versionUpdateFile, 'utf8')
+    versionInfo = JSON.parse(updateInfoRaw)
+  } catch (error) {
+    // No pending version update, use current version
   }
-  if (!versionToShow) {
-    // If all else fails, show current version as old version (not ideal but better than nothing)
-    versionToShow = version
+
+  // Determine old and new versions for confirmation
+  let oldVersionToShow = oldVersion
+  let newVersionToShow = currentVersion
+
+  if (versionInfo) {
+    // We have a pending version update
+    oldVersionToShow = versionInfo.oldVersion
+    newVersionToShow = versionInfo.newVersion
+  } else {
+    // Try to get old version from various sources (in priority order)
+    if (!oldVersionToShow) {
+      // First priority: Try to get from a temporary file we might have created
+      const tempVersionFile = path.join(packageDir, '.temp-old-version')
+      try {
+        oldVersionToShow = require('fs').readFileSync(tempVersionFile, 'utf8').trim()
+        // Clean up the temp file
+        require('fs').unlinkSync(tempVersionFile)
+      } catch (error) {
+        // Second priority: Try to get from git
+        oldVersionToShow = getOldVersionFromGit(packageDir)
+      }
+    }
+    if (!oldVersionToShow) {
+      // If all else fails, show current version as old version (not ideal but better than nothing)
+      oldVersionToShow = currentVersion
+    }
   }
 
   // Show confirmation dialog
-  const shouldProceed = await confirmPublish(packageName, versionToShow, version)
+  const shouldProceed = await confirmPublish(packageName, oldVersionToShow, newVersionToShow)
   if (!shouldProceed) {
+    // Clean up any pending version update files
+    try {
+      require('fs').unlinkSync(versionUpdateFile)
+    } catch (error) {
+      // File might not exist, that's ok
+    }
+    console.log('❌ Publishing cancelled. No changes were made.')
     process.exit(1)
   }
 
+  // If we have a pending version update, apply it now
+  if (versionInfo) {
+    console.log('📝 Applying version update...')
+    applyVersionUpdate(packageDir)
+    // Refresh the version after update
+    currentVersion = getVersion(packageJsonPath)
+  }
+
   const args = ['--access public', '--no-git-checks']
-  if(version.includes('next')){
+  if(currentVersion.includes('next')){
     args.push('--tag next')
   }
 
@@ -159,7 +259,7 @@ async function publishToNpm(packageDir, oldVersion = null) {
   const publishCommand = `pnpm publish dist ${args.join(' ')}`
   execSync(publishCommand, { stdio: 'inherit' })
 
-  console.log(`✅ Successfully published ${packageName}@${version}`)
+  console.log(`✅ Successfully published ${packageName}@${currentVersion}`)
 }
 
 function getLibDependencies(packagePath) {
@@ -174,4 +274,4 @@ function getLibDependencies(packagePath) {
   return dependencies
 }
 
-module.exports = { updateLibVersion, updateDependencies, publishToNpm }
+module.exports = { updateLibVersion, updateDependencies, publishToNpm, prepareVersionUpdate, applyVersionUpdate, incrementVersion }

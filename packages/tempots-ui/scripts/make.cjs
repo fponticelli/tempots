@@ -1,11 +1,11 @@
 const {
-  updateLibVersion,
+  prepareVersionUpdate,
   publishToNpm
 } = require('../../../scripts/version')
 
 function update(mode) {
   const cwd = process.cwd()
-  return updateLibVersion(cwd, mode)
+  return prepareVersionUpdate(cwd, mode)
 }
 
 async function publish() {
