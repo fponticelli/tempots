@@ -87,7 +87,7 @@ export type PopOverOptions = {
 export const PopOver = ({
   content,
   open,
-  placement = 'top',
+  placement: placementOption,
   offset = { mainAxis: 0, crossAxis: 0 },
 }: PopOverOptions) =>
   WithBrowserCtx((ctx: BrowserContext) => {
@@ -96,6 +96,7 @@ export const PopOver = ({
     const offsetSignal = Value.toSignal(offset)
     const mainAxis = offsetSignal.$.mainAxis.map(v => v ?? 0)
     const crossAxis = offsetSignal.$.crossAxis.map(v => v ?? 0)
+    const placement = Value.toSignal(placementOption ?? 'top')
 
     return When(isOpen, () =>
       Portal(
@@ -106,7 +107,7 @@ export const PopOver = ({
             floatingEl.style.position = 'absolute'
             async function updatePosition() {
               const { x, y } = await computePosition(target, floatingEl, {
-                placement: Value.get(placement),
+                placement: placement.value,
                 strategy: 'absolute',
                 middleware: [
                   flip(),
