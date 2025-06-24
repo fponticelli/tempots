@@ -94,6 +94,42 @@ const userResource = Resource({
 render(userResource, document.body)
 ```
 
+### PopOver with Arrow Support
+
+Create floating popover elements with optional arrow indicators:
+
+```typescript
+import { html, render, prop, on, attr } from '@tempots/dom'
+import { PopOver } from '@tempots/ui'
+
+function TooltipExample() {
+  const showTooltip = prop(false)
+
+  return html.div(
+    html.button(
+      on.mouseenter(() => showTooltip.value = true),
+      on.mouseleave(() => showTooltip.value = false),
+      'Hover me',
+      PopOver({
+        open: showTooltip,
+        placement: 'top',
+        content: () => html.div(
+          { style: 'padding: 8px; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);' },
+          'This is a tooltip with an arrow!'
+        ),
+        arrow: {
+          padding: 4,
+          content: html.div(
+            attr.class('tooltip-arrow'),
+            attr.style('background: white; border: 1px solid #ccc; transform: rotate(45deg); width: 8px; height: 8px;')
+          )
+        }
+      })
+    )
+  )
+}
+```
+
 ### Form Helpers
 
 Simplify form input handling:
