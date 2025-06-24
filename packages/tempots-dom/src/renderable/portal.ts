@@ -17,5 +17,9 @@ export const Portal =
   (selector: string | HTMLElement, node: TNode): Renderable =>
   (ctx: DOMContext) => {
     const portalCtx = ctx.makePortal(selector)
-    return renderWithContext(renderableOfTNode(node), portalCtx)
+    const clear = renderWithContext(renderableOfTNode(node), portalCtx)
+    return () => {
+      clear(true)
+      portalCtx.clear(true)
+    }
   }

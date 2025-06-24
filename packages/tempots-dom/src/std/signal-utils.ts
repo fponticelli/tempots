@@ -1,5 +1,5 @@
 import { getWindow } from '../dom/window'
-import { RemoveSignals } from '../types/domain'
+import { GetValueType, RemoveSignals } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
 import { Value } from './value'
@@ -360,26 +360,18 @@ export const computedRecord = <T extends Record<string, Value<unknown>>, O>(
   record: T,
   fn: (value: RemoveSignals<T>) => O
 ) => {
-  type RSignal = [string | number | symbol, Signal<unknown>]
-  type RSignals = RSignal[]
-  type RLiterals = RemoveSignals<T>
-  type R = { signals: RSignals; literals: RLiterals }
-  const { signals, literals } = Object.entries(record).reduce(
-    ({ signals, literals }, [key, value]) => {
-      if (Signal.is(value)) {
-        signals.push([key, value] as RSignal)
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(literals as any)[key] = value
-      }
-      return { signals, literals }
-    },
-    { signals: [], literals: {} as RemoveSignals<T> } as R
-  )
-  const signalsArray = signals.map(([, s]) => s)
+  const signals = Object.values(record).filter(Signal.is) as Signal<unknown>[]
+  const keys = Object.keys(record) as (keyof T)[]
   return computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    signals.forEach(([key, sig]) => ((literals as any)[key] = sig.value))
+    const literals = {} as RemoveSignals<T>
+    for (const key of keys) {
+      literals[key] = Value.get(record[key]) as GetValueType<T[typeof key]>
+    }
     return fn(literals)
-  }, signalsArray)
+  }, signals)
 }
+
+export const merge = <T extends Record<string, Value<unknown>>>(
+  options: T
+): Signal<{ [K in keyof T]: GetValueType<T[K]> }> =>
+  computedRecord(options, v => v as { [K in keyof T]: GetValueType<T[K]> })

@@ -10,6 +10,9 @@ import {
   OnDispose,
   effectOf,
   Fragment,
+  prop,
+  Signal,
+  computedOf,
 } from '@tempots/dom'
 import {
   autoUpdate,
@@ -91,8 +94,18 @@ export type PopOverOptions = {
     /**
      * Specifies the content of the arrow.
      */
-    content?: TNode
+    content?: (signal: Signal<PopOverArrowOptions>) => TNode
   }
+}
+
+export type PopOverArrowOptions = {
+  x?: number
+  y?: number
+  centerOffset: number
+  alignmentOffset?: number
+  placement: Placement
+  containerWidth: number
+  containerHeight: number
 }
 
 /**
@@ -116,6 +129,14 @@ export const PopOver = ({
     const mainAxis = offsetSignal.$.mainAxis.map(v => v ?? 0)
     const crossAxis = offsetSignal.$.crossAxis.map(v => v ?? 0)
     const placement = Value.toSignal(placementOption ?? 'top')
+    const arrowSignal = prop<Omit<PopOverArrowOptions, 'placement'>>({
+      centerOffset: 0,
+      alignmentOffset: 0,
+      containerWidth: 0,
+      containerHeight: 0,
+      x: undefined,
+      y: undefined,
+    })
 
     return When(isOpen, () =>
       Portal(
@@ -140,7 +161,7 @@ export const PopOver = ({
               ]
 
               // Add arrow middleware if arrow element exists
-              if (arrowEl) {
+              if (arrowOption != null && arrowEl != null) {
                 middleware.push(
                   arrow({
                     element: arrowEl,
@@ -160,11 +181,20 @@ export const PopOver = ({
               floatingEl.style.left = `${x}px`
 
               // Position arrow if it exists
-              if (arrowEl && middlewareData.arrow) {
-                const { x: arrowX, y: arrowY } = middlewareData.arrow
-                Object.assign(arrowEl.style, {
-                  left: arrowX != null ? `${arrowX}px` : '',
-                  top: arrowY != null ? `${arrowY}px` : '',
+              if (arrowEl != null && middlewareData.arrow != null) {
+                const {
+                  x: arrowX,
+                  y: arrowY,
+                  centerOffset,
+                  alignmentOffset,
+                } = middlewareData.arrow
+                arrowSignal.set({
+                  x: arrowX,
+                  y: arrowY,
+                  centerOffset,
+                  alignmentOffset,
+                  containerWidth: floatingEl.offsetWidth,
+                  containerHeight: floatingEl.offsetHeight,
                 })
               }
             }
@@ -177,13 +207,26 @@ export const PopOver = ({
             return Fragment(
               arrowOption != null
                 ? html.div(
-                    arrowOption.content,
+                    arrowOption.content?.(
+                      computedOf(
+                        arrowSignal,
+                        placement
+                      )((arrow, placement) => ({
+                        ...arrow,
+                        placement,
+                      }))
+                    ),
                     WithElement(el => {
                       arrowEl = el
+                      updatePosition()
                     })
                   )
                 : null,
-              OnDispose(autoUpdate(target, floatingEl, updatePosition), cancel)
+              OnDispose(
+                arrowSignal.dispose,
+                autoUpdate(target, floatingEl, updatePosition),
+                cancel
+              )
             )
           }),
           content()

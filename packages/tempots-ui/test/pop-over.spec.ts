@@ -78,7 +78,7 @@ describe('PopOver', () => {
         placement: 'top',
         arrow: {
           padding: 5,
-          content: html.div(attr.class('custom-arrow'), 'Arrow content')
+          content: () => html.div(attr.class('custom-arrow'), 'Arrow content')
         }
       })
     )
@@ -110,7 +110,7 @@ describe('PopOver', () => {
         content,
         placement: 'bottom',
         arrow: {
-          content: html.div(attr.class('default-arrow'), 'Default arrow')
+          content: () => html.div(attr.class('default-arrow'), 'Default arrow')
         } // Arrow with only content, padding should default to 0
       })
     )
@@ -174,7 +174,7 @@ describe('PopOver', () => {
         placement: 'left',
         arrow: {
           padding: 10,
-          content: html.div(attr.class('padded-arrow'), 'Padded arrow')
+          content: () => html.div(attr.class('padded-arrow'), 'Padded arrow')
         }
       })
     )
@@ -192,6 +192,82 @@ describe('PopOver', () => {
     // Check arrow content
     const arrowEl = arrowElements[0] as HTMLElement
     expect(arrowEl.textContent).toBe('Padded arrow')
+
+    clear()
+  })
+
+  test('arrow content can use positioning payload', async () => {
+    const isOpen = prop(true)
+    const content = () => html.div('Arrow with positioning data')
+
+    const popover = html.div(
+      PopOver({
+        open: isOpen,
+        content,
+        placement: 'top',
+        arrow: {
+          padding: 5,
+          content: (arrowSignal) =>
+            html.div(
+              attr.class('dynamic-arrow'),
+              attr.style('width: 12px; height: 12px; background: purple; position: absolute;'),
+              arrowSignal.map(data =>
+                `Placement: ${data.placement}, Center: ${data.centerOffset}, Size: ${data.containerWidth}x${data.containerHeight}`
+              )
+            )
+        }
+      })
+    )
+
+    const clear = render(popover, document.body)
+    await sleep(0)
+
+    // Check that arrow element is created with positioning data
+    const arrowEl = document.querySelector('.dynamic-arrow') as HTMLElement
+    expect(arrowEl).toBeTruthy()
+    expect(arrowEl.textContent).toContain('Placement: top')
+    expect(arrowEl.textContent).toContain('Center:')
+    expect(arrowEl.textContent).toContain('Size:')
+
+    clear()
+  })
+
+  test('arrow content receives positioning payload data', async () => {
+    const isOpen = prop(true)
+    const content = () => html.div('Arrow with payload data')
+
+    const popover = html.div(
+      PopOver({
+        open: isOpen,
+        content,
+        placement: 'bottom',
+        arrow: {
+          padding: 8,
+          content: (arrowSignal) =>
+            html.div(
+              attr.class('payload-arrow'),
+              attr.style('position: absolute; width: 12px; height: 12px; background: blue;'),
+              // Display some payload information as text content
+              html.span(
+                attr.class('payload-info'),
+                arrowSignal.map(data => `${data.placement}-${data.centerOffset}`)
+              )
+            )
+        }
+      })
+    )
+
+    const clear = render(popover, document.body)
+    await sleep(0)
+
+    // Check that arrow element is created with payload data
+    const arrowEl = document.querySelector('.payload-arrow') as HTMLElement
+    expect(arrowEl).toBeTruthy()
+
+    // Check that payload info is displayed
+    const payloadInfo = document.querySelector('.payload-info') as HTMLElement
+    expect(payloadInfo).toBeTruthy()
+    expect(payloadInfo.textContent).toContain('bottom-') // Should contain placement and centerOffset
 
     clear()
   })
