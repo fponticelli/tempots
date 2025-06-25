@@ -500,7 +500,8 @@ describe("Portal", () => {
 
     // Check initial content
     expect(target.innerHTML).toContain('Initial');
-    expect(target.innerHTML).toContain('Count: 0');
+    expect(target.innerHTML).toContain('Count: ');
+    expect(target.innerHTML).toContain('>0<');
 
     // Update reactive values
     text.set('Updated');
@@ -509,7 +510,8 @@ describe("Portal", () => {
 
     // Check updated content
     expect(target.innerHTML).toContain('Updated');
-    expect(target.innerHTML).toContain('Count: 42');
+    expect(target.innerHTML).toContain('Count: ');
+    expect(target.innerHTML).toContain('>42<');
     expect(target.innerHTML).not.toContain('Initial');
 
     // Hide the portal

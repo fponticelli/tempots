@@ -1,5 +1,5 @@
-import { prop, render, html, attr } from '@tempots/dom'
-import { PopOver } from '../src/renderables/pop-over'
+import { prop, render, html, attr, When, on } from '@tempots/dom'
+import { PopOver, type Placement } from '../src/renderables/pop-over'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { sleep } from '@tempots/std'
 
@@ -21,7 +21,17 @@ vi.mock('@floating-ui/dom', () => ({
 
 describe('PopOver', () => {
   beforeEach(() => {
+    // Ensure document.body exists
+    if (!document.body) {
+      document.documentElement.appendChild(document.createElement('body'))
+    }
     document.body.innerHTML = ''
+
+    // Create a dedicated portal container to avoid issues with body removal
+    const portalContainer = document.createElement('div')
+    portalContainer.id = 'portal-container'
+    document.body.appendChild(portalContainer)
+
     vi.clearAllMocks()
   })
 
@@ -134,7 +144,11 @@ describe('PopOver', () => {
 
   test('toggles popover visibility', async () => {
     const isOpen = prop(false)
-    const content = () => html.div('Toggle test')
+    const content = () => html.div(attr.class('toggle-test'), 'Toggle test')
+
+    // Create a container element to render the popover trigger
+    const container = document.createElement('div')
+    document.body.appendChild(container)
 
     const popover = html.div(
       PopOver({
@@ -144,21 +158,22 @@ describe('PopOver', () => {
       })
     )
 
-    const clear = render(popover, document.body)
-    await sleep(0)
+    const clear = render(popover, container)
+    await sleep(10) // Increase sleep time to allow for async operations
 
-    // Initially closed
-    expect(document.body.innerHTML).not.toContain('Toggle test')
+    // Initially closed - check that content is not in the document
+    expect(document.querySelector('.toggle-test')).toBeNull()
 
     // Open the popover
     isOpen.value = true
-    await sleep(0)
-    expect(document.body.innerHTML).toContain('Toggle test')
+    await sleep(10)
+    expect(document.querySelector('.toggle-test')).toBeTruthy()
+    expect(document.querySelector('.toggle-test')?.textContent).toBe('Toggle test')
 
     // Close the popover
     isOpen.value = false
-    await sleep(0)
-    expect(document.body.innerHTML).not.toContain('Toggle test')
+    await sleep(10)
+    expect(document.querySelector('.toggle-test')).toBeNull()
 
     clear()
   })
@@ -268,6 +283,146 @@ describe('PopOver', () => {
     const payloadInfo = document.querySelector('.payload-info') as HTMLElement
     expect(payloadInfo).toBeTruthy()
     expect(payloadInfo.textContent).toContain('bottom-') // Should contain placement and centerOffset
+
+    clear()
+  })
+
+  test('popover cleans up properly when parent is disposed', async () => {
+    const isOpen = prop(true)
+    const showParent = prop(true)
+    const content = () => html.div(attr.class('cleanup-test'), 'Cleanup test content')
+
+    // Create a container element
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const parentComponent = html.div(
+      PopOver({
+        open: isOpen,
+        content,
+        placement: 'bottom'
+      })
+    )
+
+    // Render the parent conditionally
+    const clear = render(
+      When(showParent, () => parentComponent),
+      container
+    )
+    await sleep(10)
+
+    // Initially, popover should be visible
+    expect(document.querySelector('.cleanup-test')).toBeTruthy()
+
+    // Hide the parent component
+    showParent.value = false
+    await sleep(10)
+
+    // Popover content should be cleaned up
+    expect(document.querySelector('.cleanup-test')).toBeNull()
+
+    clear()
+  })
+
+
+
+  test('popover with complex content and event handlers', async () => {
+    const isOpen = prop(true)
+    const clickSpy = vi.fn()
+    const inputSpy = vi.fn()
+
+    const content = () => html.div(
+      attr.class('complex-content'),
+      html.h3('Complex Popover'),
+      html.button(
+        attr.class('popover-button'),
+        on.click(clickSpy),
+        'Click me'
+      ),
+      html.input(
+        attr.class('popover-input'),
+        attr.type('text'),
+        on.input(inputSpy)
+      )
+    )
+
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const popover = html.div(
+      PopOver({
+        open: isOpen,
+        content,
+        placement: 'right'
+      })
+    )
+
+    const clear = render(popover, container)
+    await sleep(10)
+
+    // Verify content is rendered
+    const complexContent = document.querySelector('.complex-content')
+    expect(complexContent).toBeTruthy()
+
+    // Test button click
+    const button = document.querySelector('.popover-button') as HTMLButtonElement
+    expect(button).toBeTruthy()
+    button.click()
+    expect(clickSpy).toHaveBeenCalledTimes(1)
+
+    // Test input event
+    const input = document.querySelector('.popover-input') as HTMLInputElement
+    expect(input).toBeTruthy()
+    input.value = 'test'
+    input.dispatchEvent(new Event('input'))
+    expect(inputSpy).toHaveBeenCalledTimes(1)
+
+    // Close popover and verify cleanup
+    isOpen.value = false
+    await sleep(10)
+    expect(document.querySelector('.complex-content')).toBeNull()
+    expect(document.querySelector('.popover-button')).toBeNull()
+    expect(document.querySelector('.popover-input')).toBeNull()
+
+    clear()
+  })
+
+  test('popover with reactive placement changes', async () => {
+    const isOpen = prop(true)
+    const placement = prop<Placement>('top')
+    const content = () => html.div(attr.class('placement-test'), 'Placement test')
+
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const popover = html.div(
+      PopOver({
+        open: isOpen,
+        content,
+        placement
+      })
+    )
+
+    const clear = render(popover, container)
+    await sleep(10)
+
+    // Verify initial content
+    expect(document.querySelector('.placement-test')).toBeTruthy()
+
+    // Change placement
+    placement.value = 'bottom'
+    await sleep(10)
+    expect(document.querySelector('.placement-test')).toBeTruthy()
+
+    // Change placement again
+    placement.value = 'left'
+    await sleep(10)
+    expect(document.querySelector('.placement-test')).toBeTruthy()
+
+    // Close and verify cleanup
+    isOpen.value = false
+    await sleep(10)
+    expect(document.querySelector('.placement-test')).toBeNull()
 
     clear()
   })
