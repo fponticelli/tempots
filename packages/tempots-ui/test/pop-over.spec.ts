@@ -9,7 +9,7 @@ vi.mock('@floating-ui/dom', () => ({
     x: 100,
     y: 50,
     middlewareData: {
-      arrow: { x: 10, y: null }
+      arrow: { x: 10, y: null, centerOffset: 5, alignmentOffset: 0 }
     }
   }),
   autoUpdate: vi.fn().mockReturnValue(() => {}),
@@ -36,36 +36,51 @@ describe('PopOver', () => {
   })
 
   test('renders basic popover without arrow', async () => {
-    const isOpen = prop(true)
-    const content = () => html.div('Popover content')
+    const isOpen = prop(false)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'top'
-      })
+      PopOver((open, close) => {
+        return html.button(
+          attr.class('trigger-button'),
+          on.click(() => open({
+            content: html.div(attr.class('popover-content'), 'Popover content'),
+            placement: 'top'
+          })),
+          'Open Popover'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
-    await sleep(0) // Allow for async rendering
+    await sleep(0)
+
+    // Initially closed - should not contain popover content
+    expect(document.body.innerHTML).not.toContain('Popover content')
+
+    // Click to open
+    const button = document.querySelector('.trigger-button') as HTMLButtonElement
+    button.click()
+    await sleep(10)
+
+
 
     // Check that popover content is rendered
-    expect(document.body.innerHTML).toContain('Popover content')
+    expect(document.querySelector('.popover-content')).toBeTruthy()
+    expect(document.querySelector('.popover-content')?.textContent).toBe('Popover content')
 
     clear()
   })
 
   test('does not render when closed', async () => {
     const isOpen = prop(false)
-    const content = () => html.div('Popover content')
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'top'
-      })
+      PopOver((_open, _close) => {
+        return html.div(
+          attr.class('trigger-container'),
+          'Trigger content'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
@@ -73,31 +88,43 @@ describe('PopOver', () => {
 
     // Should not contain popover content when closed
     expect(document.body.innerHTML).not.toContain('Popover content')
+    expect(document.querySelector('.trigger-container')).toBeTruthy()
 
     clear()
   })
 
   test('renders popover with arrow', async () => {
-    const isOpen = prop(true)
-    const content = () => html.div('Popover with arrow')
+    const isOpen = prop(false)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'top',
-        arrow: {
-          padding: 5,
-          content: () => html.div(attr.class('custom-arrow'), 'Arrow content')
-        }
-      })
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('arrow-trigger'),
+          on.click(() => open({
+            content: html.div(attr.class('arrow-popover-content'), 'Popover with arrow'),
+            placement: 'top',
+            arrowPadding: 5,
+            arrow: (_arrowSignal) => html.div(
+              attr.class('custom-arrow'),
+              'Arrow content'
+            )
+          })),
+          'Open Arrow Popover'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
     await sleep(0)
 
+    // Click to open
+    const button = document.querySelector('.arrow-trigger') as HTMLButtonElement
+    button.click()
+    await sleep(10)
+
     // Check that popover content is rendered
-    expect(document.body.innerHTML).toContain('Popover with arrow')
+    expect(document.querySelector('.arrow-popover-content')).toBeTruthy()
+    expect(document.querySelector('.arrow-popover-content')?.textContent).toBe('Popover with arrow')
 
     // Check that arrow element is created with the custom content
     const arrowElements = document.querySelectorAll('.custom-arrow')
@@ -111,25 +138,37 @@ describe('PopOver', () => {
   })
 
   test('arrow uses default values when not specified', async () => {
-    const isOpen = prop(true)
-    const content = () => html.div('Popover with default arrow')
+    const isOpen = prop(false)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'bottom',
-        arrow: {
-          content: () => html.div(attr.class('default-arrow'), 'Default arrow')
-        } // Arrow with only content, padding should default to 0
-      })
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('default-arrow-trigger'),
+          on.click(() => open({
+            content: html.div(attr.class('default-popover-content'), 'Popover with default arrow'),
+            placement: 'bottom',
+            // arrowPadding not specified, should default to 0
+            arrow: (_arrowSignal) => html.div(
+              attr.class('default-arrow'),
+              'Default arrow'
+            )
+          })),
+          'Open Default Arrow Popover'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
     await sleep(0)
 
+    // Click to open
+    const button = document.querySelector('.default-arrow-trigger') as HTMLButtonElement
+    button.click()
+    await sleep(10)
+
     // Check that popover content is rendered
-    expect(document.body.innerHTML).toContain('Popover with default arrow')
+    expect(document.querySelector('.default-popover-content')).toBeTruthy()
+    expect(document.querySelector('.default-popover-content')?.textContent).toBe('Popover with default arrow')
 
     // Check that arrow element is created with default content
     const arrowElements = document.querySelectorAll('.default-arrow')
@@ -144,34 +183,47 @@ describe('PopOver', () => {
 
   test('toggles popover visibility', async () => {
     const isOpen = prop(false)
-    const content = () => html.div(attr.class('toggle-test'), 'Toggle test')
 
     // Create a container element to render the popover trigger
     const container = document.createElement('div')
     document.body.appendChild(container)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'right'
-      })
+      PopOver((open, close) => {
+        return html.div(
+          html.button(
+            attr.class('toggle-open-btn'),
+            on.click(() => open({
+              content: html.div(attr.class('toggle-test'), 'Toggle test'),
+              placement: 'right'
+            })),
+            'Open'
+          ),
+          html.button(
+            attr.class('toggle-close-btn'),
+            on.click(close),
+            'Close'
+          )
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, container)
-    await sleep(10) // Increase sleep time to allow for async operations
+    await sleep(10)
 
     // Initially closed - check that content is not in the document
     expect(document.querySelector('.toggle-test')).toBeNull()
 
     // Open the popover
-    isOpen.value = true
+    const openBtn = document.querySelector('.toggle-open-btn') as HTMLButtonElement
+    openBtn.click()
     await sleep(10)
     expect(document.querySelector('.toggle-test')).toBeTruthy()
     expect(document.querySelector('.toggle-test')?.textContent).toBe('Toggle test')
 
     // Close the popover
-    isOpen.value = false
+    const closeBtn = document.querySelector('.toggle-close-btn') as HTMLButtonElement
+    closeBtn.click()
     await sleep(10)
     expect(document.querySelector('.toggle-test')).toBeNull()
 
@@ -179,26 +231,37 @@ describe('PopOver', () => {
   })
 
   test('renders arrow with custom padding', async () => {
-    const isOpen = prop(true)
-    const content = () => html.div('Padded arrow popover')
+    const isOpen = prop(false)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'left',
-        arrow: {
-          padding: 10,
-          content: () => html.div(attr.class('padded-arrow'), 'Padded arrow')
-        }
-      })
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('padded-arrow-trigger'),
+          on.click(() => open({
+            content: html.div(attr.class('padded-popover-content'), 'Padded arrow popover'),
+            placement: 'left',
+            arrowPadding: 10,
+            arrow: (_arrowSignal) => html.div(
+              attr.class('padded-arrow'),
+              'Padded arrow'
+            )
+          })),
+          'Open Padded Arrow Popover'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
     await sleep(0)
 
+    // Click to open
+    const button = document.querySelector('.padded-arrow-trigger') as HTMLButtonElement
+    button.click()
+    await sleep(10)
+
     // Check that popover content is rendered
-    expect(document.body.innerHTML).toContain('Padded arrow popover')
+    expect(document.querySelector('.padded-popover-content')).toBeTruthy()
+    expect(document.querySelector('.padded-popover-content')?.textContent).toBe('Padded arrow popover')
 
     // Check that arrow element is created
     const arrowElements = document.querySelectorAll('.padded-arrow')
@@ -212,30 +275,37 @@ describe('PopOver', () => {
   })
 
   test('arrow content can use positioning payload', async () => {
-    const isOpen = prop(true)
-    const content = () => html.div('Arrow with positioning data')
+    const isOpen = prop(false)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'top',
-        arrow: {
-          padding: 5,
-          content: (arrowSignal) =>
-            html.div(
-              attr.class('dynamic-arrow'),
-              attr.style('width: 12px; height: 12px; background: purple; position: absolute;'),
-              arrowSignal.map(data =>
-                `Placement: ${data.placement}, Center: ${data.centerOffset}, Size: ${data.containerWidth}x${data.containerHeight}`
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('dynamic-arrow-trigger'),
+          on.click(() => open({
+            content: html.div(attr.class('dynamic-popover-content'), 'Arrow with positioning data'),
+            placement: 'top',
+            arrowPadding: 5,
+            arrow: (arrowSignal) =>
+              html.div(
+                attr.class('dynamic-arrow'),
+                attr.style('width: 12px; height: 12px; background: purple; position: absolute;'),
+                arrowSignal.map(data =>
+                  `Placement: ${data.placement}, Center: ${data.centerOffset}, Size: ${data.containerWidth}x${data.containerHeight}`
+                )
               )
-            )
-        }
-      })
+          })),
+          'Open Dynamic Arrow Popover'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
     await sleep(0)
+
+    // Click to open
+    const button = document.querySelector('.dynamic-arrow-trigger') as HTMLButtonElement
+    button.click()
+    await sleep(10)
 
     // Check that arrow element is created with positioning data
     const arrowEl = document.querySelector('.dynamic-arrow') as HTMLElement
@@ -248,32 +318,39 @@ describe('PopOver', () => {
   })
 
   test('arrow content receives positioning payload data', async () => {
-    const isOpen = prop(true)
-    const content = () => html.div('Arrow with payload data')
+    const isOpen = prop(false)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'bottom',
-        arrow: {
-          padding: 8,
-          content: (arrowSignal) =>
-            html.div(
-              attr.class('payload-arrow'),
-              attr.style('position: absolute; width: 12px; height: 12px; background: blue;'),
-              // Display some payload information as text content
-              html.span(
-                attr.class('payload-info'),
-                arrowSignal.map(data => `${data.placement}-${data.centerOffset}`)
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('payload-arrow-trigger'),
+          on.click(() => open({
+            content: html.div(attr.class('payload-popover-content'), 'Arrow with payload data'),
+            placement: 'bottom',
+            arrowPadding: 8,
+            arrow: (arrowSignal) =>
+              html.div(
+                attr.class('payload-arrow'),
+                attr.style('position: absolute; width: 12px; height: 12px; background: blue;'),
+                // Display some payload information as text content
+                html.span(
+                  attr.class('payload-info'),
+                  arrowSignal.map(data => `${data.placement}-${data.centerOffset}`)
+                )
               )
-            )
-        }
-      })
+          })),
+          'Open Payload Arrow Popover'
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, document.body)
     await sleep(0)
+
+    // Click to open
+    const button = document.querySelector('.payload-arrow-trigger') as HTMLButtonElement
+    button.click()
+    await sleep(10)
 
     // Check that arrow element is created with payload data
     const arrowEl = document.querySelector('.payload-arrow') as HTMLElement
@@ -288,20 +365,24 @@ describe('PopOver', () => {
   })
 
   test('popover cleans up properly when parent is disposed', async () => {
-    const isOpen = prop(true)
+    const isOpen = prop(false)
     const showParent = prop(true)
-    const content = () => html.div(attr.class('cleanup-test'), 'Cleanup test content')
 
     // Create a container element
     const container = document.createElement('div')
     document.body.appendChild(container)
 
     const parentComponent = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'bottom'
-      })
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('cleanup-trigger'),
+          on.click(() => open({
+            content: html.div(attr.class('cleanup-test'), 'Cleanup test content'),
+            placement: 'bottom'
+          })),
+          'Open Cleanup Test'
+        )
+      }, { isOpen })
     )
 
     // Render the parent conditionally
@@ -309,6 +390,11 @@ describe('PopOver', () => {
       When(showParent, () => parentComponent),
       container
     )
+    await sleep(10)
+
+    // Open the popover first
+    const button = document.querySelector('.cleanup-trigger') as HTMLButtonElement
+    button.click()
     await sleep(10)
 
     // Initially, popover should be visible
@@ -327,37 +413,52 @@ describe('PopOver', () => {
 
 
   test('popover with complex content and event handlers', async () => {
-    const isOpen = prop(true)
+    const isOpen = prop(false)
     const clickSpy = vi.fn()
     const inputSpy = vi.fn()
-
-    const content = () => html.div(
-      attr.class('complex-content'),
-      html.h3('Complex Popover'),
-      html.button(
-        attr.class('popover-button'),
-        on.click(clickSpy),
-        'Click me'
-      ),
-      html.input(
-        attr.class('popover-input'),
-        attr.type('text'),
-        on.input(inputSpy)
-      )
-    )
 
     const container = document.createElement('div')
     document.body.appendChild(container)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement: 'right'
-      })
+      PopOver((open, close) => {
+        return html.div(
+          html.button(
+            attr.class('complex-trigger'),
+            on.click(() => open({
+              content: html.div(
+                attr.class('complex-content'),
+                html.h3('Complex Popover'),
+                html.button(
+                  attr.class('popover-button'),
+                  on.click(clickSpy),
+                  'Click me'
+                ),
+                html.input(
+                  attr.class('popover-input'),
+                  attr.type('text'),
+                  on.input(inputSpy)
+                )
+              ),
+              placement: 'right'
+            })),
+            'Open Complex Popover'
+          ),
+          html.button(
+            attr.class('complex-close'),
+            on.click(close),
+            'Close'
+          )
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, container)
+    await sleep(10)
+
+    // Open the popover
+    const triggerBtn = document.querySelector('.complex-trigger') as HTMLButtonElement
+    triggerBtn.click()
     await sleep(10)
 
     // Verify content is rendered
@@ -378,7 +479,8 @@ describe('PopOver', () => {
     expect(inputSpy).toHaveBeenCalledTimes(1)
 
     // Close popover and verify cleanup
-    isOpen.value = false
+    const closeBtn = document.querySelector('.complex-close') as HTMLButtonElement
+    closeBtn.click()
     await sleep(10)
     expect(document.querySelector('.complex-content')).toBeNull()
     expect(document.querySelector('.popover-button')).toBeNull()
@@ -388,39 +490,67 @@ describe('PopOver', () => {
   })
 
   test('popover with reactive placement changes', async () => {
-    const isOpen = prop(true)
+    const isOpen = prop(false)
     const placement = prop<Placement>('top')
-    const content = () => html.div(attr.class('placement-test'), 'Placement test')
 
     const container = document.createElement('div')
     document.body.appendChild(container)
 
     const popover = html.div(
-      PopOver({
-        open: isOpen,
-        content,
-        placement
-      })
+      PopOver((open, close) => {
+        return html.div(
+          html.button(
+            attr.class('placement-trigger'),
+            on.click(() => open({
+              content: html.div(attr.class('placement-test'), 'Placement test'),
+              placement: placement.value
+            })),
+            'Open Placement Test'
+          ),
+          html.button(
+            attr.class('change-placement'),
+            on.click(() => {
+              placement.value = placement.value === 'top' ? 'bottom' :
+                               placement.value === 'bottom' ? 'left' : 'top'
+            }),
+            'Change Placement'
+          ),
+          html.button(
+            attr.class('placement-close'),
+            on.click(close),
+            'Close'
+          )
+        )
+      }, { isOpen })
     )
 
     const clear = render(popover, container)
     await sleep(10)
 
+    // Open the popover
+    const triggerBtn = document.querySelector('.placement-trigger') as HTMLButtonElement
+    triggerBtn.click()
+    await sleep(10)
+
     // Verify initial content
     expect(document.querySelector('.placement-test')).toBeTruthy()
 
-    // Change placement
-    placement.value = 'bottom'
+    // Note: With the new API, placement changes would require reopening the popover
+    // Close and reopen with different placement
+    const closeBtn = document.querySelector('.placement-close') as HTMLButtonElement
+    closeBtn.click()
+    await sleep(10)
+    expect(document.querySelector('.placement-test')).toBeNull()
+
+    // Change placement and reopen
+    const changePlacementBtn = document.querySelector('.change-placement') as HTMLButtonElement
+    changePlacementBtn.click()
+    triggerBtn.click()
     await sleep(10)
     expect(document.querySelector('.placement-test')).toBeTruthy()
 
-    // Change placement again
-    placement.value = 'left'
-    await sleep(10)
-    expect(document.querySelector('.placement-test')).toBeTruthy()
-
-    // Close and verify cleanup
-    isOpen.value = false
+    // Final cleanup
+    closeBtn.click()
     await sleep(10)
     expect(document.querySelector('.placement-test')).toBeNull()
 

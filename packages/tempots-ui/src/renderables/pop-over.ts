@@ -4,8 +4,6 @@ import {
   Value,
   html,
   Portal,
-  WithBrowserCtx,
-  BrowserContext,
   When,
   OnDispose,
   effectOf,
@@ -43,61 +41,30 @@ export type Placement =
   | 'left-end'
 
 /**
- * Represents the properties for a PopOver component.
+ * Represents all possible placements for a pop-over.
  *
  * @public
  */
-export type PopOverOptions = {
-  /**
-   * Specifies whether the PopOver is open or closed.
-   */
-  open: Value<boolean>
+export const allPlacements: Placement[] = [
+  'top',
+  'top-start',
+  'top-end',
+  'right',
+  'right-start',
+  'right-end',
+  'bottom',
+  'bottom-start',
+  'bottom-end',
+  'left',
+  'left-start',
+  'left-end',
+]
 
-  /**
-   * Specifies the content of the PopOver.
-   * This should be a function that returns a TNode.
-   */
-  content: () => TNode
-
-  /**
-   * Specifies the placement of the PopOver.
-   * This is an optional property.
-   */
-  placement?: Value<Placement>
-
-  /**
-   * Specifies the offset of the PopOver.
-   * This is an optional property.
-   */
-  offset?: Value<{
-    /**
-     * Specifies the offset on the main axis.
-     */
-    mainAxis?: number
-
-    /**
-     * Specifies the offset on the cross axis.
-     */
-    crossAxis?: number
-  }>
-
-  /**
-   * Specifies the arrow configuration for the PopOver.
-   * When provided, an arrow element will be created and positioned.
-   * This is an optional property.
-   */
-  arrow?: {
-    /**
-     * Specifies the padding between the arrow and the edges of the floating element.
-     */
-    padding?: number
-    /**
-     * Specifies the content of the arrow.
-     */
-    content?: (signal: Signal<PopOverArrowOptions>) => TNode
-  }
-}
-
+/**
+ * Represents the options for the arrow of a pop-over.
+ *
+ * @public
+ */
 export type PopOverArrowOptions = {
   x?: number
   y?: number
@@ -109,128 +76,203 @@ export type PopOverArrowOptions = {
 }
 
 /**
- * Renders a PopOver component.
+ * Represents the properties for a pop-over.
  *
- * @param props - The properties for the PopOver component.
- * @returns The rendered PopOver component.
  * @public
  */
-export const PopOver = ({
-  content,
-  open,
-  placement: placementOption,
-  offset = { mainAxis: 0, crossAxis: 0 },
-  arrow: arrowOption,
-}: PopOverOptions) =>
-  WithBrowserCtx((ctx: BrowserContext) => {
-    const isOpen = Value.toSignal(open)
-    const target = ctx.element
-    const offsetSignal = Value.toSignal(offset)
-    const mainAxis = offsetSignal.$.mainAxis.map(v => v ?? 0)
-    const crossAxis = offsetSignal.$.crossAxis.map(v => v ?? 0)
-    const placement = Value.toSignal(placementOption ?? 'top')
-    const arrowSignal = prop<Omit<PopOverArrowOptions, 'placement'>>({
-      centerOffset: 0,
-      alignmentOffset: 0,
-      containerWidth: 0,
-      containerHeight: 0,
-      x: undefined,
-      y: undefined,
-    })
+export type PopOverOptions = {
+  /**
+   * Specifies the content of the PopOver.
+   * This should be a function that returns a TNode.
+   */
+  content: TNode
 
-    return When(isOpen, () =>
-      Portal(
-        'body',
-        html.div(
-          WithElement((element: HTMLElement) => {
-            const floatingEl = element
-            floatingEl.style.position = 'absolute'
+  /**
+   * Specifies the placement of the PopOver.
+   * This is an optional property.
+   */
+  placement?: Value<Placement>
 
-            // Create and manage arrow element
-            let arrowEl: HTMLElement | null = null
+  /**
+   * Specifies the offset on the main axis.
+   */
+  mainAxisOffset?: Value<number>
 
-            async function updatePosition() {
-              const middleware = [
-                flip(),
-                fuiOffset({
-                  mainAxis: mainAxis.get(),
-                  crossAxis: crossAxis.get(),
-                }),
-                shift(),
-                flip(),
-              ]
+  /**
+   * Specifies the offset on the cross axis.
+   */
+  crossAxisOffset?: Value<number>
 
-              // Add arrow middleware if arrow element exists
-              if (arrowOption != null && arrowEl != null) {
-                middleware.push(
-                  arrow({
-                    element: arrowEl,
-                    padding: arrowOption?.padding ?? 0,
-                  })
-                )
+  /**
+   * Specifies the padding between the arrow and the edges of the floating element.
+   */
+  arrowPadding?: Value<number>
+  /**
+   * Specifies the content of the arrow.
+   */
+  arrow?: (signal: Signal<PopOverArrowOptions>) => TNode
+
+  /**
+   * Specifies the target element for the PopOver. If not provided, the PopOver will be
+   * positioned relative to the parent element.
+   */
+  target?: string | HTMLElement
+}
+
+/**
+ * Creates a pop-over component.
+ *
+ * @param fn - A function that returns the content of the pop-over.
+ * @param options - The options for the pop-over.
+ * @returns The pop-over component.
+ * @public
+ */
+export const PopOver = (
+  fn: (open: (options: PopOverOptions) => void, close: () => void) => TNode,
+  options: { isOpen: Value<boolean> } = { isOpen: false }
+) => {
+  const disposables = [] as Array<() => void>
+  let properties: PopOverOptions | null = null
+  const isOpen = Value.deriveProp(options.isOpen)
+  function open(passOptions: PopOverOptions) {
+    properties = passOptions
+    isOpen.set(true)
+  }
+  function close() {
+    isOpen.set(false)
+    disposables.forEach(fn => fn())
+    disposables.length = 0
+  }
+  return Fragment(
+    fn(open, close),
+    When(isOpen, () =>
+      WithElement(parentElement =>
+        Portal(
+          'body',
+          html.div(
+            WithElement((floatingEl: HTMLElement) => {
+              floatingEl.style.position = 'absolute'
+              const target =
+                typeof properties?.target === 'string'
+                  ? (parentElement!.querySelector(
+                      properties.target
+                    ) as HTMLElement)
+                  : (properties?.target ?? parentElement!)
+              if (target == null) {
+                throw new Error(`Target not found: ${properties?.target}`)
               }
-
-              const result = await computePosition(target, floatingEl, {
-                placement: placement.get(),
-                strategy: 'absolute',
-                middleware,
+              // Create and manage arrow element
+              let arrowEl: HTMLElement | null = null
+              const mainAxis = Value.toSignal(properties?.mainAxisOffset ?? 0)
+              const crossAxis = Value.toSignal(properties?.crossAxisOffset ?? 0)
+              const placement = Value.toSignal(properties?.placement ?? 'top')
+              const arrowPadding = Value.toSignal(properties?.arrowPadding ?? 0)
+              const arrowOption = properties?.arrow
+              const arrowSignal = prop<Omit<PopOverArrowOptions, 'placement'>>({
+                centerOffset: 0,
+                alignmentOffset: 0,
+                containerWidth: 0,
+                containerHeight: 0,
+                x: undefined,
+                y: undefined,
               })
 
-              const { x, y, middlewareData } = result
-              floatingEl.style.top = `${y}px`
-              floatingEl.style.left = `${x}px`
+              async function updatePosition() {
+                const middleware = [
+                  flip(),
+                  fuiOffset({
+                    mainAxis: mainAxis.get(),
+                    crossAxis: crossAxis.get(),
+                  }),
+                  shift(),
+                  flip(),
+                ]
 
-              // Position arrow if it exists
-              if (arrowEl != null && middlewareData.arrow != null) {
-                const {
-                  x: arrowX,
-                  y: arrowY,
-                  centerOffset,
-                  alignmentOffset,
-                } = middlewareData.arrow
-                arrowSignal.set({
-                  x: arrowX,
-                  y: arrowY,
-                  centerOffset,
-                  alignmentOffset,
-                  containerWidth: floatingEl.offsetWidth,
-                  containerHeight: floatingEl.offsetHeight,
-                })
-              }
-            }
-
-            const cancel = effectOf(
-              mainAxis,
-              crossAxis,
-              placement
-            )(updatePosition)
-            return Fragment(
-              arrowOption != null
-                ? html.div(
-                    arrowOption.content?.(
-                      computedOf(
-                        arrowSignal,
-                        placement
-                      )((arrow, placement) => ({
-                        ...arrow,
-                        placement,
-                      }))
-                    ),
-                    WithElement(el => {
-                      arrowEl = el
-                      updatePosition()
+                // Add arrow middleware if arrow element exists
+                if (arrowOption != null && arrowEl != null) {
+                  middleware.push(
+                    arrow({
+                      element: arrowEl,
+                      padding: arrowPadding.get(),
                     })
                   )
-                : null,
-              OnDispose(
-                arrowSignal.dispose,
-                autoUpdate(target, floatingEl, updatePosition),
-                cancel
+                }
+
+                const result = await computePosition(target, floatingEl, {
+                  placement: placement.get(),
+                  strategy: 'absolute',
+                  middleware,
+                })
+
+                const { x, y, middlewareData } = result
+                floatingEl.style.top = `${y}px`
+                floatingEl.style.left = `${x}px`
+
+                // Position arrow if it exists
+                if (arrowEl != null && middlewareData.arrow != null) {
+                  const {
+                    x: arrowX,
+                    y: arrowY,
+                    centerOffset,
+                    alignmentOffset,
+                  } = middlewareData.arrow
+                  arrowSignal.set({
+                    x: arrowX,
+                    y: arrowY,
+                    centerOffset,
+                    alignmentOffset,
+                    containerWidth: floatingEl.offsetWidth,
+                    containerHeight: floatingEl.offsetHeight,
+                  })
+                }
+              }
+
+              const cancel = effectOf(
+                mainAxis,
+                crossAxis,
+                placement
+              )(updatePosition)
+              return Fragment(
+                properties?.content,
+                properties?.arrow != null
+                  ? html.div(
+                      properties?.arrow(
+                        computedOf(
+                          arrowSignal,
+                          placement
+                        )((arrow, placement) => ({
+                          ...arrow,
+                          placement,
+                        }))
+                      ),
+                      WithElement(el => {
+                        arrowEl = el
+                        updatePosition()
+                      })
+                    )
+                  : null,
+                OnDispose(
+                  arrowSignal.dispose,
+                  autoUpdate(target, floatingEl, updatePosition),
+                  cancel
+                )
               )
-            )
-          }),
-          content()
+            })
+          )
         )
       )
     )
-  })
+  )
+}
+
+// export type PopOverContext = {
+//   open: (options: PopOverOptions) => void
+//   close: () => void
+// }
+
+// export const usePopOver = (): PopOverContext => {
+//   return {
+//     open: () => {},
+//     close: () => {},
+//   }
+// }

@@ -9,7 +9,6 @@ import { Fragment } from './fragment'
 import { Empty } from './empty'
 import { attr } from './attribute'
 import { InputTypes } from '../types/html-attributes'
-import { Value } from '../std/value'
 
 /**
  * Converts a TNode into a Renderable.
@@ -26,7 +25,7 @@ export const renderableOfTNode = <T extends DOMContext>(
     return Fragment(...child.map(renderableOfTNode))
   } else if (typeof child === 'string') {
     return _staticText(child)
-  } else if (Signal.is(child as Value<string>)) {
+  } else if (Signal.is(child as Signal<string>)) {
     return _signalText(child as Signal<string>)
   } else if (typeof child === 'function') {
     return child as Renderable

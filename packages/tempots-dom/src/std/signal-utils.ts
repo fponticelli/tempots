@@ -371,7 +371,46 @@ export const computedRecord = <T extends Record<string, Value<unknown>>, O>(
   }, signals)
 }
 
+/**
+ * Merges a record of signals and literals into a single signal.
+ *
+ * @typeParam T - The type of the record containing signals and literals.
+ * @param options - The record containing signals and literals.
+ * @returns - The merged signal.
+ * @public
+ */
 export const merge = <T extends Record<string, Value<unknown>>>(
   options: T
 ): Signal<{ [K in keyof T]: GetValueType<T[K]> }> =>
   computedRecord(options, v => v as { [K in keyof T]: GetValueType<T[K]> })
+
+/**
+ * Delays the value of a signal by a specified amount of time.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param signal - The signal to delay.
+ * @param ms - The amount of time to delay the signal in milliseconds.
+ * @returns - The delayed signal.
+ * @public
+ */
+export const delaySignal = <T>(
+  signal: Signal<T>,
+  ms: number | ((value: T) => number)
+): Signal<T> => {
+  const newSignal = prop(signal.get())
+  let timeout: ReturnType<typeof setTimeout> | null = null
+  signal.on(value => {
+    if (timeout != null) clearTimeout(timeout)
+    timeout = setTimeout(
+      () => {
+        timeout = null
+        newSignal.set(value)
+      },
+      typeof ms === 'function' ? ms(value) : ms
+    )
+  })
+  newSignal.onDispose(() => {
+    if (timeout != null) clearTimeout(timeout)
+  })
+  return newSignal
+}
