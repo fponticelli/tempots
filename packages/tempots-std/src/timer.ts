@@ -264,3 +264,59 @@ export const debounce = <FN extends (...args: unknown[]) => void>(
 ): ThrottledFunction<Parameters<FN>> => {
   return throttle(delay, callback, { debounceMode: atBegin !== false })
 }
+
+/**
+ * Delays the execution of a function using requestAnimationFrame.
+ *
+ * @param callback - The function to delay.
+ * @returns A function that, when called, will cancel the delay and prevent the original function from being executed.
+ */
+export const delayedAnimationFrame = (
+  callback: (time: DOMHighResTimeStamp) => void
+) => {
+  let rafId: number | null = null
+  const frame = (time: DOMHighResTimeStamp) => {
+    rafId = null
+    callback(time)
+  }
+  const run = () => {
+    if (rafId == null) {
+      rafId = requestAnimationFrame(frame)
+    }
+  }
+  run()
+  return () => {
+    if (rafId != null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
+  }
+}
+
+/**
+ * Executes a function repeatedly using requestAnimationFrame.
+ *
+ * @param callback - The function to execute periodically.
+ * @returns A function that, when called, will cancel the interval and stop future executions.
+ */
+export const intervalAnimationFrame = (
+  callback: (time: DOMHighResTimeStamp) => void
+) => {
+  let rafId: number | null = null
+  const frame = (time: DOMHighResTimeStamp) => {
+    rafId = requestAnimationFrame(frame)
+    callback(time)
+  }
+  const run = () => {
+    if (rafId == null) {
+      rafId = requestAnimationFrame(frame)
+    }
+  }
+  run()
+  return () => {
+    if (rafId != null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
+  }
+}
