@@ -365,7 +365,7 @@ export const containsAllText = (s: string, tests: string[]): boolean => {
  * @public
  */
 export const dasherize = (s: string): string => {
-  return s.replace('_', '-')
+  return s.replace(/_/g, '-')
 }
 
 /**
@@ -641,11 +641,9 @@ export const lowerCaseFirst = (value: string): string => {
  * @returns The random substring.
  * @public
  */
-export const randomString = (value: string, length = 1): string => {
-  return value.substring(
-    Math.floor((value.length - length + 1) * Math.random()),
-    length
-  )
+export const randomSubString = (value: string, length = 1): string => {
+  const startIndex = Math.floor((value.length - length + 1) * Math.random())
+  return value.substring(startIndex, startIndex + length)
 }
 
 /**
@@ -660,7 +658,7 @@ export const randomStringSequence = (
   alphabet: string,
   length: number
 ): string => {
-  return generateArray(length, () => randomString(alphabet)).join('')
+  return generateArray(length, () => randomSubString(alphabet)).join('')
 }
 
 /**

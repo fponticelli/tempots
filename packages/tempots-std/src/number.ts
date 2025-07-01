@@ -429,22 +429,6 @@ export const roundTo = (f: number, decimals: number): number => {
 }
 
 /**
- * `sign` returns `-1` if `value` is a negative number, `1` otherwise.
- *
- * @param value - The number to check.
- * @returns `-1` if the number is negative, `1` otherwise.
- * @public
- * @example
- * ```ts
- * sign(-5) // returns -1
- * sign(5) // returns 1
- * ```
- */
-export const sign = <T extends number>(value: T): number => {
-  return value < 0 ? -1 : 1
-}
-
-/**
  * Passed two boundaries values (`min`, `max`), `wrap` ensures that the passed value `v` will
  * be included in the boundaries. If the value exceeds `max`, the value is reduced by `min`
  * repeatedely until it falls within the range. Similar and inverted treatment is performed if

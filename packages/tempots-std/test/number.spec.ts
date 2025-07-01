@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import {
-  sign,
   wrap,
   wrapCircular,
   angleDifference,
@@ -26,14 +25,6 @@ import {
 } from '../src/number'
 
 describe('numbers', () => {
-  test('sign', () => {
-    expect(sign(100)).toBe(1)
-    expect(sign(1)).toBe(1)
-    expect(sign(0)).toBe(1)
-    expect(sign(-1)).toBe(-1)
-    expect(sign(-100)).toBe(-1)
-  })
-
   test('wrap', () => {
     expect(wrap(4,  5, 10)).toBe(5)
     expect(wrap(5,  5, 10)).toBe(5)
@@ -214,7 +205,7 @@ describe('numbers', () => {
     expect(nearEqual(5, Infinity)).toBe(false) // Line 337: isFinite(a) && !isFinite(b) -> false
 
     // Additional test for when b argument is Math.NaN (as requested)
-    expect(nearEqual(42, Math.NaN)).toBe(false) // Line 341: when b is NaN and a is finite -> false
+    expect(nearEqual(42, NaN)).toBe(false) // Line 341: when b is NaN and a is finite -> false
   })
 
   test('nearEqualAngles', () => {

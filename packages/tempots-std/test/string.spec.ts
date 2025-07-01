@@ -32,7 +32,7 @@ import {
   ifEmptyString,
   isDigitsOnly,
   isEmptyString,
-  randomString,
+  randomSubString,
   randomStringSequence,
   randomStringSequenceBase64,
   mapChars,
@@ -49,7 +49,6 @@ import {
 
   replaceAll,
   underscore,
-  wrapColumnsPreserveNewLines,
   encodeBase64,
   decodeBase64,
   splitStringOnLast,
@@ -66,8 +65,6 @@ import {
   textEndsWithCaseInsensitive,
   stringStartsWith,
   textStartsWithCaseInsensitive,
-  containsAnyTextCaseInsensitive,
-  stringEndsWithAny,
   filterChars,
   isAlpha,
   isBreakingWhitespace,
@@ -77,7 +74,6 @@ import {
   deleteStringBefore,
   deleteFirstFromString,
   trimStringSlice,
-  wrapLine,
   isSpaceAt,
   stringEndsWithAny,
   textEndsWithAnyCaseInsensitive,
@@ -378,9 +374,10 @@ lines`
 
   test('dasherize', () => {
     expect(dasherize('hello_world')).toBe('hello-world')
-    expect(dasherize('test_string_here')).toBe('test-string_here') // Only replaces first occurrence
+    expect(dasherize('test_string_here')).toBe('test-string-here') // Now replaces all occurrences
     expect(dasherize('no-underscores')).toBe('no-underscores')
     expect(dasherize('')).toBe('')
+    expect(dasherize('multiple_under_scores_here')).toBe('multiple-under-scores-here')
   })
 
   test('filterCharcodes', () => {
@@ -419,31 +416,35 @@ lines`
 
   test('randomString', () => {
     const source = 'abcdef'
-    const result = randomString(source, 3)
-    // Due to substring bug, this might not return exactly 3 characters
-    expect(result.length).toBeGreaterThanOrEqual(0)
-    expect(result.length).toBeLessThanOrEqual(source.length)
+    const result = randomSubString(source, 3)
+    // Now should return exactly 3 characters (fixed)
+    expect(result.length).toBe(3)
     // All characters should be from the source
     for (const char of result) {
       expect(source).toContain(char)
     }
 
-    const single = randomString(source)
-    expect(single.length).toBeGreaterThanOrEqual(0)
+    const single = randomSubString(source)
+    expect(single.length).toBe(1) // Default length is 1
     for (const char of single) {
       expect(source).toContain(char)
     }
 
-    // Test with single character source to ensure it works
-    const singleChar = randomString('a')
-    expect(singleChar.length).toBeGreaterThanOrEqual(0)
-    expect(singleChar.length).toBeLessThanOrEqual(1)
+    // Test with single character source
+    const singleChar = randomSubString('a')
+    expect(singleChar.length).toBe(1)
+    expect(singleChar).toBe('a')
+
+    // Test edge case: requesting full string length
+    const fullLength = randomSubString(source, source.length)
+    expect(fullLength.length).toBe(source.length)
+    expect(fullLength).toBe(source)
   })
 
   test('randomStringSequence', () => {
     const result = randomStringSequence('abc', 5)
-    // Due to the underlying randomString bug, this might not return exactly 5 characters
-    expect(result.length).toBeGreaterThan(0)
+    // Now should return exactly 5 characters (fixed)
+    expect(result.length).toBe(5)
     for (const char of result) {
       expect('abc').toContain(char)
     }
@@ -451,8 +452,8 @@ lines`
 
   test('randomStringSequenceBase64', () => {
     const result = randomStringSequenceBase64(10)
-    // Due to the underlying randomString bug, this might not return exactly 10 characters
-    expect(result.length).toBeGreaterThan(0)
+    // Now should return exactly 10 characters (fixed)
+    expect(result.length).toBe(10)
     expect(typeof result).toBe('string')
     // Should only contain base64 characters
     expect(/^[A-Za-z0-9+/]*$/.test(result)).toBe(true)
