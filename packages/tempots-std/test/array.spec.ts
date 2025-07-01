@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateArray, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeAllFromArray, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPrimitive, uniquePrimitives } from "../src/array";
+import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateArray, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeAllFromArray, removeAllFromArrayByPredicate, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPrimitive, uniquePrimitives } from "../src/array";
 import { compareStrings } from "../src/string";
 
 describe('arrays:mapArray', () => {
@@ -195,6 +195,38 @@ describe('arrays:removeOneFromArrayByPredicate', () => {
     const arr = [1, 2, 3, 2]
     expect(removeOneFromArrayByPredicate(arr, a => a == 2)).toEqual(true)
     expect(arr).toEqual([1, 3, 2])
+  })
+})
+
+describe('arrays:removeAllFromArrayByPredicate', () => {
+  test('should work with empty arrays', () => {
+    const arr: number[] = []
+    expect(removeAllFromArrayByPredicate(arr, a => a == 1)).toEqual(false)
+    expect(arr).toEqual([])
+  })
+
+  test('should remove all matching elements', () => {
+    const arr = [1, 2, 3, 2, 4, 2]
+    expect(removeAllFromArrayByPredicate(arr, a => a == 2)).toEqual(true)
+    expect(arr).toEqual([1, 3, 4])
+  })
+
+  test('should return false when no elements match', () => {
+    const arr = [1, 2, 3]
+    expect(removeAllFromArrayByPredicate(arr, a => a == 4)).toEqual(false)
+    expect(arr).toEqual([1, 2, 3])
+  })
+
+  test('should remove all elements if all match', () => {
+    const arr = [2, 2, 2]
+    expect(removeAllFromArrayByPredicate(arr, a => a == 2)).toEqual(true)
+    expect(arr).toEqual([])
+  })
+
+  test('should work with complex predicates', () => {
+    const arr = [1, 2, 3, 4, 5, 6]
+    expect(removeAllFromArrayByPredicate(arr, a => a % 2 === 0)).toEqual(true)
+    expect(arr).toEqual([1, 3, 5])
   })
 })
 

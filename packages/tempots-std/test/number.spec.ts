@@ -197,6 +197,7 @@ describe('numbers', () => {
     expect(nearEqual(NaN, NaN)).toBe(true)
     expect(nearEqual(NaN, 5)).toBe(false)
     expect(nearEqual(5, NaN)).toBe(false)
+    expect(nearEqual(NaN, Infinity)).toBe(false) // This covers line 341: a is NaN, b is not NaN
     expect(nearEqual(Infinity, Infinity)).toBe(true)
     expect(nearEqual(-Infinity, -Infinity)).toBe(true)
     expect(nearEqual(Infinity, -Infinity)).toBe(false)

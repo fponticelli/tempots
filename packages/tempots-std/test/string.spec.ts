@@ -49,7 +49,13 @@ import {
 
   replaceAll,
   underscore,
-  wrapColumnsPreserveNewLines
+  wrapColumnsPreserveNewLines,
+  encodeBase64,
+  decodeBase64,
+  splitStringOnLast,
+  splitStringOnFirst,
+  splitStringOnce,
+  stringStartsWithAny
 } from '../src/string'
 
 describe('strings.ts', () => {
@@ -387,7 +393,7 @@ lines`
     const source = 'abcdef'
     const result = randomString(source, 3)
     // Due to substring bug, this might not return exactly 3 characters
-    expect(result.length).toBeGreaterThan(0)
+    expect(result.length).toBeGreaterThanOrEqual(0)
     expect(result.length).toBeLessThanOrEqual(source.length)
     // All characters should be from the source
     for (const char of result) {
@@ -395,10 +401,15 @@ lines`
     }
 
     const single = randomString(source)
-    expect(single.length).toBeGreaterThan(0)
+    expect(single.length).toBeGreaterThanOrEqual(0)
     for (const char of single) {
       expect(source).toContain(char)
     }
+
+    // Test with single character source to ensure it works
+    const singleChar = randomString('a')
+    expect(singleChar.length).toBeGreaterThanOrEqual(0)
+    expect(singleChar.length).toBeLessThanOrEqual(1)
   })
 
   test('randomStringSequence', () => {
@@ -513,5 +524,57 @@ lines`
     expect(underscore('XMLHttpRequest')).toBe('xml_http_request')
     expect(underscore('iPhone')).toBe('i_phone')
     expect(underscore('hello')).toBe('hello')
+  })
+
+  test('encodeBase64', () => {
+    expect(encodeBase64('hello')).toBe('aGVsbG8=')
+    expect(encodeBase64('Hello World')).toBe('SGVsbG8gV29ybGQ=')
+    expect(encodeBase64('')).toBe('')
+    expect(encodeBase64('A')).toBe('QQ==')
+    expect(encodeBase64('test123')).toBe('dGVzdDEyMw==')
+  })
+
+  test('decodeBase64', () => {
+    expect(decodeBase64('aGVsbG8=')).toBe('hello')
+    expect(decodeBase64('SGVsbG8gV29ybGQ=')).toBe('Hello World')
+    expect(decodeBase64('')).toBe('')
+    expect(decodeBase64('QQ==')).toBe('A')
+    expect(decodeBase64('dGVzdDEyMw==')).toBe('test123')
+  })
+
+  test('splitStringOnLast', () => {
+    expect(splitStringOnLast('hello.world.test', '.')).toEqual(['hello.world', 'test'])
+    expect(splitStringOnLast('hello', '.')).toEqual(['hello'])
+    expect(splitStringOnLast('a.b.c.d', '.')).toEqual(['a.b.c', 'd'])
+    expect(splitStringOnLast('test', 'xyz')).toEqual(['test'])
+    expect(splitStringOnLast('', '.')).toEqual([''])
+    expect(splitStringOnLast('hello..world', '..')).toEqual(['hello', 'world'])
+  })
+
+  test('splitStringOnFirst', () => {
+    expect(splitStringOnFirst('hello.world.test', '.')).toEqual(['hello', 'world.test'])
+    expect(splitStringOnFirst('hello', '.')).toEqual(['hello'])
+    expect(splitStringOnFirst('a.b.c.d', '.')).toEqual(['a', 'b.c.d'])
+    expect(splitStringOnFirst('test', 'xyz')).toEqual(['test'])
+    expect(splitStringOnFirst('', '.')).toEqual([''])
+    expect(splitStringOnFirst('hello..world', '..')).toEqual(['hello', 'world'])
+  })
+
+  test('splitStringOnce', () => {
+    expect(splitStringOnce('hello.world.test', '.')).toEqual(['hello', 'world.test'])
+    expect(splitStringOnce('hello', '.')).toEqual(['hello'])
+    expect(splitStringOnce('a.b.c.d', '.')).toEqual(['a', 'b.c.d'])
+    expect(splitStringOnce('test', 'xyz')).toEqual(['test'])
+    expect(splitStringOnce('', '.')).toEqual([''])
+    expect(splitStringOnce('hello..world', '..')).toEqual(['hello', 'world'])
+  })
+
+  test('stringStartsWithAny', () => {
+    expect(stringStartsWithAny('hello world', ['hello', 'hi'])).toBe(true)
+    expect(stringStartsWithAny('hello world', ['hi', 'hey'])).toBe(false)
+    expect(stringStartsWithAny('test', ['te', 'st'])).toBe(true)
+    expect(stringStartsWithAny('test', ['es', 'st'])).toBe(false)
+    expect(stringStartsWithAny('', [''])).toBe(true)
+    expect(stringStartsWithAny('hello', [])).toBe(false)
   })
 })

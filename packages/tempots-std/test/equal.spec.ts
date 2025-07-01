@@ -355,5 +355,47 @@ describe('equals', () => {
       expect(deepEqual(fn1, fn2)).toBe(false)
       expect(deepEqual(fn1, fn3)).toBe(true)
     })
+
+    test('deepEqual with Map vs non-Map comparison', () => {
+      const map = new Map([['a', 1]])
+      const obj = { a: 1 }
+      const set = new Set(['a'])
+
+      // This covers line 72: if (aIsMap !== bIsMap) return false
+      expect(deepEqual(map, obj)).toBe(false)
+      expect(deepEqual(obj, map)).toBe(false)
+      expect(deepEqual(map, set)).toBe(false)
+      expect(deepEqual(set, map)).toBe(false)
+    })
+
+    test('deepEqual with objects having different properties', () => {
+      const obj1 = { a: 1, b: 2 }
+      const obj2 = { a: 1, c: 3 } // Missing property 'b', has extra 'c'
+
+      // This covers line 106: if (!Object.prototype.hasOwnProperty.call(bObj, field)) return false
+      expect(deepEqual(obj1, obj2)).toBe(false)
+      expect(deepEqual(obj2, obj1)).toBe(false)
+    })
+
+    test('deepEqual with empty Sets and Maps to cover iterator done check', () => {
+      // Test empty Set - this should cover the iterator.done check on line 64
+      const emptySet1 = new Set()
+      const emptySet2 = new Set()
+      expect(deepEqual(emptySet1, emptySet2)).toBe(true)
+
+      // Test empty Map - this should cover the iterator.done check on line 84
+      const emptyMap1 = new Map()
+      const emptyMap2 = new Map()
+      expect(deepEqual(emptyMap1, emptyMap2)).toBe(true)
+
+      // Test single-item Set and Map to ensure iteration works
+      const singleSet1 = new Set([1])
+      const singleSet2 = new Set([1])
+      expect(deepEqual(singleSet1, singleSet2)).toBe(true)
+
+      const singleMap1 = new Map([['key', 'value']])
+      const singleMap2 = new Map([['key', 'value']])
+      expect(deepEqual(singleMap1, singleMap2)).toBe(true)
+    })
   })
 })
