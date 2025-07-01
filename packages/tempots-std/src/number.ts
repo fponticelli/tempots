@@ -337,7 +337,8 @@ export const nearEqual = (
     if (!isFinite(b)) return false
     return Math.abs(a - b) <= tollerance
   }
-  if (isNaN(a)) return isNaN(b)
+  if (isNaN(a) && isNaN(b)) return true
+  if (isNaN(a)) return false
   if (isNaN(b)) return false
   if (!isFinite(b)) return a > 0 === b > 0
   // a is Infinity and b is finite

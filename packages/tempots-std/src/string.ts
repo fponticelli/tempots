@@ -146,7 +146,10 @@ export const canonicalizeNewlines = (value: string): string => {
  * @returns A negative number if `a` is less than `b`, zero if they are equal, or a positive number if `a` is greater than `b`.
  * @public
  */
-export const compareCaseInsensitive = (a: string, b: string): number => {
+export const compareCaseInsensitive = (
+  a: string | null | undefined,
+  b: string | null | undefined
+): number => {
   if (a == null && b == null) return 0
   if (a == null) return -1
   else if (b == null) return 1
@@ -162,7 +165,7 @@ export const compareCaseInsensitive = (a: string, b: string): number => {
  * @public
  */
 export const stringEndsWith = (s: string, end: string): boolean => {
-  return s.substring(0, s.length - end.length) === end
+  return s.substring(s.length - end.length) === end
 }
 
 /**
@@ -177,9 +180,7 @@ export const textEndsWithCaseInsensitive = (
   s: string,
   end: string
 ): boolean => {
-  return (
-    s.substring(0, s.length - end.length).toLowerCase() === end.toLowerCase()
-  )
+  return s.substring(s.length - end.length).toLowerCase() === end.toLowerCase()
 }
 
 /**

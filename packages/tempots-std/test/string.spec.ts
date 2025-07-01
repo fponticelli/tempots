@@ -79,7 +79,10 @@ import {
   trimStringSlice,
   wrapLine,
   isSpaceAt,
-  stringEndsWithAny
+  stringEndsWithAny,
+  textEndsWithAnyCaseInsensitive,
+  textStartsWithAnyCaseInsensitive,
+  containsAnyTextCaseInsensitive
 } from '../src/string'
 import { MissingImplementationError } from '../src/error'
 
@@ -570,13 +573,13 @@ lines`
   test('encodeBase64 error when no implementation available', () => {
     const originalBuffer = globalThis.Buffer
     const originalBtoa = globalThis.btoa
-    
+
     vi.stubGlobal('Buffer', undefined)
     vi.stubGlobal('btoa', undefined)
-    
+
     expect(() => encodeBase64('test')).toThrow(MissingImplementationError)
     expect(() => encodeBase64('test')).toThrow('No implementation found for base64 encoding')
-    
+
     vi.stubGlobal('Buffer', originalBuffer)
     vi.stubGlobal('btoa', originalBtoa)
   })
@@ -584,34 +587,34 @@ lines`
   test('decodeBase64 error when no implementation available', () => {
     const originalBuffer = globalThis.Buffer
     const originalAtob = globalThis.atob
-    
+
     vi.stubGlobal('Buffer', undefined)
     vi.stubGlobal('atob', undefined)
-    
+
     expect(() => decodeBase64('dGVzdA==')).toThrow(MissingImplementationError)
     expect(() => decodeBase64('dGVzdA==')).toThrow('No implementation found for base64 decoding')
-    
+
     vi.stubGlobal('Buffer', originalBuffer)
     vi.stubGlobal('atob', originalAtob)
   })
 
   test('encodeBase64 with btoa fallback', () => {
     const originalBuffer = globalThis.Buffer
-    
+
     vi.stubGlobal('Buffer', undefined)
     // btoa should be available in test environment to cover line 1071
     expect(encodeBase64('test')).toBe('dGVzdA==')
-    
+
     vi.stubGlobal('Buffer', originalBuffer)
   })
 
   test('decodeBase64 with atob fallback', () => {
     const originalBuffer = globalThis.Buffer
-    
+
     vi.stubGlobal('Buffer', undefined)
-    // atob should be available in test environment to cover line 1091  
+    // atob should be available in test environment to cover line 1091
     expect(decodeBase64('dGVzdA==')).toBe('test')
-    
+
     vi.stubGlobal('Buffer', originalBuffer)
   })
 
@@ -654,7 +657,7 @@ lines`
   test('chunkString', () => {
     // Note: This function has a bug on line 922 - testing cases that can execute buggy code safely
     expect(chunkString('', 5)).toEqual([]) // Empty string works
-    
+
     // Try to execute the buggy lines 921-923 without infinite loop
     // For very short strings where the bug doesn't cause infinite iteration
     try {
@@ -704,11 +707,17 @@ lines`
   })
 
   test('stringEndsWith and textEndsWithCaseInsensitive', () => {
-    // Note: Both functions have bugs - testing actual buggy behavior for coverage
-    expect(stringEndsWith('hello world', 'world')).toBe(false) // Buggy behavior
-    expect(stringEndsWith('hello world', 'hello')).toBe(false) // Buggy behavior  
-    expect(textEndsWithCaseInsensitive('Hello World', 'WORLD')).toBe(false) // Buggy - checks start instead of end
-    expect(textEndsWithCaseInsensitive('Hello World', 'HELLO')).toBe(false) // Buggy - checks substring(0, 6) = 'Hello ' vs 'hello'
+    // Test correct behavior after fixing the bugs
+    expect(stringEndsWith('hello world', 'world')).toBe(true) // Should return true - ends with 'world'
+    expect(stringEndsWith('hello world', 'hello')).toBe(false) // Should return false - doesn't end with 'hello'
+    expect(stringEndsWith('hello world', 'orld')).toBe(true) // Should return true - ends with 'orld'
+    expect(stringEndsWith('test', 'test')).toBe(true) // Should return true - entire string matches
+    expect(stringEndsWith('test', 'testing')).toBe(false) // Should return false - suffix longer than string
+
+    expect(textEndsWithCaseInsensitive('Hello World', 'WORLD')).toBe(true) // Should return true - ends with 'world' (case insensitive)
+    expect(textEndsWithCaseInsensitive('Hello World', 'HELLO')).toBe(false) // Should return false - doesn't end with 'hello'
+    expect(textEndsWithCaseInsensitive('Hello World', 'world')).toBe(true) // Should return true - ends with 'world' (case insensitive)
+    expect(textEndsWithCaseInsensitive('JavaScript', 'script')).toBe(true) // Should return true - ends with 'script' (case insensitive)
   })
 
   test('stringStartsWith and textStartsWithCaseInsensitive', () => {
@@ -797,9 +806,9 @@ lines`
   })
 
   test('stringEndsWithAny for lines 461-462 coverage', () => {
-    // Test stringEndsWithAny function
-    expect(stringEndsWithAny('hello world', ['world', 'test'])).toBe(false) // Due to stringEndsWith bug
-    expect(stringEndsWithAny('hello world', ['hello', 'world'])).toBe(false) // Due to stringEndsWith bug
+    // Test stringEndsWithAny function (now working correctly)
+    expect(stringEndsWithAny('hello world', ['world', 'test'])).toBe(true) // Should return true - ends with 'world'
+    expect(stringEndsWithAny('hello world', ['hello', 'xyz'])).toBe(false) // Should return false - doesn't end with any
     expect(stringEndsWithAny('test', [])).toBe(false) // Empty array
   })
 
@@ -810,5 +819,86 @@ lines`
     const result2 = deleteStringAfter('test', 't') // Another attempt
     expect(typeof result1).toBe('string')
     expect(typeof result2).toBe('string')
+  })
+
+  test('textEndsWithAnyCaseInsensitive', () => {
+    // Test the case-insensitive version of textEndsWithAny (now fixed)
+    expect(textEndsWithAnyCaseInsensitive('Hello World', ['WORLD', 'test'])).toBe(true) // Should return true - ends with 'WORLD'
+    expect(textEndsWithAnyCaseInsensitive('Hello World', ['HELLO', 'test'])).toBe(false) // Should return false - doesn't end with 'HELLO'
+    expect(textEndsWithAnyCaseInsensitive('Hello World', ['xyz', 'abc'])).toBe(false) // Should return false - doesn't end with any
+    expect(textEndsWithAnyCaseInsensitive('test', [])).toBe(false) // Empty array
+    expect(textEndsWithAnyCaseInsensitive('', ['test'])).toBe(false) // Empty string
+    expect(textEndsWithAnyCaseInsensitive('JavaScript', ['JAVA', 'script'])).toBe(true) // Should return true - ends with 'script'
+    expect(textEndsWithAnyCaseInsensitive('JavaScript', ['JAVA', 'python'])).toBe(false) // Should return false - doesn't end with any
+  })
+
+  test('textStartsWithAnyCaseInsensitive', () => {
+    // Test the case-insensitive version of textStartsWithAny
+    expect(textStartsWithAnyCaseInsensitive('Hello World', ['HELLO', 'test'])).toBe(true)
+    expect(textStartsWithAnyCaseInsensitive('Hello World', ['world', 'HELLO'])).toBe(true)
+    expect(textStartsWithAnyCaseInsensitive('Hello World', ['xyz', 'abc'])).toBe(false)
+    expect(textStartsWithAnyCaseInsensitive('test', [])).toBe(false) // Empty array
+    expect(textStartsWithAnyCaseInsensitive('', ['test'])).toBe(false) // Empty string
+    expect(textStartsWithAnyCaseInsensitive('JavaScript', ['java', 'SCRIPT'])).toBe(true)
+  })
+
+  test('containsAnyTextCaseInsensitive', () => {
+    // Test case-insensitive version of containsAnyText
+    expect(containsAnyTextCaseInsensitive('Hello Beautiful World', ['BEAUTIFUL', 'test'])).toBe(true)
+    expect(containsAnyTextCaseInsensitive('Hello World', ['WORLD', 'xyz'])).toBe(true)
+    expect(containsAnyTextCaseInsensitive('Hello World', ['HELLO', 'xyz'])).toBe(true)
+    expect(containsAnyTextCaseInsensitive('Hello World', ['xyz', 'abc'])).toBe(false)
+    expect(containsAnyTextCaseInsensitive('test', [])).toBe(false) // Empty array
+    expect(containsAnyTextCaseInsensitive('', ['test'])).toBe(false) // Empty string
+    expect(containsAnyTextCaseInsensitive('JavaScript Programming', ['script', 'PROGRAM'])).toBe(true)
+  })
+
+  // NOTE: deleteStringAfter is poorly named - it actually removes a suffix from the END of a string
+  // A better name would be 'removeSuffix' or 'trimSuffix'
+  // The function removes 'toremove' from the end of 'value' if it exists there
+  test('deleteStringAfter (should be named removeSuffix) comprehensive tests', () => {
+    // Test the intended behavior: removing suffixes from strings
+
+    // Basic suffix removal cases - should work now that stringEndsWith is fixed
+    expect(deleteStringAfter('hello.txt', '.txt')).toBe('hello') // Should remove .txt suffix
+    expect(deleteStringAfter('filename.pdf', '.pdf')).toBe('filename') // Should remove .pdf suffix
+
+    // Case where suffix doesn't exist - should return original string
+    expect(deleteStringAfter('hello.txt', '.pdf')).toBe('hello.txt')
+    expect(deleteStringAfter('test', 'xyz')).toBe('test')
+
+    // Edge cases
+    expect(deleteStringAfter('', 'suffix')).toBe('') // Empty string
+    expect(deleteStringAfter('test', '')).toBe('test') // Empty suffix
+    expect(deleteStringAfter('', '')).toBe('') // Both empty
+
+    // Case where suffix is longer than string
+    expect(deleteStringAfter('hi', 'hello')).toBe('hi')
+
+    // Case where suffix equals the entire string
+    expect(deleteStringAfter('test', 'test')).toBe('') // Should return empty string
+
+    // More suffix removal cases - should work now
+    expect(deleteStringAfter('document.backup.txt', '.txt')).toBe('document.backup') // Should remove .txt suffix
+
+    // Additional test cases now that the function works correctly
+    expect(deleteStringAfter('hello world', 'world')).toBe('hello ') // Should remove 'world' suffix
+    expect(deleteStringAfter('testing', 'ing')).toBe('test') // Should remove 'ing' suffix
+  })
+
+  // Test demonstrating the bug in deleteStringAfter
+  test('deleteStringAfter correct behavior after fix', () => {
+    // This test verifies the correct behavior after fixing stringEndsWith
+
+    // These should work and now do:
+    expect(deleteStringAfter('hello.txt', '.txt')).toBe('hello') // Should remove .txt suffix
+    expect(deleteStringAfter('test.pdf', '.pdf')).toBe('test') // Should remove .pdf suffix
+
+    // These should not work (removing from beginning, not end):
+    expect(deleteStringAfter('hello world', 'hello')).toBe('hello world') // Should not remove - 'hello' is not a suffix
+    expect(deleteStringAfter('testing', 'test')).toBe('testing') // Should not remove - 'test' is not a suffix
+
+    // The function name 'deleteStringAfter' is misleading - it should be 'removeSuffix'
+    // But the implementation now correctly removes suffixes from the end
   })
 })
