@@ -201,19 +201,22 @@ export const interpolateAngle = (
   wrapCircular(interpolate(a, a + angleDifference(a, b, turn), t), turn)
 
 /**
- * Calculates the widest angle difference between two angles.
+ * Calculates the minimum difference between two angles in degrees.
+ * Note: Despite the name "widest", this function actually calculates the shortest
+ * angle difference, identical to `angleDifference`. The name is misleading for
+ * historical reasons.
  *
  * @param a - The first angle in degrees.
  * @param b - The second angle in degrees.
  * @param turn - The total angle of a full turn. Defaults to 360 degrees.
- * @returns The widest angle difference between `a` and `b`.
+ * @returns The shortest angle difference between `a` and `b`.
  * @public
  * @example
  * ```ts
- * widestAngleDifference(0, 90) // returns 90
- * widestAngleDifference(90, 0) // returns -90
- * widestAngleDifference(0, 270) // returns -90
- * widestAngleDifference(270, 0) // returns 90
+ * widestAngleDifference(0, 90) // returns 90 (shortest path)
+ * widestAngleDifference(90, 0) // returns -90 (shortest path)
+ * widestAngleDifference(0, 270) // returns -90 (shortest path, not +270)
+ * widestAngleDifference(270, 0) // returns 90 (shortest path, not -270)
  * ```
  */
 export const widestAngleDifference = (
@@ -228,8 +231,9 @@ export const widestAngleDifference = (
 }
 
 /**
- * Interpolates values in a polar coordinate system looking for the wideset delta angle.
- * It can be either clock-wise or counter-clock-wise.
+ * Interpolates values in a polar coordinate system looking for the shortest delta angle.
+ * Note: Despite the name "widest", this function actually uses the shortest angle
+ * difference, identical to `interpolateAngle`. The name is misleading for historical reasons.
  *
  * @param a - The first angle in degrees.
  * @param b - The second angle in degrees.
@@ -239,10 +243,10 @@ export const widestAngleDifference = (
  * @public
  * @example
  * ```ts
- * interpolateWidestAngle(0, 90, 0.5) // returns 45
- * interpolateWidestAngle(0, 270, 0.5) // returns 315
- * interpolateWidestAngle(0, 90, 0.25) // returns 22.5
- * interpolateWidestAngle(0, 270, 0.25) // returns 337.5
+ * interpolateWidestAngle(0, 90, 0.5) // returns 45 (using shortest path)
+ * interpolateWidestAngle(0, 270, 0.5) // returns 315 (using shortest path)
+ * interpolateWidestAngle(0, 90, 0.25) // returns 22.5 (using shortest path)
+ * interpolateWidestAngle(0, 270, 0.25) // returns 337.5 (using shortest path)
  * ```
  **/
 export const interpolateWidestAngle = (
