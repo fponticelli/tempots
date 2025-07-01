@@ -397,5 +397,59 @@ describe('equals', () => {
       const singleMap2 = new Map([['key', 'value']])
       expect(deepEqual(singleMap1, singleMap2)).toBe(true)
     })
+
+    test('deepEqual with Sets having iterators with undefined done property', () => {
+      // Create a Set that extends Set but overrides keys() to return iterator with undefined done
+      class CustomSet extends Set {
+        keys() {
+          const originalIterator = super.keys()
+          let isFirst = true
+          return {
+            next() {
+              const result = originalIterator.next()
+              // For the first item, return done as undefined to trigger the null coalescing
+              if (isFirst && !result.done) {
+                isFirst = false
+                return { value: result.value, done: undefined as any }
+              }
+              return result
+            }
+          }
+        }
+      }
+
+      const customSet1 = new CustomSet([1, 2])
+      const customSet2 = new Set([1, 2])
+      
+      // This should trigger the null coalescing in line 64: curr.done ?? false
+      expect(deepEqual(customSet1, customSet2)).toBe(true)
+    })
+
+    test('deepEqual with Maps having iterators with undefined done property', () => {
+      // Create a Map that extends Map but overrides keys() to return iterator with undefined done
+      class CustomMap extends Map {
+        keys() {
+          const originalIterator = super.keys()
+          let isFirst = true
+          return {
+            next() {
+              const result = originalIterator.next()
+              // For the first item, return done as undefined to trigger the null coalescing
+              if (isFirst && !result.done) {
+                isFirst = false
+                return { value: result.value, done: undefined as any }
+              }
+              return result
+            }
+          }
+        }
+      }
+
+      const customMap1 = new CustomMap([['a', 1], ['b', 2]])
+      const customMap2 = new Map([['a', 1], ['b', 2]])
+      
+      // This should trigger the null coalescing in line 84: curr.done ?? false
+      expect(deepEqual(customMap1, customMap2)).toBe(true)
+    })
   })
 })

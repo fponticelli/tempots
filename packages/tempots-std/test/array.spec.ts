@@ -767,6 +767,27 @@ describe('Additional array utilities and edge cases', () => {
       const result = arrayOfIterableIterator(customGenerator())
       expect(result).toEqual(['a', 'b', 'c'])
     })
+
+    test('handles iterator with undefined done property', () => {
+      const customIterator: IterableIterator<string> = {
+        [Symbol.iterator]() {
+          return this
+        },
+        next() {
+          if (this.index === undefined) {
+            this.index = 0
+          }
+          if (this.index < 2) {
+            return { value: `item${this.index++}`, done: undefined as any }
+          }
+          return { value: undefined, done: true }
+        },
+        index: undefined as number | undefined
+      }
+      
+      const result = arrayOfIterableIterator(customIterator)
+      expect(result).toEqual(['item0', 'item1'])
+    })
   })
 
   describe('Edge cases for existing functions', () => {

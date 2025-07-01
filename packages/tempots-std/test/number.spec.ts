@@ -193,16 +193,25 @@ describe('numbers', () => {
     expect(nearEqual(0, 0)).toBe(true)
     expect(nearEqual(1, 2)).toBe(false)
 
-    // Test with special values
-    expect(nearEqual(NaN, NaN)).toBe(true)
-    expect(nearEqual(NaN, 5)).toBe(false)
-    expect(nearEqual(5, NaN)).toBe(false)
-    expect(nearEqual(NaN, Infinity)).toBe(false) // This covers line 341: a is NaN, b is not NaN
-    expect(nearEqual(Infinity, Infinity)).toBe(true)
-    expect(nearEqual(-Infinity, -Infinity)).toBe(true)
-    expect(nearEqual(Infinity, -Infinity)).toBe(false)
-    expect(nearEqual(Infinity, 5)).toBe(false)
-    expect(nearEqual(5, Infinity)).toBe(false)
+    // Test with special values - exhaustive branch coverage for line 341
+    expect(nearEqual(NaN, NaN)).toBe(true) // Line 340: isNaN(a) && isNaN(b) -> true
+    expect(nearEqual(NaN, 5)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(5, NaN)).toBe(false) // Line 337: isFinite(a) && !isFinite(b) -> false
+    expect(nearEqual(NaN, Infinity)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, -Infinity)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false  
+    expect(nearEqual(NaN, 42)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, 0)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, -0)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, 1.5)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, -1.5)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, Number.MAX_VALUE)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(NaN, Number.MIN_VALUE)).toBe(false) // Line 341: isNaN(a) && !isNaN(b) -> false
+    expect(nearEqual(Infinity, Infinity)).toBe(true) // Line 342: !isFinite(a) && !isNaN(a) && !isFinite(b) && same sign
+    expect(nearEqual(-Infinity, -Infinity)).toBe(true) // Line 342: both negative infinity
+    expect(nearEqual(Infinity, -Infinity)).toBe(false) // Line 342: different signs
+    expect(nearEqual(Infinity, 5)).toBe(false) // Line 344: a is Infinity, b is finite -> false
+    expect(nearEqual(-Infinity, 5)).toBe(false) // Line 344: a is -Infinity, b is finite -> false  
+    expect(nearEqual(5, Infinity)).toBe(false) // Line 337: isFinite(a) && !isFinite(b) -> false
   })
 
   test('nearEqualAngles', () => {
