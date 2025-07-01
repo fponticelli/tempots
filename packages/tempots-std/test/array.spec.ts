@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPrimitive, uniquePrimitives } from "../src/array";
+import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateArray, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeAllFromArray, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPrimitive, uniquePrimitives } from "../src/array";
 import { compareStrings } from "../src/string";
 
 describe('arrays:mapArray', () => {
@@ -635,5 +635,249 @@ describe('array helpers', () => {
     const a = ['c', 'a', 'b']
     const ranked = rankArray(a, (a, b) => a > b ? 1 : a < b ? -1 : 0)
     expect(ranked).toEqual([2, 0, 1])
+  })
+})
+
+describe('Additional array utilities and edge cases', () => {
+  describe('generateArray', () => {
+    test('generates array with correct length and values', () => {
+      const result = generateArray(5, i => i * 2)
+      expect(result).toEqual([0, 2, 4, 6, 8])
+      expect(result.length).toBe(5)
+    })
+
+    test('works with zero length', () => {
+      const result = generateArray(0, i => i)
+      expect(result).toEqual([])
+      expect(result.length).toBe(0)
+    })
+
+    test('works with complex generator function', () => {
+      const result = generateArray(3, i => ({ id: i, name: `Item ${i}` }))
+      expect(result).toEqual([
+        { id: 0, name: 'Item 0' },
+        { id: 1, name: 'Item 1' },
+        { id: 2, name: 'Item 2' }
+      ])
+    })
+
+    test('generator function receives correct indices', () => {
+      const indices: number[] = []
+      generateArray(4, i => {
+        indices.push(i)
+        return i
+      })
+      expect(indices).toEqual([0, 1, 2, 3])
+    })
+  })
+
+  describe('removeAllFromArray', () => {
+    test('removes all occurrences of an item', () => {
+      const arr = [1, 2, 3, 2, 4, 2, 5]
+      const removed = removeAllFromArray(arr, 2)
+      expect(removed).toBe(true)
+      expect(arr).toEqual([1, 3, 4, 5])
+    })
+
+    test('returns false when item not found', () => {
+      const arr = [1, 3, 4, 5]
+      const removed = removeAllFromArray(arr, 2)
+      expect(removed).toBe(false)
+      expect(arr).toEqual([1, 3, 4, 5])
+    })
+
+    test('works with empty array', () => {
+      const arr: number[] = []
+      const removed = removeAllFromArray(arr, 1)
+      expect(removed).toBe(false)
+      expect(arr).toEqual([])
+    })
+
+    test('removes all items when all are the same', () => {
+      const arr = [2, 2, 2, 2]
+      const removed = removeAllFromArray(arr, 2)
+      expect(removed).toBe(true)
+      expect(arr).toEqual([])
+    })
+  })
+
+  describe('arrayOfIterableIterator', () => {
+    test('converts Set iterator to array', () => {
+      const set = new Set([1, 2, 3])
+      const result = arrayOfIterableIterator(set.values())
+      expect(result).toEqual([1, 2, 3])
+    })
+
+    test('converts Map keys iterator to array', () => {
+      const map = new Map([['a', 1], ['b', 2], ['c', 3]])
+      const result = arrayOfIterableIterator(map.keys())
+      expect(result).toEqual(['a', 'b', 'c'])
+    })
+
+    test('converts Map values iterator to array', () => {
+      const map = new Map([['a', 1], ['b', 2], ['c', 3]])
+      const result = arrayOfIterableIterator(map.values())
+      expect(result).toEqual([1, 2, 3])
+    })
+
+    test('works with empty iterator', () => {
+      const set = new Set()
+      const result = arrayOfIterableIterator(set.values())
+      expect(result).toEqual([])
+    })
+
+    test('works with custom iterator', () => {
+      function* customGenerator() {
+        yield 'a'
+        yield 'b'
+        yield 'c'
+      }
+      const result = arrayOfIterableIterator(customGenerator())
+      expect(result).toEqual(['a', 'b', 'c'])
+    })
+  })
+
+  describe('Edge cases for existing functions', () => {
+    test('mapArray with index parameter', () => {
+      const result = mapArray(['a', 'b', 'c'], (item, index) => `${index}:${item}`)
+      expect(result).toEqual(['0:a', '1:b', '2:c'])
+    })
+
+    test('filterMapArray with index parameter', () => {
+      const result = filterMapArray(['a', 'b', 'c'], (item, index) =>
+        index % 2 === 0 ? `${index}:${item}` : null
+      )
+      expect(result).toEqual(['0:a', '2:c'])
+    })
+
+    test('foldLeftArray accumulates correctly', () => {
+      const result = foldLeftArray(
+        ['a', 'b', 'c'],
+        (acc, item) => acc + item + ',',
+        ''
+      )
+      expect(result).toBe('a,b,c,')
+    })
+
+    test('flatMapArray with empty results', () => {
+      const result = flatMapArray([1, 2, 3], n => n % 2 === 0 ? [n, n] : [])
+      expect(result).toEqual([2, 2])
+    })
+
+    test('flatMapArray with mixed result lengths', () => {
+      const result = flatMapArray([1, 2, 3], n => {
+        if (n === 1) return [n]
+        if (n === 2) return [n, n]
+        return [n, n, n]
+      })
+      expect(result).toEqual([1, 2, 2, 3, 3, 3])
+    })
+
+    test('compareArrays with shorterFirst=false', () => {
+      expect(compareArrays([1], [1, 2], (a, b) => a - b, false)).toBe(1)
+      expect(compareArrays([1, 2], [1], (a, b) => a - b, false)).toBe(-1)
+      expect(compareArrays([1, 2], [1, 2], (a, b) => a - b, false)).toBe(0)
+    })
+
+    test('compareArrays with equal length arrays', () => {
+      expect(compareArrays([1, 2, 3], [1, 2, 4], (a, b) => a - b)).toBe(-1)
+      expect(compareArrays([1, 2, 4], [1, 2, 3], (a, b) => a - b)).toBe(1)
+      expect(compareArrays([1, 2, 3], [1, 2, 3], (a, b) => a - b)).toBe(0)
+    })
+
+    test('sortArray does not modify original array', () => {
+      const original = [3, 1, 4, 1, 5]
+      const sorted = sortArray(original, (a, b) => a - b)
+      expect(original).toEqual([3, 1, 4, 1, 5]) // Original unchanged
+      expect(sorted).toEqual([1, 1, 3, 4, 5])
+    })
+
+    test('uniqueByPrimitive with complex key extraction', () => {
+      const items = [
+        { user: { id: 1 }, name: 'Alice' },
+        { user: { id: 2 }, name: 'Bob' },
+        { user: { id: 1 }, name: 'Alice Clone' },
+        { user: { id: 3 }, name: 'Charlie' }
+      ]
+      const result = uniqueByPrimitive(items, item => item.user.id)
+      // uniqueByPrimitive keeps the last occurrence, not the first
+      expect(result).toEqual([
+        { user: { id: 1 }, name: 'Alice Clone' },
+        { user: { id: 2 }, name: 'Bob' },
+        { user: { id: 3 }, name: 'Charlie' }
+      ])
+    })
+
+    test('uniqueByPrimitive with string keys', () => {
+      const items = [
+        { category: 'fruit', name: 'apple' },
+        { category: 'vegetable', name: 'carrot' },
+        { category: 'fruit', name: 'banana' },
+        { category: 'meat', name: 'chicken' }
+      ]
+      const result = uniqueByPrimitive(items, item => item.category)
+      // uniqueByPrimitive keeps the last occurrence, not the first
+      expect(result).toEqual([
+        { category: 'fruit', name: 'banana' },
+        { category: 'vegetable', name: 'carrot' },
+        { category: 'meat', name: 'chicken' }
+      ])
+    })
+
+    test('removeOneFromArrayByPredicate with no matches', () => {
+      const arr = [1, 2, 3, 4, 5]
+      const removed = removeOneFromArrayByPredicate(arr, x => x > 10)
+      expect(removed).toBe(false)
+      expect(arr).toEqual([1, 2, 3, 4, 5])
+    })
+
+    test('removeOneFromArrayByPredicate removes first match only', () => {
+      const arr = [1, 2, 3, 2, 4]
+      const removed = removeOneFromArrayByPredicate(arr, x => x === 2)
+      expect(removed).toBe(true)
+      expect(arr).toEqual([1, 3, 2, 4]) // Only first 2 removed
+    })
+
+    test('anyElement with empty array', () => {
+      expect(anyElement([], x => x > 0)).toBe(false)
+    })
+
+    test('anyElement with predicate that matches', () => {
+      expect(anyElement([1, 2, 3], x => x === 2)).toBe(true)
+    })
+
+    test('anyElement with predicate that does not match', () => {
+      expect(anyElement([1, 2, 3], x => x > 10)).toBe(false)
+    })
+
+    test('anyElement returns true for first match', () => {
+      const arr = [1, 2, 3, 4, 5]
+      expect(anyElement(arr, x => x > 3)).toBe(true)
+      expect(anyElement(arr, x => x < 0)).toBe(false)
+    })
+
+    test('concatArrays with no arguments', () => {
+      expect(concatArrays()).toEqual([])
+    })
+
+    test('concatArrays with single array', () => {
+      expect(concatArrays([1, 2, 3])).toEqual([1, 2, 3])
+    })
+
+    test('concatArrays with multiple arrays including empty ones', () => {
+      expect(concatArrays([1], [], [2, 3], [], [4])).toEqual([1, 2, 3, 4])
+    })
+
+    test('forEachElement executes function for each element', () => {
+      const results: number[] = []
+      forEachElement([1, 2, 3], x => results.push(x * 2))
+      expect(results).toEqual([2, 4, 6])
+    })
+
+    test('forEachElement with empty array', () => {
+      const results: number[] = []
+      forEachElement([], x => results.push(x))
+      expect(results).toEqual([])
+    })
   })
 })

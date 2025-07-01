@@ -6,6 +6,7 @@ describe('regexps.ts', () => {
     const pattern = /xx|yyy/
     expect(mapRegExp('axxbbyyyc', pattern, v => v.toUpperCase())).toBe('aXXbbYYYc')
     expect(mapRegExp('xxbbyyy', pattern, v => v.toUpperCase())).toBe('XXbbYYY')
+    expect(mapRegExp('xxbbxx', pattern, v => v.toUpperCase())).toBe('XXbbXX')
     expect(mapRegExp('xx', pattern, v => v.toUpperCase())).toBe('XX')
     expect(mapRegExp('x', pattern, v => v.toUpperCase())).toBe('x')
   })
@@ -14,6 +15,7 @@ describe('regexps.ts', () => {
     const pattern = /xx|yyy/g
     expect(mapRegExp('axxbbyyyc', pattern, v => v.toUpperCase())).toBe('aXXbbYYYc')
     expect(mapRegExp('xxbbyyy', pattern, v => v.toUpperCase())).toBe('XXbbYYY')
+    expect(mapRegExp('xxbbxx', pattern, v => v.toUpperCase())).toBe('XXbbXX')
     expect(mapRegExp('xx', pattern, v => v.toUpperCase())).toBe('XX')
     expect(mapRegExp('x', pattern, v => v.toUpperCase())).toBe('x')
   })

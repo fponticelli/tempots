@@ -60,6 +60,18 @@ export default defineConfig({
   test: {
     ...configDefaults,
     globals: true,
+    coverage: {
+      exclude: [
+        ...configDefaults.coverage.exclude,
+        // Type-only modules with no runtime code
+        'src/domain.ts',
+        'src/union.ts',
+        // Export-only module with no business logic
+        'src/index.ts',
+        // Build scripts
+        'scripts/**',
+      ],
+    },
   },
   build: {
     copyPublicDir: false,

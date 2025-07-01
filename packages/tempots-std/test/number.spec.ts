@@ -2,16 +2,27 @@ import { describe, expect, test } from "vitest";
 import {
   sign,
   wrap,
+  wrapCircular,
   angleDifference,
+  widestAngleDifference,
   ceilTo,
   floorTo,
+  roundTo,
   clamp,
   clampInt,
   clampSym,
   interpolate,
   interpolateAngle,
+  interpolateAngleCW,
+  interpolateAngleCCW,
+  interpolateWidestAngle,
   toHex,
-  compareNumbers
+  compareNumbers,
+  nearEqual,
+  nearEqualAngles,
+  nearZero,
+  root,
+  EPSILON
 } from '../src/number'
 
 describe('numbers', () => {
@@ -116,5 +127,118 @@ describe('numbers', () => {
     expect(interpolateAngle(0, 540, 0.5)).toBe(90);
     expect(interpolateAngle(0, 540, 0.0)).toBe(0);
     expect(interpolateAngle(0, 540, 1.0)).toBe(180);
+  })
+
+  test('wrapCircular', () => {
+    expect(wrapCircular(5, 10)).toBe(5)
+    expect(wrapCircular(15, 10)).toBe(5)
+    expect(wrapCircular(-5, 10)).toBe(5)
+    expect(wrapCircular(0, 10)).toBe(0)
+    expect(wrapCircular(10, 10)).toBe(0)
+    expect(wrapCircular(360, 360)).toBe(0)
+    expect(wrapCircular(450, 360)).toBe(90)
+    expect(wrapCircular(-90, 360)).toBe(270)
+  })
+
+  test('widestAngleDifference', () => {
+    expect(widestAngleDifference(0, 90)).toBe(90)
+    expect(widestAngleDifference(90, 0)).toBe(-90)
+    expect(widestAngleDifference(0, 270)).toBe(-90)
+    expect(widestAngleDifference(270, 0)).toBe(90)
+    expect(widestAngleDifference(0, 180)).toBe(180)
+    expect(widestAngleDifference(180, 0)).toBe(180)
+    expect(widestAngleDifference(0, 0)).toBe(0)
+  })
+
+  test('roundTo', () => {
+    expect(roundTo(1.234, 2)).toBe(1.23)
+    expect(roundTo(1.235, 2)).toBe(1.24)
+    expect(roundTo(1.234, 1)).toBe(1.2)
+    expect(roundTo(1.25, 1)).toBe(1.3)
+    expect(roundTo(1.234, 0)).toBe(1)
+    expect(roundTo(1.5, 0)).toBe(2)
+    expect(roundTo(-1.234, 2)).toBe(-1.23)
+    expect(roundTo(-1.235, 2)).toBe(-1.24)
+  })
+
+  test('interpolateAngleCW', () => {
+    expect(interpolateAngleCW(0, 90, 0.5)).toBe(45)
+    expect(interpolateAngleCW(0, 90, 0.0)).toBe(0)
+    expect(interpolateAngleCW(0, 90, 1.0)).toBe(90)
+    expect(interpolateAngleCW(90, 0, 0.5)).toBe(225)
+    expect(interpolateAngleCW(270, 90, 0.5)).toBe(0)
+    expect(interpolateAngleCW(350, 10, 0.5)).toBe(0)
+  })
+
+  test('interpolateAngleCCW', () => {
+    expect(interpolateAngleCCW(0, 90, 0.5)).toBe(225)
+    expect(interpolateAngleCCW(0, 90, 0.0)).toBe(0)
+    expect(interpolateAngleCCW(0, 90, 1.0)).toBe(90)
+    expect(interpolateAngleCCW(90, 0, 0.5)).toBe(45)
+    expect(interpolateAngleCCW(270, 90, 0.5)).toBe(180)
+    expect(interpolateAngleCCW(10, 350, 0.5)).toBe(0)
+  })
+
+  test('interpolateWidestAngle', () => {
+    expect(interpolateWidestAngle(0, 90, 0.5)).toBe(45)
+    expect(interpolateWidestAngle(0, 270, 0.5)).toBe(315)
+    expect(interpolateWidestAngle(90, 0, 0.5)).toBe(45)
+    expect(interpolateWidestAngle(270, 90, 0.5)).toBe(0)
+  })
+
+  test('nearEqual', () => {
+    expect(nearEqual(5, 5.000000000000001)).toBe(true)
+    expect(nearEqual(5, 5.000000001)).toBe(false)
+    expect(nearEqual(5, 5.000000001, 1e-8)).toBe(true)
+    expect(nearEqual(0, 0)).toBe(true)
+    expect(nearEqual(1, 2)).toBe(false)
+
+    // Test with special values
+    expect(nearEqual(NaN, NaN)).toBe(true)
+    expect(nearEqual(NaN, 5)).toBe(false)
+    expect(nearEqual(5, NaN)).toBe(false)
+    expect(nearEqual(Infinity, Infinity)).toBe(true)
+    expect(nearEqual(-Infinity, -Infinity)).toBe(true)
+    expect(nearEqual(Infinity, -Infinity)).toBe(false)
+    expect(nearEqual(Infinity, 5)).toBe(false)
+    expect(nearEqual(5, Infinity)).toBe(false)
+  })
+
+  test('nearEqualAngles', () => {
+    expect(nearEqualAngles(0, 360)).toBe(true)
+    expect(nearEqualAngles(0, 361)).toBe(false)
+    expect(nearEqualAngles(0, 360.000000000001)).toBe(true)
+    expect(nearEqualAngles(0, 361, 360, 1)).toBe(true)
+    expect(nearEqualAngles(359, 1)).toBe(false) // 359 to 1 is 2 degrees, not within epsilon
+    expect(nearEqualAngles(1, 359)).toBe(false) // 1 to 359 is 2 degrees, not within epsilon
+    expect(nearEqualAngles(180, 180)).toBe(true)
+    expect(nearEqualAngles(0, 180)).toBe(false)
+  })
+
+  test('nearZero', () => {
+    expect(nearZero(0.000000000000001)).toBe(true)
+    expect(nearZero(0.000000001)).toBe(true) // 1e-9 is still within default EPSILON (1e-9)
+    expect(nearZero(0.000000001, 1e-10)).toBe(false)
+    expect(nearZero(0)).toBe(true)
+    expect(nearZero(1)).toBe(false)
+    expect(nearZero(-0.000000000000001)).toBe(true)
+    expect(nearZero(-1)).toBe(false)
+  })
+
+  test('root', () => {
+    expect(root(8, 3)).toBe(2)
+    expect(root(27, 3)).toBe(3)
+    expect(root(16, 4)).toBe(2)
+    expect(root(1, 5)).toBe(1)
+    expect(root(0, 3)).toBe(0)
+    expect(root(64, 6)).toBe(2)
+    expect(root(125, 3)).toBeCloseTo(5, 10) // Use toBeCloseTo for floating point precision
+  })
+
+  test('EPSILON constant', () => {
+    expect(EPSILON).toBe(1e-9)
+    expect(typeof EPSILON).toBe('number')
+    expect(EPSILON > 0).toBe(true)
+    expect(EPSILON < 1e-8).toBe(true)
   })
 })
