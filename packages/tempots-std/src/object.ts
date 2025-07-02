@@ -193,3 +193,113 @@ export const mergeObjects = <
  */
 export const isEmptyObject = (obj: object): boolean =>
   Object.keys(obj).length === 0
+
+/**
+ * Creates a new object with only the specified keys from the source object.
+ *
+ * This function provides type-safe property selection, ensuring that only
+ * valid keys can be picked and the result type reflects the selected properties.
+ *
+ * @example
+ * ```typescript
+ * const user = { id: 1, name: 'Alice', email: 'alice@example.com', password: 'secret' }
+ * const publicUser = pick(user, ['id', 'name', 'email'])
+ * // Result: { id: 1, name: 'Alice', email: 'alice@example.com' }
+ * // Type: Pick<typeof user, 'id' | 'name' | 'email'>
+ * ```
+ *
+ * @param obj - The source object
+ * @param keys - Array of keys to pick
+ * @returns A new object containing only the specified keys
+ * @public
+ */
+export const pick = <T extends object, K extends keyof T>(
+  obj: T,
+  keys: readonly K[]
+): Pick<T, K> => {
+  const result = {} as Pick<T, K>
+  for (const key of keys) {
+    if (key in obj) {
+      result[key] = obj[key]
+    }
+  }
+  return result
+}
+
+/**
+ * Creates a new object with all keys except the specified ones from the source object.
+ *
+ * This function provides type-safe property exclusion, ensuring that only
+ * valid keys can be omitted and the result type reflects the remaining properties.
+ *
+ * @example
+ * ```typescript
+ * const user = { id: 1, name: 'Alice', email: 'alice@example.com', password: 'secret' }
+ * const publicUser = omit(user, ['password'])
+ * // Result: { id: 1, name: 'Alice', email: 'alice@example.com' }
+ * // Type: Omit<typeof user, 'password'>
+ * ```
+ *
+ * @param obj - The source object
+ * @param keys - Array of keys to omit
+ * @returns A new object without the specified keys
+ * @public
+ */
+export const omit = <T extends object, K extends keyof T>(
+  obj: T,
+  keys: readonly K[]
+): Omit<T, K> => {
+  const result = { ...obj } as Omit<T, K>
+  for (const key of keys) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (result as any)[key]
+  }
+  return result
+}
+
+/**
+ * Creates a deep clone of an object.
+ *
+ * This function recursively clones objects, arrays, and primitive values.
+ * It handles Date objects specially and avoids infinite recursion.
+ *
+ * @example
+ * ```typescript
+ * const original = {
+ *   name: 'Alice',
+ *   settings: { theme: 'dark', notifications: true },
+ *   tags: ['user', 'admin']
+ * }
+ * const cloned = deepClone(original)
+ * cloned.settings.theme = 'light' // Original remains unchanged
+ * ```
+ *
+ * @param obj - The object to clone
+ * @returns A deep clone of the object
+ * @public
+ */
+export const deepClone = <T>(obj: T): T => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as T
+  }
+
+  if (obj instanceof Array) {
+    return obj.map(item => deepClone(item)) as T
+  }
+
+  if (typeof obj === 'object') {
+    const cloned = {} as T
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        cloned[key] = deepClone(obj[key])
+      }
+    }
+    return cloned
+  }
+
+  return obj
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { identity, curryLeft, memoize } from '../src/function'
+import { identity, curryLeft, memoize, compose, pipe, partial, flip, once, negate } from '../src/function'
 
 describe('Function utilities', () => {
   describe('identity', () => {
@@ -242,6 +242,188 @@ describe('Function utilities', () => {
       expect(memoized()).toBe(42)
       expect(memoized()).toBe(42)
       expect(getValue).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('compose', () => {
+    test('composes functions right to left', () => {
+      const add = (a: number, b: number) => a + b
+      const double = (x: number) => x * 2
+      const square = (x: number) => x * x
+
+      const composed = compose(square, double, add)
+      const result = composed(2, 3) // square(double(add(2, 3))) = square(double(5)) = square(10) = 100
+
+      expect(result).toBe(100)
+    })
+
+    test('works with single function', () => {
+      const double = (x: number) => x * 2
+      const composed = compose(double)
+
+      expect(composed(5)).toBe(10)
+    })
+
+    test('returns identity for no functions', () => {
+      const composed = compose()
+      expect(composed(42)).toBe(42)
+    })
+  })
+
+  describe('pipe', () => {
+    test('pipes value through functions left to right', () => {
+      const add5 = (x: number) => x + 5
+      const double = (x: number) => x * 2
+      const square = (x: number) => x * x
+
+      const result = pipe(3, add5, double, square) // square(double(add5(3))) = square(double(8)) = square(16) = 256
+
+      expect(result).toBe(256)
+    })
+
+    test('works with single function', () => {
+      const double = (x: number) => x * 2
+      const result = pipe(5, double)
+
+      expect(result).toBe(10)
+    })
+
+    test('returns original value for no functions', () => {
+      const result = pipe(42)
+      expect(result).toBe(42)
+    })
+  })
+
+  describe('partial', () => {
+    test('partially applies function arguments', () => {
+      const add = (a: number, b: number, c: number) => a + b + c
+      const add5And10 = partial(add, 5, 10)
+      const result = add5And10(3)
+
+      expect(result).toBe(18) // 5 + 10 + 3
+    })
+
+    test('works with single partial argument', () => {
+      const multiply = (a: number, b: number) => a * b
+      const double = partial(multiply, 2)
+
+      expect(double(5)).toBe(10)
+    })
+
+    test('works with no partial arguments', () => {
+      const add = (a: number, b: number) => a + b
+      const same = partial(add)
+
+      expect(same(3, 4)).toBe(7)
+    })
+  })
+
+  describe('flip', () => {
+    test('reverses all arguments for two-argument function', () => {
+      const divide = (a: number, b: number) => a / b
+      const flippedDivide = flip(divide)
+
+      expect(divide(10, 2)).toBe(5)
+      expect(flippedDivide(2, 10)).toBe(5) // Same result, but arguments reversed
+    })
+
+    test('reverses all arguments for three-argument function', () => {
+      const subtract = (a: number, b: number, c: number) => a - b - c
+      const flippedSubtract = flip(subtract)
+
+      expect(subtract(10, 3, 2)).toBe(5) // 10 - 3 - 2 = 5
+      expect(flippedSubtract(2, 3, 10)).toBe(5) // 10 - 3 - 2 = 5 (arguments reversed)
+    })
+
+    test('reverses all arguments for four-argument function', () => {
+      const calculate = (a: number, b: number, c: number, d: number) => a + b - c * d
+      const flippedCalculate = flip(calculate)
+
+      expect(calculate(10, 5, 3, 2)).toBe(9) // 10 + 5 - 3 * 2 = 9
+      expect(flippedCalculate(2, 3, 5, 10)).toBe(9) // 10 + 5 - 3 * 2 = 9 (arguments reversed)
+    })
+
+    test('works with string operations', () => {
+      const concat = (a: string, b: string, c: string) => a + b + c
+      const flippedConcat = flip(concat)
+
+      expect(concat('hello', ' ', 'world')).toBe('hello world')
+      expect(flippedConcat('world', ' ', 'hello')).toBe('hello world') // Arguments reversed
+    })
+
+    test('works with single argument function', () => {
+      const double = (x: number) => x * 2
+      const flippedDouble = flip(double)
+
+      expect(double(5)).toBe(10)
+      expect(flippedDouble(5)).toBe(10) // No change for single argument
+    })
+
+    test('works with no arguments function', () => {
+      const getValue = () => 42
+      const flippedGetValue = flip(getValue)
+
+      expect(getValue()).toBe(42)
+      expect(flippedGetValue()).toBe(42) // No change for no arguments
+    })
+
+    test('preserves function behavior with complex operations', () => {
+      // Test with array operations where order matters
+      const arrayOp = (arr: number[], index: number, value: number) => {
+        const result = [...arr]
+        result[index] = value
+        return result
+      }
+      const flippedArrayOp = flip(arrayOp)
+
+      const original = [1, 2, 3]
+      expect(arrayOp(original, 1, 99)).toEqual([1, 99, 3])
+      expect(flippedArrayOp(99, 1, original)).toEqual([1, 99, 3]) // Arguments reversed
+    })
+  })
+
+  describe('once', () => {
+    test('ensures function is called at most once', () => {
+      let counter = 0
+      const increment = once(() => ++counter)
+
+      expect(increment()).toBe(1)
+      expect(increment()).toBe(1) // Same result, function not called again
+      expect(increment()).toBe(1)
+      expect(counter).toBe(1) // Function only called once
+    })
+
+    test('works with functions that take arguments', () => {
+      let lastArgs: any[] = []
+      const recordArgs = once((...args: any[]) => {
+        lastArgs = args
+        return args.join(',')
+      })
+
+      expect(recordArgs('a', 'b', 'c')).toBe('a,b,c')
+      expect(recordArgs('x', 'y', 'z')).toBe('a,b,c') // Same result
+      expect(lastArgs).toEqual(['a', 'b', 'c']) // Only first call recorded
+    })
+  })
+
+  describe('negate', () => {
+    test('creates negated predicate', () => {
+      const isEven = (n: number) => n % 2 === 0
+      const isOdd = negate(isEven)
+
+      expect(isEven(4)).toBe(true)
+      expect(isOdd(4)).toBe(false)
+      expect(isOdd(3)).toBe(true)
+      expect(isEven(3)).toBe(false)
+    })
+
+    test('works with multiple arguments', () => {
+      const isInRange = (value: number, min: number, max: number) => value >= min && value <= max
+      const isOutOfRange = negate(isInRange)
+
+      expect(isInRange(5, 1, 10)).toBe(true)
+      expect(isOutOfRange(5, 1, 10)).toBe(false)
+      expect(isOutOfRange(15, 1, 10)).toBe(true)
     })
   })
 })

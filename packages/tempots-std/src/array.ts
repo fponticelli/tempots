@@ -542,3 +542,117 @@ export const rankArray = <T>(
   }
   return ranks
 }
+
+/**
+ * Splits an array into chunks of the specified size.
+ *
+ * This function divides an array into smaller arrays of a fixed size.
+ * The last chunk may contain fewer elements if the array length is not
+ * evenly divisible by the chunk size.
+ *
+ * @example
+ * ```typescript
+ * const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+ * const chunks = chunk(numbers, 3)
+ * // Result: [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+ *
+ * const uneven = chunk([1, 2, 3, 4, 5], 2)
+ * // Result: [[1, 2], [3, 4], [5]]
+ * ```
+ *
+ * @param array - The array to chunk
+ * @param size - The size of each chunk (must be positive)
+ * @returns An array of chunks
+ * @public
+ */
+export const chunk = <T>(array: readonly T[], size: number): T[][] => {
+  if (size <= 0) {
+    throw new Error('Chunk size must be positive')
+  }
+
+  const result: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size))
+  }
+  return result
+}
+
+/**
+ * Partitions an array into two arrays based on a predicate.
+ *
+ * This function splits an array into two parts: elements that satisfy
+ * the predicate and elements that don't. The order of elements is preserved.
+ *
+ * @example
+ * ```typescript
+ * const numbers = [1, 2, 3, 4, 5, 6]
+ * const [evens, odds] = partition(numbers, n => n % 2 === 0)
+ * // evens: [2, 4, 6]
+ * // odds: [1, 3, 5]
+ * ```
+ *
+ * @param array - The array to partition
+ * @param predicate - Function that tests each element
+ * @returns A tuple containing [matching elements, non-matching elements]
+ * @public
+ */
+export const partition = <T>(
+  array: readonly T[],
+  predicate: (item: T) => boolean
+): [T[], T[]] => {
+  const truthy: T[] = []
+  const falsy: T[] = []
+
+  for (const item of array) {
+    if (predicate(item)) {
+      truthy.push(item)
+    } else {
+      falsy.push(item)
+    }
+  }
+
+  return [truthy, falsy]
+}
+
+/**
+ * Groups array elements by a key function.
+ *
+ * This function creates an object where keys are the result of the key function
+ * and values are arrays of elements that produced that key.
+ *
+ * @example
+ * ```typescript
+ * const users = [
+ *   { name: 'Alice', department: 'Engineering' },
+ *   { name: 'Bob', department: 'Engineering' },
+ *   { name: 'Carol', department: 'Marketing' }
+ * ]
+ * const byDepartment = groupBy(users, user => user.department)
+ * // Result: {
+ * //   Engineering: [{ name: 'Alice', ... }, { name: 'Bob', ... }],
+ * //   Marketing: [{ name: 'Carol', ... }]
+ * // }
+ * ```
+ *
+ * @param array - The array to group
+ * @param keyFn - Function that extracts the grouping key from each element
+ * @returns An object with grouped elements
+ * @public
+ */
+export const groupBy = <T, K extends string | number | symbol>(
+  array: readonly T[],
+  keyFn: (item: T) => K
+): Record<K, T[]> => {
+  const result = {} as Record<K, T[]>
+
+  for (const item of array) {
+    const key = keyFn(item)
+    if (result[key]) {
+      result[key].push(item)
+    } else {
+      result[key] = [item]
+    }
+  }
+
+  return result
+}

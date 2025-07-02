@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayTail, compareArrays, filterMapArray, filterNullsFromArray, range, isArrayEmpty, joinArrayWithConjunction, rankArray, removeAllFromArray, removeAllFromArrayByPredicate, removeOneFromArray, removeOneFromArrayByPredicate, uniqueByPrimitive, fillArray, buildArray } from "../src/array";
+import { applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayTail, compareArrays, filterMapArray, filterNullsFromArray, range, isArrayEmpty, joinArrayWithConjunction, rankArray, removeAllFromArray, removeAllFromArrayByPredicate, removeOneFromArray, removeOneFromArrayByPredicate, uniqueByPrimitive, fillArray, buildArray, chunk, partition, groupBy } from "../src/array";
 import { compareStrings } from "../src/string";
 
 
@@ -712,5 +712,199 @@ describe('Additional array utilities and edge cases', () => {
     })
 
 
+  })
+
+  describe('chunk', () => {
+    test('splits array into chunks of specified size', () => {
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      const chunks = chunk(numbers, 3)
+
+      expect(chunks).toEqual([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    })
+
+    test('handles uneven chunks', () => {
+      const numbers = [1, 2, 3, 4, 5]
+      const chunks = chunk(numbers, 2)
+
+      expect(chunks).toEqual([[1, 2], [3, 4], [5]])
+    })
+
+    test('throws error for non-positive chunk size', () => {
+      const numbers = [1, 2, 3]
+
+      expect(() => chunk(numbers, 0)).toThrow('Chunk size must be positive')
+      expect(() => chunk(numbers, -1)).toThrow('Chunk size must be positive')
+    })
+
+    test('handles empty array', () => {
+      const chunks = chunk([], 3)
+      expect(chunks).toEqual([])
+    })
+
+    test('handles chunk size larger than array', () => {
+      const numbers = [1, 2, 3]
+      const chunks = chunk(numbers, 5)
+
+      expect(chunks).toEqual([[1, 2, 3]])
+    })
+
+    test('handles chunk size of 1', () => {
+      const numbers = [1, 2, 3]
+      const chunks = chunk(numbers, 1)
+
+      expect(chunks).toEqual([[1], [2], [3]])
+    })
+  })
+
+  describe('partition', () => {
+    test('partitions array based on predicate', () => {
+      const numbers = [1, 2, 3, 4, 5, 6]
+      const [evens, odds] = partition(numbers, n => n % 2 === 0)
+
+      expect(evens).toEqual([2, 4, 6])
+      expect(odds).toEqual([1, 3, 5])
+    })
+
+    test('handles all elements matching predicate', () => {
+      const numbers = [2, 4, 6, 8]
+      const [evens, odds] = partition(numbers, n => n % 2 === 0)
+
+      expect(evens).toEqual([2, 4, 6, 8])
+      expect(odds).toEqual([])
+    })
+
+    test('handles no elements matching predicate', () => {
+      const numbers = [1, 3, 5, 7]
+      const [evens, odds] = partition(numbers, n => n % 2 === 0)
+
+      expect(evens).toEqual([])
+      expect(odds).toEqual([1, 3, 5, 7])
+    })
+
+    test('handles empty array', () => {
+      const [evens, odds] = partition([], (n: number) => n % 2 === 0)
+
+      expect(evens).toEqual([])
+      expect(odds).toEqual([])
+    })
+
+    test('preserves order of elements', () => {
+      const mixed = [1, 4, 2, 7, 3, 8]
+      const [evens, odds] = partition(mixed, n => n % 2 === 0)
+
+      expect(evens).toEqual([4, 2, 8])
+      expect(odds).toEqual([1, 7, 3])
+    })
+
+    test('works with complex objects', () => {
+      const users = [
+        { name: 'Alice', age: 25 },
+        { name: 'Bob', age: 17 },
+        { name: 'Carol', age: 30 },
+        { name: 'Dave', age: 16 }
+      ]
+
+      const [adults, minors] = partition(users, user => user.age >= 18)
+
+      expect(adults).toEqual([
+        { name: 'Alice', age: 25 },
+        { name: 'Carol', age: 30 }
+      ])
+      expect(minors).toEqual([
+        { name: 'Bob', age: 17 },
+        { name: 'Dave', age: 16 }
+      ])
+    })
+  })
+
+  describe('groupBy', () => {
+    test('groups array elements by key function', () => {
+      const users = [
+        { name: 'Alice', department: 'Engineering' },
+        { name: 'Bob', department: 'Engineering' },
+        { name: 'Carol', department: 'Marketing' },
+        { name: 'Dave', department: 'Marketing' }
+      ]
+
+      const grouped = groupBy(users, user => user.department)
+
+      expect(grouped).toEqual({
+        Engineering: [
+          { name: 'Alice', department: 'Engineering' },
+          { name: 'Bob', department: 'Engineering' }
+        ],
+        Marketing: [
+          { name: 'Carol', department: 'Marketing' },
+          { name: 'Dave', department: 'Marketing' }
+        ]
+      })
+    })
+
+    test('handles empty array', () => {
+      const grouped = groupBy([], (x: any) => x.key)
+      expect(grouped).toEqual({})
+    })
+
+    test('works with primitive values', () => {
+      const numbers = [1, 2, 3, 4, 5, 6]
+      const grouped = groupBy(numbers, n => n % 2 === 0 ? 'even' : 'odd')
+
+      expect(grouped).toEqual({
+        even: [2, 4, 6],
+        odd: [1, 3, 5]
+      })
+    })
+
+    test('works with numeric keys', () => {
+      const items = [
+        { value: 'a', priority: 1 },
+        { value: 'b', priority: 2 },
+        { value: 'c', priority: 1 },
+        { value: 'd', priority: 3 }
+      ]
+
+      const grouped = groupBy(items, item => item.priority)
+
+      expect(grouped).toEqual({
+        1: [
+          { value: 'a', priority: 1 },
+          { value: 'c', priority: 1 }
+        ],
+        2: [{ value: 'b', priority: 2 }],
+        3: [{ value: 'd', priority: 3 }]
+      })
+    })
+
+    test('handles single element groups', () => {
+      const items = [
+        { id: 1, category: 'A' },
+        { id: 2, category: 'B' },
+        { id: 3, category: 'C' }
+      ]
+
+      const grouped = groupBy(items, item => item.category)
+
+      expect(grouped).toEqual({
+        A: [{ id: 1, category: 'A' }],
+        B: [{ id: 2, category: 'B' }],
+        C: [{ id: 3, category: 'C' }]
+      })
+    })
+
+    test('preserves order within groups', () => {
+      const items = [
+        { name: 'first', type: 'A' },
+        { name: 'second', type: 'B' },
+        { name: 'third', type: 'A' },
+        { name: 'fourth', type: 'B' }
+      ]
+
+      const grouped = groupBy(items, item => item.type)
+
+      expect(grouped.A[0].name).toBe('first')
+      expect(grouped.A[1].name).toBe('third')
+      expect(grouped.B[0].name).toBe('second')
+      expect(grouped.B[1].name).toBe('fourth')
+    })
   })
 })

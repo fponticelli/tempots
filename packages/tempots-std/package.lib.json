@@ -41,6 +41,10 @@
       "import": "./boolean.js",
       "require": "./boolean.cjs"
     },
+    "./date": {
+      "import": "./date.js",
+      "require": "./date.cjs"
+    },
     "./deferred": {
       "import": "./deferred.js",
       "require": "./deferred.cjs"
@@ -61,9 +65,17 @@
       "import": "./function.js",
       "require": "./function.cjs"
     },
+    "./iterator": {
+      "import": "./iterator.js",
+      "require": "./iterator.cjs"
+    },
     "./json": {
       "import": "./json.js",
       "require": "./json.cjs"
+    },
+    "./map": {
+      "import": "./map.js",
+      "require": "./map.cjs"
     },
     "./number": {
       "import": "./number.js",
@@ -77,6 +89,10 @@
       "import": "./promise.js",
       "require": "./promise.cjs"
     },
+    "./random": {
+      "import": "./random.js",
+      "require": "./random.cjs"
+    },
     "./regexp": {
       "import": "./regexp.js",
       "require": "./regexp.cjs"
@@ -84,6 +100,10 @@
     "./result": {
       "import": "./result.js",
       "require": "./result.cjs"
+    },
+    "./set": {
+      "import": "./set.js",
+      "require": "./set.cjs"
     },
     "./string": {
       "import": "./string.js",
@@ -96,6 +116,10 @@
     "./union": {
       "import": "./union.js",
       "require": "./union.cjs"
+    },
+    "./url": {
+      "import": "./url.js",
+      "require": "./url.cjs"
     },
     "./validation": {
       "import": "./validation.js",
@@ -124,6 +148,9 @@
       "boolean": [
         "./boolean.d.ts"
       ],
+      "date": [
+        "./date.d.ts"
+      ],
       "deferred": [
         "./deferred.d.ts"
       ],
@@ -139,8 +166,14 @@
       "function": [
         "./function.d.ts"
       ],
+      "iterator": [
+        "./iterator.d.ts"
+      ],
       "json": [
         "./json.d.ts"
+      ],
+      "map": [
+        "./map.d.ts"
       ],
       "number": [
         "./number.d.ts"
@@ -151,11 +184,17 @@
       "promise": [
         "./promise.d.ts"
       ],
+      "random": [
+        "./random.d.ts"
+      ],
       "regexp": [
         "./regexp.d.ts"
       ],
       "result": [
         "./result.d.ts"
+      ],
+      "set": [
+        "./set.d.ts"
       ],
       "string": [
         "./string.d.ts"
@@ -165,6 +204,9 @@
       ],
       "union": [
         "./union.d.ts"
+      ],
+      "url": [
+        "./url.d.ts"
       ],
       "validation": [
         "./validation.d.ts"

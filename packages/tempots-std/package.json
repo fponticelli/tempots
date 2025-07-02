@@ -49,6 +49,10 @@
       "import": "./dist/boolean.js",
       "require": "./dist/boolean.cjs"
     },
+    "./date": {
+      "import": "./dist/date.js",
+      "require": "./dist/date.cjs"
+    },
     "./deferred": {
       "import": "./dist/deferred.js",
       "require": "./dist/deferred.cjs"
@@ -69,9 +73,17 @@
       "import": "./dist/function.js",
       "require": "./dist/function.cjs"
     },
+    "./iterator": {
+      "import": "./dist/iterator.js",
+      "require": "./dist/iterator.cjs"
+    },
     "./json": {
       "import": "./dist/json.js",
       "require": "./dist/json.cjs"
+    },
+    "./map": {
+      "import": "./dist/map.js",
+      "require": "./dist/map.cjs"
     },
     "./number": {
       "import": "./dist/number.js",
@@ -85,6 +97,10 @@
       "import": "./dist/promise.js",
       "require": "./dist/promise.cjs"
     },
+    "./random": {
+      "import": "./dist/random.js",
+      "require": "./dist/random.cjs"
+    },
     "./regexp": {
       "import": "./dist/regexp.js",
       "require": "./dist/regexp.cjs"
@@ -92,6 +108,10 @@
     "./result": {
       "import": "./dist/result.js",
       "require": "./dist/result.cjs"
+    },
+    "./set": {
+      "import": "./dist/set.js",
+      "require": "./dist/set.cjs"
     },
     "./string": {
       "import": "./dist/string.js",
@@ -104,6 +124,10 @@
     "./union": {
       "import": "./dist/union.js",
       "require": "./dist/union.cjs"
+    },
+    "./url": {
+      "import": "./dist/url.js",
+      "require": "./dist/url.cjs"
     },
     "./validation": {
       "import": "./dist/validation.js",
@@ -171,6 +195,9 @@
       "boolean": [
         "./dist/boolean.d.ts"
       ],
+      "date": [
+        "./dist/date.d.ts"
+      ],
       "deferred": [
         "./dist/deferred.d.ts"
       ],
@@ -186,8 +213,14 @@
       "function": [
         "./dist/function.d.ts"
       ],
+      "iterator": [
+        "./dist/iterator.d.ts"
+      ],
       "json": [
         "./dist/json.d.ts"
+      ],
+      "map": [
+        "./dist/map.d.ts"
       ],
       "number": [
         "./dist/number.d.ts"
@@ -198,11 +231,17 @@
       "promise": [
         "./dist/promise.d.ts"
       ],
+      "random": [
+        "./dist/random.d.ts"
+      ],
       "regexp": [
         "./dist/regexp.d.ts"
       ],
       "result": [
         "./dist/result.d.ts"
+      ],
+      "set": [
+        "./dist/set.d.ts"
       ],
       "string": [
         "./dist/string.d.ts"
@@ -212,6 +251,9 @@
       ],
       "union": [
         "./dist/union.d.ts"
+      ],
+      "url": [
+        "./dist/url.d.ts"
       ],
       "validation": [
         "./dist/validation.d.ts"

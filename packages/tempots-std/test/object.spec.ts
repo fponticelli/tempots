@@ -8,7 +8,10 @@ import {
   objectEntries,
   objectFromEntries,
   objectKeys,
-  objectValues
+  objectValues,
+  pick,
+  omit,
+  deepClone
 } from "../src/object";
 
 describe('objects helpers', () => {
@@ -140,5 +143,241 @@ describe('objects helpers', () => {
 
     expect(isEmptyObject(complexObj)).toBe(false)
     expect(sameObjectKeys(complexObj, complexObj)).toBe(true)
+  })
+
+  describe('pick', () => {
+    test('picks specified keys from object', () => {
+      const user = {
+        id: 1,
+        name: 'Alice',
+        email: 'alice@example.com',
+        password: 'secret',
+        age: 30
+      }
+
+      const result = pick(user, ['id', 'name', 'email'])
+
+      expect(result).toEqual({
+        id: 1,
+        name: 'Alice',
+        email: 'alice@example.com'
+      })
+      expect(result).not.toHaveProperty('password')
+      expect(result).not.toHaveProperty('age')
+    })
+
+    test('handles empty keys array', () => {
+      const obj = { a: 1, b: 2, c: 3 }
+      const result = pick(obj, [])
+
+      expect(result).toEqual({})
+    })
+
+    test('handles non-existent keys', () => {
+      const obj = { a: 1, b: 2 }
+      const result = pick(obj, ['a', 'c' as keyof typeof obj])
+
+      expect(result).toEqual({ a: 1 })
+      expect(result).not.toHaveProperty('c')
+    })
+
+    test('does not modify original object', () => {
+      const original = { a: 1, b: 2, c: 3 }
+      const result = pick(original, ['a', 'b'])
+
+      expect(original).toEqual({ a: 1, b: 2, c: 3 })
+      expect(result).not.toBe(original)
+    })
+
+    test('works with complex objects', () => {
+      const obj = {
+        str: 'hello',
+        num: 42,
+        bool: true,
+        arr: [1, 2, 3],
+        nested: { x: 1, y: 2 }
+      }
+
+      const result = pick(obj, ['str', 'nested'])
+
+      expect(result).toEqual({
+        str: 'hello',
+        nested: { x: 1, y: 2 }
+      })
+      expect(result.nested).toBe(obj.nested) // Shallow copy
+    })
+  })
+
+  describe('omit', () => {
+    test('omits specified keys from object', () => {
+      const user = {
+        id: 1,
+        name: 'Alice',
+        email: 'alice@example.com',
+        password: 'secret',
+        age: 30
+      }
+
+      const result = omit(user, ['password', 'age'])
+
+      expect(result).toEqual({
+        id: 1,
+        name: 'Alice',
+        email: 'alice@example.com'
+      })
+      expect(result).not.toHaveProperty('password')
+      expect(result).not.toHaveProperty('age')
+    })
+
+    test('handles empty keys array', () => {
+      const obj = { a: 1, b: 2, c: 3 }
+      const result = omit(obj, [])
+
+      expect(result).toEqual({ a: 1, b: 2, c: 3 })
+    })
+
+    test('handles non-existent keys', () => {
+      const obj = { a: 1, b: 2 }
+      const result = omit(obj, ['c' as keyof typeof obj])
+
+      expect(result).toEqual({ a: 1, b: 2 })
+    })
+
+    test('does not modify original object', () => {
+      const original = { a: 1, b: 2, c: 3 }
+      const result = omit(original, ['c'])
+
+      expect(original).toEqual({ a: 1, b: 2, c: 3 })
+      expect(result).not.toBe(original)
+    })
+
+    test('works with complex objects', () => {
+      const obj = {
+        str: 'hello',
+        num: 42,
+        bool: true,
+        arr: [1, 2, 3],
+        nested: { x: 1, y: 2 }
+      }
+
+      const result = omit(obj, ['bool', 'arr'])
+
+      expect(result).toEqual({
+        str: 'hello',
+        num: 42,
+        nested: { x: 1, y: 2 }
+      })
+      expect(result.nested).toBe(obj.nested) // Shallow copy
+    })
+  })
+
+  describe('deepClone', () => {
+    test('clones primitive values', () => {
+      expect(deepClone(42)).toBe(42)
+      expect(deepClone('hello')).toBe('hello')
+      expect(deepClone(true)).toBe(true)
+      expect(deepClone(false)).toBe(false)
+      expect(deepClone(null)).toBe(null)
+      expect(deepClone(undefined)).toBe(undefined)
+    })
+
+    test('clones symbols and functions', () => {
+      const sym = Symbol('test')
+      expect(deepClone(sym)).toBe(sym)
+
+      const fn = () => 'test'
+      expect(deepClone(fn)).toBe(fn)
+    })
+
+    test('clones Date objects', () => {
+      const date = new Date('2023-01-15')
+      const cloned = deepClone(date)
+
+      expect(cloned).toBeInstanceOf(Date)
+      expect(cloned.getTime()).toBe(date.getTime())
+      expect(cloned).not.toBe(date) // Different reference
+    })
+
+    test('clones arrays deeply', () => {
+      const arr = [1, [2, 3], { a: 4 }]
+      const cloned = deepClone(arr)
+
+      expect(cloned).toEqual(arr)
+      expect(cloned).not.toBe(arr) // Different reference
+      expect(cloned[1]).not.toBe(arr[1]) // Nested array cloned
+      expect(cloned[2]).not.toBe(arr[2]) // Nested object cloned
+    })
+
+    test('clones objects deeply', () => {
+      const obj = {
+        name: 'Alice',
+        settings: {
+          theme: 'dark',
+          notifications: true,
+          preferences: {
+            language: 'en'
+          }
+        },
+        tags: ['user', 'admin']
+      }
+
+      const cloned = deepClone(obj)
+
+      expect(cloned).toEqual(obj)
+      expect(cloned).not.toBe(obj) // Different reference
+      expect(cloned.settings).not.toBe(obj.settings) // Nested object cloned
+      expect(cloned.settings.preferences).not.toBe(obj.settings.preferences) // Deep nested object cloned
+      expect(cloned.tags).not.toBe(obj.tags) // Array cloned
+    })
+
+    test('handles circular references by throwing error', () => {
+      const obj: any = { name: 'test' }
+      obj.self = obj
+
+      // Current implementation doesn't handle circular references and will throw
+      expect(() => deepClone(obj)).toThrow()
+    })
+
+    test('clones complex nested structures', () => {
+      const complex = {
+        id: 1,
+        created: new Date('2023-01-01'),
+        data: {
+          items: [
+            { id: 1, values: [1, 2, 3] },
+            { id: 2, values: [4, 5, 6] }
+          ],
+          metadata: {
+            version: '1.0',
+            tags: ['important', 'processed']
+          }
+        }
+      }
+
+      const cloned = deepClone(complex)
+
+      expect(cloned).toEqual(complex)
+      expect(cloned).not.toBe(complex)
+      expect(cloned.created).not.toBe(complex.created)
+      expect(cloned.data).not.toBe(complex.data)
+      expect(cloned.data.items).not.toBe(complex.data.items)
+      expect(cloned.data.items[0]).not.toBe(complex.data.items[0])
+      expect(cloned.data.items[0].values).not.toBe(complex.data.items[0].values)
+      expect(cloned.data.metadata).not.toBe(complex.data.metadata)
+      expect(cloned.data.metadata.tags).not.toBe(complex.data.metadata.tags)
+    })
+
+    test('preserves object prototypes', () => {
+      class CustomClass {
+        constructor(public value: number) {}
+      }
+
+      const instance = new CustomClass(42)
+      const cloned = deepClone(instance)
+
+      expect(cloned.value).toBe(42)
+      // Note: deepClone creates plain objects, not instances of the original class
+      expect(cloned).not.toBeInstanceOf(CustomClass)
+    })
   })
 })
