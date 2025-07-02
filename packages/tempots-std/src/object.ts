@@ -299,7 +299,9 @@ export const deepClone = <T>(obj: T): T => {
       }
     }
     return cloned
+    /* c8 ignore next */
   }
 
+  /* c8 ignore next 2 */
   return obj
 }

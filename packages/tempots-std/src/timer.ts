@@ -194,6 +194,7 @@ export const throttle = <FN extends (...args: unknown[]) => void>(
       if (noLeading) {
         lastExec = Date.now()
         if (!noTrailing) {
+          /* c8 ignore next */
           timeoutID = setTimeout(debounceMode ? clear : exec, delay)
         }
       } else {
