@@ -2,14 +2,10 @@ import { describe, expect, test } from "vitest";
 import {
   isObject,
   sameObjectKeys,
-  objectKeys,
-  objectValues,
-  objectEntries,
-  objectFromEntries,
   removeObjectFields,
-  mergeObjects,
-  isEmptyObject
+  mergeObjects
 } from "../src/object";
+import { isEmptyObject, objectEntries, objectFromEntries, objectKeys, objectValues } from "../dist";
 
 describe('objects helpers', () => {
   test('sameObjectKeys works as expected', () => {
@@ -56,7 +52,7 @@ describe('objects helpers', () => {
     expect(objectFromEntries([])).toEqual({})
     expect(objectFromEntries([['a', 1], ['b', 2]])).toEqual({ a: 1, b: 2 })
     expect(objectFromEntries([['x', 'hello'], ['y', 'world']])).toEqual({ x: 'hello', y: 'world' })
-    expect(objectFromEntries([['a', true], ['b', null]])).toEqual({ a: true, b: null })
+    expect(objectFromEntries([['a', true], ['b', false]])).toEqual({ a: true, b: false })
   })
 
   test('removeObjectFields removes specified fields', () => {
@@ -72,7 +68,7 @@ describe('objects helpers', () => {
   })
 
   test('removeObjectFields with empty object', () => {
-    expect(removeObjectFields({}, 'a')).toEqual({})
+    expect(removeObjectFields({}, 'a' as never)).toEqual({})
     expect(removeObjectFields({})).toEqual({})
   })
 

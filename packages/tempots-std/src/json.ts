@@ -33,7 +33,10 @@ export type JSONValue = JSONPrimitive | JSONObject | JSONArray
  * @public
  */
 export const isJSONObject = (value: JSONValue): value is JSONObject =>
-  typeof value === 'object' && !Array.isArray(value) && value != null
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  value != null &&
+  Object.values(value).every(isJSON)
 
 /**
  * Checks if the value is a JSON array.
@@ -43,7 +46,17 @@ export const isJSONObject = (value: JSONValue): value is JSONObject =>
  * @public
  */
 export const isJSONArray = (value: JSONValue): value is JSONArray =>
-  Array.isArray(value)
+  Array.isArray(value) && value.every(isJSON)
+
+/**
+ * Checks if the value is a JSON value.
+ *
+ * @param value - The value to check.
+ * @returns `true` if the value is a JSON value; otherwise, `false`.
+ * @public
+ */
+export const isJSON = (value: JSONValue): value is JSONValue =>
+  isJSONPrimitive(value) || isJSONObject(value) || isJSONArray(value)
 
 /**
  * Checks if the value is a JSON primitive.

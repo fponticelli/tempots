@@ -1,16 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { anyElement, applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayOfIterableIterator, arrayTail, compareArrays, concatArrays, createFilledArray, filterArray, filterMapArray, filterNullsFromArray, flatMapArray, flattenArray, foldLeftArray, forEachElement, generateArray, generateSequenceArray, isArrayEmpty, joinArrayWithConjunction, mapArray, rankArray, removeAllFromArray, removeAllFromArrayByPredicate, removeOneFromArray, removeOneFromArrayByPredicate, sortArray, uniqueByPrimitive, uniquePrimitives } from "../src/array";
+import { applyArrayDiffOperations, areArraysEqual, arrayDiffOperations, ArrayDiffOperations, arrayHasValues, arrayHead, arrayTail, compareArrays, filterMapArray, filterNullsFromArray, range, isArrayEmpty, joinArrayWithConjunction, rankArray, removeAllFromArray, removeAllFromArrayByPredicate, removeOneFromArray, removeOneFromArrayByPredicate, uniqueByPrimitive, fillArray, buildArray } from "../src/array";
 import { compareStrings } from "../src/string";
 
-describe('arrays:mapArray', () => {
-  test('should work with empty arrays', () => {
-    expect(mapArray([], a => a)).toEqual([])
-  })
 
-  test('should work with any array', () => {
-    expect(mapArray([1, 2, 3], a => a + 1)).toEqual([2, 3, 4])
-  })
-})
 
 describe('arrays:filterMapArray', () => {
   test('should work with empty arrays', () => {
@@ -24,14 +16,7 @@ describe('arrays:filterMapArray', () => {
   })
 })
 
-describe('arrays:flatMapArray', () => {
-  test('should work with empty arrays', () => {
-    expect(flatMapArray([], a => a)).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(flatMapArray([1, 2, 3], a => [a, a + 1])).toEqual([1, 2, 2, 3, 3, 4])
-  })
-})
+
 
 describe('arrays:areArraysEqual', () => {
   test('should work with empty arrays', () => {
@@ -62,14 +47,7 @@ describe('arrays:arrayHasValues', () => {
   })
 })
 
-describe('arrays:filterArray', () => {
-  test('should work with empty arrays', () => {
-    expect(filterArray([], a => a != 1)).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(filterArray([1, 2, 3], a => a != 1)).toEqual([2, 3])
-  })
-})
+
 
 describe('arrays:filterNullsFromArray', () => {
   test('should work with empty arrays', () => {
@@ -81,16 +59,7 @@ describe('arrays:filterNullsFromArray', () => {
   })
 })
 
-describe('arrays:flattenArray', () => {
-  test('should work with empty arrays', () => {
-    expect(flattenArray([])).toEqual([])
-    expect(flattenArray([[], []])).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(flattenArray([[1, 2], [3]])).toEqual([1, 2, 3])
-    expect(flattenArray([[1], [2, 3]])).toEqual([1, 2, 3])
-  })
-})
+
 
 describe('arrays:arrayHead', () => {
   test('should return nothing if the array is empy', () => {
@@ -118,12 +87,12 @@ describe('arrays:arrayTail', () => {
 
 describe('arrays', () => {
   test('generateSequenceArray', () => {
-    expect(generateSequenceArray(4)).toEqual([0, 1, 2, 3])
-    expect(generateSequenceArray(4, 1)).toEqual([1, 2, 3, 4])
+    expect(range(4)).toEqual([0, 1, 2, 3])
+    expect(range(4, 1)).toEqual([1, 2, 3, 4])
   })
 
-  test('createFilledArray', () => {
-    expect(createFilledArray(4, 'x')).toEqual(['x', 'x', 'x', 'x'])
+  test('fillArray', () => {
+    expect(fillArray(4, 'x')).toEqual(['x', 'x', 'x', 'x'])
   })
 })
 
@@ -275,20 +244,9 @@ describe('arrays:compareArrays', () => {
   })
 })
 
-describe('arrays:sort', () => {
-  test('should sort arrays', () => {
-    expect(sortArray(["3", "2", "1"], compareStrings)).toEqual(["1", "2", "3"])
-  })
-})
 
-describe('arrays:uniquePrimitives', () => {
-  test('should work with empty arrays', () => {
-    expect(uniquePrimitives([])).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(uniquePrimitives([1, 2, 3, 2])).toEqual([1, 2, 3])
-  })
-})
+
+
 
 describe('arrays:uniqueByPrimitive', () => {
   test('should work with empty arrays', () => {
@@ -299,57 +257,7 @@ describe('arrays:uniqueByPrimitive', () => {
   })
 })
 
-describe('arrays:arrayOfIterableIterator', () => {
-  test('should work with empty arrays', () => {
-    expect(arrayOfIterableIterator(new Set().entries())).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(arrayOfIterableIterator(new Set([1, 2, 3]).entries())).toEqual([[1, 1], [2, 2], [3, 3]])
-  })
-})
 
-describe('arrays:foldLeftArray', () => {
-  test('should work with empty arrays', () => {
-    expect(foldLeftArray([], (a, b) => a + b, 0)).toBe(0)
-  })
-  test('should work with any array', () => {
-    expect(foldLeftArray([1, 2, 3], (a, b) => a + b, 0)).toBe(6)
-  })
-})
-
-describe('arrays:anyElement', () => {
-  test('should work with empty arrays', () => {
-    expect(anyElement([], a => a == 1)).toBe(false)
-  })
-  test('should work with any array', () => {
-    expect(anyElement([1, 2, 3], a => a == 1)).toBe(true)
-  })
-  test('should work with any array (not found)', () => {
-    expect(anyElement([1, 2, 3], a => a == 4)).toBe(false)
-  })
-})
-
-describe('arrays:forEachElement', () => {
-  test('should work with empty arrays', () => {
-    const arr: number[] = []
-    forEachElement(arr, a => a + 1)
-    expect(arr).toEqual([])
-  })
-  test('should work with any array', () => {
-    const arr = [1, 2, 3]
-    forEachElement(arr, a => a + 1)
-    expect(arr).toEqual([1, 2, 3])
-  })
-})
-
-describe('arrays:concatArrays', () => {
-  test('should work with empty arrays', () => {
-    expect(concatArrays([], [])).toEqual([])
-  })
-  test('should work with any array', () => {
-    expect(concatArrays([1, 2, 3], [4, 5, 6])).toEqual([1, 2, 3, 4, 5, 6])
-  })
-})
 
 const cases: Array<{
   a: string[]
@@ -671,21 +579,21 @@ describe('array helpers', () => {
 })
 
 describe('Additional array utilities and edge cases', () => {
-  describe('generateArray', () => {
+  describe('buildArray', () => {
     test('generates array with correct length and values', () => {
-      const result = generateArray(5, i => i * 2)
+      const result = buildArray(5, i => i * 2)
       expect(result).toEqual([0, 2, 4, 6, 8])
       expect(result.length).toBe(5)
     })
 
     test('works with zero length', () => {
-      const result = generateArray(0, i => i)
+      const result = buildArray(0, i => i)
       expect(result).toEqual([])
       expect(result.length).toBe(0)
     })
 
     test('works with complex generator function', () => {
-      const result = generateArray(3, i => ({ id: i, name: `Item ${i}` }))
+      const result = buildArray(3, i => ({ id: i, name: `Item ${i}` }))
       expect(result).toEqual([
         { id: 0, name: 'Item 0' },
         { id: 1, name: 'Item 1' },
@@ -695,7 +603,7 @@ describe('Additional array utilities and edge cases', () => {
 
     test('generator function receives correct indices', () => {
       const indices: number[] = []
-      generateArray(4, i => {
+      buildArray(4, i => {
         indices.push(i)
         return i
       })
@@ -733,97 +641,14 @@ describe('Additional array utilities and edge cases', () => {
     })
   })
 
-  describe('arrayOfIterableIterator', () => {
-    test('converts Set iterator to array', () => {
-      const set = new Set([1, 2, 3])
-      const result = arrayOfIterableIterator(set.values())
-      expect(result).toEqual([1, 2, 3])
-    })
 
-    test('converts Map keys iterator to array', () => {
-      const map = new Map([['a', 1], ['b', 2], ['c', 3]])
-      const result = arrayOfIterableIterator(map.keys())
-      expect(result).toEqual(['a', 'b', 'c'])
-    })
-
-    test('converts Map values iterator to array', () => {
-      const map = new Map([['a', 1], ['b', 2], ['c', 3]])
-      const result = arrayOfIterableIterator(map.values())
-      expect(result).toEqual([1, 2, 3])
-    })
-
-    test('works with empty iterator', () => {
-      const set = new Set()
-      const result = arrayOfIterableIterator(set.values())
-      expect(result).toEqual([])
-    })
-
-    test('works with custom iterator', () => {
-      function* customGenerator() {
-        yield 'a'
-        yield 'b'
-        yield 'c'
-      }
-      const result = arrayOfIterableIterator(customGenerator())
-      expect(result).toEqual(['a', 'b', 'c'])
-    })
-
-    test('handles iterator with undefined done property', () => {
-      const customIterator: IterableIterator<string> = {
-        [Symbol.iterator]() {
-          return this
-        },
-        next() {
-          if (this.index === undefined) {
-            this.index = 0
-          }
-          if (this.index < 2) {
-            return { value: `item${this.index++}`, done: undefined as any }
-          }
-          return { value: undefined, done: true }
-        },
-        index: undefined as number | undefined
-      }
-      
-      const result = arrayOfIterableIterator(customIterator)
-      expect(result).toEqual(['item0', 'item1'])
-    })
-  })
 
   describe('Edge cases for existing functions', () => {
-    test('mapArray with index parameter', () => {
-      const result = mapArray(['a', 'b', 'c'], (item, index) => `${index}:${item}`)
-      expect(result).toEqual(['0:a', '1:b', '2:c'])
-    })
-
     test('filterMapArray with index parameter', () => {
       const result = filterMapArray(['a', 'b', 'c'], (item, index) =>
         index % 2 === 0 ? `${index}:${item}` : null
       )
       expect(result).toEqual(['0:a', '2:c'])
-    })
-
-    test('foldLeftArray accumulates correctly', () => {
-      const result = foldLeftArray(
-        ['a', 'b', 'c'],
-        (acc, item) => acc + item + ',',
-        ''
-      )
-      expect(result).toBe('a,b,c,')
-    })
-
-    test('flatMapArray with empty results', () => {
-      const result = flatMapArray([1, 2, 3], n => n % 2 === 0 ? [n, n] : [])
-      expect(result).toEqual([2, 2])
-    })
-
-    test('flatMapArray with mixed result lengths', () => {
-      const result = flatMapArray([1, 2, 3], n => {
-        if (n === 1) return [n]
-        if (n === 2) return [n, n]
-        return [n, n, n]
-      })
-      expect(result).toEqual([1, 2, 2, 3, 3, 3])
     })
 
     test('compareArrays with shorterFirst=false', () => {
@@ -838,12 +663,7 @@ describe('Additional array utilities and edge cases', () => {
       expect(compareArrays([1, 2, 3], [1, 2, 3], (a, b) => a - b)).toBe(0)
     })
 
-    test('sortArray does not modify original array', () => {
-      const original = [3, 1, 4, 1, 5]
-      const sorted = sortArray(original, (a, b) => a - b)
-      expect(original).toEqual([3, 1, 4, 1, 5]) // Original unchanged
-      expect(sorted).toEqual([1, 1, 3, 4, 5])
-    })
+
 
     test('uniqueByPrimitive with complex key extraction', () => {
       const items = [
@@ -891,46 +711,6 @@ describe('Additional array utilities and edge cases', () => {
       expect(arr).toEqual([1, 3, 2, 4]) // Only first 2 removed
     })
 
-    test('anyElement with empty array', () => {
-      expect(anyElement([], x => x > 0)).toBe(false)
-    })
 
-    test('anyElement with predicate that matches', () => {
-      expect(anyElement([1, 2, 3], x => x === 2)).toBe(true)
-    })
-
-    test('anyElement with predicate that does not match', () => {
-      expect(anyElement([1, 2, 3], x => x > 10)).toBe(false)
-    })
-
-    test('anyElement returns true for first match', () => {
-      const arr = [1, 2, 3, 4, 5]
-      expect(anyElement(arr, x => x > 3)).toBe(true)
-      expect(anyElement(arr, x => x < 0)).toBe(false)
-    })
-
-    test('concatArrays with no arguments', () => {
-      expect(concatArrays()).toEqual([])
-    })
-
-    test('concatArrays with single array', () => {
-      expect(concatArrays([1, 2, 3])).toEqual([1, 2, 3])
-    })
-
-    test('concatArrays with multiple arrays including empty ones', () => {
-      expect(concatArrays([1], [], [2, 3], [], [4])).toEqual([1, 2, 3, 4])
-    })
-
-    test('forEachElement executes function for each element', () => {
-      const results: number[] = []
-      forEachElement([1, 2, 3], x => results.push(x * 2))
-      expect(results).toEqual([2, 4, 6])
-    })
-
-    test('forEachElement with empty array', () => {
-      const results: number[] = []
-      forEachElement([], x => results.push(x))
-      expect(results).toEqual([])
-    })
   })
 })

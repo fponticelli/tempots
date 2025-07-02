@@ -1,9 +1,4 @@
-import {
-  allElements,
-  anyElement,
-  createFilledArray,
-  generateArray,
-} from './array'
+// No array imports needed anymore
 import { MissingImplementationError } from './error'
 import { mapRegExp as mapR } from './regexp'
 
@@ -13,20 +8,6 @@ import { mapRegExp as mapR } from './regexp'
  * Use by importing the desired utility from "@tempots/std" or directly from "@tempots/std/string".
  * @public
  */
-
-/**
- * Replaces all occurrances of `placeholder` in `subject` with the value `replacement`.
- * @param subject - The string to search in.
- * @param placeholder - The string to search for.
- * @param replacement - The string to replace `placeholder` with.
- * @returns The string with all occurrances of `placeholder` replaced by `replacement`.
- * @public
- */
-export const replaceAll = (
-  subject: string,
-  placeholder: string,
-  replacement: string
-): string => subject.split(placeholder).join(replacement)
 
 /**
  * `substringAfter` searches for the first occurrance of `searchFor` and returns the text after that.
@@ -157,18 +138,6 @@ export const compareCaseInsensitive = (
 }
 
 /**
- * Checks if a string ends with a specified suffix.
- *
- * @param s - The string to check.
- * @param end - The suffix to check against.
- * @returns `true` if the string ends with the specified suffix, `false` otherwise.
- * @public
- */
-export const stringEndsWith = (s: string, end: string): boolean => {
-  return s.substring(s.length - end.length) === end
-}
-
-/**
  * Checks if a string ends with another string in a case-insensitive manner.
  *
  * @param s - The string to check.
@@ -182,17 +151,6 @@ export const textEndsWithCaseInsensitive = (
 ): boolean => {
   return s.substring(s.length - end.length).toLowerCase() === end.toLowerCase()
 }
-
-/**
- * Checks if a string starts with a specified substring.
- *
- * @param s - The string to check.
- * @param start - The substring to check for at the beginning of the string.
- * @returns `true` if the string starts with the specified substring, `false` otherwise.
- * @public
- */
-export const stringStartsWith = (s: string, start: string): boolean =>
-  s.substring(0, start.length) === start
 
 /**
  * Checks if a string starts with another string in a case-insensitive manner.
@@ -284,18 +242,6 @@ export const textContainsCaseInsensitive = (
 }
 
 /**
- * `textContains` returns `true` if `s` contains one or more occurrences of `test`.
- *
- * @param s - The string to search in.
- * @param test - The string to search for.
- * @returns `true` if `s` contains `test`, `false` otherwise.
- * @public
- */
-export const stringContains = (s: string, test: string): boolean => {
-  return s.includes(test)
-}
-
-/**
  * Return the number of occurrences of `test` in `s`.
  *
  * @param s - The string to search in.
@@ -318,7 +264,7 @@ export const countStringOccurrences = (s: string, test: string): number => {
 export const containsAnyTextCaseInsensitive = (
   s: string,
   tests: string[]
-): boolean => anyElement(tests, t => textContainsCaseInsensitive(s, t))
+): boolean => tests.some(t => textContainsCaseInsensitive(s, t))
 
 /**
  * `containsAnyText` returns `true` if `s` contains any of the strings in `tests`
@@ -329,7 +275,7 @@ export const containsAnyTextCaseInsensitive = (
  * @public
  */
 export const containsAnyText = (s: string, tests: string[]): boolean => {
-  return anyElement(tests, t => stringContains(s, t))
+  return tests.some(t => s.includes(t))
 }
 
 /**
@@ -343,7 +289,7 @@ export const containsAnyText = (s: string, tests: string[]): boolean => {
 export const containsAllTextCaseInsensitive = (
   s: string,
   tests: string[]
-): boolean => allElements(tests, t => textContainsCaseInsensitive(s, t))
+): boolean => tests.every(t => textContainsCaseInsensitive(s, t))
 
 /**
  * `containsAllText` returns `true` if `s` contains all of the strings in `tests`
@@ -354,7 +300,7 @@ export const containsAllTextCaseInsensitive = (
  * @public
  */
 export const containsAllText = (s: string, tests: string[]): boolean => {
-  return allElements(tests, t => stringContains(s, t))
+  return tests.every(t => s.includes(t))
 }
 
 /**
@@ -459,7 +405,7 @@ export const ellipsisMiddle = (
  * @public
  */
 export const stringEndsWithAny = (s: string, values: string[]): boolean => {
-  return anyElement(values, end => stringEndsWith(s, end))
+  return values.some(end => s.endsWith(end))
 }
 
 /**
@@ -474,7 +420,7 @@ export const stringEndsWithAny = (s: string, values: string[]): boolean => {
 export const filterChars = (
   s: string,
   predicate: (s: string) => boolean
-): string => stringToChars(s).filter(predicate).join('')
+): string => Array.from(s).filter(predicate).join('')
 
 /**
  * Same as `filterCharcodes` but `predicate` operates on integer char codes instead of string characters.
@@ -528,7 +474,7 @@ export const stringHasContent = (value: string): boolean => {
  * @public
  */
 export const humanize = (s: string): string => {
-  return replaceAll(underscore(s), '_', ' ')
+  return underscore(s).split('_').join(' ')
 }
 
 /**
@@ -658,7 +604,7 @@ export const randomStringSequence = (
   alphabet: string,
   length: number
 ): string => {
-  return generateArray(length, () => randomSubString(alphabet)).join('')
+  return Array.from({ length }, () => randomSubString(alphabet)).join('')
 }
 
 /**
@@ -681,7 +627,7 @@ export const randomStringSequenceBase64 = (length: number): string => {
  * @public
  */
 export const mapChars = <T>(callback: (c: string) => T, value: string): T[] => {
-  return stringToChars(value).map(callback)
+  return Array.from(value).map(callback)
 }
 
 /**
@@ -693,7 +639,7 @@ export const mapChars = <T>(callback: (c: string) => T, value: string): T[] => {
  * @public
  */
 export const deleteSubstring = (value: string, toremove: string): string => {
-  return replaceAll(value, toremove, '')
+  return value.split(toremove).join('')
 }
 
 /**
@@ -705,7 +651,7 @@ export const deleteSubstring = (value: string, toremove: string): string => {
  * @public
  */
 export const deleteStringAfter = (value: string, toremove: string): string => {
-  return stringEndsWith(value, toremove)
+  return value.endsWith(toremove)
     ? value.substring(0, value.length - toremove.length)
     : value
 }
@@ -734,9 +680,7 @@ export const trimStringSlice = (
  * @public
  */
 export const deleteStringBefore = (value: string, toremove: string): string => {
-  return stringStartsWith(value, toremove)
-    ? value.substring(toremove.length)
-    : value
+  return value.startsWith(toremove) ? value.substring(toremove.length) : value
 }
 
 /**
@@ -757,23 +701,6 @@ export const deleteFirstFromString = (
 }
 
 /**
- * `repeatString` builds a new string by repeating the argument `s`, n `times`.
- *
- * @example
- * ```ts
- * repeatString('Xy', 3) // generates 'XyXyXy'
- * ```
- *
- * @param s - The string to repeat.
- * @param times - The number of times to repeat the string.
- * @returns The repeated string.
- * @public
- */
-export const repeatString = (s: string, times: number): string => {
-  return createFilledArray(times, s).join('')
-}
-
-/**
  * Returns a new string whose characters are in reverse order.
  *
  * @param s - The string to reverse.
@@ -781,7 +708,7 @@ export const repeatString = (s: string, times: number): string => {
  * @public
  */
 export const reverseString = (s: string): string => {
-  const arr = stringToChars(s)
+  const arr = Array.from(s)
   arr.reverse()
   return arr.join('')
 }
@@ -798,11 +725,11 @@ export const smartQuote = (s: string, prefer = "'"): string => {
   if (prefer === "'") {
     if (!s.includes("'")) return "'" + s + "'"
     else if (!s.includes('"')) return '"' + s + '"'
-    else return "'" + replaceAll(s, "'", "\\'") + "'"
+    else return "'" + s.split("'").join("\\'") + "'"
   } else {
     if (!s.includes('"')) return '"' + s + '"'
     else if (!s.includes("'")) return "'" + s + "'"
-    else return '"' + replaceAll(s, '"', '\\"') + '"'
+    else return '"' + s.split('"').join('\\"') + '"'
   }
 }
 
@@ -815,7 +742,7 @@ export const smartQuote = (s: string, prefer = "'"): string => {
  * @public
  */
 export const quote = (s: string, quoteChar = "'"): string => {
-  return quoteChar + replaceAll(s, quoteChar, '\\' + quoteChar) + quoteChar
+  return quoteChar + s.split(quoteChar).join('\\' + quoteChar) + quoteChar
 }
 
 /**
@@ -862,7 +789,7 @@ export const splitStringOnce = (
  * @public
  */
 export const stringStartsWithAny = (s: string, values: string[]): boolean => {
-  return anyElement(values, start => s.startsWith(start))
+  return values.some(start => s.startsWith(start))
 }
 
 /**
@@ -884,17 +811,6 @@ export const surroundString = (
 }
 
 /**
- * It transforms a string into an `Array` of characters.
- *
- * @param s - The string to transform.
- * @returns An array of characters.
- * @public
- */
-export const stringToChars = (s: string): string[] => {
-  return s.split('')
-}
-
-/**
  * It transforms a string into an `Array` of char codes in integer format.
  *
  * @param s - The string to transform.
@@ -902,7 +818,7 @@ export const stringToChars = (s: string): string[] => {
  * @public
  */
 export const stringToCharcodes = (s: string): number[] => {
-  return generateArray(s.length, i => s.charCodeAt(i))
+  return Array.from({ length: s.length }, (_, i) => s.charCodeAt(i))
 }
 
 /**
@@ -957,7 +873,7 @@ export const trimChars = (value: string, charlist: string): string => {
 export const trimCharsLeft = (value: string, charlist: string): string => {
   let pos = 0
   for (let i = 0; i < value.length; i++) {
-    if (stringContains(charlist, value.charAt(i))) pos++
+    if (charlist.includes(value.charAt(i))) pos++
     else break
   }
   return value.substring(pos)
@@ -977,7 +893,7 @@ export const trimCharsRight = (value: string, charlist: string): string => {
   let i
   for (let j = 0; j < len; j++) {
     i = len - j - 1
-    if (stringContains(charlist, value.charAt(i))) pos = i
+    if (charlist.includes(value.charAt(i))) pos = i
     else break
   }
   return value.substring(0, pos)
@@ -1154,7 +1070,7 @@ export const wrapLine = (
 export const lpad = (s: string, char: string, length: number): string => {
   const diff = length - s.length
   if (diff > 0) {
-    return repeatString(char, diff) + s
+    return char.repeat(diff) + s
   } else {
     return s
   }
@@ -1173,7 +1089,7 @@ export const lpad = (s: string, char: string, length: number): string => {
 export const rpad = (s: string, char: string, length: number): string => {
   const diff = length - s.length
   if (diff > 0) {
-    return s + repeatString(char, diff)
+    return s + char.repeat(diff)
   } else {
     return s
   }
