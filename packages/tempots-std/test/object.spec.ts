@@ -3,9 +3,13 @@ import {
   isObject,
   sameObjectKeys,
   removeObjectFields,
-  mergeObjects
+  mergeObjects,
+  isEmptyObject,
+  objectEntries,
+  objectFromEntries,
+  objectKeys,
+  objectValues
 } from "../src/object";
-import { isEmptyObject, objectEntries, objectFromEntries, objectKeys, objectValues } from "../dist";
 
 describe('objects helpers', () => {
   test('sameObjectKeys works as expected', () => {

@@ -39,20 +39,50 @@ export const isJSONObject = (value: JSONValue): value is JSONObject =>
   Object.values(value).every(isJSON)
 
 /**
- * Checks if the value is a JSON array.
+ * Checks if the value is a JSON array with recursive validation.
+ *
+ * This function provides more thorough validation than `Array.isArray()` by
+ * recursively checking that all elements in the array are valid JSON values.
+ * This is essential for ensuring data can be safely serialized to JSON.
+ *
+ * @example
+ * ```typescript
+ * isJSONArray([1, 2, 3]) // true
+ * isJSONArray(['hello', 'world']) // true
+ * isJSONArray([1, 'hello', true, null]) // true
+ * isJSONArray([1, 2, undefined]) // false (undefined is not JSON-serializable)
+ * isJSONArray([1, 2, () => {}]) // false (functions are not JSON-serializable)
+ * ```
  *
  * @param value - The value to check.
- * @returns `true` if the value is a JSON array; otherwise, `false`.
+ * @returns `true` if the value is a JSON array with all valid JSON elements; otherwise, `false`.
  * @public
  */
 export const isJSONArray = (value: JSONValue): value is JSONArray =>
   Array.isArray(value) && value.every(isJSON)
 
 /**
- * Checks if the value is a JSON value.
+ * Checks if the value is a valid JSON value with comprehensive validation.
+ *
+ * This function provides thorough validation that goes beyond basic type checking
+ * by recursively validating nested objects and arrays to ensure the entire
+ * structure can be safely serialized to JSON.
+ *
+ * @example
+ * ```typescript
+ * isJSON('hello') // true
+ * isJSON(42) // true
+ * isJSON(true) // true
+ * isJSON(null) // true
+ * isJSON({ name: 'Alice', age: 30 }) // true
+ * isJSON([1, 2, { nested: true }]) // true
+ * isJSON(undefined) // false
+ * isJSON(() => {}) // false
+ * isJSON({ func: () => {} }) // false (contains non-JSON value)
+ * ```
  *
  * @param value - The value to check.
- * @returns `true` if the value is a JSON value; otherwise, `false`.
+ * @returns `true` if the value is a completely valid JSON value; otherwise, `false`.
  * @public
  */
 export const isJSON = (value: JSONValue): value is JSONValue =>

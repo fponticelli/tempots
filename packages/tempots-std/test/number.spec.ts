@@ -206,6 +206,10 @@ describe('numbers', () => {
 
     // Additional test for when b argument is Math.NaN (as requested)
     expect(nearEqual(42, NaN)).toBe(false) // Line 341: when b is NaN and a is finite -> false
+
+    // Test for line 346: when a is Infinity and b is NaN
+    expect(nearEqual(Infinity, NaN)).toBe(false) // Line 346: a is Infinity, b is NaN -> false
+    expect(nearEqual(-Infinity, NaN)).toBe(false) // Line 346: a is -Infinity, b is NaN -> false
   })
 
   test('nearEqualAngles', () => {

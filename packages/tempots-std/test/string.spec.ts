@@ -159,6 +159,10 @@ describe('strings.ts', () => {
     expect(1).toBe(stringsDifferAtIndex('a', 'abc123'))
     expect(0).toBe(stringsDifferAtIndex('abc123', ''))
     expect(1).toBe(stringsDifferAtIndex('abc123', 'a'))
+
+    // Test for line 333: when strings are identical
+    expect(-1).toBe(stringsDifferAtIndex('identical', 'identical'))
+    expect(-1).toBe(stringsDifferAtIndex('', ''))
   })
 
   test('Ellipsis', () => {
@@ -667,6 +671,14 @@ lines`
     expect(compareCaseInsensitive('Apple', 'banana')).toBeLessThan(0)
     expect(compareCaseInsensitive('Zebra', 'apple')).toBeGreaterThan(0)
     expect(compareCaseInsensitive('SAME', 'same')).toBe(0)
+
+    // Test for lines 134-136: null/undefined handling
+    expect(compareCaseInsensitive(null, null)).toBe(0)
+    expect(compareCaseInsensitive(undefined, undefined)).toBe(0)
+    expect(compareCaseInsensitive(null, 'hello')).toBe(-1)
+    expect(compareCaseInsensitive(undefined, 'hello')).toBe(-1)
+    expect(compareCaseInsensitive('hello', null)).toBe(1)
+    expect(compareCaseInsensitive('hello', undefined)).toBe(1)
   })
 
   test('textEndsWithCaseInsensitive', () => {
