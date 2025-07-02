@@ -3,7 +3,6 @@ import { describe, expect, test, vi } from "vitest";
 import {
   lowerCaseFirst,
   upperCaseFirst,
-  stringContains,
   containsAnyText,
   containsAllText,
   stringHashCode,
@@ -13,12 +12,10 @@ import {
   isAlphaNum,
   humanize,
   wrapColumns,
-  repeatString,
   substringAfter,
   trimCharsLeft,
   trimCharsRight,
   trimChars,
-  stringToChars,
   textToLines,
   reverseString,
   countStringOccurrences,
@@ -46,8 +43,6 @@ import {
   compareStrings,
   lpad,
   rpad,
-
-  replaceAll,
   underscore,
   encodeBase64,
   decodeBase64,
@@ -61,9 +56,7 @@ import {
   capitalize,
   canonicalizeNewlines,
   compareCaseInsensitive,
-  stringEndsWith,
   textEndsWithCaseInsensitive,
-  stringStartsWith,
   textStartsWithCaseInsensitive,
   filterChars,
   isAlpha,
@@ -86,20 +79,6 @@ describe('strings.ts', () => {
   test('LowerUpperCaseFirst', () => {
     expect('aBC').toBe(lowerCaseFirst('ABC'))
     expect('Abc').toBe(upperCaseFirst('abc'))
-  })
-
-  test('Contains', () => {
-    expect(stringContains('test', '')).toBe(true)
-    expect(stringContains('test', 't')).toBe(true)
-    expect(stringContains('test', 'te')).toBe(true)
-    expect(stringContains('test', 'tes')).toBe(true)
-    expect(stringContains('test', 'test')).toBe(true)
-    expect(stringContains('one two three', 'one')).toBe(true)
-    expect(stringContains('one two three', 'two')).toBe(true)
-    expect(stringContains('one two three', 'three')).toBe(true)
-    expect(stringContains('test', 'test ')).toBe(false)
-    expect(stringContains('test', ' test')).toBe(false)
-    expect(stringContains('test', 'tes ')).toBe(false)
   })
 
   test('countTextOccurrences', () => {
@@ -299,10 +278,6 @@ aaa aa`
     ).toBe(wrapColumns(text, 6))
   })
 
-  test('Repeat', () => {
-    expect('XyXyXy').toBe(repeatString('Xy', 3))
-  })
-
   test('beforeText', () => {
     expect('').toBe(substringBefore('abcdef', 'x'))
     expect('ab').toBe(substringBefore('abcdef', 'cd'))
@@ -335,12 +310,6 @@ aaa aa`
     expect('abcde').toBe(trimChars('abcde', 'bd'))
 
     expect('').toBe(trimChars('/', '/'))
-  })
-
-  test('ToArray', () => {
-    const t = 'a☺b☺☺c☺☺☺'
-    const e = ['a', '☺', 'b', '☺', '☺', 'c', '☺', '☺', '☺']
-    expect(e).toEqual(stringToChars(t))
   })
 
   test('ToLines', () => {
@@ -541,13 +510,6 @@ lines`
     expect(rpad('', 'x', 5)).toBe('xxxxx')
   })
 
-  test('replaceAll', () => {
-    expect(replaceAll('hello world hello', 'hello', 'hi')).toBe('hi world hi')
-    expect(replaceAll('test', 'xyz', 'abc')).toBe('test')
-    expect(replaceAll('', 'a', 'b')).toBe('')
-    expect(replaceAll('aaa', 'a', 'bb')).toBe('bbbbbb')
-  })
-
   test('underscore', () => {
     expect(underscore('helloWorld')).toBe('hello_world')
     expect(underscore('XMLHttpRequest')).toBe('xml_http_request')
@@ -707,23 +669,14 @@ lines`
     expect(compareCaseInsensitive('SAME', 'same')).toBe(0)
   })
 
-  test('stringEndsWith and textEndsWithCaseInsensitive', () => {
-    // Test correct behavior after fixing the bugs
-    expect(stringEndsWith('hello world', 'world')).toBe(true) // Should return true - ends with 'world'
-    expect(stringEndsWith('hello world', 'hello')).toBe(false) // Should return false - doesn't end with 'hello'
-    expect(stringEndsWith('hello world', 'orld')).toBe(true) // Should return true - ends with 'orld'
-    expect(stringEndsWith('test', 'test')).toBe(true) // Should return true - entire string matches
-    expect(stringEndsWith('test', 'testing')).toBe(false) // Should return false - suffix longer than string
-
+  test('textEndsWithCaseInsensitive', () => {
     expect(textEndsWithCaseInsensitive('Hello World', 'WORLD')).toBe(true) // Should return true - ends with 'world' (case insensitive)
     expect(textEndsWithCaseInsensitive('Hello World', 'HELLO')).toBe(false) // Should return false - doesn't end with 'hello'
     expect(textEndsWithCaseInsensitive('Hello World', 'world')).toBe(true) // Should return true - ends with 'world' (case insensitive)
     expect(textEndsWithCaseInsensitive('JavaScript', 'script')).toBe(true) // Should return true - ends with 'script' (case insensitive)
   })
 
-  test('stringStartsWith and textStartsWithCaseInsensitive', () => {
-    expect(stringStartsWith('hello world', 'hello')).toBe(true)
-    expect(stringStartsWith('hello world', 'world')).toBe(false)
+  test('textStartsWithCaseInsensitive', () => {
     expect(textStartsWithCaseInsensitive('Hello World', 'HELLO')).toBe(true)
     expect(textStartsWithCaseInsensitive('Hello World', 'WORLD')).toBe(false)
   })
