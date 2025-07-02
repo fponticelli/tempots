@@ -1,4 +1,4 @@
-import { flattenArray, jsQuote, quote, trimChars } from '@tempots/std'
+import { jsQuote, quote, trimChars } from '@tempots/std'
 
 export function parseHTML(html: string) {
   const parser = new DOMParser()
@@ -49,9 +49,9 @@ export function domToTempo(node: Node, indent = 0): string[] {
     const el = node as Element
     const tagName = el.tagName.toLowerCase()
     const attributes = Array.from(el.attributes)
-    const children = flattenArray(
-      Array.from(node.childNodes).map(v => domToTempo(v, indent + 1))
-    )
+    const children = Array.from(node.childNodes)
+      .map(v => domToTempo(v, indent + 1))
+      .flatMap(v => v)
     const isSVG = el.namespaceURI === 'http://www.w3.org/2000/svg'
     const buffer = [`${indentContainer}${isSVG ? 'svg' : 'html'}.${tagName}(`]
     const indentAttrs = makeIndent(indent + 1)
