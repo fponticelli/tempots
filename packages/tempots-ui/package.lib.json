@@ -40,6 +40,6 @@
     "@floating-ui/dom": "^1.6.7"
   },
   "peerDependencies": {
-    "@tempots/std": "0.20.0"
+    "@tempots/std": "0.21.0"
   }
 }
