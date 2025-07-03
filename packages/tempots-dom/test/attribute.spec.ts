@@ -151,6 +151,58 @@ describe('Attribute Renderables', () => {
       dispose(false) // removeTree = false
       expect(div.id).toBe('new-id') // Should not restore
     })
+
+    test('should handle class removal with removeTree=true (lines 16-17)', () => {
+      const div = document.createElement('div')
+      div.className = 'original-class'
+      document.body.appendChild(div)
+
+      const renderable = attr.class('new-class additional-class')
+      const dispose = renderable({
+        addClasses: (classes: string[]) => {
+          classes.forEach((cls: string) => div.classList.add(cls))
+        },
+        removeClasses: (classes: string[]) => {
+          classes.forEach((cls: string) => div.classList.remove(cls))
+        }
+      } as any)
+
+      expect(div.className).toBe('original-class new-class additional-class')
+
+      dispose(true) // removeTree = true - should call removeClasses (lines 16-17)
+      expect(div.className).toBe('original-class')
+
+      document.body.removeChild(div)
+    })
+
+    test('should handle signal attribute restoration with removeTree=true (lines 60-61)', () => {
+      const div = document.createElement('div')
+      div.title = 'original-title'
+      document.body.appendChild(div)
+
+      const titleSignal = prop('new-title')
+      const renderable = attr.title(titleSignal)
+
+      const dispose = renderable({
+        getAttribute: () => 'original-title',
+        setAttribute: (value: string) => { div.title = value },
+        makeAccessors: (name: string) => ({
+          get: () => div.getAttribute(name) || 'original-title',
+          set: (value: string) => { div.title = value }
+        })
+      } as any)
+
+      expect(div.title).toBe('new-title')
+
+      // Update signal
+      titleSignal.set('updated-title')
+      expect(div.title).toBe('updated-title')
+
+      dispose(true) // removeTree = true - should restore original (lines 60-61)
+      expect(div.title).toBe('original-title')
+
+      document.body.removeChild(div)
+    })
   })
 
   describe('class attribute special handling', () => {

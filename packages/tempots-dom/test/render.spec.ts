@@ -402,6 +402,88 @@ describe('Render', () => {
 
       clear()
     })
+
+    test('should handle setFromRoot with comprehensive portal features', () => {
+      // Create a real DOM element to test with
+      const element = document.createElement('div')
+      element.innerHTML = 'original html'
+      element.textContent = 'original text'
+      element.className = 'original-class'
+      element.style.color = 'blue'
+      element.style.fontSize = '12px'
+      element.setAttribute('data-original', 'value')
+      document.body.appendChild(element)
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [element],
+        getAttribute: (el, attr) => (el as HTMLElement).getAttribute(attr),
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as HTMLElement).removeAttribute(attr)
+          } else {
+            (el as HTMLElement).setAttribute(attr, value)
+          }
+        },
+        getClass: (el) => (el as HTMLElement).className,
+        setClass: (el, cls) => { (el as HTMLElement).className = cls || '' },
+        getStyles: (el) => {
+          const styles: Record<string, string> = {}
+          const computedStyle = getComputedStyle(el as HTMLElement)
+          for (let i = 0; i < computedStyle.length; i++) {
+            const prop = computedStyle[i]
+            styles[prop] = computedStyle.getPropertyValue(prop)
+          }
+          return styles
+        },
+        setStyles: (el, styles) => {
+          Object.entries(styles).forEach(([prop, value]) => {
+            (el as HTMLElement).style.setProperty(prop, value)
+          })
+        },
+        getInnerHTML: (el) => (el as HTMLElement).innerHTML,
+        setInnerHTML: (el, html) => { (el as HTMLElement).innerHTML = html },
+        appendHTML: (el, html) => { (el as HTMLElement).innerHTML += html },
+        getInnerText: (el) => (el as HTMLElement).textContent || '',
+        setInnerText: (el, text) => { (el as HTMLElement).textContent = text }
+      })
+
+      const { root, clear } = runHeadless(() => html.div('Test content'))
+
+      // Test setFromRoot with placeholders enabled to cover more branches
+      adapter.setFromRoot(root, true)
+
+      // Verify that content was updated (this is what we can actually test)
+      expect(element.innerHTML).toContain('Test content')
+
+      document.body.removeChild(element)
+      clear()
+    })
+
+    test('should handle setFromRoot with null element error', () => {
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [null], // Return null element
+        getAttribute: () => null,
+        setAttribute: () => {},
+        getClass: () => '',
+        setClass: () => {},
+        getStyles: () => ({}),
+        setStyles: () => {},
+        getInnerHTML: () => '',
+        setInnerHTML: () => {},
+        appendHTML: () => {},
+        getInnerText: () => '',
+        setInnerText: () => {}
+      })
+
+      const { root, clear } = runHeadless(() => html.div('Test content'))
+
+      // This should throw an error when element is null (covers lines 360-364)
+      expect(() => {
+        adapter.setFromRoot(root, false)
+      }).toThrow('Cannot find element by selector for render:')
+
+      clear()
+    })
   })
 
   describe('restoreTempoPlaceholders', () => {
@@ -553,6 +635,23 @@ describe('Render', () => {
       // Child2 should be removed
       expect(parent.children.length).toBe(1)
       expect(parent.contains(child2)).toBe(false)
+    })
+
+    test('should restore attribute placeholders with null values', () => {
+      // Create element with attribute placeholder that includes null values
+      const div = document.createElement('div')
+      div.setAttribute('data-tts-attrs', '{"data-test":null,"id":"test-id"}')
+      div.setAttribute('data-test', 'should-be-removed')
+      div.setAttribute('id', 'current-id')
+      document.body.appendChild(div)
+
+      restoreTempoPlaceholders()
+
+      // Attribute with null value should be removed (covers line 506)
+      expect(div.hasAttribute('data-test')).toBe(false)
+      // Attribute with string value should be set
+      expect(div.getAttribute('id')).toBe('test-id')
+      expect(div.hasAttribute('data-tts-attrs')).toBe(false)
     })
   })
 

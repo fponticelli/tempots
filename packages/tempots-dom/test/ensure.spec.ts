@@ -9,7 +9,7 @@ describe("Ensure", () => {
   test("using signal", async () => {
     const s = prop<string | null>(null)
     render(
-      Ensure(s, 
+      Ensure(s,
         v => v,
         () => 'x'
       ),
@@ -29,7 +29,7 @@ describe("Ensure", () => {
   test("using signal (start from not null)", async () => {
     const s = prop<string | null>('y')
     render(
-      Ensure(s, 
+      Ensure(s,
         v => v,
         () => 'x'
       ),
@@ -49,7 +49,7 @@ describe("Ensure", () => {
   test("using string literal", () => {
     render(
       Ensure(
-        'A' as string, 
+        'A' as string,
         v => TextNode(v),
         () => 'x'
       ),
@@ -60,12 +60,38 @@ describe("Ensure", () => {
   test("using null literal", () => {
     render(
       Ensure(
-        null as string | null, 
+        null as string | null,
         v => TextNode(v),
         () => 'x'
       ),
       document.body
     )
     expect(document.body.innerHTML).toStrictEqual('x')
+  });
+
+  test("should handle null result from then function (lines 103-104)", () => {
+    const s = prop<string | null>('test')
+    render(
+      Ensure(s,
+        () => null, // then function returns null
+        () => 'fallback'
+      ),
+      document.body
+    )
+    // When then function returns null, should render Empty (lines 103-104)
+    expect(document.body.innerHTML).toStrictEqual('')
+  });
+
+  test("should handle undefined result from then function", () => {
+    const s = prop<string | null>('test')
+    render(
+      Ensure(s,
+        () => undefined, // then function returns undefined
+        () => 'fallback'
+      ),
+      document.body
+    )
+    // When then function returns undefined, should render Empty
+    expect(document.body.innerHTML).toStrictEqual('')
   });
 });

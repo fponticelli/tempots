@@ -73,4 +73,31 @@ describe("EnsureAll", () => {
     )
     expect(document.body.innerHTML).toStrictEqual('x')
   });
+
+  test("should properly dispose resources (lines 237-242)", () => {
+    const a = prop<string | null>('a')
+    const b = prop<number | null>(2)
+    const c = prop<boolean | null>(true)
+
+    const clear = render(
+      EnsureAll(a, b, c)((a, b, c) => Fragment(
+        a,
+        b.map(String),
+        c.map(String)
+      ), () => 'x'),
+      document.body
+    )
+
+    expect(document.body.innerHTML).toStrictEqual('a2true')
+
+    // Test disposal with removeTree = true to cover lines 237-242
+    clear(true)
+    expect(document.body.innerHTML).toStrictEqual('')
+
+    // Verify signals are no longer being observed
+    a.set('changed')
+    b.set(999)
+    c.set(false)
+    expect(document.body.innerHTML).toStrictEqual('')
+  });
 });
