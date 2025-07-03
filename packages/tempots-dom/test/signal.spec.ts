@@ -792,4 +792,378 @@ describe("Signal", () => {
     computed.dispose();
     expect(spy).toHaveBeenCalled();
   });
+
+  test("Signal.ofPromise without recovery function", async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const s = Signal.ofPromise(Promise.reject("test error"), 0);
+    expect(s.value).toBe(0);
+
+    await sleep();
+    expect(s.value).toBe(0); // Should remain unchanged
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Unhandled promise rejection in Signal.ofPromise:',
+      'test error'
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  test("map error handling", () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const p = prop(1);
+
+    const mapped = p.map(v => {
+      if (v === 2) throw new Error("map error");
+      return v * 2;
+    });
+
+    expect(mapped.value).toBe(2);
+
+    p.set(2);
+    expect(() => mapped.value).toThrow("map error");
+    expect(consoleSpy).toHaveBeenCalledWith('Error in Signal.map:', expect.any(Error));
+
+    consoleSpy.mockRestore();
+  });
+
+  test("flatMap error handling", () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const p = prop(1);
+
+    const flatMapped = p.flatMap(v => {
+      if (v === 2) throw new Error("flatMap error");
+      return signal(v * 2);
+    });
+
+    expect(flatMapped.value).toBe(2);
+
+    p.set(2);
+    expect(() => flatMapped.value).toThrow("flatMap error");
+    expect(consoleSpy).toHaveBeenCalledWith('Error in Signal.flatMap:', expect.any(Error));
+
+    consoleSpy.mockRestore();
+  });
+
+  test("filter error handling", () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const p = prop(1);
+
+    const filtered = p.filter(v => {
+      if (v === 2) throw new Error("filter error");
+      return v > 0;
+    }, 0);
+
+    expect(filtered.value).toBe(1);
+
+    p.set(2);
+    expect(() => filtered.value).toThrow("filter error");
+    expect(consoleSpy).toHaveBeenCalledWith('Error in Signal.filter:', expect.any(Error));
+
+    consoleSpy.mockRestore();
+  });
+
+  test("filterMap error handling", () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const p = prop(1);
+
+    const filterMapped = p.filterMap(v => {
+      if (v === 2) throw new Error("filterMap error");
+      return v > 0 ? v * 2 : null;
+    }, 0);
+
+    expect(filterMapped.value).toBe(2);
+
+    p.set(2);
+    expect(() => filterMapped.value).toThrow("filterMap error");
+    expect(consoleSpy).toHaveBeenCalledWith('Error in Signal.filterMap:', expect.any(Error));
+
+    consoleSpy.mockRestore();
+  });
+
+  test("mapAsync error handling without recovery", async () => {
+    const p = prop(1);
+
+    // Capture unhandled rejections
+    let unhandledError: any = null;
+    const handler = (error: any) => {
+      unhandledError = error;
+    };
+    process.on('unhandledRejection', handler);
+
+    const mapped = p.mapAsync(v => {
+      if (v === 2) return Promise.reject(new Error("async error"));
+      return Promise.resolve(v * 2);
+    }, 0);
+
+    expect(mapped.value).toBe(0);
+    await sleep();
+    expect(mapped.value).toBe(2);
+
+    // Trigger error case
+    p.set(2);
+    await sleep();
+
+    // Should have an unhandled rejection
+    expect(unhandledError).toBeInstanceOf(Error);
+    expect(unhandledError.message).toBe("async error");
+
+    // Cleanup
+    process.removeListener('unhandledRejection', handler);
+  });
+
+  test("effect with once option", async () => {
+    const p = prop(1);
+    const spy = vi.fn();
+
+    const clear = effect(() => spy(p.value), [p], { once: true });
+
+    await sleep();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(1);
+
+    p.set(2);
+    await sleep();
+    expect(spy).toHaveBeenCalledTimes(1); // Should not be called again
+
+    // clear should be a no-op since it was already cleared
+    clear();
+  });
+
+  test("effect with skipInitial option", async () => {
+    const p = prop(1);
+    const spy = vi.fn();
+
+    effect(() => spy(p.value), [p], { skipInitial: true });
+
+    await sleep();
+    expect(spy).not.toHaveBeenCalled();
+
+    p.set(2);
+    await sleep();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(2);
+  });
+
+  test("effect with abortSignal", async () => {
+    const p = prop(1);
+    const spy = vi.fn();
+    const controller = new AbortController();
+
+    effect(() => spy(p.value), [p], { abortSignal: controller.signal });
+
+    await sleep();
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    controller.abort();
+
+    p.set(2);
+    await sleep();
+    expect(spy).toHaveBeenCalledTimes(1); // Should not be called after abort
+  });
+
+  test("listener with abortSignal", () => {
+    const p = prop(1);
+    const spy = vi.fn();
+    const controller = new AbortController();
+
+    p.on(spy, { abortSignal: controller.signal });
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    p.set(2);
+    expect(spy).toHaveBeenCalledTimes(2);
+
+    controller.abort();
+
+    p.set(3);
+    expect(spy).toHaveBeenCalledTimes(2); // Should not be called after abort
+  });
+
+  test("listener with once option", () => {
+    const p = prop(1);
+    const spy = vi.fn();
+
+    p.on(spy, { once: true });
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(1, undefined);
+
+    p.set(2);
+    expect(spy).toHaveBeenCalledTimes(2); // Called once more, then auto-removed
+    expect(spy).toHaveBeenLastCalledWith(2, 1);
+
+    p.set(3);
+    expect(spy).toHaveBeenCalledTimes(2); // Should not be called again after once
+  });
+
+  test("reducer with no state change", () => {
+    const state = prop(5);
+    const effectSpy = vi.fn();
+
+    const dispatch = state.reducer<number>(
+      (acc, _value) => acc, // Always return same value
+      (context) => effectSpy(context)
+    );
+
+    dispatch(10);
+    expect(state.value).toBe(5); // Should remain unchanged
+    expect(effectSpy).not.toHaveBeenCalled(); // Effect should not run when state doesn't change
+  });
+
+  test("computed setDirty when disposed", () => {
+    const p = prop(1);
+    const c = p.map(v => v * 2);
+
+    c.dispose();
+
+    // setDirty should be a no-op when disposed
+    c.setDirty();
+    expect(c.isDisposed()).toBe(true);
+  });
+
+  test("signal _setAndNotify when disposed", () => {
+    const p = prop(1);
+    const spy = vi.fn();
+
+    p.on(spy);
+    spy.mockClear();
+
+    p.dispose();
+    p.set(2); // This calls _setAndNotify internally
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(p.value).toBe(1); // Value should not change
+  });
+
+  test("mapAsync with abort signal", async () => {
+    const p = prop(1);
+    let abortCount = 0;
+
+    const mapped = p.mapAsync(async (v, { abortSignal }) => {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => resolve(v * 2), 50);
+        abortSignal.addEventListener('abort', () => {
+          abortCount++;
+          clearTimeout(timeout);
+          reject(new Error('Aborted'));
+        });
+      });
+    }, 0);
+
+    expect(mapped.value).toBe(0);
+
+    // Trigger multiple rapid changes to test abort behavior
+    p.set(2);
+    p.set(3);
+    p.set(4);
+
+    await sleep(100);
+    expect(mapped.value).toBe(8); // Should be 4 * 2
+    expect(abortCount).toBeGreaterThan(0); // Previous operations should have been aborted
+  });
+
+  test("feedProp disposal cleanup", () => {
+    const source = prop(1);
+    const target = prop(0);
+
+    const result = source.feedProp(target);
+    expect(result).toBe(target);
+    expect(target.value).toBe(1);
+
+    // Dispose target first
+    target.dispose();
+
+    // Source should still work but target won't update
+    source.set(2);
+    expect(target.value).toBe(1); // Should remain unchanged after disposal
+  });
+
+  test("deriveProp with custom equals", () => {
+    const customEquals = (a: { id: number }, b: { id: number }) => a.id === b.id;
+    const source = prop({ id: 1, name: "test" }, customEquals);
+
+    const derived = source.deriveProp({ equals: customEquals });
+    expect(derived.value).toEqual({ id: 1, name: "test" });
+
+    const spy = vi.fn();
+    derived.on(spy);
+    spy.mockClear();
+
+    // Should not trigger due to custom equals
+    source.set({ id: 1, name: "different" });
+    expect(spy).not.toHaveBeenCalled();
+
+    // Should trigger
+    source.set({ id: 2, name: "test" });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  test("deriveProp with autoDisposeProp false", () => {
+    const source = prop(42);
+    const derived = source.deriveProp({ autoDisposeProp: false });
+
+    expect(derived.value).toBe(42);
+
+    source.dispose();
+    expect(derived.isDisposed()).toBe(false); // Should not be auto-disposed
+
+    derived.dispose(); // Manual cleanup
+  });
+
+  test("$ proxy caching", () => {
+    const obj = prop({ x: 10, y: 20 });
+
+    const firstAccess = obj.$;
+    const secondAccess = obj.$;
+
+    // Should return the same cached proxy
+    expect(firstAccess).toBe(secondAccess);
+  });
+
+  test("iso with custom equals", () => {
+    const customEquals = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
+    const source = prop("Hello");
+    const iso = source.iso(
+      s => s.toUpperCase(),
+      s => s.toLowerCase(),
+      customEquals
+    );
+
+    expect(iso.value).toBe("HELLO");
+
+    const spy = vi.fn();
+    iso.on(spy);
+    spy.mockClear();
+
+    // Should not trigger due to custom equals
+    iso.set("HELLO");
+    expect(spy).not.toHaveBeenCalled();
+
+    // Should trigger
+    iso.set("WORLD");
+    expect(spy).toHaveBeenCalled();
+    expect(source.value).toBe("world");
+  });
+
+  test("prop value setter", () => {
+    const p = prop(10);
+    expect(p.value).toBe(10);
+
+    // Test the setter
+    p.value = 20;
+    expect(p.value).toBe(20);
+    expect(p.get()).toBe(20);
+  });
+
+  test("queueMicrotask fallback", () => {
+    // This test is tricky because we can't easily mock queueMicrotask
+    // But we can test that the computed scheduling works in general
+    const p = prop(1);
+    const c = p.map(v => v * 2);
+
+    // The computed should work regardless of which queue implementation is used
+    expect(c.value).toBe(2);
+    p.set(3);
+    expect(c.value).toBe(6);
+  });
 });
