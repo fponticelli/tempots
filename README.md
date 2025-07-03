@@ -3,6 +3,8 @@
 [![npm @tempots/dom](https://img.shields.io/npm/v/@tempots/dom?label=@tempots/dom)](https://www.npmjs.com/package/@tempots/dom)
 [![npm @tempots/std](https://img.shields.io/npm/v/@tempots/std?label=@tempots/std)](https://www.npmjs.com/package/@tempots/std)
 [![npm @tempots/ui](https://img.shields.io/npm/v/@tempots/ui?label=@tempots/ui)](https://www.npmjs.com/package/@tempots/ui)
+[![codecov](https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg)](https://codecov.io/gh/fponticelli/tempots)
+[![CI](https://github.com/fponticelli/tempots/workflows/CI/badge.svg)](https://github.com/fponticelli/tempots/actions)
 [![GitHub stars](https://img.shields.io/github/stars/fponticelli/tempots?label=Star%20me%20on%20Github&style=social)](https://github.com/fponticelli/tempots)
 
 Tempo is a modern, lightweight UI framework for building dynamic frontend applications with TypeScript. It provides a simple, predictable way to create reactive web interfaces without the complexity of other frameworks.

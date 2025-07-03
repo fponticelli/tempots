@@ -200,8 +200,10 @@ Keeping these terms consistent improves readability across the project.
 
 - Write tests for all new functionality
 - Use Vitest for testing framework
-- Aim for high test coverage
+- Aim for high test coverage (80%+ statements, 75%+ branches)
 - Test both happy path and error cases
+- Follow the comprehensive [Testing Guidelines](./TESTING_GUIDELINES.md)
+- See [Coverage Report](./COVERAGE.md) for current coverage status
 
 ## Package Development
 

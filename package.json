@@ -12,6 +12,7 @@
     "docs": "turbo docs && pnpm --filter @tempos/docs docs:prep",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
+    "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage",

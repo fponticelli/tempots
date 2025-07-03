@@ -29,6 +29,7 @@
     },
     "lint": {},
     "lint:fix": {},
+    "typecheck": {},
     "test": {},
     "test:watch": {},
     "test:coverage": {},

@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install pnpm
+        run: npm install -g pnpm
+        
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Lint
+        run: pnpm run lint
+        
+      - name: Type check
+        run: pnpm run typecheck
+        
+      - name: Build packages
+        run: pnpm run build
+        
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
+        
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: |
+            packages/tempots-std/coverage/lcov.info
+            packages/tempots-dom/coverage/lcov.info
+            packages/tempots-ui/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: |
+            packages/tempots-std/coverage/lcov.info
+            packages/tempots-dom/coverage/lcov.info
+            packages/tempots-ui/coverage/lcov.info
+          
+      - name: Archive coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            packages/*/coverage/
+          retention-days: 30
+          
+  coverage-check:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install pnpm
+        run: npm install -g pnpm
+        
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Check coverage thresholds
+        run: |
+          echo "Checking coverage thresholds..."
+          pnpm run test:coverage 2>&1 | tee coverage_output.txt
+          
+          # Check if coverage thresholds were met
+          if grep -q "Coverage threshold" coverage_output.txt; then
+            echo "❌ Coverage thresholds not met"
+            exit 1
+          else
+            echo "✅ All coverage thresholds met"
+          fi

@@ -10,6 +10,31 @@ export default defineConfig({
     ...configDefaults,
     environment: 'happy-dom',
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      exclude: [
+        ...configDefaults.coverage.exclude,
+        'src/vite-env.d.ts',
+        'scripts/**',
+        'dist/**',
+        'docs/**',
+        '**/*.d.ts',
+        'vite.config.js',
+        'eslint.config.js'
+      ],
+      thresholds: {
+        global: {
+          statements: 80,
+          branches: 75,
+          functions: 80,
+          lines: 80
+        }
+      },
+      all: true,
+      skipFull: false
+    }
   },
   build: {
     copyPublicDir: false,
