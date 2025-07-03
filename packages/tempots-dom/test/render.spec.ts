@@ -724,5 +724,322 @@ describe('Render', () => {
       clear(true)
       expect(element.innerHTML).toBe('')
     })
+
+    test('should cover portal rendering with innerHTML feature (lines 368-376)', () => {
+      const mockElement = {
+        attributes: new Map(),
+        innerHTML: 'original-html',
+        innerText: '',
+        className: '',
+        styles: {}
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls || '' },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      // Create a headless environment with a portal that has innerHTML
+      const { root, clear } = runHeadless(() => {
+        return (ctx: any) => {
+          const portalCtx = ctx.makePortal('#test-portal')
+          portalCtx.element.properties.innerHTML = '<span>portal innerHTML</span>'
+          return () => {}
+        }
+      })
+
+      // Test setFromRoot with placeholders to cover innerHTML handling (lines 368-376)
+      adapter.setFromRoot(root, true)
+
+      // Verify innerHTML feature was detected and processed (covers lines 368-376)
+      expect(mockElement.innerHTML).toBe('<span>portal innerHTML</span>')
+      // The placeholder should be set with the original value
+      expect(mockElement.attributes.has('data-tts-html')).toBe(true)
+
+      clear()
+    })
+
+    test('should cover portal rendering with innerText feature (lines 377-385)', () => {
+      const mockElement = {
+        attributes: new Map(),
+        innerHTML: '',
+        innerText: 'original-text',
+        className: '',
+        styles: {}
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls || '' },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      // Create a headless environment with a portal that has innerText
+      const { root, clear } = runHeadless(() => {
+        return (ctx: any) => {
+          const portalCtx = ctx.makePortal('#test-portal')
+          portalCtx.element.properties.innerText = 'portal innerText'
+          return () => {}
+        }
+      })
+
+      // Test setFromRoot with placeholders to cover innerText handling (lines 377-385)
+      adapter.setFromRoot(root, true)
+
+      // Verify innerText feature was detected and processed (covers lines 377-385)
+      expect(mockElement.innerText).toBe('portal innerText')
+      // The placeholder should be set with the original value
+      expect(mockElement.attributes.has('data-tts-text')).toBe(true)
+
+      clear()
+    })
+
+    test('should cover portal rendering with classes feature (lines 386-394)', () => {
+      const mockElement = {
+        attributes: new Map(),
+        innerHTML: '',
+        innerText: '',
+        className: 'original-class',
+        styles: {}
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      // Create a headless environment with a portal that has classes
+      const { root, clear } = runHeadless(() => {
+        return (ctx: any) => {
+          const portalCtx = ctx.makePortal('#test-portal')
+          // Use the public method to add classes
+          portalCtx.addClasses(['portal-class', 'another-class'])
+          return () => {}
+        }
+      })
+
+      // Test setFromRoot with placeholders to cover classes handling (lines 386-394)
+      adapter.setFromRoot(root, true)
+
+      // Verify classes feature was detected and processed (covers lines 386-394)
+      expect(mockElement.className).toBe('portal-class another-class')
+      // The placeholder should be set with the original value
+      expect(mockElement.attributes.has('data-tts-class')).toBe(true)
+
+      clear()
+    })
+
+    test('should cover portal rendering with styles feature (lines 395-407)', () => {
+      const mockElement = {
+        attributes: new Map(),
+        innerHTML: '',
+        innerText: '',
+        className: '',
+        styles: { color: 'blue', fontSize: '12px' }
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls || '' },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      // Create a headless environment with a portal that has styles
+      const { root, clear } = runHeadless(() => {
+        return (ctx: any) => {
+          const portalCtx = ctx.makePortal('#test-portal')
+          // Use the public method to set styles
+          portalCtx.setStyle('color', 'red')
+          portalCtx.setStyle('fontSize', '16px')
+          return () => {}
+        }
+      })
+
+      // Test setFromRoot with placeholders to cover styles handling (lines 395-407)
+      adapter.setFromRoot(root, true)
+
+      // Verify styles feature was detected and processed (covers lines 395-407)
+      expect(mockElement.styles).toEqual({ color: 'red', fontSize: '16px' })
+      // The placeholder should be set with the original value
+      expect(mockElement.attributes.has('data-tts-style')).toBe(true)
+
+      clear()
+    })
+
+    test('should cover portal rendering with attributes feature (lines 408-429)', () => {
+      const mockElement = {
+        attributes: new Map([['data-original', 'value'], ['id', 'original-id']]),
+        innerHTML: '',
+        innerText: '',
+        className: '',
+        styles: {}
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls || '' },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      // Create a headless environment with a portal that has attributes
+      const { root, clear } = runHeadless(() => {
+        return (ctx: any) => {
+          const portalCtx = ctx.makePortal('#test-portal')
+          portalCtx.element.properties.id = 'portal-id'
+          portalCtx.element.properties.title = 'Portal Title'
+          portalCtx.element.properties['data-test'] = 'portal-data'
+          return () => {}
+        }
+      })
+
+      // Test setFromRoot with placeholders to cover attributes handling (lines 408-429)
+      adapter.setFromRoot(root, true)
+
+      // Verify attributes feature was detected and processed (covers lines 408-429)
+      expect(mockElement.attributes.get('id')).toBe('portal-id')
+      expect(mockElement.attributes.get('title')).toBe('Portal Title')
+      expect(mockElement.attributes.get('data-test')).toBe('portal-data')
+      // The placeholder should be set with the original attributes
+      expect(mockElement.attributes.has('data-tts-attrs')).toBe(true)
+
+      clear()
+    })
+
+    test('should cover portal rendering with HTMLElement selector (line 358)', () => {
+      // Create a real DOM element to use as the portal target
+      const targetElement = document.createElement('div')
+      targetElement.innerHTML = 'original content'
+      document.body.appendChild(targetElement)
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [targetElement],
+        getAttribute: (el, attr) => (el as HTMLElement).getAttribute(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as HTMLElement).removeAttribute(attr)
+          } else {
+            (el as HTMLElement).setAttribute(attr, value)
+          }
+        },
+        getClass: (el) => (el as HTMLElement).className,
+        setClass: (el, cls) => { (el as HTMLElement).className = cls },
+        getStyles: (el) => {
+          const styles: Record<string, string> = {}
+          const computedStyle = getComputedStyle(el as HTMLElement)
+          for (let i = 0; i < computedStyle.length; i++) {
+            const prop = computedStyle[i]
+            styles[prop] = computedStyle.getPropertyValue(prop)
+          }
+          return styles
+        },
+        setStyles: (el, styles) => {
+          Object.entries(styles).forEach(([prop, value]) => {
+            (el as HTMLElement).style.setProperty(prop, value)
+          })
+        },
+        appendHTML: (el, html) => { (el as HTMLElement).innerHTML += html },
+        getInnerHTML: (el) => (el as HTMLElement).innerHTML,
+        setInnerHTML: (el, html) => { (el as HTMLElement).innerHTML = html },
+        getInnerText: (el) => (el as HTMLElement).textContent || '',
+        setInnerText: (el, text) => { (el as HTMLElement).textContent = text }
+      })
+
+      // Create a headless environment with a portal that uses HTMLElement selector
+      const { root, clear } = runHeadless(() => {
+        return (ctx: any) => {
+          // Use the actual DOM element as the portal selector (this covers line 358)
+          const portalCtx = ctx.makePortal(targetElement)
+          portalCtx.makeChildText('Portal with HTMLElement selector')
+          return () => {}
+        }
+      })
+
+      // Test setFromRoot to cover HTMLElement selector path (line 358)
+      adapter.setFromRoot(root, false)
+
+      // Verify that the portal content was processed
+      expect(targetElement.innerHTML).toContain('Portal with HTMLElement selector')
+
+      // Clean up
+      document.body.removeChild(targetElement)
+      clear()
+    })
   })
 })
