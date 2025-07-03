@@ -11,7 +11,6 @@ import {
   prop,
   BrowserContext,
   HeadlessContext,
-  HeadlessPortal,
   makeProviderMark,
   _NODE_PLACEHOLDER_ATTR,
   CLASS_PLACEHOLDER_ATTR
@@ -282,11 +281,125 @@ describe('Render', () => {
     })
   })
 
-  describe('HeadlessAdapter basic functionality', () => {
+  describe('HeadlessAdapter', () => {
     test('should work with runHeadless', () => {
       const { root, clear } = runHeadless(() => html.div('Hello World'))
 
       expect(root.contentToHTML()).toBe('<div>Hello World</div>')
+      clear()
+    })
+
+    test('should create adapter with all required methods', () => {
+      const mockElement = { id: 'test' }
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (_el, attr) => attr === 'test' ? 'value' : null,
+        setAttribute: (_el, _attr, _value) => {},
+        getClass: (_el) => 'test-class',
+        setClass: (_el, _cls) => {},
+        getStyles: (_el) => ({ color: 'red' }),
+        setStyles: (_el, _styles) => {},
+        appendHTML: (_el, _html) => {},
+        getInnerHTML: (_el) => '<span>inner</span>',
+        setInnerHTML: (_el, _html) => {},
+        getInnerText: (_el) => 'inner text',
+        setInnerText: (_el, _text) => {}
+      })
+
+      expect(adapter.select('div')).toEqual([mockElement])
+      expect(adapter.getAttribute(mockElement, 'test')).toBe('value')
+      expect(adapter.getAttribute(mockElement, 'other')).toBe(null)
+      expect(adapter.getClass(mockElement)).toBe('test-class')
+      expect(adapter.getStyles(mockElement)).toEqual({ color: 'red' })
+      expect(adapter.getInnerHTML(mockElement)).toBe('<span>inner</span>')
+      expect(adapter.getInnerText(mockElement)).toBe('inner text')
+    })
+
+    test('should handle setFromRoot with element selector', () => {
+      const mockElement = {
+        id: 'test',
+        attributes: new Map(),
+        innerHTML: '',
+        innerText: '',
+        className: '',
+        styles: {}
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls || '' },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      const { root, clear } = runHeadless(() => html.div('Test content'))
+
+      // Test setFromRoot - this should call setInnerHTML with the root's HTML
+      adapter.setFromRoot(root, false)
+
+      expect(mockElement.innerHTML).toBe('<div>Test content</div>')
+      clear()
+    })
+
+    test('should handle setFromRoot with placeholders', () => {
+      const mockElement = {
+        attributes: new Map(),
+        innerHTML: 'original html',
+        innerText: 'original text',
+        className: 'original-class',
+        styles: { color: 'blue' }
+      }
+
+      const adapter = new HeadlessAdapter({
+        select: (_selector: string) => [mockElement],
+        getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
+        setAttribute: (el, attr, value) => {
+          if (value === null) {
+            (el as any).attributes.delete(attr)
+          } else {
+            (el as any).attributes.set(attr, value)
+          }
+        },
+        getClass: (el) => (el as any).className,
+        setClass: (el, cls) => { (el as any).className = cls || '' },
+        getStyles: (el) => (el as any).styles,
+        setStyles: (el, styles) => { (el as any).styles = styles },
+        appendHTML: (el, html) => { (el as any).innerHTML += html },
+        getInnerHTML: (el) => (el as any).innerHTML,
+        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
+        getInnerText: (el) => (el as any).innerText,
+        setInnerText: (el, text) => { (el as any).innerText = text }
+      })
+
+      const { root, clear } = runHeadless(() =>
+        html.div(
+          attr.class('new-class'),
+          attr.style('color: red; font-size: 14px'),
+          'New content'
+        )
+      )
+
+      adapter.setFromRoot(root, true) // setPlaceholders = true
+
+      // The content should be appended (HeadlessAdapter uses appendHTML)
+      expect(mockElement.innerHTML).toContain('<div')
+      expect(mockElement.innerHTML).toContain('New content')
+      expect(mockElement.innerHTML).toContain('class="new-class"')
+
       clear()
     })
   })
@@ -344,6 +457,173 @@ describe('Render', () => {
       // Placeholder attributes should be removed
       expect(div1.hasAttribute(CLASS_PLACEHOLDER_ATTR)).toBe(false)
       expect(div2.hasAttribute('data-tts-html')).toBe(false)
+    })
+
+    test('should restore text placeholders', () => {
+      // Create element with text placeholder
+      const div = document.createElement('div')
+      div.setAttribute('data-tts-text', 'original text')
+      div.textContent = 'new text'
+      document.body.appendChild(div)
+
+      restoreTempoPlaceholders()
+
+      // Text should be restored
+      expect(div.textContent).toBe('original text')
+      expect(div.hasAttribute('data-tts-text')).toBe(false)
+    })
+
+    test('should restore HTML placeholders', () => {
+      // Create element with HTML placeholder
+      const div = document.createElement('div')
+      div.setAttribute('data-tts-html', '<span>original</span>')
+      div.innerHTML = '<span>new</span>'
+      document.body.appendChild(div)
+
+      restoreTempoPlaceholders()
+
+      // HTML should be restored
+      expect(div.innerHTML).toBe('<span>original</span>')
+      expect(div.hasAttribute('data-tts-html')).toBe(false)
+    })
+
+    test('should restore style placeholders', () => {
+      // Create element with style placeholder
+      const div = document.createElement('div')
+      div.setAttribute('data-tts-style', '{"color":"blue","font-size":"12px"}')
+      div.style.color = 'red'
+      div.style.fontSize = '16px'
+      document.body.appendChild(div)
+
+      restoreTempoPlaceholders()
+
+      // Styles should be restored (note: CSS property names are kebab-case in JSON)
+      expect(div.style.color).toBe('blue')
+      expect(div.style.fontSize).toBe('12px')
+      expect(div.hasAttribute('data-tts-style')).toBe(false)
+    })
+
+    test('should handle invalid JSON in style placeholder', () => {
+      // Create element with invalid JSON in style placeholder
+      const div = document.createElement('div')
+      div.setAttribute('data-tts-style', 'invalid json')
+      div.style.color = 'red'
+      document.body.appendChild(div)
+
+      // The function should throw an error for invalid JSON
+      expect(() => {
+        restoreTempoPlaceholders()
+      }).toThrow('Unexpected token')
+
+      // The attribute should still be removed even if JSON parsing fails
+      expect(div.hasAttribute('data-tts-style')).toBe(false)
+    })
+
+    test('should handle nested elements with placeholders', () => {
+      // Create nested structure with placeholders
+      const parent = document.createElement('div')
+      const child1 = document.createElement('span')
+      const child2 = document.createElement('p')
+
+      parent.setAttribute(CLASS_PLACEHOLDER_ATTR, 'parent-class')
+      parent.className = 'new-parent-class'
+
+      child1.setAttribute('data-tts-text', 'child1 text')
+      child1.textContent = 'new child1 text'
+
+      child2.setAttribute(_NODE_PLACEHOLDER_ATTR, 'true')
+      child2.textContent = 'should be removed'
+
+      parent.appendChild(child1)
+      parent.appendChild(child2)
+      document.body.appendChild(parent)
+
+      expect(parent.children.length).toBe(2)
+
+      restoreTempoPlaceholders()
+
+      // Parent class should be restored
+      expect(parent.className).toBe('parent-class')
+      expect(parent.hasAttribute(CLASS_PLACEHOLDER_ATTR)).toBe(false)
+
+      // Child1 text should be restored
+      expect(child1.textContent).toBe('child1 text')
+      expect(child1.hasAttribute('data-tts-text')).toBe(false)
+
+      // Child2 should be removed
+      expect(parent.children.length).toBe(1)
+      expect(parent.contains(child2)).toBe(false)
+    })
+  })
+
+  describe('render edge cases', () => {
+    test('should handle render with clear option false', () => {
+      // Pre-populate the target element
+      document.body.innerHTML = '<div>existing content</div>'
+
+      const clear = render(
+        html.span('new content'),
+        document.body,
+        { clear: false }
+      )
+
+      // Should append, not replace
+      expect(document.body.children.length).toBe(2)
+      expect(document.body.children[0].tagName).toBe('DIV')
+      expect(document.body.children[0].textContent).toBe('existing content')
+      expect(document.body.children[1].tagName).toBe('SPAN')
+      expect(document.body.children[1].textContent).toBe('new content')
+
+      clear()
+    })
+
+    test('should handle render with clear option true (default)', () => {
+      // Pre-populate the target element
+      document.body.innerHTML = '<div>existing content</div>'
+
+      const clear = render(
+        html.span('new content'),
+        document.body,
+        { clear: true }
+      )
+
+      // Should replace, not append
+      expect(document.body.children.length).toBe(1)
+      expect(document.body.children[0].tagName).toBe('SPAN')
+      expect(document.body.children[0].textContent).toBe('new content')
+
+      clear()
+    })
+
+    test('should handle render with undefined options', () => {
+      const clear = render(
+        html.div('test'),
+        document.body,
+        undefined
+      )
+
+      expect(document.body.innerHTML).toBe('<div>test</div>')
+      clear()
+    })
+
+    test('should handle renderWithContext with different removeTree values', () => {
+      const element = document.createElement('div')
+      const ctx = BrowserContext.of(element, undefined, {})
+
+      const clear = renderWithContext(
+        html.span('Hello'),
+        ctx
+      )
+
+      expect(element.innerHTML).toBe('<span>Hello</span>')
+
+      // Test clear with removeTree = false
+      clear(false)
+      expect(element.innerHTML).toBe('<span>Hello</span>')
+
+      // Test clear with removeTree = true
+      clear(true)
+      expect(element.innerHTML).toBe('')
     })
   })
 })

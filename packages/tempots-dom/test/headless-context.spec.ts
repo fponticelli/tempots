@@ -714,4 +714,111 @@ describe('HeadlessContext', () => {
       expect(ctx.getStyle('background')).toBe('')
     })
   })
+
+  describe('Coverage for uncovered lines', () => {
+    test('should handle getPortals when child is not a portal', () => {
+      // Create a regular element (not a portal)
+      const childElement = new HeadlessElement('span', undefined, ctx.element)
+      ctx.element.children.push(childElement)
+
+      // This should call line 64: return child.getPortals()
+      const portals = ctx.element.getPortals()
+      expect(portals).toEqual([])
+    })
+
+    test('should return empty strings for undefined innerHTML and innerText', () => {
+      const element = new HeadlessElement('div', undefined, undefined)
+
+      // Lines 82, 85: Default values when properties are undefined
+      expect(element.getInnerHTML()).toBe('')
+      expect(element.getInnerText()).toBe('')
+    })
+
+    test('should handle event listener cleanup when listener not found', () => {
+      const element = new HeadlessElement('div', undefined, undefined)
+      const container = { currentURL: prop('https://example.com') }
+      const context = new HeadlessContext(element, undefined, container, {})
+
+      // Add a listener
+      const listener = vi.fn()
+      const clear = element.on('click', listener, context)
+
+      // Manually remove the listener from the array to simulate not found scenario
+      const handlerSymbol = Object.getOwnPropertySymbols((element as any).properties).find(s => s.toString().includes('handler'))
+      if (handlerSymbol) {
+        const handlers = (element as any).properties[handlerSymbol]
+        if (handlers && handlers.click) {
+          handlers.click.length = 0 // Clear the array
+        }
+      }
+
+      // This should trigger lines 142-143: early return when index is -1
+      expect(() => clear()).not.toThrow()
+    })
+
+    test('should filter attributes in getAttributes method', () => {
+      const element = new HeadlessElement('div', undefined, undefined)
+
+      // Set some properties including innerHTML and innerText
+      const accessors = element.makeAccessors('id')
+      accessors.set('test-id')
+
+      const innerHTMLAccessors = element.makeAccessors('innerHTML')
+      innerHTMLAccessors.set('<span>test</span>')
+
+      const innerTextAccessors = element.makeAccessors('innerText')
+      innerTextAccessors.set('test text')
+
+      // Lines 196-199: getAttributes should filter out innerHTML and innerText
+      const attributes = element.getAttributes()
+      const attributeKeys = attributes.map(([key]) => key)
+
+      expect(attributeKeys).toContain('id')
+      expect(attributeKeys).not.toContain('innerHTML')
+      expect(attributeKeys).not.toContain('innerText')
+    })
+
+    test('should handle non-string keys in getVisibleAttributes', () => {
+      const element = new HeadlessElement('div', undefined, undefined)
+
+      // Add a symbol key to properties (this would trigger line 216)
+      const symbolKey = Symbol('test')
+      ;(element as any).properties[symbolKey] = 'test-value'
+
+      // Line 216: should return empty array for non-string keys
+      const visibleAttributes = element.getVisibleAttributes()
+
+      // Should not include the symbol key
+      const attributeNames = visibleAttributes.map(([name]) => name)
+      expect(attributeNames).not.toContain(symbolKey)
+    })
+
+    test('should handle string style values in HTML generation', () => {
+      const element = new HeadlessElement('div', undefined, undefined)
+
+      // Set style as a string (line 280)
+      const styleAccessors = element.makeAccessors('style')
+      styleAccessors.set('color: red; font-size: 14px')
+
+      const html = element.toHTML()
+      expect(html).toContain('style="color: red; font-size: 14px"')
+    })
+
+    test('should handle clear with reference defined', () => {
+      const parentElement = new HeadlessElement('div', undefined, undefined)
+      const textNode = new HeadlessText('test text')
+      const container = { currentURL: prop('https://example.com') }
+
+      // Create context with reference
+      const context = new HeadlessContext(parentElement, textNode, container, {})
+      parentElement.children.push(textNode)
+
+      expect(parentElement.children.length).toBe(1)
+
+      // Line 434: should call removeChild when reference is defined
+      context.clear(true)
+
+      expect(parentElement.children.length).toBe(0)
+    })
+  })
 });
