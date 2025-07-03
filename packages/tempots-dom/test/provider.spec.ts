@@ -470,18 +470,16 @@ describe('Provider', () => {
         }
       }
 
-      const payload = { optional: 'custom' }
-
       const clear = render(
         Provide(
           testProvider,
-          payload,
+          undefined as unknown as { optional?: string },
           () => Use(testProvider, value => html.div(value))
         ),
         document.body
       )
 
-      expect(createSpy).toHaveBeenCalledWith(payload)
+      expect(createSpy).toHaveBeenCalledWith(undefined)
       expect(document.body.innerHTML).toBe('<div>default</div>')
       clear()
     })
