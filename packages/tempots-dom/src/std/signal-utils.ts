@@ -174,6 +174,7 @@ export type StorageOptions<T> = {
 export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
   storedProp({
     ...options,
+    /* c8 ignore next 3 */
     store: getWindow()?.localStorage ?? new MemoryStore(),
   })
 
@@ -187,13 +188,16 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
 export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
   storedProp({
     ...options,
+    /* c8 ignore next 3 */
     store: getWindow()?.sessionStorage ?? new MemoryStore(),
   })
 
 function raf(fn: FrameRequestCallback) {
   if (typeof requestAnimationFrame === 'function') {
     return requestAnimationFrame(fn)
+    /* c8 ignore next */
   } else {
+    /* c8 ignore next 2 */
     return setTimeout(fn, 0)
   }
 }
@@ -240,7 +244,7 @@ export const animateSignals = <T>(
   dependencies: Array<AnySignal>,
   options?: AnimateSignalsOptions<T>
 ): Prop<T> => {
-  // istanbul ignore next
+  /* c8 ignore next */
   const duration = options?.duration ?? 300
   const easing = options?.easing ?? (t => t)
   const equals = options?.equals ?? ((a, b) => a === b)
@@ -335,10 +339,11 @@ export const animateSignal = <T>(
   signal: Signal<T>,
   options?: AnimateSignal<T>
 ): Prop<T> => {
-  // istanbul ignore next
+  /* c8 ignore next */
   const { initialValue, ...rest } = options ?? {}
-  // istanbul ignore next
+  /* c8 ignore next */
   return animateSignals(
+    /* c8 ignore next 2 */
     initialValue ?? signal.get(),
     signal.get,
     [signal],
@@ -410,6 +415,7 @@ export const delaySignal = <T>(
     )
   })
   newSignal.onDispose(() => {
+    /* c8 ignore next 2 */
     if (timeout != null) clearTimeout(timeout)
   })
   return newSignal

@@ -570,7 +570,7 @@ export class Signal<T> {
   }
 }
 
-// istanbul ignore next
+/* c8 ignore next 4 */
 const queue =
   typeof queueMicrotask === 'function'
     ? queueMicrotask
