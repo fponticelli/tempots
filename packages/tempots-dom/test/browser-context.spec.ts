@@ -9,6 +9,8 @@ describe('BrowserContext', () => {
   let ctx: BrowserContext
 
   beforeEach(() => {
+    // Clean up any existing containers
+    document.body.innerHTML = ''
     container = document.createElement('div')
     document.body.appendChild(container)
     ctx = BrowserContext.of(container, undefined, {}) as BrowserContext
@@ -280,8 +282,208 @@ describe('BrowserContext', () => {
       expect(container.children.length).toBe(0) // Should not be in original container
     })
 
+    test('should create portal to HTMLElement directly', () => {
+      const target = document.createElement('div')
+      document.body.appendChild(target)
+
+      const portalCtx = ctx.makePortal(target)
+      portalCtx.makeChildElement('span', undefined)
+
+      expect(target.children.length).toBe(1)
+      expect(target.children[0].tagName).toBe('SPAN')
+      expect(container.children.length).toBe(0) // Should not be in original container
+    })
+
     test('should handle portal to non-existent selector', () => {
       expect(() => ctx.makePortal('#non-existent')).toThrow()
+    })
+  })
+
+  describe('setText and getText', () => {
+    test('should set and get text content on text node', () => {
+      const textCtx = ctx.makeChildText('Initial text')
+
+      expect(textCtx.getText()).toBe('Initial text')
+
+      textCtx.setText('Updated text')
+      expect(textCtx.getText()).toBe('Updated text')
+      expect(container.textContent).toBe('Updated text')
+    })
+
+    test('should get text content from element when no reference', () => {
+      const divCtx = ctx.makeChildElement('div', undefined) as BrowserContext
+      divCtx.element.textContent = 'Element text'
+
+      expect(divCtx.getText()).toBe('Element text')
+    })
+
+    test('should return empty string when no text content', () => {
+      const divCtx = ctx.makeChildElement('div', undefined)
+
+      expect(divCtx.getText()).toBe('')
+    })
+
+    test('should handle null textContent edge case', () => {
+      const divCtx = ctx.makeChildElement('div', undefined) as BrowserContext
+
+      // Mock textContent to be null to test the fallback
+      Object.defineProperty(divCtx.element, 'textContent', {
+        get: () => null,
+        configurable: true
+      })
+
+      expect(divCtx.getText()).toBe('')
+    })
+  })
+
+  describe('makeRef', () => {
+    test('should create reference text node', () => {
+      const refCtx = ctx.makeRef() as BrowserContext
+
+      expect(container.childNodes.length).toBe(1)
+      expect(container.childNodes[0].nodeType).toBe(Node.TEXT_NODE)
+      expect(container.childNodes[0].textContent).toBe('')
+      expect(refCtx.reference).toBe(container.childNodes[0])
+    })
+
+    test('should allow insertion before reference', () => {
+      const refCtx = ctx.makeRef()
+      // Create element using the context with reference - this should insert before the reference
+      refCtx.makeChildElement('div', undefined)
+
+      expect(container.childNodes.length).toBe(2)
+      expect(container.childNodes[0].nodeType).toBe(Node.ELEMENT_NODE)
+      expect(container.childNodes[1].nodeType).toBe(Node.TEXT_NODE)
+    })
+  })
+
+  describe('clear method', () => {
+    test('should clear element when removeTree is true', () => {
+      const divCtx = ctx.makeChildElement('div', undefined)
+      divCtx.makeChildText('Some text')
+
+      expect(container.children.length).toBe(1)
+
+      divCtx.clear(true)
+      expect(container.children.length).toBe(0)
+    })
+
+    test('should clear reference when removeTree is true', () => {
+      const textCtx = ctx.makeChildText('Some text')
+
+      expect(container.childNodes.length).toBe(1)
+
+      textCtx.clear(true)
+      expect(container.childNodes.length).toBe(0)
+    })
+
+    test('should not clear when removeTree is false', () => {
+      const divCtx = ctx.makeChildElement('div', undefined)
+
+      expect(container.children.length).toBe(1)
+
+      divCtx.clear(false)
+      expect(container.children.length).toBe(1)
+    })
+  })
+
+  describe('getClasses', () => {
+    test('should return array of CSS classes', () => {
+      const divCtx = ctx.makeChildElement('div', undefined) as BrowserContext
+      divCtx.addClasses(['class1', 'class2', 'class3'])
+
+      const classes = divCtx.getClasses()
+      expect(classes).toEqual(['class1', 'class2', 'class3'])
+    })
+
+    test('should return empty array when no classes', () => {
+      const divCtx = ctx.makeChildElement('div', undefined) as BrowserContext
+
+      const classes = divCtx.getClasses()
+      expect(classes).toEqual([])
+    })
+  })
+
+  describe('getStyle', () => {
+    test('should get CSS style property', () => {
+      const divCtx = ctx.makeChildElement('div', undefined) as BrowserContext
+      divCtx.setStyle('color', 'red')
+
+      expect(divCtx.getStyle('color')).toBe('red')
+    })
+
+    test('should return empty string for unset style', () => {
+      const divCtx = ctx.makeChildElement('div', undefined) as BrowserContext
+
+      expect(divCtx.getStyle('color')).toBe('')
+    })
+  })
+
+  describe('getWindow', () => {
+    test('should return document default view', () => {
+      const window = ctx.getWindow()
+
+      expect(window).toBe(document.defaultView)
+      expect(window).toBe(globalThis.window)
+    })
+  })
+
+  describe('context type checking methods', () => {
+    test('should correctly identify as browser context', () => {
+      expect(ctx.isBrowser()).toBe(true)
+      expect(ctx.isBrowserDOM()).toBe(true)
+      expect(ctx.isHeadless()).toBe(false)
+      expect(ctx.isHeadlessDOM()).toBe(false)
+    })
+  })
+
+  describe('withElement and withReference', () => {
+    test('should create new context with different element', () => {
+      const newElement = document.createElement('span')
+      const newCtx = (ctx as BrowserContext).withElement(newElement) as BrowserContext
+
+      expect(newCtx.element).toBe(newElement)
+      expect(newCtx.element).not.toBe((ctx as BrowserContext).element)
+      expect(newCtx.providers).toBe((ctx as BrowserContext).providers) // Should share providers
+    })
+
+    test('should create new context with reference', () => {
+      const textNode = document.createTextNode('ref')
+      const refCtx = (ctx as BrowserContext).withReference(textNode) as BrowserContext
+
+      expect(refCtx.reference).toBe(textNode)
+      expect(refCtx.element).toBe((ctx as BrowserContext).element) // Should share element
+      expect(refCtx.providers).toBe((ctx as BrowserContext).providers) // Should share providers
+    })
+
+    test('should create new context with undefined reference', () => {
+      const refCtx = (ctx as BrowserContext).withReference(undefined) as BrowserContext
+
+      expect(refCtx.reference).toBeUndefined()
+      expect(refCtx.element).toBe((ctx as BrowserContext).element)
+    })
+  })
+
+  describe('provider onUse callback', () => {
+    test('should store and retrieve onUse callback', () => {
+      const mark: ProviderMark<string> = makeProviderMark<string>('TestProvider')
+      const onUse = vi.fn()
+
+      const ctxWithProvider = ctx.setProvider(mark, 'test-value', onUse)
+      const result = ctxWithProvider.getProvider(mark)
+
+      expect(result.value).toBe('test-value')
+      expect(result.onUse).toBe(onUse)
+    })
+
+    test('should handle undefined onUse callback', () => {
+      const mark: ProviderMark<string> = makeProviderMark<string>('TestProvider')
+
+      const ctxWithProvider = ctx.setProvider(mark, 'test-value', undefined)
+      const result = ctxWithProvider.getProvider(mark)
+
+      expect(result.value).toBe('test-value')
+      expect(result.onUse).toBeUndefined()
     })
   })
 });

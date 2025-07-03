@@ -3,12 +3,19 @@
  * @public
  */
 export type MathMLTags = {
+  annotation_xml: MathMLElement
+  annotation: MathMLElement
   maction: MathMLElement
+  maligngroup: MathMLElement
+  malignmark: MathMLElement
   math: MathMLElement
   merror: MathMLElement
   mfenced: MathMLElement
   mfrac: MathMLElement
+  mglyph: MathMLElement
   mi: MathMLElement
+  mlabeledtr: MathMLElement
+  mlongdiv: MathMLElement
   mmultiscripts: MathMLElement
   mn: MathMLElement
   mo: MathMLElement
@@ -18,8 +25,14 @@ export type MathMLTags = {
   mroot: MathMLElement
   mrow: MathMLElement
   ms: MathMLElement
+  mscarries: MathMLElement
+  mscarry: MathMLElement
+  msgroup: MathMLElement
+  msline: MathMLElement
   mspace: MathMLElement
   msqrt: MathMLElement
+  msrow: MathMLElement
+  mstack: MathMLElement
   mstyle: MathMLElement
   msub: MathMLElement
   msubsup: MathMLElement
@@ -30,5 +43,6 @@ export type MathMLTags = {
   mtr: MathMLElement
   munder: MathMLElement
   munderover: MathMLElement
+  none: MathMLElement
   semantics: MathMLElement
 }

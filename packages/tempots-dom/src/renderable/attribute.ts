@@ -1,11 +1,11 @@
 import type { HTMLAttributes } from '../types/html-attributes'
-import type { MathMLTags } from '../types/mathml-tags'
 import type { NValue, Renderable } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
 import { Value } from '../std/value'
+import { MathMLAttributes } from '../types/mathml-attributes'
 
 const staticClassName =
   (value: string[]): Renderable =>
@@ -274,7 +274,9 @@ export const svgAttr = new Proxy(
  */
 export const mathAttr = new Proxy(
   {} as {
-    [M in keyof MathMLTags]: (value: NValue<MathMLTags[M]>) => Renderable
+    [M in keyof MathMLAttributes]: (
+      value: NValue<MathMLAttributes[M]>
+    ) => Renderable
   },
   {
     /**
@@ -284,17 +286,17 @@ export const mathAttr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof MathMLTags) => {
-      return (value: NValue<MathMLTags[typeof name]>) => {
-        if (Signal.is(value as Value<MathMLTags[typeof name]>)) {
+    get: (_, name: keyof MathMLAttributes) => {
+      return (value: NValue<MathMLAttributes[typeof name]>) => {
+        if (Signal.is(value as Value<MathMLAttributes[typeof name]>)) {
           return signalAttributeRenderable(
             name,
-            value as Signal<MathMLTags[typeof name]>
+            value as Signal<MathMLAttributes[typeof name]>
           )
         } else {
           return staticAttributeRenderable(
             name,
-            value as MathMLTags[typeof name]
+            value as MathMLAttributes[typeof name]
           )
         }
       }

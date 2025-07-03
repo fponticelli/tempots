@@ -6,15 +6,23 @@
 export type MathMLAttributes = {
   accent: string
   accentunder: string
+  actiontype: string
   align: string
+  background: string
+  base: string
   bevelled: string
+  charalign: string
+  class: string
   close: string
+  color: string
   columnalign: string
   columnlines: string
   columnspacing: string
   columnspan: string
   columnwidth: string
   crossout: string
+  definitionurl: string
+  denomsalign: string
   depth: string
   dir: string
   display: string
@@ -25,12 +33,20 @@ export type MathMLAttributes = {
   fence: string
   fontstyle: string
   fontweight: string
+  form: string
   frame: string
   height: string
+  href: string
+  id: string
+  largeop: string
+  length: string
+  linebreak: string
   linethickness: string
+  longdivstyle: string
   lspace: string
   mathbackground: string
   mathcolor: string
+  mathdepth: string
   mathsize: string
   mathvariant: string
   maxsize: string
@@ -39,17 +55,26 @@ export type MathMLAttributes = {
   notation: string
   numalign: string
   open: string
+  other: string
   rowalign: string
   rowlines: string
   rowspacing: string
   rowspan: string
   rspace: string
+  scriptlevel: string
+  scriptminsize: string
+  scriptsizemultiplier: string
   selection: string
   separator: string
+  stackalign: string
   stretchy: string
+  style: string
   subscriptshift: string
   superscriptshift: string
   symmetric: string
+  type: string
+  valign: string
   voffset: string
   width: string
+  xref: string
 }
