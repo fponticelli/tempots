@@ -340,6 +340,58 @@ describe("Signal", () => {
     await sleep()
     expect(s.value).toStrictEqual(2);
   })
+
+  test("Signal.ofPromise with custom equals", async () => {
+    const customEquals = (a: { id: number }, b: { id: number }) => a.id === b.id;
+    const s = Signal.ofPromise(
+      Promise.resolve({ id: 1, name: "test" }),
+      { id: 0, name: "init" },
+      undefined,
+      customEquals
+    );
+
+    expect(s.value).toEqual({ id: 0, name: "init" });
+    await sleep();
+    expect(s.value).toEqual({ id: 1, name: "test" });
+  })
+
+  test("Signal.is", () => {
+    const s = signal(1);
+    const p = prop(2);
+    const c = s.map(x => x * 2);
+    const literal = 42;
+
+    expect(Signal.is(s)).toBe(true);
+    expect(Signal.is(p)).toBe(true);
+    expect(Signal.is(c)).toBe(true);
+    expect(Signal.is(literal)).toBe(false);
+    expect(Signal.is(null)).toBe(false);
+    expect(Signal.is(undefined)).toBe(false);
+  })
+
+  test("Computed.is", () => {
+    const s = signal(1);
+    const p = prop(2);
+    const c = s.map(x => x * 2);
+    const literal = 42;
+
+    expect(Computed.is(c)).toBe(true);
+    expect(Computed.is(s)).toBe(false);
+    expect(Computed.is(p)).toBe(false);
+    expect(Computed.is(literal)).toBe(false);
+  })
+
+  test("Prop.is", () => {
+    const s = signal(1);
+    const p = prop(2);
+    const c = s.map(x => x * 2);
+    const literal = 42;
+
+    expect(Prop.is(p)).toBe(true);
+    expect(Prop.is(s)).toBe(false);
+    expect(Prop.is(c)).toBe(false);
+    expect(Prop.is(literal)).toBe(false);
+  })
   test("computedOf signals", () => {
     const p1 = prop(1);
     const p2 = prop(2);
@@ -399,4 +451,345 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(1, 2);
   })
+
+  test("mapMaybe", () => {
+    const p = prop<string | null>("hello");
+    const mapped = p.mapMaybe(v => v?.toUpperCase(), "DEFAULT");
+    expect(mapped.value).toBe("HELLO");
+
+    p.set(null);
+    expect(mapped.value).toBe("DEFAULT");
+
+    p.set("world");
+    expect(mapped.value).toBe("WORLD");
+  });
+
+  test("feedProp", () => {
+    const source = prop(10);
+    const target = prop(0);
+
+    source.feedProp(target);
+    expect(target.value).toBe(10);
+
+    source.set(20);
+    expect(target.value).toBe(20);
+
+    source.dispose();
+    source.set(30); // Should not update target after disposal
+    expect(target.value).toBe(20);
+  });
+
+  test("feedProp with autoDispose", () => {
+    const source = prop(5);
+    const target = prop(0);
+
+    const result = source.feedProp(target, true);
+    expect(result).toBe(target);
+    expect(target.value).toBe(5);
+
+    source.dispose();
+    expect(target.isDisposed()).toBe(true);
+  });
+
+  test("hasListeners", () => {
+    const p = prop(1);
+    expect(p.hasListeners()).toBe(false);
+
+    const unsubscribe = p.on(() => {});
+    expect(p.hasListeners()).toBe(true);
+
+    unsubscribe();
+    expect(p.hasListeners()).toBe(false);
+  });
+
+  test("isDisposed", () => {
+    const p = prop(1);
+    expect(p.isDisposed()).toBe(false);
+
+    p.dispose();
+    expect(p.isDisposed()).toBe(true);
+  });
+
+  test("onDispose", () => {
+    const p = prop(1);
+    const spy = vi.fn();
+
+    p.onDispose(spy);
+    expect(spy).not.toHaveBeenCalled();
+
+    p.dispose();
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test("at method", () => {
+    const obj = prop({ name: "John", age: 30 });
+    const nameSignal = obj.at("name");
+    const ageSignal = obj.at("age");
+
+    expect(nameSignal.value).toBe("John");
+    expect(ageSignal.value).toBe(30);
+
+    obj.set({ name: "Jane", age: 25 });
+    expect(nameSignal.value).toBe("Jane");
+    expect(ageSignal.value).toBe(25);
+  });
+
+  test("$ proxy getter", () => {
+    const obj = prop({ x: 10, y: 20 });
+    const xSignal = obj.$.x;
+    const ySignal = obj.$.y;
+
+    expect(xSignal.value).toBe(10);
+    expect(ySignal.value).toBe(20);
+
+    obj.set({ x: 30, y: 40 });
+    expect(xSignal.value).toBe(30);
+    expect(ySignal.value).toBe(40);
+  });
+
+  test("filter", () => {
+    const p = prop(1);
+    const filtered = p.filter(v => v > 5, 0);
+
+    expect(filtered.value).toBe(0); // Start value since 1 <= 5
+
+    p.set(10);
+    expect(filtered.value).toBe(10); // Passes filter
+
+    p.set(3);
+    expect(filtered.value).toBe(10); // Doesn't pass filter, keeps previous
+
+    p.set(15);
+    expect(filtered.value).toBe(15); // Passes filter
+  });
+
+  test("filterMap", () => {
+    const p = prop<string | null>("hello");
+    const filtered = p.filterMap(v => v?.length, 0);
+
+    expect(filtered.value).toBe(5);
+
+    p.set(null);
+    expect(filtered.value).toBe(5); // Keeps previous value
+
+    p.set("world");
+    expect(filtered.value).toBe(5); // Same length, no change
+
+    p.set("testing");
+    expect(filtered.value).toBe(7);
+  });
+
+  test("derive", () => {
+    const source = prop(42);
+    const derived = source.derive();
+
+    expect(derived.value).toBe(42);
+
+    source.set(100);
+    expect(derived.value).toBe(100);
+
+    // Derived should be independent for disposal
+    derived.dispose();
+    expect(source.isDisposed()).toBe(false);
+  });
+
+  test("count", () => {
+    const p = prop("a");
+    const counter = p.count();
+
+    expect(counter.value).toBe(1); // Initial count
+
+    p.set("b");
+    expect(counter.value).toBe(2);
+
+    p.set("c");
+    expect(counter.value).toBe(3);
+  });
+
+  test("update method", () => {
+    const p = prop(10);
+
+    p.update(v => v * 2);
+    expect(p.value).toBe(20);
+
+    p.update(v => v + 5);
+    expect(p.value).toBe(25);
+  });
+
+  test("reducer", () => {
+    const state = prop({ count: 0, name: "test" });
+    const dispatch = state.reducer<{ type: string; payload?: any }>(
+      (state, action) => {
+        switch (action.type) {
+          case "increment":
+            return { ...state, count: state.count + 1 };
+          case "setName":
+            return { ...state, name: action.payload };
+          default:
+            return state;
+        }
+      }
+    );
+
+    dispatch({ type: "increment" });
+    expect(state.value.count).toBe(1);
+
+    dispatch({ type: "setName", payload: "updated" });
+    expect(state.value.name).toBe("updated");
+    expect(state.value.count).toBe(1); // Should remain unchanged
+  });
+
+  test("iso (isomorphism)", () => {
+    const celsius = prop(0);
+    const fahrenheit = celsius.iso(
+      c => c * 9/5 + 32,  // to fahrenheit
+      f => (f - 32) * 5/9  // from fahrenheit
+    );
+
+    expect(fahrenheit.value).toBe(32); // 0°C = 32°F
+
+    celsius.set(100);
+    expect(fahrenheit.value).toBe(212); // 100°C = 212°F
+
+    fahrenheit.set(68);
+    expect(celsius.value).toBe(20); // 68°F = 20°C
+  });
+
+  test("atProp", () => {
+    const person = prop({ name: "John", age: 30 });
+    const nameProp = person.atProp("name");
+    const ageProp = person.atProp("age");
+
+    expect(nameProp.value).toBe("John");
+    expect(ageProp.value).toBe(30);
+
+    nameProp.set("Jane");
+    expect(person.value.name).toBe("Jane");
+    expect(person.value.age).toBe(30); // Should remain unchanged
+
+    ageProp.set(25);
+    expect(person.value.name).toBe("Jane");
+    expect(person.value.age).toBe(25);
+  });
+
+  test("signal with custom equals", () => {
+    const customEquals = (a: { id: number }, b: { id: number }) => a.id === b.id;
+    const p = prop({ id: 1, name: "test" }, customEquals);
+    const spy = vi.fn();
+
+    p.on(spy);
+    spy.mockClear(); // Clear initial call
+
+    // Should not trigger due to custom equals
+    p.set({ id: 1, name: "different" });
+    expect(spy).not.toHaveBeenCalled();
+
+    // Should trigger
+    p.set({ id: 2, name: "test" });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  test("computed error handling", () => {
+    const p = prop(1);
+    let shouldThrow = false;
+
+    const c = p.map(v => {
+      if (shouldThrow) throw new Error("test error");
+      return v * 2;
+    });
+
+    expect(c.value).toBe(2);
+
+    shouldThrow = true;
+    p.set(2);
+
+    // Computed will throw errors - this is expected behavior
+    expect(() => c.value).toThrow("test error");
+  });
+
+  test("disposal prevents further updates", () => {
+    const p = prop(1);
+    const spy = vi.fn();
+
+    p.on(spy);
+    spy.mockClear();
+
+    p.dispose();
+    p.set(2); // Should not trigger listeners after disposal
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(p.value).toBe(1); // Value should not change after disposal
+  });
+
+  test("listener with skipInitial option", () => {
+    const p = prop(42);
+    const spy = vi.fn();
+
+    p.on(spy, { skipInitial: true });
+    expect(spy).not.toHaveBeenCalled();
+
+    p.set(100);
+    expect(spy).toHaveBeenCalledWith(100, 42);
+  });
+
+  test("computed setDirty when already dirty", () => {
+    const p = prop(1);
+    const c = p.map(v => v * 2);
+
+    // Access value to ensure it's computed
+    expect(c.value).toBe(2);
+
+    // Make it dirty
+    p.set(2);
+
+    // Calling setDirty again should not cause issues
+    c.setDirty();
+    c.setDirty();
+
+    expect(c.value).toBe(4);
+  });
+
+  test("reducer with effects", () => {
+    const state = prop(0);
+    const effectSpy = vi.fn();
+
+    const dispatch = state.reducer<number>(
+      (acc, value) => acc + value,
+      (context) => effectSpy(context.state, context.action)
+    );
+
+    dispatch(5);
+    expect(state.value).toBe(5);
+    expect(effectSpy).toHaveBeenCalledWith(5, 5);
+
+    dispatch(3);
+    expect(state.value).toBe(8);
+    expect(effectSpy).toHaveBeenCalledWith(8, 3);
+  });
+
+  test("multiple onDispose listeners", () => {
+    const p = prop(1);
+    const spy1 = vi.fn();
+    const spy2 = vi.fn();
+
+    p.onDispose(spy1);
+    p.onDispose(spy2);
+
+    p.dispose();
+
+    expect(spy1).toHaveBeenCalledTimes(1);
+    expect(spy2).toHaveBeenCalledTimes(1);
+  });
+
+  test("setDerivative and cleanup", () => {
+    const source = prop(1);
+    const computed = source.map(v => v * 2);
+
+    // Manually test setDerivative (normally done internally)
+    const spy = vi.fn();
+    computed.onDispose(spy);
+
+    computed.dispose();
+    expect(spy).toHaveBeenCalled();
+  });
 });
