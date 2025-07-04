@@ -300,4 +300,176 @@ describe('inviewport.ts', () => {
       clear()
     })
   })
+
+  describe('IntersectionObserver callback coverage', () => {
+    it('should trigger IntersectionObserver callback and update signal', async () => {
+      // This test covers lines 51-54: the IntersectionObserver callback
+      let observerCallback: IntersectionObserverCallback | null = null
+      const observeSpy = vi.fn()
+      const unobserveSpy = vi.fn()
+
+      global.IntersectionObserver = vi.fn().mockImplementation((callback) => {
+        observerCallback = callback
+        return {
+          observe: observeSpy,
+          unobserve: unobserveSpy,
+          disconnect: vi.fn()
+        }
+      })
+
+      let capturedSignal: Signal<boolean> | null = null
+      const view = InViewport(
+        { mode: 'partial' },
+        (isVisible: Signal<boolean>) => {
+          capturedSignal = isVisible
+          return isVisible.map(visible => visible ? 'Now Visible' : 'Not Visible')
+        }
+      )
+
+      const clear = render(view, document.body)
+      await sleep(10)
+
+      // Verify observer was created and element was observed
+      expect(observeSpy).toHaveBeenCalled()
+      expect(capturedSignal).toBeTruthy()
+
+      // Initially should not be visible
+      expect(document.body.textContent).toBe('Not Visible')
+
+      // Simulate IntersectionObserver callback with entry becoming visible
+      if (observerCallback && capturedSignal) {
+        const mockEntry = {
+          target: observeSpy.mock.calls[0][0], // The observed element
+          isIntersecting: true
+        } as IntersectionObserverEntry
+
+        // This should trigger lines 51-54
+        observerCallback([mockEntry], {} as IntersectionObserver)
+        await sleep(10)
+
+        // Signal should now be true and content should update
+        expect(capturedSignal.get()).toBe(true)
+        expect(document.body.textContent).toBe('Now Visible')
+
+        // Simulate entry becoming not visible
+        const mockEntryNotVisible = {
+          target: observeSpy.mock.calls[0][0],
+          isIntersecting: false
+        } as IntersectionObserverEntry
+
+        observerCallback([mockEntryNotVisible], {} as IntersectionObserver)
+        await sleep(10)
+
+        expect(capturedSignal.get()).toBe(false)
+        expect(document.body.textContent).toBe('Not Visible')
+      }
+
+      clear()
+    })
+
+    it('should handle once option with automatic cleanup', async () => {
+      // This test covers lines 168-169: the once option cleanup
+      let observerCallback: IntersectionObserverCallback | null = null
+      const observeSpy = vi.fn()
+      const unobserveSpy = vi.fn()
+
+      global.IntersectionObserver = vi.fn().mockImplementation((callback) => {
+        observerCallback = callback
+        return {
+          observe: observeSpy,
+          unobserve: unobserveSpy,
+          disconnect: vi.fn()
+        }
+      })
+
+      let capturedSignal: Signal<boolean> | null = null
+      const view = InViewport(
+        { mode: 'partial', once: true },
+        (isVisible: Signal<boolean>) => {
+          capturedSignal = isVisible
+          return isVisible.map(visible => visible ? 'Visible Once' : 'Not Visible Once')
+        }
+      )
+
+      const clear = render(view, document.body)
+      await sleep(10)
+
+      expect(observeSpy).toHaveBeenCalled()
+      expect(capturedSignal).toBeTruthy()
+
+      // Initially should not be visible
+      expect(document.body.textContent).toBe('Not Visible Once')
+
+      // Simulate IntersectionObserver callback with entry becoming visible
+      if (observerCallback && capturedSignal) {
+        const mockEntry = {
+          target: observeSpy.mock.calls[0][0],
+          isIntersecting: true
+        } as IntersectionObserverEntry
+
+        // This should trigger the callback and then the once cleanup (lines 168-169)
+        observerCallback([mockEntry], {} as IntersectionObserver)
+        await sleep(10)
+
+        // Signal should be true and content should update
+        expect(capturedSignal.get()).toBe(true)
+        expect(document.body.textContent).toBe('Visible Once')
+
+        // The once option should have triggered cleanup, so unobserve should be called
+        expect(unobserveSpy).toHaveBeenCalled()
+      }
+
+      clear()
+    })
+
+    it('should handle multiple entries in IntersectionObserver callback', async () => {
+      // Additional test to ensure the forEach loop in lines 51-54 works with multiple entries
+      let observerCallback: IntersectionObserverCallback | null = null
+      const observeSpy = vi.fn()
+
+      global.IntersectionObserver = vi.fn().mockImplementation((callback) => {
+        observerCallback = callback
+        return {
+          observe: observeSpy,
+          unobserve: vi.fn(),
+          disconnect: vi.fn()
+        }
+      })
+
+      let capturedSignal: Signal<boolean> | null = null
+      const view = InViewport(
+        { mode: 'partial' },
+        (isVisible: Signal<boolean>) => {
+          capturedSignal = isVisible
+          return isVisible.map(visible => visible ? 'Multiple Visible' : 'Multiple Not Visible')
+        }
+      )
+
+      const clear = render(view, document.body)
+      await sleep(10)
+
+      if (observerCallback && capturedSignal) {
+        // Simulate multiple entries (though in practice there's usually just one per element)
+        const mockEntries = [
+          {
+            target: observeSpy.mock.calls[0][0],
+            isIntersecting: true
+          },
+          {
+            target: observeSpy.mock.calls[0][0], // Same target
+            isIntersecting: false
+          }
+        ] as IntersectionObserverEntry[]
+
+        // This should process all entries in the forEach loop
+        observerCallback(mockEntries, {} as IntersectionObserver)
+        await sleep(10)
+
+        // The last entry should determine the final state (false)
+        expect(capturedSignal.get()).toBe(false)
+      }
+
+      clear()
+    })
+  })
 })
