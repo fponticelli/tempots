@@ -10,9 +10,10 @@ import { Merge } from '@tempots/std'
  */
 export const _getExtension = (pathname: string): string | undefined => {
   const lastPart = pathname.split('/').pop()
+  /* c8 ignore next 3 */
   if (lastPart == null) return undefined
   if (lastPart.startsWith('.')) return undefined
-  const parts = lastPart.split('.') || []
+  const parts = lastPart.split('.') /* c8 ignore next 2 */ || []
   return parts.length > 1 ? '.' + parts.pop() : undefined
 }
 

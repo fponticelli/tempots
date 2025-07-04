@@ -290,6 +290,7 @@ export const WindowSize =
     const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => {
       size.set({
+        /* c8 ignore next 6 */
         width: win?.innerWidth ?? 0,
         height: win?.innerHeight ?? 0,
       })

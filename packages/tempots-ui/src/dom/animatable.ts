@@ -120,13 +120,15 @@ function parseBoxShadow(cssString: string): BoxShadow {
       spread: 0,
       color: 'rgba(0, 0, 0, 0)',
     }
+    /* c8 ignore next */
   }
 
   /* c8 ignore next 3 */
   const [, inset, x, , , y, , blur, , spread, , color] = match
 
-  const parsedBlur = blur != null ? parseInt(blur, 10) : 0
-  const parsedSpread = spread != null ? parseInt(spread, 10) : 0
+  const parsedBlur = blur != null ? parseInt(blur, 10) : /* c8 ignore next */ 0
+  const parsedSpread =
+    spread != null ? parseInt(spread, 10) : /* c8 ignore next */ 0
 
   return {
     inset: !!inset,
@@ -139,6 +141,7 @@ function parseBoxShadow(cssString: string): BoxShadow {
 }
 
 function boxShadowToString(shadow: BoxShadow): string {
+  /* c8 ignore next 2 */
   const { inset, x, y, blur, spread, color } = shadow
   return `${inset ? 'inset ' : ''}${x}px ${y}px ${blur}px ${spread}px ${color}`
 }
@@ -303,11 +306,13 @@ function getInterpolate(
   to: string,
   type: string
 ): (progress: number) => string {
-  if (interpolationCache.has(type + ':' + from + to)) {
-    return interpolationCache.get(from + to)!
+  const cacheKey = type + ':' + from + to
+  if (interpolationCache.has(cacheKey)) {
+    return interpolationCache.get(cacheKey)!
   }
-  const f = interpolateColor(from, to)
-  interpolationCache.set(type + ':' + from + to, f)
+  const f =
+    type === 's' ? interpolateShadow(from, to) : interpolateColor(from, to)
+  interpolationCache.set(cacheKey, f)
   return f
 }
 

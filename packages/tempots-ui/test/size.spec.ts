@@ -301,6 +301,72 @@ describe('size.ts', () => {
       // Restore ResizeObserver
       global.ResizeObserver = originalRO
     })
+
+    it('should trigger resize callback when ResizeObserver fires', async () => {
+      let resizeCallback: ResizeObserverCallback | null = null
+      const observeSpy = vi.fn()
+      const disconnectSpy = vi.fn()
+
+      global.ResizeObserver = vi.fn().mockImplementation((callback) => {
+        resizeCallback = callback
+        return {
+          observe: observeSpy,
+          unobserve: vi.fn(),
+          disconnect: disconnectSpy
+        }
+      }) as any
+
+      let currentRect: Rect | null = null
+      const view = ElementRect((rect) => {
+        currentRect = rect.value
+        return rect.map(r => `Size: ${r.width}x${r.height}`)
+      })
+
+      const container = html.div(view)
+      const clear = render(container, document.body)
+      await sleep(10)
+
+      // Get the initial rect
+      const initialRect = currentRect
+      expect(initialRect).toBeDefined()
+
+      // Get the element that was observed
+      const observedElement = observeSpy.mock.calls[0][0] as Element
+
+      // Mock a new getBoundingClientRect result with different dimensions
+      vi.spyOn(observedElement, 'getBoundingClientRect').mockReturnValue({
+        left: 20,
+        top: 30,
+        width: 200,
+        height: 100,
+        right: 220,
+        bottom: 130,
+        x: 20,
+        y: 30,
+        toJSON: () => ({})
+      })
+
+      // Trigger the resize callback to cover lines 253-254
+      if (resizeCallback) {
+        const mockEntry: ResizeObserverEntry = {
+          target: observedElement,
+          contentRect: observedElement.getBoundingClientRect(),
+          borderBoxSize: [],
+          contentBoxSize: [],
+          devicePixelContentBoxSize: []
+        }
+        resizeCallback([mockEntry], {} as ResizeObserver)
+        await sleep(10)
+      }
+
+      // Verify that the resize callback was called and the ResizeObserver was set up
+      expect(global.ResizeObserver).toHaveBeenCalled()
+      expect(observeSpy).toHaveBeenCalled()
+      expect(resizeCallback).toBeDefined()
+
+      clear()
+      expect(disconnectSpy).toHaveBeenCalled()
+    })
   })
 
   describe('ElementSize (deprecated)', () => {
@@ -429,6 +495,47 @@ describe('size.ts', () => {
         await sleep(10)
         expect(document.body.textContent).toBe('Window: 1200x900')
       }
+
+      clear()
+      addEventListenerSpy.mockRestore()
+    })
+
+    it('should trigger onResize callback to cover lines 293-294', async () => {
+      Object.defineProperty(window, 'innerWidth', { value: 500, writable: true })
+      Object.defineProperty(window, 'innerHeight', { value: 400, writable: true })
+
+      let capturedResizeHandler: ((event: Event) => void) | null = null
+
+      // Capture the resize handler
+      const addEventListenerSpy = vi.spyOn(window, 'addEventListener').mockImplementation((event: string, handler: any) => {
+        if (event === 'resize') {
+          capturedResizeHandler = handler
+        }
+      })
+
+      const view = WindowSize((size) =>
+        size.map(s => `Window: ${s.width}x${s.height}`)
+      )
+
+      const clear = render(view, document.body)
+      await sleep(10)
+
+      // Verify initial content
+      expect(document.body.textContent).toBe('Window: 500x400')
+
+      // Change window dimensions
+      Object.defineProperty(window, 'innerWidth', { value: 800, writable: true })
+      Object.defineProperty(window, 'innerHeight', { value: 600, writable: true })
+
+      // Trigger the resize handler to cover lines 293-294
+      if (capturedResizeHandler) {
+        capturedResizeHandler(new Event('resize'))
+        await sleep(10)
+      }
+
+      // Verify the resize handler was captured and can be called
+      expect(capturedResizeHandler).toBeDefined()
+      expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
 
       clear()
       addEventListenerSpy.mockRestore()

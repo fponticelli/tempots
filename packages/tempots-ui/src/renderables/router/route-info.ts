@@ -1,4 +1,3 @@
-// c8 ignore file
 import { SplitLiteral, TupleToUnion } from '@tempots/std'
 
 /**
