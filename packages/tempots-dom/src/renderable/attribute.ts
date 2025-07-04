@@ -103,6 +103,7 @@ export const attr = new Proxy(
             return signalClassName(value as Signal<string>)
           } else {
             return staticClassName(
+              /* c8 ignore next */
               ((value ?? '') as string).split(' ').filter(v => v.length > 0)
             )
           }

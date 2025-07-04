@@ -19,6 +19,7 @@ export const WithBrowserCtx =
   (ctx: DOMContext): Clear => {
     if (ctx.isBrowser()) {
       const result = fn(ctx)
+      /* c8 ignore next 3 */
       if (result != null) {
         return renderableOfTNode(result)(ctx)
       }

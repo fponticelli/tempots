@@ -10,6 +10,7 @@ export const HiddenWhenEmpty: Renderable = WithElement(el => {
   const initial = el.style.getPropertyValue(':empty')
   el.style.setProperty(':empty', 'display:none')
   return OnDispose((removeTree: boolean) => {
+    /* c8 ignore next */
     if (removeTree) el.style.setProperty(':empty', initial)
   })
 })

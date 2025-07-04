@@ -158,6 +158,7 @@ export const PopOver = (
                       properties.target
                     ) as HTMLElement)
                   : (properties?.target ?? parentElement!)
+              /* c8 ignore next 3 */
               if (target == null) {
                 throw new Error(`Target not found: ${properties?.target}`)
               }

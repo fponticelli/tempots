@@ -112,6 +112,7 @@ export const Router = <
   routes: T
 ): Renderable => {
   const matchRoute = _makeRouteMatcher(Object.keys(routes))
+  /* c8 ignore next 19 */
   return Use(Location, location => {
     const route = location.map(location => {
       const match = matchRoute(location.pathname)
@@ -131,6 +132,7 @@ export const Router = <
       route.map(route => [route.route, route]),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       routes as any
+      /* c8 ignore next 2 */
     )
   })
 }

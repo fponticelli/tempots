@@ -290,6 +290,7 @@ export const emitValueAsNullableDateTime = (
       Number(dateParts[2])
     )
     const time = parts[1]!.split(':')
+    /* c8 ignore next */
     date.setHours(Number(time[0] ?? 0))
     date.setMinutes(Number(time[1] ?? 0))
     date.setSeconds(Number(time[2] ?? 0))

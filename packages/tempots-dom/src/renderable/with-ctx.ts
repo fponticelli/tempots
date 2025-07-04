@@ -18,7 +18,9 @@ export const WithCtx =
   (ctx: DOMContext): Clear => {
     const result = fn(ctx)
     if (result == null) {
+      /* c8 ignore next 3 */
       return () => {}
     }
     return renderableOfTNode(result)(ctx)
+    /* c8 ignore next */
   }

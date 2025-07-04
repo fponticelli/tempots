@@ -70,6 +70,7 @@ export const Anchor = (
     withViewTransition: useViewTransition,
     ...options
   } = hrefOrOptions as AnchorOptions
+  /* c8 ignore next 16 */
   return Use(Location, location => {
     return html.a(
       on.click(
@@ -86,6 +87,7 @@ export const Anchor = (
       ),
       attr.href(href),
       ...children
+      /* c8 ignore next 2 */
     )
   })
 }

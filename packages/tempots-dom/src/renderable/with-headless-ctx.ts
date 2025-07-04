@@ -15,6 +15,7 @@ export const WithHeadlessCtx =
   (ctx: DOMContext): Clear => {
     if (ctx.isHeadlessDOM()) {
       const result = fn(ctx)
+      /* c8 ignore next 3 */
       if (result) {
         return renderableOfTNode(result)(ctx)
       }

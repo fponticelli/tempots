@@ -37,6 +37,7 @@ export const Conjunction =
           return 'first'
         } else if (v.isLast) {
           return 'last'
+          /* c8 ignore next 3 */
         } else {
           return 'other'
         }

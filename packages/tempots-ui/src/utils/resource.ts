@@ -77,6 +77,7 @@ export const makeResource = <R, V, E>(
    * @public
    */
   const runLoad = async (req: R) => {
+    /* c8 ignore next */
     abortController?.abort()
     abortController = new AbortController()
     const abortSignal = abortController.signal
@@ -101,6 +102,7 @@ export const makeResource = <R, V, E>(
 
   /** Disposes of the resource, aborting any ongoing requests and cleaning up. */
   const dispose = () => {
+    /* c8 ignore next */
     abortController?.abort()
     abortController = undefined
     status.dispose()

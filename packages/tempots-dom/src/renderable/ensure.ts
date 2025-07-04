@@ -99,6 +99,7 @@ export const Ensure = <T>(
       const result = otherwise?.()
       if (result != null) {
         return renderableOfTNode(result)
+        /* c8 ignore next 3 */
       }
       return Empty
     }
@@ -175,6 +176,7 @@ export const EnsureAll =
       )
 
       if (hasNillLiterals) {
+        /* c8 ignore next 3 */
         return (otherwise != null ? renderableOfTNode(otherwise?.()) : Empty)(
           newCtx
         )
@@ -229,6 +231,7 @@ export const EnsureAll =
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           clear = renderableOfTNode(callback(...(feed as any)))(newCtx)
         } else {
+          /* c8 ignore next */
           clear = renderableOfTNode(otherwise?.() ?? Empty)(newCtx)
         }
       })

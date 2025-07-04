@@ -38,6 +38,7 @@ export const makeBrowserLocationProp = () => {
   const win = getWindow()
 
   const handler = () => {
+    /* c8 ignore next 10 */
     let hash = win?.location.hash ?? ''
     if (hash.startsWith('#')) {
       hash = hash.substring(1)

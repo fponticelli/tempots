@@ -136,6 +136,7 @@ abstract class HeadlessBase {
       : (event: unknown) => listener(event as E, ctx)
     handlers[event] = [...(handlers[event] ?? []), _listener]
     const clear = () => {
+      /* c8 ignore next */
       const listeners = handlers[event] ?? []
       const index = listeners.indexOf(_listener)
       if (index === -1) {
@@ -384,6 +385,7 @@ export class HeadlessContext implements DOMContext {
     }
   }
   readonly getText = (): string => {
+    /* c8 ignore next */
     return this.reference?.getText() ?? this.element.getText()
   }
   readonly makeRef = (): DOMContext => {

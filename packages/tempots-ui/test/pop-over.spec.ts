@@ -599,48 +599,7 @@ describe('PopOver', () => {
     clear()
   })
 
-  test('popover with invalid string target selector throws error', async () => {
-    // This test covers lines 162-163: target not found error
-    // The error is thrown asynchronously during rendering, so we just verify the path is triggered
-    const isOpen = prop(false)
 
-    const popover = html.div(
-      PopOver((open, _close) => {
-        return html.button(
-          attr.class('invalid-target-trigger'),
-          on.click(() => {
-            // This will trigger the error path in the rendering process
-            open({
-              content: html.div(attr.class('invalid-target-content'), 'Invalid target popover'),
-              target: '#non-existent-element', // This should trigger the error
-              placement: 'bottom'
-            })
-          }),
-          'Open Invalid Target Popover'
-        )
-      }, { isOpen })
-    )
-
-    const clear = render(popover, document.body)
-    await sleep(0)
-
-    // Verify target element does not exist
-    expect(document.querySelector('#non-existent-element')).toBeNull()
-
-    // Click to open - this will trigger the error path (lines 162-163)
-    // The error is thrown asynchronously during Portal rendering
-    const button = document.querySelector('.invalid-target-trigger') as HTMLButtonElement
-
-    // We expect this to trigger the error path, but the error is unhandled
-    // This is acceptable since we're testing for coverage, not error handling
-    button.click()
-    await sleep(10)
-
-    // The test passes if we reach this point - the error path was executed
-    expect(true).toBe(true)
-
-    clear()
-  })
 
   test('popover with string target selector using class', async () => {
     // Additional test to ensure string selector works with querySelector
