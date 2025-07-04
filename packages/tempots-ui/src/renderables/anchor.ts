@@ -74,7 +74,7 @@ export const Anchor = (
     return html.a(
       on.click(
         handleAnchorClick(() => {
-          if (useViewTransition == true) {
+          if (useViewTransition === true) {
             withViewTransition(() => {
               setLocationFromUrl(location, Value.get(href))
             })

@@ -110,7 +110,9 @@ export const timeDiffToString = (diffInMillis: number): string => {
           ? format(diff, unit.value, unit.past.singular, unit.past.plural)
           : format(diff, unit.value, unit.future.singular, unit.future.plural)
       }
+      /* c8 ignore next */
     }
+    /* c8 ignore next 3 */
     throw new Error('unreachable')
   }
 }

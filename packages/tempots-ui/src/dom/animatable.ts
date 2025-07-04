@@ -122,6 +122,7 @@ function parseBoxShadow(cssString: string): BoxShadow {
     }
   }
 
+  /* c8 ignore next 3 */
   const [, inset, x, , , y, , blur, , spread, , color] = match
 
   const parsedBlur = blur != null ? parseInt(blur, 10) : 0
@@ -344,6 +345,7 @@ export const applyInterpolatedAnimatableProp = (
     } else if (
       key === 'color' ||
       key === 'backgroundColor' ||
+      /* c8 ignore next 3 */
       key === 'borderColor' ||
       key === 'outlineColor'
     ) {

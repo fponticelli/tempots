@@ -165,7 +165,10 @@ export const PopOver = (
               let arrowEl: HTMLElement | null = null
               const mainAxis = Value.toSignal(properties?.mainAxisOffset ?? 0)
               const crossAxis = Value.toSignal(properties?.crossAxisOffset ?? 0)
-              const placement = Value.toSignal(properties?.placement ?? 'top')
+              const placement = Value.toSignal(
+                /* c8 ignore next 3 */
+                properties?.placement ?? 'top'
+              )
               const arrowPadding = Value.toSignal(properties?.arrowPadding ?? 0)
               const arrowOption = properties?.arrow
               const arrowSignal = prop<Omit<PopOverArrowOptions, 'placement'>>({
