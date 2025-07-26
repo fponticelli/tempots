@@ -23,7 +23,7 @@ export const When = (
     return (ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       let clear: Clear = () => {}
-      const clearSignal = signal.on(isTrue => {
+      const disposeHandler = signal.on(isTrue => {
         clear(true)
         if (isTrue) {
           clear = renderableOfTNode(then())(newCtx)
@@ -33,7 +33,7 @@ export const When = (
       })
       return (removeTree: boolean) => {
         clear(removeTree)
-        clearSignal()
+        disposeHandler()
         newCtx.clear(removeTree)
       }
     }

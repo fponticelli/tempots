@@ -514,10 +514,10 @@ export class Signal<T> {
     // istanbul ignore next
     autoDisposeProp = false
   ) => {
-    const clean = this.on(prop.set)
-    prop.onDispose(clean)
+    const dispose = this.on(prop.set)
+    prop.onDispose(dispose)
     if (autoDisposeProp) this.onDispose(prop.dispose)
-    else this.onDispose(clean)
+    else this.onDispose(dispose)
     return prop
   }
 

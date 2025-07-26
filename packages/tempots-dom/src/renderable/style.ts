@@ -18,8 +18,9 @@ const staticStyle =
 const signalStyle =
   (name: keyof CSSStyles, signal: Signal<string>) => (ctx: DOMContext) => {
     const original = ctx.getStyle(name as string)
-    signal.on(v => ctx.setStyle(name as string, v))
+    const dispose = signal.on(v => ctx.setStyle(name as string, v))
     return (removeTree: boolean) => {
+      dispose()
       if (removeTree) {
         ctx.setStyle(name as string, original)
       }

@@ -116,9 +116,7 @@ export const storedProp = <T>({
         : defaultValue,
     equals
   )
-  prop.on(value => {
-    store.setItem(key, serialize(value))
-  })
+  prop.on(value => store.setItem(key, serialize(value)))
   return prop
 }
 
@@ -404,7 +402,7 @@ export const delaySignal = <T>(
 ): Signal<T> => {
   const newSignal = prop(signal.get())
   let timeout: ReturnType<typeof setTimeout> | null = null
-  signal.on(value => {
+  const dispose = signal.on(value => {
     if (timeout != null) clearTimeout(timeout)
     timeout = setTimeout(
       () => {
@@ -415,6 +413,7 @@ export const delaySignal = <T>(
     )
   })
   newSignal.onDispose(() => {
+    dispose()
     /* c8 ignore next 2 */
     if (timeout != null) clearTimeout(timeout)
   })
