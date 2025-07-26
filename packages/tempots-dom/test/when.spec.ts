@@ -208,6 +208,52 @@ describe("When", () => {
     await sleep()
     expect(document.body.innerHTML).toBe('<div>True content</div>')
   });
+
+  test("with literal - DOM content", async () => {
+    document.body.innerHTML = ''
+    render(
+      When(
+        true,
+        () => html.div("True content"),
+        () => html.span("False content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<div>True content</div>')
+
+    document.body.innerHTML = ''
+    render(
+      When(
+        false,
+        () => html.div("True content"),
+        () => html.span("False content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<span>False content</span>')
+  });
+
+  test("with literal and without otherwise clause - DOM content", async () => {
+    document.body.innerHTML = ''
+    render(
+      When(
+        true,
+        () => html.div("True content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<div>True content</div>')
+
+    document.body.innerHTML = ''
+    render(
+      When(
+        false,
+        () => html.div("True content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('')
+  });
 });
 
 describe("Unless", () => {
@@ -267,5 +313,73 @@ describe("Unless", () => {
       document.body
     )
     expect(spyTrue).toHaveBeenCalledTimes(1)
+  });
+
+  // DOM content tests for Unless
+  test("with signal - DOM content", async () => {
+    const bool = prop(true)
+    render(
+      Unless(
+        bool,
+        () => html.div("True content"),
+        () => html.span("False content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<span>False content</span>')
+
+    bool.set(false)
+    await sleep()
+    expect(document.body.innerHTML).toBe('<div>True content</div>')
+
+    bool.set(true)
+    await sleep()
+    expect(document.body.innerHTML).toBe('<span>False content</span>')
+  });
+
+  test("with literal - DOM content", async () => {
+    document.body.innerHTML = ''
+    render(
+      Unless(
+        false,
+        () => html.div("True content"),
+        () => html.span("False content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<div>True content</div>')
+
+    document.body.innerHTML = ''
+    render(
+      Unless(
+        true,
+        () => html.div("True content"),
+        () => html.span("False content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<span>False content</span>')
+  });
+
+  test("without otherwise clause - DOM content", async () => {
+    document.body.innerHTML = ''
+    render(
+      Unless(
+        false,
+        () => html.div("True content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('<div>True content</div>')
+
+    document.body.innerHTML = ''
+    render(
+      Unless(
+        true,
+        () => html.div("True content")
+      ),
+      document.body
+    )
+    expect(document.body.innerHTML).toBe('')
   });
 });
