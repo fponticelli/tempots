@@ -247,32 +247,24 @@ export function getAbsoluteRect(el: Element) {
 export const ElementRect = (fn: (rect: Signal<Rect>) => TNode) =>
   WithBrowserCtx((ctx: BrowserContext) => {
     const { element } = ctx
-    const rect = prop(getAbsoluteRect(element))
+    const rect = prop(getAbsoluteRect(element), (a, b) => a.equals(b))
     const clear = renderableOfTNode(fn(rect))(ctx)
-    const onResize = () => {
-      rect.set(Rect.of(getAbsoluteRect(element)))
-    }
-    let observer: ResizeObserver
-    if (typeof ResizeObserver === 'function') {
-      observer = new ResizeObserver(onResize)
-      observer.observe(element)
-    }
+    const onResize = () => rect.set(Rect.of(getAbsoluteRect(element)))
+    const observer = new ResizeObserver(onResize)
+    observer.observe(element)
     return OnDispose((removeTree: boolean) => {
-      observer?.disconnect()
+      observer.disconnect()
       clear(removeTree)
     })
   })
 
-/**
- * Creates a renderable function that monitors the size of an element and provides it as a signal.
- *
- * @param fn - The renderable function that receives the size signal and returns a TNode.
- * @returns A function that takes a DOMContext and returns a renderable function.
- * @deprecated use ElementRect instead
- * @public
- */
-export const ElementSize = (fn: (size: Signal<Rect>) => TNode) =>
-  ElementRect(fn)
+function getWinSize(win: Window | undefined) {
+  return {
+    /* c8 ignore next 6 */
+    width: win?.innerWidth ?? 0,
+    height: win?.innerHeight ?? 0,
+  }
+}
 
 /**
  * Creates a renderable function that monitors the window size and invokes the provided function with the current size.
@@ -283,18 +275,13 @@ export const ElementSize = (fn: (size: Signal<Rect>) => TNode) =>
 export const WindowSize =
   (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
     const win = getWindow()
-    const size = prop({
-      width: win?.innerWidth ?? 0,
-      height: win?.innerHeight ?? 0,
-    })
+    const size = prop(
+      getWinSize(win),
+      (a, b) => a.width === b.width && a.height === b.height
+    )
     const clear = renderableOfTNode(fn(size))(ctx)
-    const onResize = () => {
-      size.set({
-        /* c8 ignore next 6 */
-        width: win?.innerWidth ?? 0,
-        height: win?.innerHeight ?? 0,
-      })
-    }
+    const onResize = () => size.set(getWinSize(win))
+
     win?.addEventListener('resize', onResize)
     return (removeTree: boolean) => {
       win?.removeEventListener('resize', onResize)
