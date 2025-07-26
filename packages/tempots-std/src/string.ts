@@ -834,7 +834,7 @@ export const chunkString = (s: string, len: number): string[] => {
   const chunks: string[] = []
   while (s.length > 0) {
     chunks.push(s.substring(0, len))
-    s = s.substring(len, s.length - len)
+    s = s.substring(len)
   }
   return chunks
 }

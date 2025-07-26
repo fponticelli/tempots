@@ -622,19 +622,25 @@ lines`
   })
 
   test('chunkString', () => {
-    // Note: This function has a bug on line 922 - testing cases that can execute buggy code safely
-    expect(chunkString('', 5)).toEqual([]) // Empty string works
+    // Test empty string
+    expect(chunkString('', 5)).toEqual([])
 
-    // Try to execute the buggy lines 921-923 without infinite loop
-    // For very short strings where the bug doesn't cause infinite iteration
-    try {
-      // This should execute line 921 (push) and line 922 (buggy substring)
-      // but fail quickly due to the bug creating negative lengths
-      chunkString('a', 1)
-    } catch (error) {
-      // Expected to fail due to the bug, but this covers lines 921-923
-      expect(error).toBeDefined()
-    }
+    // Test single character
+    expect(chunkString('a', 1)).toEqual(['a'])
+
+    // Test string shorter than chunk size
+    expect(chunkString('ab', 5)).toEqual(['ab'])
+
+    // Test string exactly divisible by chunk size
+    expect(chunkString('abcdef', 2)).toEqual(['ab', 'cd', 'ef'])
+    expect(chunkString('abcdef', 3)).toEqual(['abc', 'def'])
+
+    // Test string not exactly divisible by chunk size
+    expect(chunkString('abcdefg', 3)).toEqual(['abc', 'def', 'g'])
+    expect(chunkString('hello world', 4)).toEqual(['hell', 'o wo', 'rld'])
+
+    // Test chunk size of 1
+    expect(chunkString('abc', 1)).toEqual(['a', 'b', 'c'])
   })
 
   test('substringAfterLast', () => {

@@ -62,27 +62,25 @@ export const Ensure = <T>(
     return (ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       let clear: Clear = () => {}
-      let hadValue = false
+      let isNonNillRendered = false
       let feed: Prop<T> | null = null
       const clearSignal = signal.on(value => {
         if (value == null) {
           clear(true)
-          clear = renderableOfTNode(otherwise?.() ?? Empty)(newCtx)
-          hadValue = false
+          clear = renderableOfTNode(otherwise?.())(newCtx)
+          isNonNillRendered = false
           feed?.dispose()
           feed = null
         } else {
-          if (feed == null) {
+          if (!isNonNillRendered) {
             feed = prop<T>(value)
-          } else {
-            feed.value = value
-          }
-          if (!hadValue) {
             clear(true)
             clear = renderableOfTNode(then(feed as Signal<NonNillable<T>>))(
               newCtx
             )
-            hadValue = true
+            isNonNillRendered = true
+          } else {
+            feed!.set(value)
           }
         }
       })
