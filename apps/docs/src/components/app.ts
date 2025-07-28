@@ -1,4 +1,4 @@
-import { Location, AppRouter as Router } from '@tempots/ui'
+import { Location, RootRouter } from '@tempots/ui'
 import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
@@ -31,7 +31,7 @@ function mapPathToLibraryPageURL(path: string) {
 
 export const AppRouter = (toc: Toc) => {
   const map = tocAsMap(toc)
-  return Router({
+  return RootRouter({
     '/': () => HomeView(map.pages.get('index')!),
     '/tools.html': () => ToolsView(),
     '/tool/html-to-tempo.html': () => HtmlToTempo(),

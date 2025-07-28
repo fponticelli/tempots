@@ -104,14 +104,14 @@ const makeNestedRouteMatcher = <Routes extends string[]>(routes: Routes) => {
 /**
  * Creates the root router for an application that provides routing context to child components.
  *
- * AppRouter is the top-level router that matches against the full browser pathname
+ * RootRouter is the top-level router that matches against the full browser pathname
  * and creates the initial routing context. It provides the RouterContextProvider
- * that child SubRouter components can use for nested routing scenarios.
+ * that child ChildRouter components can use for nested routing scenarios.
  *
  * @example
  * ```typescript
  * // Basic app routing
- * const App = AppRouter({
+ * const App = RootRouter({
  *   '/': () => html.div('Home Page'),
  *   '/about': () => html.div('About Page'),
  *   '/admin/*': () => AdminSection(), // Passes remaining path to AdminSection
@@ -123,14 +123,14 @@ const makeNestedRouteMatcher = <Routes extends string[]>(routes: Routes) => {
  *
  * @example
  * ```typescript
- * // Nested routing with AppRouter and SubRouter
- * const App = AppRouter({
+ * // Nested routing with RootRouter and ChildRouter
+ * const App = RootRouter({
  *   '/': () => html.div('Home'),
  *   '/admin/*': () => AdminRoutes(),
  *   '/blog/*': () => BlogRoutes()
  * })
  *
- * const AdminRoutes = SubRouter({
+ * const AdminRoutes = ChildRouter({
  *   '/users': () => html.div('User List'),
  *   '/users/:id': (info) => html.div('User: ', info.$.params.$.id),
  *   '/settings': () => html.div('Admin Settings')
@@ -143,7 +143,7 @@ const makeNestedRouteMatcher = <Routes extends string[]>(routes: Routes) => {
  * @throws {Error} When no matching route is found for the current URL
  * @public
  */
-export const AppRouter = <
+export const RootRouter = <
   T extends {
     [K in keyof T]: (
       info: K extends string
@@ -199,21 +199,21 @@ export const AppRouter = <
 /**
  * Creates a nested router that matches against the remaining path from parent routers.
  *
- * SubRouter is used for nested routing scenarios where a parent router (AppRouter or
- * another SubRouter) has matched a portion of the path and passed the remaining path
- * to child components. SubRouter reads the parent routing context and matches its
+ * ChildRouter is used for nested routing scenarios where a parent router (RootRouter or
+ * another ChildRouter) has matched a portion of the path and passed the remaining path
+ * to child components. ChildRouter reads the parent routing context and matches its
  * routes against the remaining path.
  *
  * @example
  * ```typescript
- * // Parent AppRouter passes remaining path to AdminRoutes
- * const App = AppRouter({
+ * // Parent RootRouter passes remaining path to AdminRoutes
+ * const App = RootRouter({
  *   '/admin/*': () => AdminRoutes(),
  *   '/blog/*': () => BlogRoutes()
  * })
  *
- * // SubRouter matches against remaining path
- * const AdminRoutes = SubRouter({
+ * // ChildRouter matches against remaining path
+ * const AdminRoutes = ChildRouter({
  *   '/users': () => html.div('User List'),
  *   '/users/:id': (info) => html.div('User: ', info.$.params.$.id),
  *   '/settings': () => html.div('Admin Settings'),
@@ -224,12 +224,12 @@ export const AppRouter = <
  * @example
  * ```typescript
  * // Multiple levels of nesting
- * const BlogRoutes = SubRouter({
+ * const BlogRoutes = ChildRouter({
  *   '/posts/*': () => PostRoutes(),
  *   '/categories': () => html.div('Categories')
  * })
  *
- * const PostRoutes = SubRouter({
+ * const PostRoutes = ChildRouter({
  *   '/': () => html.div('All Posts'),
  *   '/:id': (info) => html.div('Post: ', info.$.params.$.id),
  *   '/:id/comments': (info) => html.div('Comments for: ', info.$.params.$.id)
@@ -242,7 +242,7 @@ export const AppRouter = <
  * @throws {Error} When no matching route is found for the remaining path
  * @public
  */
-export const SubRouter = <
+export const ChildRouter = <
   T extends {
     [K in keyof T]: (
       info: K extends string
@@ -308,19 +308,3 @@ export const SubRouter = <
     })
   })
 }
-
-/**
- * Creates a client-side router that maps URL patterns to renderable components.
- *
- * This is an alias for AppRouter, provided for backward compatibility.
- * For new code, prefer using AppRouter explicitly to indicate the root router,
- * and SubRouter for nested routing scenarios.
- *
- * @template T - The type of the routes configuration object
- * @param routes - Object mapping route patterns to handler functions
- * @returns A renderable router component that handles URL routing
- * @throws {Error} When no matching route is found for the current URL
- * @public
- * @deprecated Use AppRouter for root routing and SubRouter for nested routing
- */
-export const Router = AppRouter

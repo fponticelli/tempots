@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { AppRouter, SubRouter, Router } from '../src/renderables/router/router'
+import { RootRouter, ChildRouter } from '../src/renderables/router/router'
 import { prop } from '@tempots/dom'
 
 // Mock the dependencies
@@ -31,9 +31,9 @@ describe('router.ts', () => {
     vi.clearAllMocks()
   })
 
-  describe('AppRouter function', () => {
+  describe('RootRouter function', () => {
     it('should be a function', () => {
-      expect(typeof AppRouter).toBe('function')
+      expect(typeof RootRouter).toBe('function')
     })
 
     it('should create router with simple routes', () => {
@@ -43,7 +43,7 @@ describe('router.ts', () => {
         '/contact': () => 'Contact'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -54,7 +54,7 @@ describe('router.ts', () => {
         '/posts/:postId': (info: any) => `Post ${info.$.params.$.postId}`
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -68,7 +68,7 @@ describe('router.ts', () => {
         '*': () => '404 Not Found'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -79,14 +79,14 @@ describe('router.ts', () => {
         '*': () => 'Not Found'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
     it('should handle empty routes object', () => {
       const routes = {}
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -97,7 +97,7 @@ describe('router.ts', () => {
         '/contact': () => 'Contact us'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -114,7 +114,7 @@ describe('router.ts', () => {
         '/api/v:version/*': (info: any) => `API v${info.$.params.$.version}`
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -132,7 +132,7 @@ describe('router.ts', () => {
         }
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -144,7 +144,7 @@ describe('router.ts', () => {
         }
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -157,12 +157,12 @@ describe('router.ts', () => {
         }
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
   })
 
-  describe('Router type safety', () => {
+  describe('RootRouter type safety', () => {
     it('should enforce correct route handler signatures', () => {
       // This test verifies that the TypeScript types are working correctly
       const routes = {
@@ -179,7 +179,7 @@ describe('router.ts', () => {
         }
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -191,7 +191,7 @@ describe('router.ts', () => {
         '/user@domain.com': () => 'User profile'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -203,12 +203,12 @@ describe('router.ts', () => {
         '/🏠': () => 'Home emoji'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
   })
 
-  describe('AppRouter edge cases', () => {
+  describe('RootRouter edge cases', () => {
     it('should handle very long route patterns', () => {
       const longRoute = '/very/long/route/with/many/segments/that/goes/on/and/on/:param1/:param2/:param3'
       const routes = {
@@ -216,7 +216,7 @@ describe('router.ts', () => {
         [longRoute]: (info: any) => `Long route with params: ${JSON.stringify(info.$.params)}`
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -227,7 +227,7 @@ describe('router.ts', () => {
         '/year/:year': (info: any) => `Year ${info.$.params.$.year}`
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
 
@@ -240,33 +240,14 @@ describe('router.ts', () => {
         '/undefined': () => 'Undefined page'
       }
 
-      const router = AppRouter(routes)
+      const router = RootRouter(routes)
       expect(typeof router).toBe('function')
     })
   })
 
-  describe('Router backward compatibility', () => {
-    it('should be an alias for AppRouter', () => {
-      expect(Router).toBe(AppRouter)
-    })
-
-    it('should work the same as AppRouter', () => {
-      const routes = {
-        '/': () => 'Home',
-        '/about': () => 'About'
-      }
-
-      const appRouter = AppRouter(routes)
-      const router = Router(routes)
-
-      expect(typeof appRouter).toBe('function')
-      expect(typeof router).toBe('function')
-    })
-  })
-
-  describe('SubRouter function', () => {
+  describe('ChildRouter function', () => {
     it('should be a function', () => {
-      expect(typeof SubRouter).toBe('function')
+      expect(typeof ChildRouter).toBe('function')
     })
 
     it('should create nested router with simple routes', () => {
@@ -276,8 +257,8 @@ describe('router.ts', () => {
         '/profile': () => 'Profile'
       }
 
-      const subRouter = SubRouter(routes)
-      expect(typeof subRouter).toBe('function')
+      const childRouter = ChildRouter(routes)
+      expect(typeof childRouter).toBe('function')
     })
 
     it('should create nested router with parameterized routes', () => {
@@ -290,8 +271,8 @@ describe('router.ts', () => {
         }
       }
 
-      const subRouter = SubRouter(routes)
-      expect(typeof subRouter).toBe('function')
+      const childRouter = ChildRouter(routes)
+      expect(typeof childRouter).toBe('function')
     })
 
     it('should create nested router with catch-all routes', () => {
@@ -301,27 +282,27 @@ describe('router.ts', () => {
         '*': () => 'Nested 404'
       }
 
-      const subRouter = SubRouter(routes)
-      expect(typeof subRouter).toBe('function')
+      const childRouter = ChildRouter(routes)
+      expect(typeof childRouter).toBe('function')
     })
 
     it('should handle empty routes object', () => {
       const routes = {}
 
-      const subRouter = SubRouter(routes)
-      expect(typeof subRouter).toBe('function')
+      const childRouter = ChildRouter(routes)
+      expect(typeof childRouter).toBe('function')
     })
   })
 
   describe('Nested routing scenarios', () => {
     it('should support single-level nesting concept', () => {
       // This test verifies the concept of nested routing structure
-      // AppRouter handles top-level routes and passes remaining path to SubRouter
+      // RootRouter handles top-level routes and passes remaining path to ChildRouter
 
       const appRoutes = {
         '/': () => 'Home',
-        '/admin/*': () => 'AdminSection', // Would contain SubRouter
-        '/blog/*': () => 'BlogSection'    // Would contain SubRouter
+        '/admin/*': () => 'AdminSection', // Would contain ChildRouter
+        '/blog/*': () => 'BlogSection'    // Would contain ChildRouter
       }
 
       const adminRoutes = {
@@ -330,11 +311,11 @@ describe('router.ts', () => {
         '/settings': () => 'Admin Settings'
       }
 
-      const appRouter = AppRouter(appRoutes)
-      const adminSubRouter = SubRouter(adminRoutes)
+      const rootRouter = RootRouter(appRoutes)
+      const adminChildRouter = ChildRouter(adminRoutes)
 
-      expect(typeof appRouter).toBe('function')
-      expect(typeof adminSubRouter).toBe('function')
+      expect(typeof rootRouter).toBe('function')
+      expect(typeof adminChildRouter).toBe('function')
     })
 
     it('should support multi-level nesting concept', () => {
@@ -358,13 +339,13 @@ describe('router.ts', () => {
         '/:id/posts': (info: any) => `Posts by User ${info.$.params.$.id}`
       }
 
-      const appRouter = AppRouter(appRoutes)
-      const adminSubRouter = SubRouter(adminRoutes)
-      const userSubRouter = SubRouter(userRoutes)
+      const rootRouter = RootRouter(appRoutes)
+      const adminChildRouter = ChildRouter(adminRoutes)
+      const userChildRouter = ChildRouter(userRoutes)
 
-      expect(typeof appRouter).toBe('function')
-      expect(typeof adminSubRouter).toBe('function')
-      expect(typeof userSubRouter).toBe('function')
+      expect(typeof rootRouter).toBe('function')
+      expect(typeof adminChildRouter).toBe('function')
+      expect(typeof userChildRouter).toBe('function')
     })
 
     it('should handle parameter accumulation concept', () => {
@@ -386,13 +367,13 @@ describe('router.ts', () => {
         }
       }
 
-      const blogSubRouter = SubRouter(blogRoutes)
-      const postSubRouter = SubRouter(postRoutes)
-      const commentSubRouter = SubRouter(commentRoutes)
+      const blogChildRouter = ChildRouter(blogRoutes)
+      const postChildRouter = ChildRouter(postRoutes)
+      const commentChildRouter = ChildRouter(commentRoutes)
 
-      expect(typeof blogSubRouter).toBe('function')
-      expect(typeof postSubRouter).toBe('function')
-      expect(typeof commentSubRouter).toBe('function')
+      expect(typeof blogChildRouter).toBe('function')
+      expect(typeof postChildRouter).toBe('function')
+      expect(typeof commentChildRouter).toBe('function')
     })
   })
 

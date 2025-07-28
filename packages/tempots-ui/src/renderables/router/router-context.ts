@@ -10,10 +10,10 @@ import { makeProviderMark, Provider, Prop, prop } from '@tempots/dom'
  * @example
  * ```typescript
  * // For URL "/admin/users/123" with routes:
- * // AppRouter: { '/admin/*': () => AdminRoutes() }
- * // SubRouter: { '/users/:id': (info) => UserDetail(info) }
+ * // RootRouter: { '/admin/*': () => AdminRoutes() }
+ * // ChildRouter: { '/users/:id': (info) => UserDetail(info) }
  *
- * // AppRouter context:
+ * // RootRouter context:
  * {
  *   matchedPath: '/admin',
  *   remainingPath: '/users/123',
@@ -21,7 +21,7 @@ import { makeProviderMark, Provider, Prop, prop } from '@tempots/dom'
  *   params: {}
  * }
  *
- * // SubRouter context:
+ * // ChildRouter context:
  * {
  *   matchedPath: '/users/123',
  *   remainingPath: '',
@@ -35,8 +35,8 @@ import { makeProviderMark, Provider, Prop, prop } from '@tempots/dom'
 export interface RouterContext {
   /**
    * The portion of the path that was matched by this router level.
-   * For AppRouter, this is the matched portion of the full pathname.
-   * For SubRouter, this is the matched portion of the remaining path from parent.
+   * For RootRouter, this is the matched portion of the full pathname.
+   * For ChildRouter, this is the matched portion of the remaining path from parent.
    */
   readonly matchedPath: string
 
@@ -70,8 +70,8 @@ export interface RouterContext {
  *
  * @example
  * ```typescript
- * // AppRouter creates the initial context
- * const AppRouter = <T extends Routes>(routes: T) =>
+ * // RootRouter creates the initial context
+ * const RootRouter = <T extends Routes>(routes: T) =>
  *   Provide(
  *     RouterContextProvider,
  *     {},
@@ -86,8 +86,8 @@ export interface RouterContext {
  *
  * @example
  * ```typescript
- * // SubRouter reads parent context and adds its own
- * const SubRouter = <T extends Routes>(routes: T) =>
+ * // ChildRouter reads parent context and adds its own
+ * const ChildRouter = <T extends Routes>(routes: T) =>
  *   Use(RouterContextProvider, contextStack => {
  *     const parentContext = contextStack.value[contextStack.value.length - 1]
  *     const remainingPath = parentContext?.remainingPath || ''
