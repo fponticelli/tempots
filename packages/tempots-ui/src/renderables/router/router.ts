@@ -53,7 +53,6 @@ const matchNestedRoute = (
       params[segment.name] = pathSegment!
       consumedSegments++
     } else if (segment.type === 'catch-all') {
-      // Catch-all consumes the current segment and leaves the rest for children
       const matchedPath =
         '/' + pathSegments.slice(0, consumedSegments).join('/')
       const remainingPath = '/' + pathSegments.slice(consumedSegments).join('/')
@@ -273,31 +272,15 @@ export const ChildRouter = <
           throw new Error('No route found')
         }
 
-        // Accumulate parameters from all parent contexts
-        const accumulatedParams = stack.reduce(
-          (acc, ctx) => ({ ...acc, ...ctx.params }),
-          {}
-        )
-        const allParams = { ...accumulatedParams, ...match.params }
-
-        // Create new router context for this level
-        const newContext: RouterContext = {
-          matchedPath: match.matchedPath,
-          remainingPath: match.remainingPath,
-          fullPath: parentContext?.fullPath || remainingPath,
-          params: allParams,
-        }
-
-        // Update context stack with new context
-        contextStack.value = [...stack, newContext]
+        const childParams = match.params
 
         return {
-          params: allParams,
+          params: childParams, // Only this router's parameters
           route: match.route,
           path: match.matchedPath,
           search: location.value.search,
           hash: location.value.hash,
-        } as RouteInfo<MakeParams<typeof allParams>, typeof match.route>
+        } as RouteInfo<MakeParams<typeof childParams>, typeof match.route>
       })
 
       return OneOfTuple(

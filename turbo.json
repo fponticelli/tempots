@@ -3,9 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": [
-        "^build",
-        "lint",
-        "test"
+        "^build"
       ],
       "outputs": [
         "dist/**"
@@ -21,7 +19,9 @@
     "docs": {
       "dependsOn": [
         "^docs",
-        "build"
+        "build",
+        "lint",
+        "test"
       ],
       "outputs": [
         "docs/**"
