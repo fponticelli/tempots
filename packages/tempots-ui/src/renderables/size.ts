@@ -250,10 +250,13 @@ export const ElementRect = (fn: (rect: Signal<Rect>) => TNode) =>
     const rect = prop(getAbsoluteRect(element), (a, b) => a.equals(b))
     const clear = renderableOfTNode(fn(rect))(ctx)
     const onResize = () => rect.set(Rect.of(getAbsoluteRect(element)))
-    const observer = new ResizeObserver(onResize)
-    observer.observe(element)
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(onResize)
+    }
+    observer?.observe(element)
     return OnDispose((removeTree: boolean) => {
-      observer.disconnect()
+      observer?.disconnect()
       clear(removeTree)
     })
   })

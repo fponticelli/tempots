@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Rect, getAbsoluteRect, ElementRect, ElementSize, WindowSize } from '../src/renderables/size'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { Rect, getAbsoluteRect, ElementRect, WindowSize } from '../src/renderables/size'
 import { html, render, prop } from '@tempots/dom'
 import { sleep } from '@tempots/std'
 
@@ -369,26 +369,6 @@ describe('size.ts', () => {
     })
   })
 
-  describe('ElementSize (deprecated)', () => {
-    it('should be a function', () => {
-      expect(typeof ElementSize).toBe('function')
-    })
-
-    it('should work as alias for ElementRect', async () => {
-      const view = ElementSize((size) =>
-        size.map(s => `Size: ${s.width}x${s.height}`)
-      )
-
-      const container = html.div(view)
-      const clear = render(container, document.body)
-      await sleep(10)
-
-      expect(document.body.textContent).toContain('Size:')
-
-      clear()
-    })
-  })
-
   describe('WindowSize', () => {
     let originalInnerWidth: number
     let originalInnerHeight: number
@@ -490,7 +470,7 @@ describe('size.ts', () => {
       Object.defineProperty(window, 'innerWidth', { value: 1200, writable: true })
       Object.defineProperty(window, 'innerHeight', { value: 900, writable: true })
 
-      if (resizeHandler) {
+      if (resizeHandler != null) {
         resizeHandler(new Event('resize'))
         await sleep(10)
         expect(document.body.textContent).toBe('Window: 1200x900')

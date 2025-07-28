@@ -96,7 +96,7 @@ import { Router, Location } from '@tempots/ui'
 
 // Define routes
 const app = html.div(
-  Router({
+  AppRouter({
     '/': () => html.div('Home page'),
     '/about': () => html.div('About page'),
     '/users/:id': (params) => html.div(`User ID: ${params.id}`),

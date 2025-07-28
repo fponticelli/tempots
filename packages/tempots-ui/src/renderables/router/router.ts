@@ -1,106 +1,149 @@
-import { TNode, Renderable, Signal, OneOfTuple, Use } from '@tempots/dom'
+import {
+  TNode,
+  Renderable,
+  Signal,
+  OneOfTuple,
+  Use,
+  Provide,
+} from '@tempots/dom'
 import { ExtractParams, MakeParams, RouteInfo } from './route-info'
 import { Location } from './location'
-import { _makeRouteMatcher } from './match'
+import { _parseRouteSegments } from './match'
+import { RouterContext, RouterContextProvider } from './router-context'
 
 /**
- * Creates a client-side router that maps URL patterns to renderable components.
+ * Result of nested route matching that includes consumed and remaining paths.
+ * @internal
+ */
+type NestedMatchResult = {
+  params: Record<string, string>
+  matchedPath: string
+  remainingPath: string
+  route: string
+} | null
+
+/**
+ * Matches a path against route segments for nested routing.
+ * Returns the consumed path, remaining path, and extracted parameters.
+ * @internal
+ */
+const matchNestedRoute = (
+  routeSegments: ReturnType<typeof _parseRouteSegments>,
+  route: string,
+  path: string
+): NestedMatchResult => {
+  const pathSegments = path.split('/').filter(segment => segment !== '')
+  const params: Record<string, string> = {}
+  let consumedSegments = 0
+
+  for (let i = 0; i < routeSegments.length; i++) {
+    const segment = routeSegments[i]!
+    const pathSegment = pathSegments[i]
+
+    if (!pathSegment && segment.type !== 'catch-all') {
+      return null
+    }
+
+    if (segment.type === 'literal') {
+      if (segment.value !== pathSegment) {
+        return null
+      }
+      consumedSegments++
+    } else if (segment.type === 'param') {
+      params[segment.name] = pathSegment!
+      consumedSegments++
+    } else if (segment.type === 'catch-all') {
+      // Catch-all consumes the current segment and leaves the rest for children
+      const matchedPath =
+        '/' + pathSegments.slice(0, consumedSegments).join('/')
+      const remainingPath = '/' + pathSegments.slice(consumedSegments).join('/')
+      return {
+        params,
+        matchedPath: matchedPath === '/' ? '' : matchedPath,
+        remainingPath: remainingPath === '/' ? '' : remainingPath,
+        route,
+      }
+    }
+  }
+
+  // Exact match - all segments consumed
+  if (pathSegments.length === routeSegments.length) {
+    const matchedPath = '/' + pathSegments.join('/')
+    return {
+      params,
+      matchedPath: matchedPath === '/' ? '' : matchedPath,
+      remainingPath: '',
+      route,
+    }
+  }
+
+  return null
+}
+
+/**
+ * Creates a nested route matcher for the given routes.
+ * @internal
+ */
+const makeNestedRouteMatcher = <Routes extends string[]>(routes: Routes) => {
+  const routeEntries = routes.map((route: Routes[number]) => {
+    const segments = _parseRouteSegments(route)
+    return { route, segments }
+  })
+
+  return function matchRoute(path: string): NestedMatchResult {
+    for (const { segments, route } of routeEntries) {
+      const result = matchNestedRoute(segments, route, path)
+      if (result) {
+        return result
+      }
+    }
+    return null
+  }
+}
+
+/**
+ * Creates the root router for an application that provides routing context to child components.
  *
- * The Router component provides declarative routing for single-page applications.
- * It automatically extracts route parameters from URLs and passes them to the
- * corresponding route handlers. The router integrates with the browser's history
- * API and updates the UI when the URL changes.
+ * AppRouter is the top-level router that matches against the full browser pathname
+ * and creates the initial routing context. It provides the RouterContextProvider
+ * that child SubRouter components can use for nested routing scenarios.
  *
  * @example
  * ```typescript
- * // Basic routing setup
- * const AppRouter = Router({
+ * // Basic app routing
+ * const App = AppRouter({
  *   '/': () => html.div('Home Page'),
  *   '/about': () => html.div('About Page'),
- *   '/contact': () => html.div('Contact Page'),
+ *   '/admin/*': () => AdminSection(), // Passes remaining path to AdminSection
  *   '*': () => html.div('404 - Page Not Found')
  * })
  *
- * render(AppRouter, document.body)
+ * render(App, document.body)
  * ```
  *
  * @example
  * ```typescript
- * // Routes with parameters
- * const BlogRouter = Router({
- *   '/': () => html.div('Blog Home'),
- *   '/posts/:id': (info) => {
- *     const postId = info.$.params.$.id
- *     return html.div(
- *       html.h1('Post ID: ', postId),
- *       html.p('Loading post...')
- *     )
- *   },
- *   '/users/:userId/posts/:postId': (info) => {
- *     const userId = info.$.params.$.userId
- *     const postId = info.$.params.$.postId
- *     return html.div(
- *       html.h1('User ', userId, ' - Post ', postId),
- *       UserPost({ userId, postId })
- *     )
- *   },
- *   '*': () => html.div('Page not found')
+ * // Nested routing with AppRouter and SubRouter
+ * const App = AppRouter({
+ *   '/': () => html.div('Home'),
+ *   '/admin/*': () => AdminRoutes(),
+ *   '/blog/*': () => BlogRoutes()
  * })
- * ```
  *
- * @example
- * ```typescript
- * // Using route info for navigation and data
- * const ProductRouter = Router({
- *   '/products': () => ProductList(),
- *   '/products/:id': (info) => {
- *     const productId = info.$.params.$.id
- *     const searchParams = info.$.search
- *
- *     return html.div(
- *       html.h1('Product ', productId),
- *       html.p('Search params: ', searchParams),
- *       ProductDetail({
- *         id: productId,
- *         variant: new URLSearchParams(searchParams.value).get('variant')
- *       })
- *     )
- *   },
- *   '/products/:id/reviews': (info) => {
- *     const productId = info.$.params.$.id
- *     return ProductReviews({ productId })
- *   }
+ * const AdminRoutes = SubRouter({
+ *   '/users': () => html.div('User List'),
+ *   '/users/:id': (info) => html.div('User: ', info.$.params.$.id),
+ *   '/settings': () => html.div('Admin Settings')
  * })
- * ```
- *
- * @example
- * ```typescript
- * // Programmatic navigation
- * import { Location } from '@tempots/ui'
- *
- * const Navigation = () => html.nav(
- *   html.button(
- *     on.click(() => Location.navigate('/')),
- *     'Home'
- *   ),
- *   html.button(
- *     on.click(() => Location.navigate('/about')),
- *     'About'
- *   ),
- *   html.button(
- *     on.click(() => Location.navigate('/products/123')),
- *     'Product 123'
- *   )
- * )
  * ```
  *
  * @template T - The type of the routes configuration object
  * @param routes - Object mapping route patterns to handler functions
- * @returns A renderable router component that handles URL routing
+ * @returns A renderable router component that handles URL routing and provides context
  * @throws {Error} When no matching route is found for the current URL
  * @public
  */
-export const Router = <
+export const AppRouter = <
   T extends {
     [K in keyof T]: (
       info: K extends string
@@ -111,28 +154,173 @@ export const Router = <
 >(
   routes: T
 ): Renderable => {
-  const matchRoute = _makeRouteMatcher(Object.keys(routes))
-  /* c8 ignore next 19 */
-  return Use(Location, location => {
-    const route = location.map(location => {
-      const match = matchRoute(location.pathname)
-      if (match == null) {
-        console.error('No route found for', location)
-        throw new Error('No route found')
-      }
-      return {
-        params: match.params,
-        route: match.route,
-        path: match.path,
-        search: location.search,
-        hash: location.hash,
-      } as RouteInfo<MakeParams<typeof match.params>, typeof match.route>
+  const matchRoute = makeNestedRouteMatcher(Object.keys(routes))
+
+  return Provide(RouterContextProvider, {}, () =>
+    Use(Location, location => {
+      return Use(RouterContextProvider, contextStack => {
+        const route = location.map(location => {
+          const match = matchRoute(location.pathname)
+          if (match == null) {
+            console.error('No route found for', location)
+            throw new Error('No route found')
+          }
+
+          // Create new router context for this level
+          const newContext: RouterContext = {
+            matchedPath: match.matchedPath,
+            remainingPath: match.remainingPath,
+            fullPath: location.pathname,
+            params: match.params,
+          }
+
+          // Update context stack with new context
+          contextStack.value = [...contextStack.value, newContext]
+
+          return {
+            params: match.params,
+            route: match.route,
+            path: match.matchedPath || location.pathname,
+            search: location.search,
+            hash: location.hash,
+          } as RouteInfo<MakeParams<typeof match.params>, typeof match.route>
+        })
+
+        return OneOfTuple(
+          route.map(route => [route.route, route]),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          routes as any
+        )
+      })
     })
-    return OneOfTuple(
-      route.map(route => [route.route, route]),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      routes as any
-      /* c8 ignore next 2 */
-    )
+  )
+}
+
+/**
+ * Creates a nested router that matches against the remaining path from parent routers.
+ *
+ * SubRouter is used for nested routing scenarios where a parent router (AppRouter or
+ * another SubRouter) has matched a portion of the path and passed the remaining path
+ * to child components. SubRouter reads the parent routing context and matches its
+ * routes against the remaining path.
+ *
+ * @example
+ * ```typescript
+ * // Parent AppRouter passes remaining path to AdminRoutes
+ * const App = AppRouter({
+ *   '/admin/*': () => AdminRoutes(),
+ *   '/blog/*': () => BlogRoutes()
+ * })
+ *
+ * // SubRouter matches against remaining path
+ * const AdminRoutes = SubRouter({
+ *   '/users': () => html.div('User List'),
+ *   '/users/:id': (info) => html.div('User: ', info.$.params.$.id),
+ *   '/settings': () => html.div('Admin Settings'),
+ *   '*': () => html.div('Admin 404')
+ * })
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Multiple levels of nesting
+ * const BlogRoutes = SubRouter({
+ *   '/posts/*': () => PostRoutes(),
+ *   '/categories': () => html.div('Categories')
+ * })
+ *
+ * const PostRoutes = SubRouter({
+ *   '/': () => html.div('All Posts'),
+ *   '/:id': (info) => html.div('Post: ', info.$.params.$.id),
+ *   '/:id/comments': (info) => html.div('Comments for: ', info.$.params.$.id)
+ * })
+ * ```
+ *
+ * @template T - The type of the routes configuration object
+ * @param routes - Object mapping route patterns to handler functions
+ * @returns A renderable router component that handles nested URL routing
+ * @throws {Error} When no matching route is found for the remaining path
+ * @public
+ */
+export const SubRouter = <
+  T extends {
+    [K in keyof T]: (
+      info: K extends string
+        ? Signal<RouteInfo<MakeParams<ExtractParams<K>>, K>>
+        : never
+    ) => TNode
+  },
+>(
+  routes: T
+): Renderable => {
+  const matchRoute = makeNestedRouteMatcher(Object.keys(routes))
+
+  return Use(RouterContextProvider, contextStack => {
+    return Use(Location, location => {
+      const route = contextStack.map(stack => {
+        // Get the remaining path from the last context in the stack
+        const parentContext = stack[stack.length - 1]
+        const remainingPath = parentContext?.remainingPath || ''
+
+        if (remainingPath === '') {
+          console.error('No remaining path for SubRouter', stack)
+          throw new Error('No remaining path for SubRouter')
+        }
+
+        const match = matchRoute(remainingPath)
+        if (match == null) {
+          console.error('No route found for remaining path', remainingPath)
+          throw new Error('No route found')
+        }
+
+        // Accumulate parameters from all parent contexts
+        const accumulatedParams = stack.reduce(
+          (acc, ctx) => ({ ...acc, ...ctx.params }),
+          {}
+        )
+        const allParams = { ...accumulatedParams, ...match.params }
+
+        // Create new router context for this level
+        const newContext: RouterContext = {
+          matchedPath: match.matchedPath,
+          remainingPath: match.remainingPath,
+          fullPath: parentContext?.fullPath || remainingPath,
+          params: allParams,
+        }
+
+        // Update context stack with new context
+        contextStack.value = [...stack, newContext]
+
+        return {
+          params: allParams,
+          route: match.route,
+          path: match.matchedPath,
+          search: location.value.search,
+          hash: location.value.hash,
+        } as RouteInfo<MakeParams<typeof allParams>, typeof match.route>
+      })
+
+      return OneOfTuple(
+        route.map(route => [route.route, route]),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        routes as any
+      )
+    })
   })
 }
+
+/**
+ * Creates a client-side router that maps URL patterns to renderable components.
+ *
+ * This is an alias for AppRouter, provided for backward compatibility.
+ * For new code, prefer using AppRouter explicitly to indicate the root router,
+ * and SubRouter for nested routing scenarios.
+ *
+ * @template T - The type of the routes configuration object
+ * @param routes - Object mapping route patterns to handler functions
+ * @returns A renderable router component that handles URL routing
+ * @throws {Error} When no matching route is found for the current URL
+ * @public
+ * @deprecated Use AppRouter for root routing and SubRouter for nested routing
+ */
+export const Router = AppRouter

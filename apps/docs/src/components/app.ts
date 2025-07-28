@@ -1,4 +1,4 @@
-import { Location, Router } from '@tempots/ui'
+import { Location, AppRouter as Router } from '@tempots/ui'
 import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
