@@ -43,7 +43,7 @@ export const locationFromURL = (
   baseUrl?: string
 ): LocationData => {
   const urlObj = new URL(url, baseUrl ?? getWindow()?.location.toString())
-  const search = Object.fromEntries(urlObj.searchParams.entries())
+  const search = Object.fromEntries(urlObj.searchParams?.entries() ?? [])
   let hash = urlObj.hash
   if (hash.startsWith('#')) {
     hash = hash.substring(1)

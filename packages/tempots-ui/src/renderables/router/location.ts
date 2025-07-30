@@ -78,7 +78,7 @@ import { makeBrowserLocationProp } from './browser-location'
  * @public
  */
 export const Location: Provider<Prop<LocationData>> = {
-  mark: makeProviderMark<Prop<LocationData>>('LocationProvider'),
+  mark: makeProviderMark<Prop<LocationData>>('Location'),
   create: (_: unknown, ctx: DOMContext) => {
     if (ctx.isBrowser()) {
       return makeBrowserLocationProp()
