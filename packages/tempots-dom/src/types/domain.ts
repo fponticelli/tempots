@@ -158,12 +158,35 @@ export type Size = {
   readonly height: number
 }
 
+// What we consider primitive (including literal types)
+type AttrPrimitive = string | number | boolean | null | undefined
+
+// Prevent distributive conditional types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NoDistribute<T> = [T] extends [any] ? T : never
+
+// Utility: check if a type is fully assignable to Primitive (i.e., all union members are primitive)
+type IsFullyPrimitive<T> = [NoDistribute<T>] extends [AttrPrimitive]
+  ? true
+  : false
+
+// Expand a union into Value<U> for each U, plus Value<T> again
+type ExpandPrimitiveUnion<T> =
+  | Value<T> // whole union
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | (T extends any ? Value<T> : never) // individual members
+
+// Main expansion: only apply union expansion when T is fully primitive-based
+type ExpandValueUnion<T> =
+  IsFullyPrimitive<T> extends true ? ExpandPrimitiveUnion<T> : Value<T>
+
 /**
  * Represents a nullable value or a signal of a nullable value.
  * @typeParam T - The type of the value.
  * @public
  */
 export type NValue<T> =
+  | ExpandValueUnion<NoDistribute<T>>
   | Value<T>
   | Value<T | null>
   | Value<T | undefined>

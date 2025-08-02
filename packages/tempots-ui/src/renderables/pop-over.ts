@@ -20,6 +20,7 @@ import {
   shift,
   arrow,
 } from '@floating-ui/dom'
+import { OnClickOutside } from './onclickoutside'
 
 /**
  * Represents the placement options for a pop-over.
@@ -117,6 +118,11 @@ export type PopOverOptions = {
    * positioned relative to the parent element.
    */
   target?: string | HTMLElement
+
+  /**
+   * Specifies a function to be called when a click occurs outside of the PopOver.
+   */
+  onClickOutside?: () => void
 }
 
 /**
@@ -146,137 +152,136 @@ export const PopOver = (
   return Fragment(
     fn(open, close),
     When(isOpen, () =>
-      WithElement(parentElement =>
-        Portal(
-          'body',
-          html.div(
-            WithElement((floatingEl: HTMLElement) => {
-              floatingEl.style.position = 'absolute'
-              const target =
-                typeof properties?.target === 'string'
-                  ? (parentElement!.querySelector(
-                      properties.target
-                    ) as HTMLElement)
-                  : (properties?.target ?? parentElement!)
-              /* c8 ignore next 3 */
-              if (target == null) {
-                throw new Error(`Target not found: ${properties?.target}`)
-              }
-              // Create and manage arrow element
-              let arrowEl: HTMLElement | null = null
-              const mainAxis = Value.toSignal(properties?.mainAxisOffset ?? 0)
-              const crossAxis = Value.toSignal(properties?.crossAxisOffset ?? 0)
-              const placement = Value.toSignal(
+      Fragment(
+        properties?.onClickOutside != null
+          ? OnClickOutside(properties.onClickOutside)
+          : null,
+        WithElement(parentElement =>
+          Portal(
+            'body',
+            html.div(
+              WithElement((floatingEl: HTMLElement) => {
+                floatingEl.style.position = 'absolute'
+                const target =
+                  typeof properties?.target === 'string'
+                    ? (parentElement!.querySelector(
+                        properties.target
+                      ) as HTMLElement)
+                    : (properties?.target ?? parentElement!)
                 /* c8 ignore next 3 */
-                properties?.placement ?? 'top'
-              )
-              const arrowPadding = Value.toSignal(properties?.arrowPadding ?? 0)
-              const arrowOption = properties?.arrow
-              const arrowSignal = prop<Omit<PopOverArrowOptions, 'placement'>>({
-                centerOffset: 0,
-                alignmentOffset: 0,
-                containerWidth: 0,
-                containerHeight: 0,
-                x: undefined,
-                y: undefined,
-              })
-
-              async function updatePosition() {
-                const middleware = [
-                  flip(),
-                  fuiOffset({
-                    mainAxis: mainAxis.get(),
-                    crossAxis: crossAxis.get(),
-                  }),
-                  shift(),
-                  flip(),
-                ]
-
-                // Add arrow middleware if arrow element exists
-                if (arrowOption != null && arrowEl != null) {
-                  middleware.push(
-                    arrow({
-                      element: arrowEl,
-                      padding: arrowPadding.get(),
-                    })
-                  )
+                if (target == null) {
+                  throw new Error(`Target not found: ${properties?.target}`)
                 }
-
-                const result = await computePosition(target, floatingEl, {
-                  placement: placement.get(),
-                  strategy: 'absolute',
-                  middleware,
+                // Create and manage arrow element
+                let arrowEl: HTMLElement | null = null
+                const mainAxis = Value.toSignal(properties?.mainAxisOffset ?? 0)
+                const crossAxis = Value.toSignal(
+                  properties?.crossAxisOffset ?? 0
+                )
+                const placement = Value.toSignal(
+                  /* c8 ignore next 3 */
+                  properties?.placement ?? 'top'
+                )
+                const arrowPadding = Value.toSignal(
+                  properties?.arrowPadding ?? 0
+                )
+                const arrowOption = properties?.arrow
+                const arrowSignal = prop<
+                  Omit<PopOverArrowOptions, 'placement'>
+                >({
+                  centerOffset: 0,
+                  alignmentOffset: 0,
+                  containerWidth: 0,
+                  containerHeight: 0,
+                  x: undefined,
+                  y: undefined,
                 })
 
-                const { x, y, middlewareData } = result
-                floatingEl.style.top = `${y}px`
-                floatingEl.style.left = `${x}px`
+                async function updatePosition() {
+                  const middleware = [
+                    flip(),
+                    fuiOffset({
+                      mainAxis: mainAxis.get(),
+                      crossAxis: crossAxis.get(),
+                    }),
+                    shift(),
+                    flip(),
+                  ]
 
-                // Position arrow if it exists
-                if (arrowEl != null && middlewareData.arrow != null) {
-                  const {
-                    x: arrowX,
-                    y: arrowY,
-                    centerOffset,
-                    alignmentOffset,
-                  } = middlewareData.arrow
-                  arrowSignal.set({
-                    x: arrowX,
-                    y: arrowY,
-                    centerOffset,
-                    alignmentOffset,
-                    containerWidth: floatingEl.offsetWidth,
-                    containerHeight: floatingEl.offsetHeight,
-                  })
-                }
-              }
-
-              const cancel = effectOf(
-                mainAxis,
-                crossAxis,
-                placement
-              )(updatePosition)
-              return Fragment(
-                properties?.content,
-                properties?.arrow != null
-                  ? html.div(
-                      properties?.arrow(
-                        computedOf(
-                          arrowSignal,
-                          placement
-                        )((arrow, placement) => ({
-                          ...arrow,
-                          placement,
-                        }))
-                      ),
-                      WithElement(el => {
-                        arrowEl = el
-                        updatePosition()
+                  // Add arrow middleware if arrow element exists
+                  if (arrowOption != null && arrowEl != null) {
+                    middleware.push(
+                      arrow({
+                        element: arrowEl,
+                        padding: arrowPadding.get(),
                       })
                     )
-                  : null,
-                OnDispose(
-                  arrowSignal.dispose,
-                  autoUpdate(target, floatingEl, updatePosition),
-                  cancel
+                  }
+
+                  const result = await computePosition(target, floatingEl, {
+                    placement: placement.get(),
+                    strategy: 'absolute',
+                    middleware,
+                  })
+
+                  const { x, y, middlewareData } = result
+                  floatingEl.style.top = `${y}px`
+                  floatingEl.style.left = `${x}px`
+
+                  // Position arrow if it exists
+                  if (arrowEl != null && middlewareData.arrow != null) {
+                    const {
+                      x: arrowX,
+                      y: arrowY,
+                      centerOffset,
+                      alignmentOffset,
+                    } = middlewareData.arrow
+                    arrowSignal.set({
+                      x: arrowX,
+                      y: arrowY,
+                      centerOffset,
+                      alignmentOffset,
+                      containerWidth: floatingEl.offsetWidth,
+                      containerHeight: floatingEl.offsetHeight,
+                    })
+                  }
+                }
+
+                const cancel = effectOf(
+                  mainAxis,
+                  crossAxis,
+                  placement
+                )(updatePosition)
+                return Fragment(
+                  properties?.content,
+                  properties?.arrow != null
+                    ? html.div(
+                        properties?.arrow(
+                          computedOf(
+                            arrowSignal,
+                            placement
+                          )((arrow, placement) => ({
+                            ...arrow,
+                            placement,
+                          }))
+                        ),
+                        WithElement(el => {
+                          arrowEl = el
+                          updatePosition()
+                        })
+                      )
+                    : null,
+                  OnDispose(
+                    arrowSignal.dispose,
+                    autoUpdate(target, floatingEl, updatePosition),
+                    cancel
+                  )
                 )
-              )
-            })
+              })
+            )
           )
         )
       )
     )
   )
 }
-
-// export type PopOverContext = {
-//   open: (options: PopOverOptions) => void
-//   close: () => void
-// }
-
-// export const usePopOver = (): PopOverContext => {
-//   return {
-//     open: () => {},
-//     close: () => {},
-//   }
-// }

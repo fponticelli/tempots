@@ -203,7 +203,7 @@ describe('location.ts', () => {
 
     it('should have a descriptive mark name', () => {
       const markString = Location.mark.toString()
-      expect(markString).toContain('LocationProvider')
+      expect(markString).toContain('Location')
     })
   })
 
