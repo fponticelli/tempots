@@ -152,6 +152,12 @@ export const computedOf =
     fn: (...args: GetValueTypes<T>) => O,
     equals?: (a: O, b: O) => boolean
   ) => {
+    if (args.length === 0) {
+      throw new Error('computedOf requires at least one argument')
+    }
+    if (args.length === 1) {
+      return Value.toSignal(args[0]).map(fn as (value: T[0]) => O)
+    }
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
     return computed(
       () => fn(...(args.map(arg => Value.get(arg)) as GetValueTypes<T>)),
