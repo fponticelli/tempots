@@ -84,25 +84,32 @@ function applyVersionUpdate(packageDir) {
   try {
     const updateInfo = JSON.parse(require('fs').readFileSync(versionUpdateFile, 'utf8'))
     const { newVersion } = updateInfo
+    console.log("Applying version update:", updateInfo);
 
     // Now actually update the versions
-    const packagePath = path.join(packageDir, 'package.json')
-    const publishPackagePath = path.join(packageDir, 'package.lib.json')
-    const peerDependencies = getLibDependencies(packagePath)
+    const packagePath = path.join(packageDir, "package.json");
+    const publishPackagePath = path.join(packageDir, "package.lib.json");
+    const peerDependencies = getLibDependencies(packagePath);
 
-    saveVersion(packagePath, newVersion)
-    saveVersion(publishPackagePath, newVersion, { peerDependencies })
+    saveVersion(packagePath, newVersion);
+    saveVersion(publishPackagePath, newVersion, { peerDependencies });
 
     // Update dependencies in other packages if needed
-    if (packageDir.includes('tempots-std')) {
-      const dependencies = ['tempots-ui'].map(name => path.join(packageDir, `../${name}`))
-      for(const dep of dependencies) {
-        updateDependencies(newVersion, '@tempots/std', dep)
+    if (packageDir.includes("tempots-std")) {
+      const dependencies = ["tempots-ui"].map((name) =>
+        path.join(packageDir, `../${name}`)
+      );
+      for (const dep of dependencies) {
+        console.log("Updating dependency:", dep);
+        updateDependencies(newVersion, "@tempots/std", dep);
       }
-    } else if (packageDir.includes('tempots-dom')) {
-      const dependencies = ['tempots-ui'].map(name => path.join(packageDir, `../${name}`))
-      for(const dep of dependencies) {
-        updateDependencies(newVersion, '@tempots/dom', dep)
+    } else if (packageDir.includes("tempots-dom")) {
+      const dependencies = ["tempots-ui"].map((name) =>
+        path.join(packageDir, `../${name}`)
+      );
+      for (const dep of dependencies) {
+        console.log("Updating dependency:", dep);
+        updateDependencies(newVersion, "@tempots/dom", dep);
       }
     }
 
@@ -118,6 +125,16 @@ function applyVersionUpdate(packageDir) {
 function updateDependencies(newVersion, libName, packageDir) {
   const packagePath = path.join(packageDir, 'package.lib.json')
   let json = require(packagePath)
+  console.log(
+    "Updating dependency:",
+    libName,
+    "to",
+    newVersion,
+    " in ",
+    packagePath,
+    ": ",
+    json.peerDependencies
+  );
   for (const key in json.peerDependencies) {
     if (key === libName) {
       json.peerDependencies[key] = newVersion

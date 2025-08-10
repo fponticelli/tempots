@@ -67,12 +67,11 @@
     "npm:publish:next": "pnpm npm:prep && pnpm package:next && pnpm npm:publish:impl"
   },
   "dependencies": {
-    "@floating-ui/dom": "1.7.1",
-    "@tempots/dom": "workspace:*",
-    "@tempots/std": "workspace:*"
+    "@floating-ui/dom": "1.7.1"
   },
   "peerDependencies": {
-    "@tempots/std": "0.22.1"
+    "@tempots/std": "workspace:*",
+    "@tempots/dom": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
