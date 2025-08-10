@@ -8,7 +8,7 @@ export type AriaAttributes = {
   atomic: boolean
   autocomplete: 'none' | 'inline' | 'list' | 'both'
   busy: boolean
-  checked: boolean | 'mixed' | 'false' | 'true'
+  checked: boolean | 'mixed'
   colcount: number
   colindex: number
   colspan: number
@@ -19,12 +19,12 @@ export type AriaAttributes = {
   disabled: boolean
   dropeffect: 'none' | 'copy' | 'execute' | 'link' | 'move' | 'popup'
   errormessage: string
-  expanded: boolean | 'false' | 'true'
+  expanded: boolean
   flowto: string
-  grabbed: boolean | 'false' | 'true'
+  grabbed: boolean
   haspopup: boolean
   hidden: boolean
-  invalid: boolean | 'grammar' | 'false' | 'spelling' | 'true'
+  invalid: boolean | 'grammar' | 'spelling'
   keyshortcuts: string
   label: string
   labelledby: string
@@ -37,7 +37,7 @@ export type AriaAttributes = {
   owns: string
   placeholder: string
   posinset: number
-  pressed: boolean | 'mixed' | 'false' | 'true'
+  pressed: boolean | 'mixed'
   readonly: boolean
   relevant: 'additions' | 'removals' | 'text' | 'all'
   required: boolean

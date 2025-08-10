@@ -28,7 +28,7 @@ export type SVGAttributes = {
   ascent: number
   attributeName: string
   attributeType: string
-  autoReverse: 'true' | 'false'
+  autoReverse: boolean
   azimuth: number
   baseFrequency: number
   baseProfile: string
@@ -68,7 +68,7 @@ export type SVGAttributes = {
   enableBackground: string
   end: number
   exponent: number
-  externalResourcesRequired: 'true' | 'false'
+  externalResourcesRequired: boolean
   fill: string
   'fill-opacity': number
   'fill-rule': string
@@ -77,7 +77,7 @@ export type SVGAttributes = {
   filterUnits: string
   'flood-color': string
   'flood-opacity': number
-  focusable: 'true' | 'false' | 'auto'
+  focusable: boolean | 'auto'
   'font-family': string
   'font-size': number
   'font-size-adjust': number
@@ -156,7 +156,7 @@ export type SVGAttributes = {
   pointsAtX: number
   pointsAtY: number
   pointsAtZ: number
-  preserveAlpha: 'true' | 'false'
+  preserveAlpha: boolean
   preserveAspectRatio: string
   primitiveUnits: string
   r: number
