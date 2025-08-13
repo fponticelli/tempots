@@ -1,8 +1,8 @@
 import { getWindow } from '../dom/window'
-import { GetValueType, RemoveSignals } from '../types/domain'
+import { GetValueType, RemoveSignals, Values } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
-import { Value } from './value'
+import { computedOf, Value } from './value'
 
 /**
  * Represents a memory store that stores key-value pairs.
@@ -418,4 +418,25 @@ export const delaySignal = <T>(
     if (timeout != null) clearTimeout(timeout)
   })
   return newSignal
+}
+
+/**
+ * Binds a function or signal of a function to a set of signals and literals.
+ *
+ * @typeParam FN - The type of the function to bind.
+ * @typeParam R - The return type of the function.
+ * @param fn - The function to bind.
+ * @returns - A function that takes a set of signals and literals and returns a computed signal.
+ * @public
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const bind = <FN extends (...args: any[]) => R, R = ReturnType<FN>>(
+  fn: Value<FN>
+) => {
+  return (...args: Values<Parameters<FN>>): Computed<R> => {
+    return computedOf(
+      fn as Value<FN>,
+      ...args
+    )((f, ...rest) => (f as FN)(...rest))
+  }
 }

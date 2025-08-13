@@ -188,6 +188,14 @@ export type GetValueTypes<T extends Value<unknown>[]> = {
 }
 
 /**
+ * Wraps all non-`Value` types in the array in `Value`.
+ * @public
+ */
+export type Values<T extends unknown[]> = {
+  [K in keyof T]: T[K] extends Value<unknown> ? T[K] : Value<T[K]>
+}
+
+/**
  * Removes signals from a given object type and returns a new object type
  * with only the non-signal properties.
  *

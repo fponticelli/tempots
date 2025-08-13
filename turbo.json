@@ -28,7 +28,7 @@
       ]
     },
     "lint": {},
-    "lint:fix": {},
+    "format": {},
     "typecheck": {},
     "test": {},
     "test:watch": {},

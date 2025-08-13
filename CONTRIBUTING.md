@@ -13,12 +13,14 @@ Thank you for your interest in contributing to Tempo! This guide will help you g
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/fponticelli/tempots.git
    cd tempots
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
@@ -87,9 +89,6 @@ pnpm test:coverage
 pnpm lint
 
 # Fix linting issues
-pnpm lint:fix
-
-# Format code (done automatically on commit)
 pnpm format
 ```
 
@@ -178,6 +177,7 @@ git commit -m "docs: update README with new examples"
 - Prefer explicit types over `any`
 - Use JSDoc comments for public APIs
 - Follow existing naming conventions
+
 #### Equality terminology
 
 Use the following naming scheme for equality related features:
@@ -187,7 +187,6 @@ Use the following naming scheme for equality related features:
 - **equality** – Use in documentation when referring to the concept or a custom equality function.
 
 Keeping these terms consistent improves readability across the project.
-
 
 ### Formatting
 

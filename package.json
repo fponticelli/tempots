@@ -11,7 +11,7 @@
     "build:watch": "turbo build:watch",
     "docs": "turbo docs && pnpm --filter @tempos/docs docs:prep",
     "lint": "turbo lint",
-    "lint:fix": "turbo lint:fix",
+    "format": "turbo format",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:watch": "turbo test:watch",

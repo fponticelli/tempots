@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "6.4.0",
+  "version": "6.4.1",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -48,7 +48,7 @@
     "test:watch": "vitest --watch --coverage",
     "test:coverage": "vitest --run --coverage",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "format": "eslint src --fix",
     "typecheck": "tsc --noEmit",
     "docs": "npx api-extractor run --local && npx api-documenter markdown -i ./docs/input -o docs/output",
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
@@ -70,8 +70,8 @@
     "@floating-ui/dom": "1.7.1"
   },
   "peerDependencies": {
-    "@tempots/std": "workspace:*",
-    "@tempots/dom": "workspace:*"
+    "@tempots/std": "0.22.1",
+    "@tempots/dom": "28.4.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

@@ -142,7 +142,7 @@
     "test:watch": "vitest --watch --coverage",
     "test:coverage": "vitest --run --coverage",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "format": "eslint src --fix",
     "typecheck": "tsc --noEmit",
     "docs": "npx api-extractor run --local && npx api-documenter markdown -i ./docs/input -o docs/output",
     "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",

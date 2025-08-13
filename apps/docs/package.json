@@ -8,7 +8,7 @@
     "build": "tsc && vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "format": "eslint src --fix",
     "docs:prep": "tsx ./scripts/prep-doc-contents.ts",
     "docs:static": "tsx ./scripts/generate-static-pages.ts"
   },
