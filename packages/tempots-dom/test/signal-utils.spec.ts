@@ -6,8 +6,9 @@ import {
   computedRecord,
   merge,
   delaySignal,
+  bind,
   signal,
-  prop
+  prop,
 } from '../src'
 import { sleep } from './helper'
 
@@ -50,7 +51,7 @@ describe('storedProp', () => {
     const prop = storedProp({
       key: 'test-key',
       defaultValue: 'default',
-      store: mockStore
+      store: mockStore,
     })
 
     expect(prop.value).toBe('default')
@@ -62,7 +63,7 @@ describe('storedProp', () => {
     const prop = storedProp({
       key: 'test-key',
       defaultValue: 'default',
-      store: mockStore
+      store: mockStore,
     })
 
     expect(prop.value).toBe('stored-value')
@@ -72,7 +73,7 @@ describe('storedProp', () => {
     const prop = storedProp({
       key: 'test-key',
       defaultValue: 'default',
-      store: mockStore
+      store: mockStore,
     })
 
     prop.value = 'new-value'
@@ -84,8 +85,8 @@ describe('storedProp', () => {
       key: 'test-key',
       defaultValue: { count: 0 },
       store: mockStore,
-      serialize: (obj) => `custom:${obj.count}`,
-      deserialize: (str) => ({ count: parseInt(str.replace('custom:', '')) })
+      serialize: obj => `custom:${obj.count}`,
+      deserialize: str => ({ count: parseInt(str.replace('custom:', '')) }),
     })
 
     prop.value = { count: 42 }
@@ -97,8 +98,8 @@ describe('storedProp', () => {
       key: 'test-key2',
       defaultValue: { count: 0 },
       store: mockStore,
-      serialize: (obj) => `custom:${obj.count}`,
-      deserialize: (str) => ({ count: parseInt(str.replace('custom:', '')) })
+      serialize: obj => `custom:${obj.count}`,
+      deserialize: str => ({ count: parseInt(str.replace('custom:', '')) }),
     })
 
     expect(prop2.value).toEqual({ count: 99 })
@@ -108,7 +109,7 @@ describe('storedProp', () => {
     const prop = storedProp({
       key: 'test-key',
       defaultValue: () => 'function-default',
-      store: mockStore
+      store: mockStore,
     })
 
     expect(prop.value).toBe('function-default')
@@ -121,7 +122,7 @@ describe('storedProp', () => {
       key: 'test-key',
       defaultValue: 'default',
       store: mockStore,
-      onLoad: (value) => `loaded:${value}`
+      onLoad: value => `loaded:${value}`,
     })
 
     expect(prop.value).toBe('loaded:stored')
@@ -131,12 +132,9 @@ describe('storedProp', () => {
 describe('animateSignals', () => {
   test('should animate between values', async () => {
     const source = prop(0)
-    const animated = animateSignals(
-      0,
-      () => source.value,
-      [source],
-      { duration: 50 }
-    )
+    const animated = animateSignals(0, () => source.value, [source], {
+      duration: 50,
+    })
 
     expect(animated.value).toBe(0)
 
@@ -158,7 +156,8 @@ describe('animateSignals', () => {
       [source],
       {
         duration: 50,
-        interpolate: (from, to, progress) => from + (to - from) * progress * progress // Ease-in
+        interpolate: (from, to, progress) =>
+          from + (to - from) * progress * progress, // Ease-in
       }
     )
 
@@ -174,10 +173,7 @@ describe('computedRecord', () => {
     const a = prop(10)
     const b = prop(20)
 
-    const computed = computedRecord(
-      { a, b, c: 30 },
-      ({ a, b, c }) => a + b + c
-    )
+    const computed = computedRecord({ a, b, c: 30 }, ({ a, b, c }) => a + b + c)
 
     expect(computed.value).toBe(60)
 
@@ -229,7 +225,7 @@ describe('delaySignal', () => {
 
   test('should use function for delay calculation', async () => {
     const source = prop(1)
-    const delayed = delaySignal(source, (value) => value * 10)
+    const delayed = delaySignal(source, value => value * 10)
 
     source.value = 5 // Should delay by 50ms
     expect(delayed.value).toBe(1)
@@ -252,4 +248,276 @@ describe('delaySignal', () => {
     await sleep(30) // Complete delay from second change
     expect(delayed.value).toBe(3)
   })
-});
+})
+
+describe('bind', () => {
+  test('should bind a literal function with literal arguments', () => {
+    const add = (a: number, b: number) => a + b
+    const boundAdd = bind(add)
+
+    const result = boundAdd(5, 3)
+
+    expect(result.value).toBe(8)
+  })
+
+  test('should bind a literal function with signal arguments', () => {
+    const multiply = (a: number, b: number) => a * b
+    const boundMultiply = bind(multiply)
+
+    const a = prop(4)
+    const b = prop(6)
+    const result = boundMultiply(a, b)
+
+    expect(result.value).toBe(24)
+
+    // Should update when signals change
+    a.value = 5
+    expect(result.value).toBe(30)
+
+    b.value = 7
+    expect(result.value).toBe(35)
+  })
+
+  test('should bind a literal function with mixed signal and literal arguments', () => {
+    const subtract = (a: number, b: number) => a - b
+    const boundSubtract = bind(subtract)
+
+    const a = prop(10)
+    const result = boundSubtract(a, 3)
+
+    expect(result.value).toBe(7)
+
+    a.value = 15
+    expect(result.value).toBe(12)
+  })
+
+  test('should bind a signal of a function', () => {
+    const add = (a: number, b: number) => a + b
+    const multiply = (a: number, b: number) => a * b
+    const fnSignal = prop(add)
+    const boundFn = bind(fnSignal)
+
+    const a = prop(4)
+    const b = prop(5)
+    const result = boundFn(a, b)
+
+    expect(result.value).toBe(9) // add(4, 5)
+
+    // Change the function
+    fnSignal.value = multiply
+    expect(result.value).toBe(20) // multiply(4, 5)
+
+    // Change arguments
+    a.value = 3
+    expect(result.value).toBe(15) // multiply(3, 5)
+  })
+
+  test('should handle functions with different arities', () => {
+    const unary = (x: number) => x * 2
+    const binary = (x: number, y: number) => x + y
+    const ternary = (x: number, y: number, z: number) => x + y + z
+
+    const boundUnary = bind(unary)
+    const boundBinary = bind(binary)
+    const boundTernary = bind(ternary)
+
+    const x = prop(5)
+    const y = prop(3)
+    const z = prop(2)
+
+    expect(boundUnary(x).value).toBe(10)
+    expect(boundBinary(x, y).value).toBe(8)
+    expect(boundTernary(x, y, z).value).toBe(10)
+  })
+
+  test('should handle functions with no arguments', () => {
+    const getValue = () => 42
+    const boundGetValue = bind(getValue)
+
+    const result = boundGetValue()
+
+    expect(result.value).toBe(42)
+  })
+
+  test('should handle functions returning different types', () => {
+    const toString = (n: number) => n.toString()
+    const toBoolean = (n: number) => n > 0
+    const toArray = (n: number) => [n, n * 2]
+
+    const boundToString = bind(toString)
+    const boundToBoolean = bind(toBoolean)
+    const boundToArray = bind(toArray)
+
+    const num = prop(5)
+
+    expect(boundToString(num).value).toBe('5')
+    expect(boundToBoolean(num).value).toBe(true)
+    expect(boundToArray(num).value).toEqual([5, 10])
+
+    num.value = -3
+    expect(boundToString(num).value).toBe('-3')
+    expect(boundToBoolean(num).value).toBe(false)
+    expect(boundToArray(num).value).toEqual([-3, -6])
+  })
+
+  test('should handle complex object arguments', () => {
+    const processUser = (user: { name: string; age: number }) =>
+      `${user.name} is ${user.age} years old`
+
+    const boundProcessUser = bind(processUser)
+
+    const user = prop({ name: 'Alice', age: 30 })
+    const result = boundProcessUser(user)
+
+    expect(result.value).toBe('Alice is 30 years old')
+
+    user.value = { name: 'Bob', age: 25 }
+    expect(result.value).toBe('Bob is 25 years old')
+  })
+
+  test('should handle functions that throw errors', () => {
+    const throwingFn = (shouldThrow: boolean) => {
+      if (shouldThrow) throw new Error('Test error')
+      return 'success'
+    }
+
+    const boundThrowingFn = bind(throwingFn)
+    const shouldThrow = prop(false)
+    const result = boundThrowingFn(shouldThrow)
+
+    expect(result.value).toBe('success')
+
+    // When the function throws, the computed signal should handle it
+    shouldThrow.value = true
+    expect(() => result.value).toThrow('Test error')
+  })
+
+  test('should work with arrow functions', () => {
+    const arrowFn = (x: number, y: number) => x ** y
+    const boundArrowFn = bind(arrowFn)
+
+    const base = prop(2)
+    const exponent = prop(3)
+    const result = boundArrowFn(base, exponent)
+
+    expect(result.value).toBe(8) // 2^3
+
+    exponent.value = 4
+    expect(result.value).toBe(16) // 2^4
+  })
+
+  test('should work with method references', () => {
+    const obj = {
+      multiplier: 10,
+      multiply(x: number) {
+        return x * this.multiplier
+      },
+    }
+
+    // Bind the method (note: this will lose the `this` context)
+    const boundMethod = bind(obj.multiply.bind(obj))
+    const input = prop(5)
+    const result = boundMethod(input)
+
+    expect(result.value).toBe(50)
+
+    input.value = 3
+    expect(result.value).toBe(30)
+  })
+
+  test('should handle rapid signal changes efficiently', () => {
+    const add = (a: number, b: number) => a + b
+    const boundAdd = bind(add)
+
+    const a = prop(1)
+    const b = prop(2)
+    const result = boundAdd(a, b)
+
+    expect(result.value).toBe(3)
+
+    // Rapid changes should only trigger computation once per batch
+    a.value = 10
+    a.value = 20
+    a.value = 30
+    b.value = 5
+
+    expect(result.value).toBe(35) // 30 + 5
+  })
+
+  test('should handle nested function calls', () => {
+    const add = (a: number, b: number) => a + b
+    const multiply = (a: number, b: number) => a * b
+
+    const boundAdd = bind(add)
+    const boundMultiply = bind(multiply)
+
+    const x = prop(2)
+    const y = prop(3)
+    const z = prop(4)
+
+    // Create nested computation: (x + y) * z
+    const sum = boundAdd(x, y)
+    const result = boundMultiply(sum, z)
+
+    expect(result.value).toBe(20) // (2 + 3) * 4
+
+    x.value = 5
+    expect(result.value).toBe(32) // (5 + 3) * 4
+  })
+
+  test('should properly dispose of computed signals', () => {
+    const add = (a: number, b: number) => a + b
+    const boundAdd = bind(add)
+
+    const a = prop(1)
+    const b = prop(2)
+    const result = boundAdd(a, b)
+
+    expect(result.value).toBe(3)
+
+    // Dispose the result signal
+    result.dispose()
+
+    // Changes to inputs should not affect the disposed signal
+    a.value = 10
+    b.value = 20
+
+    // The result should still be the last computed value before disposal
+    expect(result.value).toBe(3)
+  })
+
+  test('should handle functions with optional parameters', () => {
+    const greet = (name: string, greeting?: string) =>
+      `${greeting || 'Hello'}, ${name}!`
+
+    const boundGreet = bind(greet)
+    const name = prop('Alice')
+    const greeting = prop('Hi' as string | undefined)
+
+    // With both parameters
+    const result1 = boundGreet(name, greeting)
+    expect(result1.value).toBe('Hi, Alice!')
+
+    // With only required parameter (optional should be undefined)
+    const result2 = boundGreet(name)
+    expect(result2.value).toBe('Hello, Alice!')
+  })
+
+  test('should work with async functions that return promises', () => {
+    const asyncAdd = async (a: number, b: number) => {
+      await new Promise(resolve => setTimeout(resolve, 1))
+      return a + b
+    }
+
+    const boundAsyncAdd = bind(asyncAdd)
+    const a = prop(5)
+    const b = prop(3)
+    const result = boundAsyncAdd(a, b)
+
+    // The result should be a Promise
+    expect(result.value).toBeInstanceOf(Promise)
+
+    // We can test that the promise resolves correctly
+    return expect(result.value).resolves.toBe(8)
+  })
+})

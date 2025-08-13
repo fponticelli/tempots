@@ -1,4 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
+import { Signal } from '../std/signal'
 import { Value } from '../std/value'
 
 /**
@@ -192,7 +193,7 @@ export type GetValueTypes<T extends Value<unknown>[]> = {
  * @public
  */
 export type Values<T extends unknown[]> = {
-  [K in keyof T]: T[K] extends Value<unknown> ? T[K] : Value<T[K]>
+  [K in keyof T]: T[K] extends Signal<unknown> ? T[K] : Value<T[K]>
 }
 
 /**
