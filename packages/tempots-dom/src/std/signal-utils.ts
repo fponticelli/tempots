@@ -1,5 +1,5 @@
 import { getWindow } from '../dom/window'
-import { GetValueType, RemoveSignals, Values } from '../types/domain'
+import { GetValueType, NValue, RemoveSignals, Values } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
 import { computedOf, Value } from './value'
@@ -449,6 +449,7 @@ export const bind = <FN extends (...args: any[]) => R, R = ReturnType<FN>>(
  * @returns - A computed signal that emits the first non-null and non-undefined value.
  * @public
  */
-export const coalesce = <T extends Value<unknown>[]>(...args: T) => {
-  return computedOf(...args)((...args) => args.find(a => a != null))
-}
+export const coalesce = <T, L extends Array<NValue<T>>, R extends Value<T>>(
+  ...args: [...L, R]
+): Computed<R> =>
+  computedOf(...args)((...args) => args.find(a => a != null)) as Computed<R>

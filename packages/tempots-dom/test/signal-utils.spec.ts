@@ -565,11 +565,6 @@ describe('coalesce', () => {
     expect(result.value).toBeUndefined()
   })
 
-  test('should handle empty arguments', () => {
-    const result = coalesce()
-    expect(result.value).toBeUndefined()
-  })
-
   test('should handle falsy but defined values', () => {
     const result = coalesce(null, undefined, 0, false, '')
     expect(result.value).toBe(0) // First non-null/undefined value
