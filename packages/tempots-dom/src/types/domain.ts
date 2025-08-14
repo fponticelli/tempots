@@ -1,5 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
-import { Signal } from '../std/signal'
+import { Computed, Prop, Signal } from '../std/signal'
 import { Value } from '../std/value'
 
 /**
@@ -178,14 +178,27 @@ export type NValue<T> = WithNullish<T> | null | undefined
  * Otherwise, it returns the type itself.
  * @public
  */
-export type GetValueType<T> = T extends Value<infer V> ? V : T
+export type ValueType<T> =
+  T extends Computed<infer V>
+    ? V
+    : T extends Prop<infer V>
+      ? V
+      : T extends Signal<infer V>
+        ? V
+        : T
+
+/**
+ * Gets the base value type of a given Value type.
+ * @public
+ */
+export type BaseValueType<T> = NonNullable<ValueType<T>>
 
 /**
  * Gets the value types of a given array of Value types.
  * @public
  */
-export type GetValueTypes<T extends Value<unknown>[]> = {
-  [K in keyof T]: GetValueType<T[K]>
+export type ValueTypes<T extends Value<unknown>[]> = {
+  [K in keyof T]: ValueType<T[K]>
 }
 
 /**
@@ -193,7 +206,12 @@ export type GetValueTypes<T extends Value<unknown>[]> = {
  * @public
  */
 export type Values<T extends unknown[]> = {
-  [K in keyof T]: T[K] extends Signal<unknown> ? T[K] : Value<T[K]>
+  [K in keyof T]: T[K] extends
+    | Signal<unknown>
+    | Computed<unknown>
+    | Prop<unknown>
+    ? T[K]
+    : Value<T[K]>
 }
 
 /**
@@ -208,5 +226,11 @@ export type RemoveSignals<
   T extends Record<string | number | symbol, Value<unknown>>,
   K extends (string | number | symbol) & keyof T = keyof T,
 > = {
-  [k in K]: GetValueType<T[k]>
+  [k in K]: ValueType<T[k]>
 }
+
+/**
+ * Represents a value that can be null or undefined.
+ * @public
+ */
+export type Nil = null | undefined

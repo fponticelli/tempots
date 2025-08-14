@@ -1,5 +1,5 @@
 import { getWindow } from '../dom/window'
-import { GetValueType, NValue, RemoveSignals, Values } from '../types/domain'
+import { ValueType, RemoveSignals, Values } from '../types/domain'
 import { guessInterpolate } from './interpolate'
 import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
 import { computedOf, Value } from './value'
@@ -368,7 +368,7 @@ export const computedRecord = <T extends Record<string, Value<unknown>>, O>(
   return computed(() => {
     const literals = {} as RemoveSignals<T>
     for (const key of keys) {
-      literals[key] = Value.get(record[key]) as GetValueType<T[typeof key]>
+      literals[key] = Value.get(record[key]) as ValueType<T[typeof key]>
     }
     return fn(literals)
   }, signals)
@@ -384,8 +384,8 @@ export const computedRecord = <T extends Record<string, Value<unknown>>, O>(
  */
 export const merge = <T extends Record<string, Value<unknown>>>(
   options: T
-): Signal<{ [K in keyof T]: GetValueType<T[K]> }> =>
-  computedRecord(options, v => v as { [K in keyof T]: GetValueType<T[K]> })
+): Signal<{ [K in keyof T]: ValueType<T[K]> }> =>
+  computedRecord(options, v => v as { [K in keyof T]: ValueType<T[K]> })
 
 /**
  * Delays the value of a signal by a specified amount of time.
@@ -437,19 +437,16 @@ export const bind = <FN extends (...args: any[]) => R, R = ReturnType<FN>>(
     return computedOf(
       fn as Value<FN>,
       ...args
-    )((f, ...rest) => (f as FN)(...rest))
+    )((f, ...rest): R => (f as FN)(...rest))
   }
 }
 
-/**
- * Returns the first non-null and non-undefined value from a set of signals and literals.
- *
- * @typeParam T - The type of the signals and literals.
- * @param args - The set of signals and literals to search.
- * @returns - A computed signal that emits the first non-null and non-undefined value.
- * @public
- */
-export const coalesce = <T, L extends Array<NValue<T>>, R extends Value<T>>(
-  ...args: [...L, R]
-): Computed<R> =>
-  computedOf(...args)((...args) => args.find(a => a != null)) as Computed<R>
+export function coalesce<L>(
+  ...args: readonly [...unknown[], L]
+): Computed<ValueType<L>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return computedOf(...(args as any))((...xs: any[]) => {
+    for (const x of xs) if (x != null) return x
+    return undefined
+  }) as Computed<ValueType<L>>
+}

@@ -1,4 +1,4 @@
-import { GetValueTypes } from '../types/domain'
+import { ValueTypes } from '../types/domain'
 import {
   ListenerOptions,
   computed,
@@ -146,10 +146,9 @@ export const Value = {
  * @returns - The computed signal.
  * @public
  */
-export const computedOf =
-  <T extends Value<unknown>[]>(...args: T) =>
-  <O>(
-    fn: (...args: GetValueTypes<T>) => O,
+export const computedOf = <T extends Value<unknown>[]>(...args: T) => {
+  return <O>(
+    fn: (...args: ValueTypes<T>) => O,
     equals?: (a: O, b: O) => boolean
   ) => {
     if (args.length === 1) {
@@ -157,11 +156,12 @@ export const computedOf =
     }
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
     return computed(
-      () => fn(...(args.map(arg => Value.get(arg)) as GetValueTypes<T>)),
+      () => fn(...(args.map(arg => Value.get(arg)) as ValueTypes<T>)),
       signals,
       equals
     )
   }
+}
 
 /**
  * Joins a set of signals into a single signal that emits a record of the values.
@@ -190,10 +190,10 @@ export const joinSignals = <T extends Record<string, Value<unknown>>>(
  */
 export const effectOf =
   <T extends Value<unknown>[]>(...args: T) =>
-  (fn: (...args: GetValueTypes<T>) => void, options: ListenerOptions = {}) => {
+  (fn: (...args: ValueTypes<T>) => void, options: ListenerOptions = {}) => {
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
     return effect(
-      () => fn(...(args.map(Value.get) as GetValueTypes<T>)),
+      () => fn(...(args.map(Value.get) as ValueTypes<T>)),
       signals,
       options
     )

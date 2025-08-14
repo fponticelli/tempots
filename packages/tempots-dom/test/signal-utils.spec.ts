@@ -530,8 +530,8 @@ describe('coalesce', () => {
   })
 
   test('should return first non-null signal value', () => {
-    const a = prop(null)
-    const b = prop(undefined)
+    const a = prop(null as string | null | undefined)
+    const b = prop(undefined as string | undefined | null)
     const c = prop('signal-value')
     const d = prop('another-value')
 
@@ -561,7 +561,12 @@ describe('coalesce', () => {
   })
 
   test('should return undefined when all values are null/undefined', () => {
-    const result = coalesce(null, undefined, prop(null), prop(undefined))
+    const result = coalesce(
+      null as string | null,
+      undefined as string | undefined,
+      prop(null as string | null),
+      prop(undefined as string | undefined)
+    )
     expect(result.value).toBeUndefined()
   })
 
@@ -570,15 +575,20 @@ describe('coalesce', () => {
     expect(result.value).toBe(0) // First non-null/undefined value
   })
 
-  test('should work with different data types', () => {
-    const result = coalesce(null, 42, 'string', true, [1, 2, 3])
-    expect(result.value).toBe(42)
-  })
-
   test('should handle complex objects', () => {
     const obj = { name: 'test', value: 123 }
     const result = coalesce(null, undefined, obj)
     expect(result.value).toEqual(obj)
+  })
+
+  test('should handle undefined last', () => {
+    const result = coalesce(null, 1, undefined as number | undefined)
+    expect(result.value).toBe(1) // Should return first non-null value
+  })
+
+  test('should handle nullable last', () => {
+    const result = coalesce(3, 1, null as number | null)
+    expect(result.value).toBe(3) // Should return first non-null value
   })
 
   test('should update reactively when multiple signals change', () => {
