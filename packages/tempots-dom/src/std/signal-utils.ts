@@ -440,3 +440,15 @@ export const bind = <FN extends (...args: any[]) => R, R = ReturnType<FN>>(
     )((f, ...rest) => (f as FN)(...rest))
   }
 }
+
+/**
+ * Returns the first non-null and non-undefined value from a set of signals and literals.
+ *
+ * @typeParam T - The type of the signals and literals.
+ * @param args - The set of signals and literals to search.
+ * @returns - A computed signal that emits the first non-null and non-undefined value.
+ * @public
+ */
+export const coalesce = <T extends Value<unknown>[]>(...args: T) => {
+  return computedOf(...args)((...args) => args.find(a => a != null))
+}

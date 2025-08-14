@@ -9,6 +9,7 @@ import {
   bind,
   signal,
   prop,
+  coalesce,
 } from '../src'
 import { sleep } from './helper'
 
@@ -519,5 +520,112 @@ describe('bind', () => {
 
     // We can test that the promise resolves correctly
     return expect(result.value).resolves.toBe(8)
+  })
+})
+
+describe('coalesce', () => {
+  test('should return first non-null literal value', () => {
+    const result = coalesce(null, undefined, 'first-value', 'second-value')
+    expect(result.value).toBe('first-value')
+  })
+
+  test('should return first non-null signal value', () => {
+    const a = prop(null)
+    const b = prop(undefined)
+    const c = prop('signal-value')
+    const d = prop('another-value')
+
+    const result = coalesce(a, b, c, d)
+    expect(result.value).toBe('signal-value')
+  })
+
+  test('should update when earlier signal becomes non-null', () => {
+    const a = prop(null as string | null)
+    const b = prop('fallback')
+
+    const result = coalesce(a, b)
+    expect(result.value).toBe('fallback')
+
+    a.value = 'primary'
+    expect(result.value).toBe('primary')
+  })
+
+  test('should handle mixed signals and literals', () => {
+    const signal = prop(null as string | null)
+    const result = coalesce(signal, null, undefined, 'literal-value')
+
+    expect(result.value).toBe('literal-value')
+
+    signal.value = 'signal-value'
+    expect(result.value).toBe('signal-value')
+  })
+
+  test('should return undefined when all values are null/undefined', () => {
+    const result = coalesce(null, undefined, prop(null), prop(undefined))
+    expect(result.value).toBeUndefined()
+  })
+
+  test('should handle empty arguments', () => {
+    const result = coalesce()
+    expect(result.value).toBeUndefined()
+  })
+
+  test('should handle falsy but defined values', () => {
+    const result = coalesce(null, undefined, 0, false, '')
+    expect(result.value).toBe(0) // First non-null/undefined value
+  })
+
+  test('should work with different data types', () => {
+    const result = coalesce(null, 42, 'string', true, [1, 2, 3])
+    expect(result.value).toBe(42)
+  })
+
+  test('should handle complex objects', () => {
+    const obj = { name: 'test', value: 123 }
+    const result = coalesce(null, undefined, obj)
+    expect(result.value).toEqual(obj)
+  })
+
+  test('should update reactively when multiple signals change', () => {
+    const a = prop(null as string | null)
+    const b = prop(null as string | null)
+    const c = prop('fallback')
+
+    const result = coalesce(a, b, c)
+    expect(result.value).toBe('fallback')
+
+    b.value = 'second'
+    expect(result.value).toBe('second')
+
+    a.value = 'first'
+    expect(result.value).toBe('first')
+
+    a.value = null
+    expect(result.value).toBe('second')
+  })
+
+  test('should dispose properly', () => {
+    const a = prop('value')
+    const result = coalesce(null, a)
+
+    expect(result.value).toBe('value')
+
+    result.dispose()
+
+    a.value = 'new-value'
+    expect(result.value).toBe('value') // Should not update after disposal
+  })
+
+  test('should handle rapid signal changes', () => {
+    const a = prop(null as string | null)
+    const b = prop('fallback')
+
+    const result = coalesce(a, b)
+
+    a.value = 'first'
+    a.value = null
+    a.value = 'second'
+
+    expect(result.value).toBe('second')
   })
 })
