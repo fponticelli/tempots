@@ -1,6 +1,6 @@
 {
   "name": "@tempots/ui",
-  "version": "6.6.2",
+  "version": "6.6.3",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -41,6 +41,6 @@
   },
   "peerDependencies": {
     "@tempots/std": "0.22.1",
-    "@tempots/dom": "28.6.2"
+    "@tempots/dom": "28.6.3"
   }
 }
