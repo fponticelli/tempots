@@ -7,24 +7,44 @@ export type AriaAttributes = {
   activedescendant: string
   atomic: boolean
   autocomplete: 'none' | 'inline' | 'list' | 'both'
+  braillelabel: string
+  brailleroledescription: string
   busy: boolean
   checked: boolean | 'mixed'
   colcount: number
   colindex: number
+  colindextext: string
   colspan: number
   controls: string
-  current: string // "page" | "step" | "location" | "date" | "time"
+  current:
+    | 'page'
+    | 'step'
+    | 'location'
+    | 'date'
+    | 'time'
+    | 'true'
+    | 'false'
+    | string
   describedby: string
+  description: string
   details: string
   disabled: boolean
   dropeffect: 'none' | 'copy' | 'execute' | 'link' | 'move' | 'popup'
   errormessage: string
-  expanded: boolean
+  expanded: boolean | 'undefined'
   flowto: string
   grabbed: boolean
-  haspopup: boolean
-  hidden: boolean
-  invalid: boolean | 'grammar' | 'spelling'
+  haspopup:
+    | boolean
+    | 'false'
+    | 'true'
+    | 'menu'
+    | 'listbox'
+    | 'tree'
+    | 'grid'
+    | 'dialog'
+  hidden: boolean | 'undefined'
+  invalid: boolean | 'false' | 'true' | 'grammar' | 'spelling'
   keyshortcuts: string
   label: string
   labelledby: string
@@ -33,19 +53,20 @@ export type AriaAttributes = {
   modal: boolean
   multiline: boolean
   multiselectable: boolean
-  orientation: 'horizontal' | 'vertical'
+  orientation: 'horizontal' | 'vertical' | 'undefined'
   owns: string
   placeholder: string
   posinset: number
-  pressed: boolean | 'mixed'
+  pressed: boolean | 'mixed' | 'undefined'
   readonly: boolean
-  relevant: 'additions' | 'removals' | 'text' | 'all'
+  relevant: 'additions' | 'removals' | 'text' | 'all' | string
   required: boolean
   roledescription: string
   rowcount: number
   rowindex: number
+  rowindextext: string
   rowspan: number
-  selected: boolean
+  selected: boolean | 'undefined'
   setsize: number
   sort: 'none' | 'ascending' | 'descending' | 'other'
   valuemax: number

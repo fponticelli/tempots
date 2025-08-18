@@ -4,77 +4,137 @@
  * @public
  */
 export type MathMLAttributes = {
-  accent: string
-  accentunder: string
-  actiontype: string
-  align: string
+  accent: boolean | string
+  accentunder: boolean | string
+  actiontype: 'statusline' | 'tooltip' | 'input'
+  align: 'left' | 'center' | 'right'
+  altimg: string
+  altimgheight: string
+  altimgvalign: string
+  altimgwidth: string
+  alttext: string
   background: string
   base: string
-  bevelled: string
-  charalign: string
+  bevelled: boolean | string
+  charalign: 'left' | 'center' | 'right'
   class: string
   close: string
   color: string
   columnalign: string
   columnlines: string
   columnspacing: string
-  columnspan: string
+  columnspan: number | string
   columnwidth: string
   crossout: string
+  decimalpoint: string
   definitionurl: string
-  denomsalign: string
+  denomalign: 'left' | 'center' | 'right'
   depth: string
-  dir: string
-  display: string
-  displaystyle: string
-  edge: string
-  equalcolumns: string
-  equalrows: string
-  fence: string
-  fontstyle: string
-  fontweight: string
-  form: string
+  dir: 'ltr' | 'rtl'
+  display: 'block' | 'inline'
+  displaystyle: boolean | string
+  edge: 'left' | 'right'
+  encoding: string
+  equalcolumns: boolean | string
+  equalrows: boolean | string
+  fence: boolean | string
+  fontfamily: string
+  fontsize: string
+  fontstyle: 'normal' | 'italic'
+  fontweight: 'normal' | 'bold'
+  form: 'prefix' | 'infix' | 'postfix'
   frame: string
+  groupalign: string
   height: string
   href: string
   id: string
-  largeop: string
+  indentalign: 'left' | 'center' | 'right' | 'auto' | 'id'
+  indentalignfirst: 'left' | 'center' | 'right' | 'auto' | 'id' | 'indentaling'
+  indentalignlast: 'left' | 'center' | 'right' | 'auto' | 'id' | 'indentaling'
+  indentshift: string
+  indentshiftfirst: string
+  indentshiftlast: string
+  indenttarget: string
+  infixlinebreakstyle: 'before' | 'after' | 'duplicate'
+  intent: string
+  largeop: boolean | string
+  leftoverhang: string
   length: string
-  linebreak: string
+  linebreak: 'auto' | 'newline' | 'nobreak' | 'goodbreak' | 'badbreak'
+  linebreakmultchar: string
+  linebreakstyle: 'before' | 'after' | 'duplicate' | 'infixlinebreakstyle'
+  lineleading: string
   linethickness: string
-  longdivstyle: string
+  location: string
+  longdivstyle:
+    | 'lefttop'
+    | 'stackedrightright'
+    | 'mediumstackedrightright'
+    | 'shortstackedrightright'
+    | 'righttop'
+  lquote: string
   lspace: string
   mathbackground: string
   mathcolor: string
   mathdepth: string
   mathsize: string
-  mathvariant: string
+  mathvariant:
+    | 'normal'
+    | 'bold'
+    | 'italic'
+    | 'bold-italic'
+    | 'double-struck'
+    | 'bold-fraktur'
+    | 'script'
+    | 'bold-script'
+    | 'fraktur'
+    | 'sans-serif'
+    | 'bold-sans-serif'
+    | 'sans-serif-italic'
+    | 'sans-serif-bold-italic'
+    | 'monospace'
+    | 'initial'
+    | 'tailed'
+    | 'looped'
+    | 'stretched'
   maxsize: string
+  maxwidth: string
+  minlabelspacing: string
   minsize: string
-  movablelimits: string
+  movablelimits: boolean | string
+  mslinethickness: string
   notation: string
-  numalign: string
+  numalign: 'left' | 'center' | 'right'
   open: string
   other: string
+  overflow: 'linebreak' | 'scroll' | 'elide' | 'truncate' | 'scale'
+  position: string
+  rightoverhang: string
   rowalign: string
   rowlines: string
   rowspacing: string
-  rowspan: string
+  rowspan: number | string
+  rquote: string
   rspace: string
   scriptlevel: string
   scriptminsize: string
   scriptsizemultiplier: string
   selection: string
-  separator: string
-  stackalign: string
-  stretchy: string
+  separator: boolean | string
+  separators: string
+  shift: string
+  side: 'left' | 'leftoverlap' | 'right' | 'rightoverlap'
+  stackalign: 'left' | 'center' | 'right' | 'decimalpoint'
+  stretchy: boolean | string
   style: string
   subscriptshift: string
   superscriptshift: string
-  symmetric: string
+  symmetric: boolean | string
   type: string
-  valign: string
+  valign: 'top' | 'bottom' | 'center' | 'baseline' | 'axis'
   voffset: string
   width: string
+  xlink: string
+  xmlns: string
   xref: string
 }

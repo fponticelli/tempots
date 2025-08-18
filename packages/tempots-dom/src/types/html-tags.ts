@@ -20,7 +20,7 @@ export type HTMLTags = {
   br: HTMLBRElement
   button: HTMLButtonElement
   canvas: HTMLCanvasElement
-  caption: HTMLElement
+  caption: HTMLTableCaptionElement
   cite: HTMLElement
   code: HTMLElement
   col: HTMLTableColElement
@@ -37,6 +37,7 @@ export type HTMLTags = {
   dt: HTMLElement
   em: HTMLElement
   embed: HTMLEmbedElement
+  fencedframe: HTMLElement
   fieldset: HTMLFieldSetElement
   figcaption: HTMLElement
   figure: HTMLElement
@@ -66,6 +67,7 @@ export type HTMLTags = {
   main: HTMLElement
   map: HTMLMapElement
   mark: HTMLElement
+  menu: HTMLMenuElement
   meta: HTMLMetaElement
   meter: HTMLMeterElement
   nav: HTMLElement
@@ -78,6 +80,7 @@ export type HTMLTags = {
   p: HTMLParagraphElement
   param: HTMLParamElement
   picture: HTMLPictureElement
+  portal: HTMLElement
   pre: HTMLPreElement
   progress: HTMLProgressElement
   q: HTMLQuoteElement
@@ -87,6 +90,7 @@ export type HTMLTags = {
   s: HTMLElement
   samp: HTMLElement
   script: HTMLScriptElement
+  search: HTMLElement
   section: HTMLElement
   select: HTMLSelectElement
   slot: HTMLSlotElement

@@ -5,11 +5,15 @@
  */
 export type HTMLEvents = {
   abort: Event
+  afterprint: Event
   animationcancel: AnimationEvent
   animationend: AnimationEvent
   animationiteration: AnimationEvent
   animationstart: AnimationEvent
   auxclick: MouseEvent
+  beforeinput: InputEvent
+  beforeprint: Event
+  beforeunload: BeforeUnloadEvent
   blur: FocusEvent
   cancel: Event
   canplay: Event
@@ -17,8 +21,13 @@ export type HTMLEvents = {
   change: Event
   click: MouseEvent
   close: Event
+  compositionend: CompositionEvent
+  compositionstart: CompositionEvent
+  compositionupdate: CompositionEvent
   contextmenu: MouseEvent
+  copy: ClipboardEvent
   cuechange: Event
+  cut: ClipboardEvent
   dblclick: MouseEvent
   drag: DragEvent
   dragend: DragEvent
@@ -35,18 +44,25 @@ export type HTMLEvents = {
   focus: FocusEvent
   focusin: FocusEvent
   focusout: FocusEvent
+  formdata: FormDataEvent
+  fullscreenchange: Event
+  fullscreenerror: Event
   gotpointercapture: PointerEvent
+  hashchange: HashChangeEvent
   input: Event
   invalid: Event
   keydown: KeyboardEvent
   keypress: KeyboardEvent
   keyup: KeyboardEvent
+  languagechange: Event
   load: Event
   loadeddata: Event
   loadedmetadata: Event
   loadend: ProgressEvent
   loadstart: ProgressEvent
   lostpointercapture: PointerEvent
+  message: MessageEvent
+  messageerror: MessageEvent
   mousedown: MouseEvent
   mouseenter: MouseEvent
   mouseleave: MouseEvent
@@ -54,6 +70,12 @@ export type HTMLEvents = {
   mouseout: MouseEvent
   mouseover: MouseEvent
   mouseup: MouseEvent
+  offline: Event
+  online: Event
+  orientationchange: Event
+  pagehide: PageTransitionEvent
+  pageshow: PageTransitionEvent
+  paste: ClipboardEvent
   pause: Event
   play: Event
   playing: Event
@@ -61,23 +83,32 @@ export type HTMLEvents = {
   pointerdown: PointerEvent
   pointerenter: PointerEvent
   pointerleave: PointerEvent
+  pointerlockchange: Event
+  pointerlockerror: Event
   pointermove: PointerEvent
   pointerout: PointerEvent
   pointerover: PointerEvent
+  pointerrawupdate: PointerEvent
   pointerup: PointerEvent
+  popstate: PopStateEvent
   progress: ProgressEvent
   ratechange: Event
+  readystatechange: Event
+  rejectionhandled: PromiseRejectionEvent
   reset: Event
   resize: UIEvent
   scroll: Event
+  scrollend: Event
   securitypolicyviolation: SecurityPolicyViolationEvent
   seeked: Event
   seeking: Event
   select: Event
   selectionchange: Event
   selectstart: Event
+  slotchange: Event
   stalled: Event
-  submit: Event
+  storage: StorageEvent
+  submit: SubmitEvent
   suspend: Event
   timeupdate: Event
   toggle: Event
@@ -89,6 +120,10 @@ export type HTMLEvents = {
   transitionend: TransitionEvent
   transitionrun: TransitionEvent
   transitionstart: TransitionEvent
+  unhandledrejection: PromiseRejectionEvent
+  unload: Event
+  visibilitychange: Event
   volumechange: Event
   waiting: Event
+  wheel: WheelEvent
 }

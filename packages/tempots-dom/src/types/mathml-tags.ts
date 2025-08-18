@@ -3,12 +3,13 @@
  * @public
  */
 export type MathMLTags = {
-  annotation_xml: MathMLElement
+  'annotation-xml': MathMLElement
   annotation: MathMLElement
   maction: MathMLElement
   maligngroup: MathMLElement
   malignmark: MathMLElement
   math: MathMLElement
+  menclose: MathMLElement
   merror: MathMLElement
   mfenced: MathMLElement
   mfrac: MathMLElement
@@ -22,6 +23,7 @@ export type MathMLTags = {
   mover: MathMLElement
   mpadded: MathMLElement
   mphantom: MathMLElement
+  mprescripts: MathMLElement
   mroot: MathMLElement
   mrow: MathMLElement
   ms: MathMLElement

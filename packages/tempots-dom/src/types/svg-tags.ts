@@ -66,4 +66,5 @@ export type SVGTags = {
   title: SVGTitleElement
   tspan: SVGTSpanElement
   use: SVGUseElement
+  view: SVGViewElement
 }
