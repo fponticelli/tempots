@@ -104,6 +104,62 @@ export const on = new Proxy(
 )
 
 /**
+ * Options for event handlers.
+ *
+ * @public
+ */
+export type EmitOptions = {
+  preventDefault?: boolean
+  stopPropagation?: boolean
+  stopImmediatePropagation?: boolean
+}
+
+/**
+ * Creates an event handler that calls the provided function with the event as an argument.
+ * @param fn - The function to call when the event is triggered.
+ * @returns An event handler function that can be used with event listeners.
+ * @public
+ */
+export const emit =
+  (fn: (event: Event) => void, options?: EmitOptions) => (event: Event) => {
+    if (options?.preventDefault === true) {
+      event.preventDefault()
+    }
+    if (options?.stopPropagation === true) {
+      event.stopPropagation()
+    }
+    if (options?.stopImmediatePropagation === true) {
+      event.stopImmediatePropagation()
+    }
+    fn(event)
+  }
+
+/**
+ * Creates an event handler that extracts and emits the target element from an event.
+ *
+ * @example
+ * ```typescript
+ * html.input(
+ *   on.input(emitTarget((input) => {
+ *     console.log('Input value:', input.value)
+ *   }))
+ * )
+ * ```
+ *
+ * @param fn - Callback function that receives the target element
+ * @returns Event handler function that can be used with event listeners
+ * @public
+ */
+export const emitTarget = <EL extends HTMLElement>(
+  fn: (element: EL, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emit((event: Event) => {
+    const target = event.target as EL
+    fn(target, event)
+  }, options)
+
+/**
  * Creates an event handler that extracts and emits the string value from an input element.
  *
  * This utility simplifies handling input events by automatically extracting the value
@@ -137,12 +193,14 @@ export const on = new Proxy(
  * @returns Event handler function that can be used with event listeners
  * @public
  */
-export const emitValue = (fn: (text: string) => void) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
-    fn(target.value)
-  }
-}
+export const emitValue = (
+  fn: (text: string, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget(
+    (target: HTMLInputElement, event: Event) => fn(target.value, event),
+    options
+  )
 
 /**
  * Creates an event handler that extracts and emits the numeric value from an input element.
@@ -184,12 +242,14 @@ export const emitValue = (fn: (text: string) => void) => {
  * @returns Event handler function that can be used with event listeners
  * @public
  */
-export const emitValueAsNumber = (fn: (num: number) => void) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
-    fn(target.valueAsNumber)
-  }
-}
+export const emitValueAsNumber = (
+  fn: (num: number, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget(
+    (target: HTMLInputElement, event: Event) => fn(target.valueAsNumber, event),
+    options
+  )
 
 /**
  * Converts the value of an HTML input element to a Date object and emits it using the provided callback function.
@@ -197,9 +257,11 @@ export const emitValueAsNumber = (fn: (num: number) => void) => {
  * @returns A function that can be used as an event handler for input events.
  * @public
  */
-export const emitValueAsDate = (fn: (date: Date) => void) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
+export const emitValueAsDate = (
+  fn: (date: Date, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget((target: HTMLInputElement, event: Event) => {
     if (target.value === '') {
       return // TODO do not emit?
     }
@@ -209,9 +271,8 @@ export const emitValueAsDate = (fn: (date: Date) => void) => {
       Number(parts[1]) - 1,
       Number(parts[2].substring(0, 2))
     )
-    fn(date)
-  }
-}
+    fn(date, event)
+  }, options)
 
 /**
  * Converts the value of an HTML input element to a Date object or null and emits it using the provided callback function.
@@ -219,11 +280,13 @@ export const emitValueAsDate = (fn: (date: Date) => void) => {
  * @returns A function that can be used as an event handler for input events.
  * @public
  */
-export const emitValueAsNullableDate = (fn: (date: Date | null) => void) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
+export const emitValueAsNullableDate = (
+  fn: (date: Date | null, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget((target: HTMLInputElement, event: Event) => {
     if (target.value === '') {
-      fn(null)
+      fn(null, event)
       return
     }
     const parts = target.value.split('-')
@@ -232,9 +295,8 @@ export const emitValueAsNullableDate = (fn: (date: Date | null) => void) => {
       Number(parts[1]) - 1,
       Number(parts[2].substring(0, 2))
     )
-    fn(date)
-  }
-}
+    fn(date, event)
+  }, options)
 
 /**
  * Emits the value of an HTMLInputElement as a Date object.
@@ -242,11 +304,13 @@ export const emitValueAsNullableDate = (fn: (date: Date | null) => void) => {
  * @returns The event handler function.
  * @public
  */
-export const emitValueAsDateTime = (fn: (date: Date) => void) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
+export const emitValueAsDateTime = (
+  fn: (date: Date, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget((target: HTMLInputElement, event: Event) => {
     if (target.value === '') {
-      return // TODO do not emit?
+      return
     }
     const parts = target.value.split('T')
     const dateParts = parts[0].split('-')
@@ -259,9 +323,8 @@ export const emitValueAsDateTime = (fn: (date: Date) => void) => {
     date.setHours(Number(time[0]))
     date.setMinutes(Number(time[1]))
     date.setSeconds(Number(time[2]))
-    fn(date)
-  }
-}
+    fn(date, event)
+  }, options)
 
 /**
  * Emits the value of an HTMLInputElement as a Date object or null.
@@ -270,17 +333,17 @@ export const emitValueAsDateTime = (fn: (date: Date) => void) => {
  * @public
  */
 export const emitValueAsNullableDateTime = (
-  fn: (date: Date | null) => void
-) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
+  fn: (date: Date | null, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget((target: HTMLInputElement, event: Event) => {
     if (target.value === '') {
-      fn(null)
+      fn(null, event)
       return
     }
     const parts = target.value.split('T')
     if (parts.length !== 2) {
-      fn(null)
+      fn(null, event)
       return
     }
     const dateParts = parts[0]!.split('-')
@@ -294,9 +357,8 @@ export const emitValueAsNullableDateTime = (
     date.setHours(Number(time[0] ?? 0))
     date.setMinutes(Number(time[1] ?? 0))
     date.setSeconds(Number(time[2] ?? 0))
-    fn(date)
-  }
-}
+    fn(date, event)
+  }, options)
 
 /**
  * Creates an event handler that extracts and emits the checked state from a checkbox or radio input.
@@ -350,48 +412,10 @@ export const emitValueAsNullableDateTime = (
  * @returns Event handler function that can be used with event listeners
  * @public
  */
-export const emitChecked = (fn: (checked: boolean) => void) => {
-  return (event: Event) => {
-    const target = event.target as HTMLInputElement
-    fn(target.checked)
-  }
-}
-
-/**
- * Wraps a function to prevent the default behavior of an event before invoking it.
- * @param fn - The function to be wrapped.
- * @returns A new function that prevents the default behavior of the event and then invokes the original function.
- * @public
- */
-export const emitPreventDefault = (fn: () => void) => {
-  return (event: Event) => {
-    event.preventDefault()
-    fn()
-  }
-}
-
-/**
- * Creates a new event handler that stops event propagation and invokes the provided function.
- * @param fn - The function to be invoked when the event is triggered.
- * @returns A new event handler function.
- * @public
- */
-export const emitStopPropagation = (fn: () => void) => {
-  return (event: Event) => {
-    event.stopPropagation()
-    fn()
-  }
-}
-
-/**
- * Creates an event handler that stops immediate propagation of the event and invokes the provided function.
- * @param fn - The function to be invoked.
- * @returns The event handler function.
- * @public
- */
-export const emitStopImmediatePropagation = (fn: () => void) => {
-  return (event: Event) => {
-    event.stopImmediatePropagation()
-    fn()
-  }
-}
+export const emitChecked = (
+  fn: (checked: boolean, event: Event) => void,
+  options?: EmitOptions
+) =>
+  emitTarget((target: HTMLInputElement, event: Event) => {
+    fn(target.checked, event)
+  }, options)
