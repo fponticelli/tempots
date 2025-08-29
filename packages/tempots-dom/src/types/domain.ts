@@ -1,5 +1,5 @@
 import { DOMContext } from '../dom/dom-context'
-import { Computed, Prop, Signal } from '../std/signal'
+import { AnySignal, Computed, Prop, Signal } from '../std/signal'
 import { Value } from '../std/value'
 
 /**
@@ -159,18 +159,25 @@ export type Size = {
   readonly height: number
 }
 
-type WithNullish<X> =
-  | Value<X>
-  | Value<X | null>
-  | Value<X | undefined>
-  | Value<X | null | undefined>
-
 /**
  * Represents a nullable value or a signal of a nullable value.
  * @typeParam T - The type of the value.
  * @public
  */
-export type NValue<T> = WithNullish<T> | null | undefined
+export type NValue<T> =
+  | Value<NonNullable<T>>
+  | AnySignal<T>
+  | AnySignal<T | null>
+  | AnySignal<T | undefined>
+  | AnySignal<T | null | undefined>
+  | null
+  | undefined
+
+type TupleToUnion<T extends unknown[]> = T[number]
+
+export type SplitNValue<T> =
+  | (T extends unknown ? TupleToUnion<NValue<T>[]> : never)
+  | NValue<T>
 
 /**
  * Gets the value type of a given Value type.

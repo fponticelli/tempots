@@ -2,6 +2,8 @@ import { describe, expect, test, beforeEach, vi } from 'vitest'
 import {
   on,
   OnChecked,
+  emit,
+  emitTarget,
   emitValue,
   emitValueAsNumber,
   emitValueAsDate,
@@ -9,13 +11,10 @@ import {
   emitValueAsDateTime,
   emitValueAsNullableDateTime,
   emitChecked,
-  emitPreventDefault,
-  emitStopPropagation,
-  emitStopImmediatePropagation,
   render,
   html,
   attr,
-  runHeadless
+  runHeadless,
 } from '../src'
 
 // Helper function to wait for DOM updates
@@ -31,10 +30,7 @@ describe('Event Handlers', () => {
       const clickHandler = vi.fn()
 
       const clear = render(
-        html.button(
-          on.click(clickHandler),
-          'Click me'
-        ),
+        html.button(on.click(clickHandler), 'Click me'),
         document.body
       )
 
@@ -42,24 +38,27 @@ describe('Event Handlers', () => {
       button.click()
 
       expect(clickHandler).toHaveBeenCalledTimes(1)
-      expect(clickHandler).toHaveBeenCalledWith(expect.any(Event), expect.any(Object))
+      expect(clickHandler).toHaveBeenCalledWith(
+        expect.any(Event),
+        expect.any(Object)
+      )
       clear()
     })
 
     test('should create input event handler', () => {
       const inputHandler = vi.fn()
 
-      const clear = render(
-        html.input(on.input(inputHandler)),
-        document.body
-      )
+      const clear = render(html.input(on.input(inputHandler)), document.body)
 
       const input = document.querySelector('input')!
       input.value = 'test'
       input.dispatchEvent(new Event('input', { bubbles: true }))
 
       expect(inputHandler).toHaveBeenCalledTimes(1)
-      expect(inputHandler).toHaveBeenCalledWith(expect.any(Event), expect.any(Object))
+      expect(inputHandler).toHaveBeenCalledWith(
+        expect.any(Event),
+        expect.any(Object)
+      )
       clear()
     })
 
@@ -105,7 +104,10 @@ describe('Event Handlers', () => {
       input.dispatchEvent(keyEvent)
 
       expect(keydownHandler).toHaveBeenCalledTimes(1)
-      expect(keydownHandler).toHaveBeenCalledWith(expect.any(KeyboardEvent), expect.any(Object))
+      expect(keydownHandler).toHaveBeenCalledWith(
+        expect.any(KeyboardEvent),
+        expect.any(Object)
+      )
       clear()
     })
 
@@ -113,10 +115,7 @@ describe('Event Handlers', () => {
       const clickHandler = vi.fn()
 
       const { root, clear } = runHeadless(() =>
-        html.button(
-          on.click(clickHandler),
-          'Click me'
-        )
+        html.button(on.click(clickHandler), 'Click me')
       )
 
       // In headless environment, we can't easily trigger events
@@ -131,10 +130,7 @@ describe('Event Handlers', () => {
       const checkedHandler = vi.fn()
 
       const clear = render(
-        html.input(
-          attr.type('checkbox'),
-          OnChecked(checkedHandler)
-        ),
+        html.input(attr.type('checkbox'), OnChecked(checkedHandler)),
         document.body
       )
 
@@ -166,10 +162,7 @@ describe('Event Handlers', () => {
       const checkedHandler = vi.fn()
 
       const clear = render(
-        html.input(
-          attr.type('checkbox'),
-          OnChecked(checkedHandler)
-        ),
+        html.input(attr.type('checkbox'), OnChecked(checkedHandler)),
         document.body
       )
 
@@ -198,12 +191,12 @@ describe('Event Handlers', () => {
       const handler = emitValue(valueHandler)
 
       const mockEvent = {
-        target: { value: 'test input' }
+        target: { value: 'test input' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(valueHandler).toHaveBeenCalledWith('test input')
+      expect(valueHandler).toHaveBeenCalledWith('test input', mockEvent)
     })
 
     test('should work with empty string', () => {
@@ -211,12 +204,12 @@ describe('Event Handlers', () => {
       const handler = emitValue(valueHandler)
 
       const mockEvent = {
-        target: { value: '' }
+        target: { value: '' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(valueHandler).toHaveBeenCalledWith('')
+      expect(valueHandler).toHaveBeenCalledWith('', mockEvent)
     })
 
     test('should work in real DOM input', () => {
@@ -229,9 +222,10 @@ describe('Event Handlers', () => {
 
       const input = document.querySelector('input')!
       input.value = 'real input test'
-      input.dispatchEvent(new Event('input', { bubbles: true }))
+      const inputEvent = new Event('input', { bubbles: true })
+      input.dispatchEvent(inputEvent)
 
-      expect(valueHandler).toHaveBeenCalledWith('real input test')
+      expect(valueHandler).toHaveBeenCalledWith('real input test', inputEvent)
       clear()
     })
   })
@@ -242,12 +236,12 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNumber(numberHandler)
 
       const mockEvent = {
-        target: { valueAsNumber: 42 }
+        target: { valueAsNumber: 42 },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(numberHandler).toHaveBeenCalledWith(42)
+      expect(numberHandler).toHaveBeenCalledWith(42, mockEvent)
     })
 
     test('should handle NaN for invalid numbers', () => {
@@ -255,12 +249,12 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNumber(numberHandler)
 
       const mockEvent = {
-        target: { valueAsNumber: NaN }
+        target: { valueAsNumber: NaN },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(numberHandler).toHaveBeenCalledWith(NaN)
+      expect(numberHandler).toHaveBeenCalledWith(NaN, mockEvent)
     })
 
     test('should work with real number input', () => {
@@ -276,9 +270,10 @@ describe('Event Handlers', () => {
 
       const input = document.querySelector('input')! as HTMLInputElement
       input.value = '123'
-      input.dispatchEvent(new Event('input', { bubbles: true }))
+      const inputEvent = new Event('input', { bubbles: true })
+      input.dispatchEvent(inputEvent)
 
-      expect(numberHandler).toHaveBeenCalledWith(123)
+      expect(numberHandler).toHaveBeenCalledWith(123, inputEvent)
       clear()
     })
   })
@@ -289,12 +284,15 @@ describe('Event Handlers', () => {
       const handler = emitValueAsDate(dateHandler)
 
       const mockEvent = {
-        target: { value: '2023-12-25' }
+        target: { value: '2023-12-25' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(dateHandler).toHaveBeenCalledWith(new Date(2023, 11, 25)) // Month is 0-indexed
+      expect(dateHandler).toHaveBeenCalledWith(
+        new Date(2023, 11, 25),
+        mockEvent
+      ) // Month is 0-indexed
     })
 
     test('should not emit for empty string', () => {
@@ -302,7 +300,7 @@ describe('Event Handlers', () => {
       const handler = emitValueAsDate(dateHandler)
 
       const mockEvent = {
-        target: { value: '' }
+        target: { value: '' },
       } as unknown as Event
 
       handler(mockEvent)
@@ -315,13 +313,16 @@ describe('Event Handlers', () => {
       const handler = emitValueAsDate(dateHandler)
 
       const mockEvent = {
-        target: { value: '2023-12-25T10:30:00' }
+        target: { value: '2023-12-25T10:30:00' },
       } as unknown as Event
 
       handler(mockEvent)
 
       // Should only parse the date part (first 2 characters of day part)
-      expect(dateHandler).toHaveBeenCalledWith(new Date(2023, 11, 25))
+      expect(dateHandler).toHaveBeenCalledWith(
+        new Date(2023, 11, 25),
+        mockEvent
+      )
     })
   })
 
@@ -331,12 +332,15 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNullableDate(dateHandler)
 
       const mockEvent = {
-        target: { value: '2023-12-25' }
+        target: { value: '2023-12-25' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(dateHandler).toHaveBeenCalledWith(new Date(2023, 11, 25))
+      expect(dateHandler).toHaveBeenCalledWith(
+        new Date(2023, 11, 25),
+        mockEvent
+      )
     })
 
     test('should emit null for empty string', () => {
@@ -344,12 +348,12 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNullableDate(dateHandler)
 
       const mockEvent = {
-        target: { value: '' }
+        target: { value: '' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(dateHandler).toHaveBeenCalledWith(null)
+      expect(dateHandler).toHaveBeenCalledWith(null, mockEvent)
     })
   })
 
@@ -359,7 +363,7 @@ describe('Event Handlers', () => {
       const handler = emitValueAsDateTime(dateHandler)
 
       const mockEvent = {
-        target: { value: '2023-12-25T14:30:45' }
+        target: { value: '2023-12-25T14:30:45' },
       } as unknown as Event
 
       handler(mockEvent)
@@ -369,7 +373,7 @@ describe('Event Handlers', () => {
       expectedDate.setMinutes(30)
       expectedDate.setSeconds(45)
 
-      expect(dateHandler).toHaveBeenCalledWith(expectedDate)
+      expect(dateHandler).toHaveBeenCalledWith(expectedDate, mockEvent)
     })
 
     test('should not emit for empty string', () => {
@@ -377,7 +381,7 @@ describe('Event Handlers', () => {
       const handler = emitValueAsDateTime(dateHandler)
 
       const mockEvent = {
-        target: { value: '' }
+        target: { value: '' },
       } as unknown as Event
 
       handler(mockEvent)
@@ -392,7 +396,7 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNullableDateTime(dateHandler)
 
       const mockEvent = {
-        target: { value: '2023-12-25T14:30:45' }
+        target: { value: '2023-12-25T14:30:45' },
       } as unknown as Event
 
       handler(mockEvent)
@@ -402,7 +406,7 @@ describe('Event Handlers', () => {
       expectedDate.setMinutes(30)
       expectedDate.setSeconds(45)
 
-      expect(dateHandler).toHaveBeenCalledWith(expectedDate)
+      expect(dateHandler).toHaveBeenCalledWith(expectedDate, mockEvent)
     })
 
     test('should emit null for empty string', () => {
@@ -410,12 +414,12 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNullableDateTime(dateHandler)
 
       const mockEvent = {
-        target: { value: '' }
+        target: { value: '' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(dateHandler).toHaveBeenCalledWith(null)
+      expect(dateHandler).toHaveBeenCalledWith(null, mockEvent)
     })
 
     test('should emit null for invalid format', () => {
@@ -423,12 +427,12 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNullableDateTime(dateHandler)
 
       const mockEvent = {
-        target: { value: 'invalid-format' }
+        target: { value: 'invalid-format' },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(dateHandler).toHaveBeenCalledWith(null)
+      expect(dateHandler).toHaveBeenCalledWith(null, mockEvent)
     })
 
     test('should handle missing time parts', () => {
@@ -436,7 +440,7 @@ describe('Event Handlers', () => {
       const handler = emitValueAsNullableDateTime(dateHandler)
 
       const mockEvent = {
-        target: { value: '2023-12-25T14' }
+        target: { value: '2023-12-25T14' },
       } as unknown as Event
 
       handler(mockEvent)
@@ -446,7 +450,7 @@ describe('Event Handlers', () => {
       expectedDate.setMinutes(0)
       expectedDate.setSeconds(0)
 
-      expect(dateHandler).toHaveBeenCalledWith(expectedDate)
+      expect(dateHandler).toHaveBeenCalledWith(expectedDate, mockEvent)
     })
   })
 
@@ -456,12 +460,12 @@ describe('Event Handlers', () => {
       const handler = emitChecked(checkedHandler)
 
       const mockEvent = {
-        target: { checked: true }
+        target: { checked: true },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(checkedHandler).toHaveBeenCalledWith(true)
+      expect(checkedHandler).toHaveBeenCalledWith(true, mockEvent)
     })
 
     test('should work with unchecked state', () => {
@@ -469,12 +473,12 @@ describe('Event Handlers', () => {
       const handler = emitChecked(checkedHandler)
 
       const mockEvent = {
-        target: { checked: false }
+        target: { checked: false },
       } as unknown as Event
 
       handler(mockEvent)
 
-      expect(checkedHandler).toHaveBeenCalledWith(false)
+      expect(checkedHandler).toHaveBeenCalledWith(false, mockEvent)
     })
 
     test('should work in real DOM checkbox', () => {
@@ -490,26 +494,27 @@ describe('Event Handlers', () => {
 
       const checkbox = document.querySelector('input')! as HTMLInputElement
       checkbox.checked = true
-      checkbox.dispatchEvent(new Event('change', { bubbles: true }))
+      const changeEvent = new Event('change', { bubbles: true })
+      checkbox.dispatchEvent(changeEvent)
 
-      expect(checkedHandler).toHaveBeenCalledWith(true)
+      expect(checkedHandler).toHaveBeenCalledWith(true, changeEvent)
       clear()
     })
   })
 
-  describe('emitPreventDefault', () => {
+  describe('emit with preventDefault option', () => {
     test('should prevent default and call function', () => {
       const mockFn = vi.fn()
-      const handler = emitPreventDefault(mockFn)
+      const handler = emit(mockFn, { preventDefault: true })
 
       const mockEvent = {
-        preventDefault: vi.fn()
+        preventDefault: vi.fn(),
       } as unknown as Event
 
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
-      expect(mockFn).toHaveBeenCalled()
+      expect(mockFn).toHaveBeenCalledWith(mockEvent)
     })
 
     test('should work in real DOM event', () => {
@@ -519,7 +524,7 @@ describe('Event Handlers', () => {
         html.form(
           html.button(
             attr.type('submit'),
-            on.click(emitPreventDefault(mockFn)),
+            on.click(emit(mockFn, { preventDefault: true })),
             'Submit'
           )
         ),
@@ -533,40 +538,146 @@ describe('Event Handlers', () => {
       button.dispatchEvent(clickEvent)
 
       expect(preventDefaultSpy).toHaveBeenCalled()
-      expect(mockFn).toHaveBeenCalled()
+      expect(mockFn).toHaveBeenCalledWith(clickEvent)
       clear()
     })
   })
 
-  describe('emitStopPropagation', () => {
+  describe('emit with stopPropagation option', () => {
     test('should stop propagation and call function', () => {
       const mockFn = vi.fn()
-      const handler = emitStopPropagation(mockFn)
+      const handler = emit(mockFn, { stopPropagation: true })
 
       const mockEvent = {
-        stopPropagation: vi.fn()
+        stopPropagation: vi.fn(),
       } as unknown as Event
 
       handler(mockEvent)
 
       expect(mockEvent.stopPropagation).toHaveBeenCalled()
-      expect(mockFn).toHaveBeenCalled()
+      expect(mockFn).toHaveBeenCalledWith(mockEvent)
     })
   })
 
-  describe('emitStopImmediatePropagation', () => {
+  describe('emit with stopImmediatePropagation option', () => {
     test('should stop immediate propagation and call function', () => {
       const mockFn = vi.fn()
-      const handler = emitStopImmediatePropagation(mockFn)
+      const handler = emit(mockFn, { stopImmediatePropagation: true })
 
       const mockEvent = {
-        stopImmediatePropagation: vi.fn()
+        stopImmediatePropagation: vi.fn(),
       } as unknown as Event
 
       handler(mockEvent)
 
       expect(mockEvent.stopImmediatePropagation).toHaveBeenCalled()
-      expect(mockFn).toHaveBeenCalled()
+      expect(mockFn).toHaveBeenCalledWith(mockEvent)
+    })
+  })
+
+  describe('emit', () => {
+    test('should call function with event', () => {
+      const mockFn = vi.fn()
+      const handler = emit(mockFn)
+
+      const mockEvent = {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+        stopImmediatePropagation: vi.fn(),
+      } as unknown as Event
+
+      handler(mockEvent)
+
+      expect(mockFn).toHaveBeenCalledWith(mockEvent)
+    })
+
+    test('should handle multiple options', () => {
+      const mockFn = vi.fn()
+      const handler = emit(mockFn, {
+        preventDefault: true,
+        stopPropagation: true,
+        stopImmediatePropagation: true,
+      })
+
+      const mockEvent = {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+        stopImmediatePropagation: vi.fn(),
+      } as unknown as Event
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockEvent.stopPropagation).toHaveBeenCalled()
+      expect(mockEvent.stopImmediatePropagation).toHaveBeenCalled()
+      expect(mockFn).toHaveBeenCalledWith(mockEvent)
+    })
+
+    test('should work without options', () => {
+      const mockFn = vi.fn()
+      const handler = emit(mockFn)
+
+      const mockEvent = {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+        stopImmediatePropagation: vi.fn(),
+      } as unknown as Event
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).not.toHaveBeenCalled()
+      expect(mockEvent.stopPropagation).not.toHaveBeenCalled()
+      expect(mockEvent.stopImmediatePropagation).not.toHaveBeenCalled()
+      expect(mockFn).toHaveBeenCalledWith(mockEvent)
+    })
+  })
+
+  describe('emitTarget', () => {
+    test('should extract target element from event', () => {
+      const targetHandler = vi.fn()
+      const handler = emitTarget(targetHandler)
+
+      const mockTarget = { value: 'test' }
+      const mockEvent = {
+        target: mockTarget,
+      } as unknown as Event
+
+      handler(mockEvent)
+
+      expect(targetHandler).toHaveBeenCalledWith(mockTarget, mockEvent)
+    })
+
+    test('should work with options', () => {
+      const targetHandler = vi.fn()
+      const handler = emitTarget(targetHandler, { preventDefault: true })
+
+      const mockTarget = { value: 'test' }
+      const mockEvent = {
+        target: mockTarget,
+        preventDefault: vi.fn(),
+      } as unknown as Event
+
+      handler(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(targetHandler).toHaveBeenCalledWith(mockTarget, mockEvent)
+    })
+
+    test('should work in real DOM', () => {
+      const targetHandler = vi.fn()
+
+      const clear = render(
+        html.input(on.input(emitTarget(targetHandler))),
+        document.body
+      )
+
+      const input = document.querySelector('input')!
+      input.value = 'real target test'
+      const inputEvent = new Event('input', { bubbles: true })
+      input.dispatchEvent(inputEvent)
+
+      expect(targetHandler).toHaveBeenCalledWith(input, inputEvent)
+      clear()
     })
   })
 })

@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from '../types/html-attributes'
-import type { NValue, Renderable } from '../types/domain'
+import type { Renderable, SplitNValue } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
 import { Signal } from '../std/signal'
 import { DOMContext } from '../dom/dom-context'
@@ -81,7 +81,7 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
 export const attr = new Proxy(
   {} as {
     [A in keyof HTMLAttributes]: (
-      value: NValue<HTMLAttributes[A]>
+      value: SplitNValue<HTMLAttributes[A]>
     ) => Renderable
   },
   {
@@ -98,7 +98,7 @@ export const attr = new Proxy(
      */
     get: (_, name: keyof HTMLAttributes) => {
       if (name === 'class') {
-        return (value: NValue<HTMLAttributes[typeof name]>) => {
+        return (value: SplitNValue<HTMLAttributes[typeof name]>) => {
           if (Signal.is(value as Value<string>)) {
             return signalClassName(value as Signal<string>)
           } else {
@@ -109,7 +109,7 @@ export const attr = new Proxy(
           }
         }
       } else {
-        return (value: NValue<HTMLAttributes[typeof name]>) => {
+        return (value: SplitNValue<HTMLAttributes[typeof name]>) => {
           if (Signal.is(value as Value<HTMLAttributes[typeof name]>)) {
             return signalAttributeRenderable(
               name,
@@ -185,7 +185,7 @@ export const dataAttr = new Proxy(
 export const aria = new Proxy(
   {} as {
     [A in keyof AriaAttributes]: (
-      value: NValue<AriaAttributes[A]>
+      value: SplitNValue<AriaAttributes[A]>
     ) => Renderable
   },
   {
@@ -198,7 +198,7 @@ export const aria = new Proxy(
      *
      */
     get: (_, name: keyof AriaAttributes) => {
-      return (value: NValue<AriaAttributes[typeof name]>) => {
+      return (value: SplitNValue<AriaAttributes[typeof name]>) => {
         if (Signal.is(value as Value<AriaAttributes[typeof name]>)) {
           return signalAttributeRenderable(
             `aria-${name}`,
@@ -231,7 +231,9 @@ export const aria = new Proxy(
  */
 export const svgAttr = new Proxy(
   {} as {
-    [S in keyof SVGAttributes]: (value: NValue<SVGAttributes[S]>) => Renderable
+    [S in keyof SVGAttributes]: (
+      value: SplitNValue<SVGAttributes[S]>
+    ) => Renderable
   },
   {
     /**
@@ -243,7 +245,7 @@ export const svgAttr = new Proxy(
      *
      */
     get: (_, name: keyof SVGAttributes) => {
-      return (value: NValue<SVGAttributes[typeof name]>) => {
+      return (value: SplitNValue<SVGAttributes[typeof name]>) => {
         if (Signal.is(value as Value<SVGAttributes[typeof name]>)) {
           return signalAttributeRenderable(
             name,
@@ -276,7 +278,7 @@ export const svgAttr = new Proxy(
 export const mathAttr = new Proxy(
   {} as {
     [M in keyof MathMLAttributes]: (
-      value: NValue<MathMLAttributes[M]>
+      value: SplitNValue<MathMLAttributes[M]>
     ) => Renderable
   },
   {
@@ -288,7 +290,7 @@ export const mathAttr = new Proxy(
      *
      */
     get: (_, name: keyof MathMLAttributes) => {
-      return (value: NValue<MathMLAttributes[typeof name]>) => {
+      return (value: SplitNValue<MathMLAttributes[typeof name]>) => {
         if (Signal.is(value as Value<MathMLAttributes[typeof name]>)) {
           return signalAttributeRenderable(
             name,
