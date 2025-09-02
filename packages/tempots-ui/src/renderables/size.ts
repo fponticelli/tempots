@@ -165,30 +165,6 @@ export class Rect {
   }
 
   /**
-   * Gets the rectangle relative to the parent.
-   *
-   * @returns A new Rect instance representing the local rectangle
-   *
-   * @example
-   * ```typescript
-   * const rect = new Rect(10, 20, 100, 50, 5, 10);
-   * const localRect = rect.localRect;
-   * console.log(localRect.left);   // 5
-   * console.log(localRect.top);    // 10
-   * console.log(localRect.width);  // 100
-   * console.log(localRect.height); // 50
-   * ```
-   */
-  get localRect() {
-    return Rect.of({
-      left: this.localLeft,
-      top: this.localTop,
-      width: this.width,
-      height: this.height,
-    })
-  }
-
-  /**
    * Gets the center point of the rectangle relative to the parent.
    *
    * @returns An object with x and y coordinates of the center point
@@ -316,6 +292,8 @@ export function getAbsoluteRect(el: Element) {
     left: rect.left + window.scrollX,
     width: rect.width,
     height: rect.height,
+    localLeft: rect.left,
+    localTop: rect.top,
   })
 }
 
