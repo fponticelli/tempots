@@ -69,13 +69,17 @@ export class Rect {
     top = 0,
     width = 0,
     height = 0,
+    localLeft = 0,
+    localTop = 0,
   }: {
     left?: number
     top?: number
     width?: number
     height?: number
+    localLeft?: number
+    localTop?: number
   }): Rect {
-    return new Rect(left, top, width, height)
+    return new Rect(left, top, width, height, localLeft, localTop)
   }
 
   /**
@@ -103,7 +107,11 @@ export class Rect {
     /** The width of the rectangle */
     readonly width: number,
     /** The height of the rectangle */
-    readonly height: number
+    readonly height: number,
+    /** The x-coordinate of the left edge of the rectangle relative to the parent */
+    readonly localLeft: number,
+    /** The y-coordinate of the top edge of the rectangle relative to the parent */
+    readonly localTop: number
   ) {}
 
   /**
@@ -154,6 +162,80 @@ export class Rect {
       x: this.left + this.width / 2,
       y: this.top + this.height / 2,
     }
+  }
+
+  /**
+   * Gets the rectangle relative to the parent.
+   *
+   * @returns A new Rect instance representing the local rectangle
+   *
+   * @example
+   * ```typescript
+   * const rect = new Rect(10, 20, 100, 50, 5, 10);
+   * const localRect = rect.localRect;
+   * console.log(localRect.left);   // 5
+   * console.log(localRect.top);    // 10
+   * console.log(localRect.width);  // 100
+   * console.log(localRect.height); // 50
+   * ```
+   */
+  get localRect() {
+    return Rect.of({
+      left: this.localLeft,
+      top: this.localTop,
+      width: this.width,
+      height: this.height,
+    })
+  }
+
+  /**
+   * Gets the center point of the rectangle relative to the parent.
+   *
+   * @returns An object with x and y coordinates of the center point
+   *
+   * @example
+   * ```typescript
+   * const rect = new Rect(10, 20, 100, 50, 5, 10);
+   * const localCenter = rect.localCenter;
+   * console.log(localCenter.x); // 55 (localLeft + width/2)
+   * console.log(localCenter.y); // 65 (localTop + height/2)
+   * ```
+   */
+  get localCenter() {
+    return {
+      x: this.localLeft + this.width / 2,
+      y: this.localTop + this.height / 2,
+    }
+  }
+
+  /**
+   * Gets the bottom edge of the rectangle relative to the parent.
+   *
+   * @returns The bottom edge position (localTop + height)
+   *
+   * @example
+   * ```typescript
+   * const rect = new Rect(10, 20, 100, 50, 5, 10);
+   * console.log(rect.localBottom); // 60 (localTop + height)
+   * ```
+   */
+  get localBottom() {
+    return this.localTop + this.height
+  }
+
+  /**
+   * Gets the right edge of the rectangle relative to the parent.
+   *
+   * @returns The right edge position (localLeft + width)
+   *
+   * @example
+   * ```typescript
+   * const rect = new Rect(10, 20, 100, 50, 5, 10);
+   * console.log(rect.localRight); // 105 (localLeft + width)
+   * ```
+   */
+  get localRight() {
+    return this.localLeft + this.width
   }
 
   /**
