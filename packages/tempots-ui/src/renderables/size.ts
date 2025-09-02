@@ -285,15 +285,15 @@ export class Rect {
  *
  * @public
  */
-export function getAbsoluteRect(el: Element) {
+export function getAbsoluteRect(el: HTMLElement) {
   const rect = el.getBoundingClientRect()
   return Rect.of({
     top: rect.top + window.scrollY,
     left: rect.left + window.scrollX,
     width: rect.width,
     height: rect.height,
-    localLeft: rect.left,
-    localTop: rect.top,
+    localLeft: el.offsetLeft,
+    localTop: el.offsetTop,
   })
 }
 
