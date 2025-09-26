@@ -2,20 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Anchor, type AnchorOptions, type HrefOrAnchorOptions } from '../src/renderables/anchor'
 import { prop, Signal, DOMContext, render, Provide, Value } from '@tempots/dom'
 import { Location } from '../src/renderables/router/location'
-import { setLocationFromUrl } from '../src/renderables/router/location-data'
-import { withViewTransition } from '../src/utils/view-transition'
 import { handleAnchorClick } from '../src/dom/handle-anchor-click'
 
 // Mock the dependencies
 vi.mock('../src/renderables/router/location-data', () => ({
-  setLocationFromUrl: vi.fn(),
   areLocationsEqual: vi.fn((a, b) => a === b),
   locationFromURL: vi.fn(),
   urlFromLocation: vi.fn()
-}))
-
-vi.mock('../src/utils/view-transition', () => ({
-  withViewTransition: vi.fn((fn) => fn())
 }))
 
 vi.mock('../src/dom/handle-anchor-click', () => ({
@@ -25,19 +18,12 @@ vi.mock('../src/dom/handle-anchor-click', () => ({
 }))
 
 describe('anchor.ts', () => {
-  let mockLocation: any
-  let mockSetLocationFromUrl: any
-  let mockWithViewTransition: any
   let mockHandleAnchorClick: any
 
   beforeEach(() => {
     document.body.innerHTML = ''
     vi.clearAllMocks()
-    mockLocation = prop({ pathname: '/', search: {}, hash: undefined })
-
     // Get the mocked functions
-    mockSetLocationFromUrl = vi.mocked(setLocationFromUrl)
-    mockWithViewTransition = vi.mocked(withViewTransition)
     mockHandleAnchorClick = vi.mocked(handleAnchorClick)
   })
 
@@ -56,7 +42,7 @@ describe('anchor.ts', () => {
     it('should create anchor with AnchorOptions', () => {
       const options: AnchorOptions = {
         href: '/test',
-        withViewTransition: true,
+        viewTransition: true,
         ignoreUrlWithExtension: false
       }
       const anchor = Anchor(options, 'Link Text')
@@ -80,15 +66,6 @@ describe('anchor.ts', () => {
         ignoreUrlWithExtension: true,
         allowedExtensions: ['.html'],
         ignoreExternalUrl: false
-      }
-      const anchor = Anchor(options, 'Link Text')
-      expect(typeof anchor).toBe('function')
-    })
-
-    it('should handle withViewTransition option', () => {
-      const options: AnchorOptions = {
-        href: '/test',
-        withViewTransition: true
       }
       const anchor = Anchor(options, 'Link Text')
       expect(typeof anchor).toBe('function')
@@ -120,7 +97,7 @@ describe('anchor.ts', () => {
     it('should handle AnchorOptions object correctly', () => {
       const options: AnchorOptions = {
         href: '/test',
-        withViewTransition: true,
+        viewTransition: true,
         ignoreUrlWithExtension: false
       }
       const anchor = Anchor(options, 'Link Text')
@@ -143,7 +120,7 @@ describe('anchor.ts', () => {
     it('should properly destructure AnchorOptions', () => {
       const options: AnchorOptions = {
         href: '/test',
-        withViewTransition: true,
+        viewTransition: true,
         ignoreUrlWithExtension: true,
         allowedExtensions: ['.html'],
         ignoreExternalUrl: false
@@ -154,9 +131,9 @@ describe('anchor.ts', () => {
       expect(typeof anchor).toBe('function')
     })
 
-    it('should handle withViewTransition boolean values', () => {
-      const withTransition = Anchor({ href: '/test', withViewTransition: true }, 'With Transition')
-      const withoutTransition = Anchor({ href: '/test', withViewTransition: false }, 'Without Transition')
+    it('should handle viewTransition values', () => {
+      const withTransition = Anchor({ href: '/test', viewTransition: true }, 'With Transition')
+      const withoutTransition = Anchor({ href: '/test', viewTransition: false }, 'Without Transition')
       const undefinedTransition = Anchor({ href: '/test' }, 'Undefined Transition')
 
       expect(typeof withTransition).toBe('function')
@@ -211,25 +188,34 @@ describe('anchor.ts', () => {
       expect(typeof signalOptionsAnchor).toBe('function')
     })
 
-    it('should handle all withViewTransition combinations', () => {
-      // Test withViewTransition: true
-      const withTransition = Anchor({ href: '/test', withViewTransition: true }, 'With Transition')
-      expect(typeof withTransition).toBe('function')
+    it('should handle navigation options combinations', () => {
+      const anchor = Anchor(
+        {
+          href: '/test',
+          viewTransition: true,
+          scroll: 'auto',
+          replace: true,
+          state: { ref: 'suite' },
+        },
+        'Full Navigation Options'
+      )
+      expect(typeof anchor).toBe('function')
 
-      // Test withViewTransition: false
-      const withoutTransition = Anchor({ href: '/test', withViewTransition: false }, 'Without Transition')
-      expect(typeof withoutTransition).toBe('function')
+      const minimal = Anchor({ href: '/test', viewTransition: false }, 'Minimal')
+      expect(typeof minimal).toBe('function')
 
-      // Test withViewTransition: undefined (default)
-      const defaultTransition = Anchor({ href: '/test' }, 'Default Transition')
-      expect(typeof defaultTransition).toBe('function')
+      const none = Anchor({ href: '/test' }, 'No Navigation Options')
+      expect(typeof none).toBe('function')
     })
 
     it('should handle all anchor click options', () => {
       // Test with all possible options
       const fullOptions: AnchorOptions = {
         href: '/test',
-        withViewTransition: true,
+        viewTransition: true,
+        scroll: 'auto',
+        state: { from: 'anchor' },
+        replace: true,
         ignoreUrlWithExtension: true,
         allowedExtensions: ['.html', '.pdf'],
         ignoreExternalUrl: false
@@ -256,7 +242,10 @@ describe('anchor.ts', () => {
       // Test with undefined values
       const undefinedOptions: AnchorOptions = {
         href: '/undefined',
-        withViewTransition: undefined,
+        viewTransition: undefined,
+        scroll: undefined,
+        state: undefined,
+        replace: undefined,
         ignoreUrlWithExtension: undefined,
         ignoreExternalUrl: undefined
       }
@@ -337,7 +326,7 @@ describe('anchor.ts', () => {
   // - Input validation and conversion logic
   // - Type system validation (HrefOrAnchorOptions union type)
   // - Signal href handling and updates
-  // - All withViewTransition option combinations
+  // - Navigation option combinations (viewTransition, scroll, state, replace)
   // - Complex href patterns and edge cases
   // - Children handling (none, single, multiple, mixed types)
   // - Option destructuring edge cases
@@ -388,7 +377,7 @@ describe('anchor.ts', () => {
     it('should accept AnchorOptions as HrefOrAnchorOptions', () => {
       const href: HrefOrAnchorOptions = {
         href: '/test',
-        withViewTransition: false
+        viewTransition: false
       }
       expect(typeof href).toBe('object')
       expect('href' in href).toBe(true)

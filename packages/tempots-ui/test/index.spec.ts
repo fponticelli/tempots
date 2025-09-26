@@ -14,7 +14,6 @@ describe('index.ts exports', () => {
 
     // Router
     expect(ui.Location).toBeDefined()
-    expect(ui.setLocationFromUrl).toBeDefined()
 
     // Utils
     expect(ui.relativeTime).toBeDefined()

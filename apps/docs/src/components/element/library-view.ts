@@ -60,7 +60,7 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
       return path.value == null
         ? `/api/${library.value.name}/${prefix}.html`
         : `/api/${library.value.name}/${prefix}.${path.value}.html`
-    }, [data, location])
+    }, [data, location.location])
     return html.div(
       attr.class('overflow-auto h-full flex flex-col gap-1 p-4'),
       HTMLTitle(library.map(({ title }) => `Tempo • ${title}`)),

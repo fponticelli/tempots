@@ -24,7 +24,7 @@ export function OpenGraph(props: OpenGraphProps) {
     Fragment(
       Portal(
         'meta[property="og:url"]',
-        attr.content(location.map(urlFromLocation))
+        attr.content(location.location.map(urlFromLocation))
       ),
       Portal('meta[property="og:title"]', attr.content(title)),
       Portal('meta[property="og:description"]', attr.content(description)),

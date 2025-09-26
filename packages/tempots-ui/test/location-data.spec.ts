@@ -1,13 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { 
-  areLocationsEqual, 
-  locationFromURL, 
-  setLocationFromUrl, 
+import { describe, it, expect, vi } from 'vitest'
+import {
+  areLocationsEqual,
+  locationFromURL,
   urlFromLocation,
-  type LocationData 
+  type LocationData,
 } from '../src/renderables/router/location-data'
-import { prop } from '@tempots/dom'
-
 // Mock getWindow
 const mockWindow = {
   location: {
@@ -233,41 +230,6 @@ describe('location-data.ts', () => {
       
       expect(result).toEqual({
         pathname: '/path/to/resource',
-        search: {},
-        hash: undefined
-      })
-    })
-  })
-
-  describe('setLocationFromUrl', () => {
-    it('should update prop with location from URL', () => {
-      const locationProp = prop<LocationData>({
-        pathname: '/',
-        search: {},
-        hash: undefined
-      })
-
-      const result = setLocationFromUrl(locationProp, 'http://example.com/test?param=value#section')
-
-      expect(locationProp.value).toEqual({
-        pathname: '/test',
-        search: { param: 'value' },
-        hash: 'section'
-      })
-      expect(result).toBe(locationProp)
-    })
-
-    it('should handle simple URLs', () => {
-      const locationProp = prop<LocationData>({
-        pathname: '/',
-        search: {},
-        hash: undefined
-      })
-
-      setLocationFromUrl(locationProp, 'http://example.com/simple')
-
-      expect(locationProp.value).toEqual({
-        pathname: '/simple',
         search: {},
         hash: undefined
       })

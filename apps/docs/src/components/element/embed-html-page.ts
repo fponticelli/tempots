@@ -3,7 +3,6 @@ import {
   ForEach,
   html,
   prop,
-  Prop,
   Signal,
   Value,
   Ensure,
@@ -12,11 +11,11 @@ import {
   WithElement,
   OnDispose,
 } from '@tempots/dom'
-import { Location, LocationData, handleAnchorClick } from '@tempots/ui'
+import { Location, type LocationHandle, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
 
-const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
+const updateAnchors = (location: LocationHandle, el: HTMLElement) => {
   const anchors = el.querySelectorAll('a')
   for (const anchor of anchors) {
     const href = anchor.getAttribute('href') ?? ''
@@ -52,7 +51,7 @@ const mapLevel: Record<number, string> = {
   6: 'list-disc ml-10 text-sm',
 }
 
-const TOCView = (location: Prop<LocationData>, toc: Signal<TOCItem[]>) => {
+const TOCView = (location: LocationHandle, toc: Signal<TOCItem[]>) => {
   return Ensure(
     toc.map(v => (v.length > 3 ? v : null)),
     toc =>

@@ -1,5 +1,4 @@
-import { Prop } from '@tempots/dom'
-import { LocationData, setLocationFromUrl } from '@tempots/ui'
+import type { LocationHandle } from '@tempots/ui'
 
 export const scrollIntoView = (selector: string): void => {
   const el = document.querySelector(selector)
@@ -10,11 +9,8 @@ export const scrollToTop = (): void => {
   document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-export const navigateTo = (
-  location: Prop<LocationData>,
-  href: string
-): void => {
-  setLocationFromUrl(location, href)
+export const navigateTo = (location: LocationHandle, href: string): void => {
+  location.navigate(href)
   setTimeout(() => {
     const index = href.indexOf('#')
     if (index === -1) {

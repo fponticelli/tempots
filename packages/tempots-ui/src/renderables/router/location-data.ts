@@ -1,4 +1,4 @@
-import { getWindow, Prop } from '@tempots/dom'
+import { getWindow } from '@tempots/dom'
 
 /**
  * Represents the data for a location.
@@ -53,19 +53,6 @@ export const locationFromURL = (
     search,
     hash: hash === '' ? undefined : hash,
   }
-}
-
-/**
- * Sets the location from the given URL and updates the specified property.
- * @param prop - The property to update with the new location.
- * @param url - The URL from which to extract the location.
- * @returns The updated property.
- * @public
- */
-export const setLocationFromUrl = (prop: Prop<LocationData>, url: string) => {
-  const location = locationFromURL(url)
-  prop.set(location)
-  return prop
 }
 
 /**

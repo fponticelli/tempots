@@ -1,17 +1,9 @@
-import {
-  attr,
-  html,
-  Prop,
-  Value,
-  WithElement,
-  OnDispose,
-  Use,
-} from '@tempots/dom'
-import { Location, LocationData, handleAnchorClick } from '@tempots/ui'
+import { attr, html, Value, WithElement, OnDispose, Use } from '@tempots/dom'
+import { Location, type LocationHandle, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
 
-const updateAnchors = (location: Prop<LocationData>, el: HTMLElement) => {
+const updateAnchors = (location: LocationHandle, el: HTMLElement) => {
   const anchors = el.querySelectorAll('a')
   for (const anchor of anchors) {
     const href = anchor.getAttribute('href') ?? ''

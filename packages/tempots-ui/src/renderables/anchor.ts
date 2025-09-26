@@ -8,14 +8,12 @@ import {
   Renderable,
   Use,
 } from '@tempots/dom'
-import { Location } from './router/location'
-import { setLocationFromUrl } from './router/location-data'
+import { Location, type NavigationOptions } from './router/location'
 import {
   handleAnchorClick,
   HandleAnchorClickOptions,
 } from '../dom/handle-anchor-click'
 import { Merge } from '@tempots/std'
-import { withViewTransition } from '../utils/view-transition'
 
 /**
  * Options for configuring an anchor element.
@@ -28,11 +26,7 @@ export type AnchorOptions = Merge<
      * Can be a string or a Signal containing a string.
      */
     href: Value<string>
-    /**
-     * Whether to use a view transition when navigating to the anchor.
-     */
-    withViewTransition?: boolean
-  },
+  } & NavigationOptions,
   HandleAnchorClickOptions
 >
 /**
@@ -65,23 +59,35 @@ export const Anchor = (
   ) {
     return Anchor({ href: hrefOrOptions as Value<string> }, ...children)
   }
-  const {
-    href,
-    withViewTransition: useViewTransition,
-    ...options
-  } = hrefOrOptions as AnchorOptions
+  const { href, state, scroll, viewTransition, replace, ...options } =
+    hrefOrOptions as AnchorOptions
   /* c8 ignore next 16 */
   return Use(Location, location => {
     return html.a(
       on.click(
         handleAnchorClick(() => {
-          if (useViewTransition === true) {
-            withViewTransition(() => {
-              setLocationFromUrl(location, Value.get(href))
-            })
-          } else {
-            setLocationFromUrl(location, Value.get(href))
+          let hasNavigationOption = false
+          const navigationOptions: NavigationOptions = {}
+          if (state !== undefined) {
+            navigationOptions.state = state
+            hasNavigationOption = true
           }
+          if (scroll !== undefined) {
+            navigationOptions.scroll = scroll
+            hasNavigationOption = true
+          }
+          if (viewTransition !== undefined) {
+            navigationOptions.viewTransition = viewTransition
+            hasNavigationOption = true
+          }
+          if (replace !== undefined) {
+            navigationOptions.replace = replace
+            hasNavigationOption = true
+          }
+          location.navigate(
+            Value.get(href),
+            hasNavigationOption ? navigationOptions : undefined
+          )
           return true
         }, options)
       ),

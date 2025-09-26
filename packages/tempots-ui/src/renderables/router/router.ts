@@ -161,10 +161,10 @@ export const RootRouter = <
   return Provide(RouterContextProvider, {}, () =>
     Use(Location, location => {
       return Use(RouterContextProvider, contextStack => {
-        const route = location.map(location => {
-          const match = matchRoute(location.pathname)
+        const route = location.location.map(currentLocation => {
+          const match = matchRoute(currentLocation.pathname)
           if (match == null) {
-            console.error('No route found for', location)
+            console.error('No route found for', currentLocation)
             throw new Error('No route found')
           }
 
@@ -172,7 +172,7 @@ export const RootRouter = <
           const newContext: RouterContext = {
             matchedPath: match.matchedPath,
             remainingPath: match.remainingPath,
-            fullPath: location.pathname,
+            fullPath: currentLocation.pathname,
             params: match.params,
           }
 
@@ -182,9 +182,9 @@ export const RootRouter = <
           return {
             params: match.params,
             route: match.route,
-            path: match.matchedPath || location.pathname,
-            search: location.search,
-            hash: location.hash,
+            path: match.matchedPath || currentLocation.pathname,
+            search: currentLocation.search,
+            hash: currentLocation.hash,
           } as RouteInfo<MakeParams<typeof match.params>, typeof match.route>
         })
 
@@ -281,8 +281,8 @@ export const ChildRouter = <
           params: childParams, // Only this router's parameters
           route: match.route,
           path: match.matchedPath,
-          search: location.value.search,
-          hash: location.value.hash,
+          search: location.location.value.search,
+          hash: location.location.value.hash,
         } as RouteInfo<MakeParams<typeof childParams>, typeof match.route>
       })
 
