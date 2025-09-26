@@ -1,21 +1,23 @@
 import { prop, Signal, Value } from '@tempots/dom'
-import { AsyncResult } from '@tempots/std'
+import { AsyncResult, NonLoading } from '@tempots/std'
 
 /**
  * Represents an asynchronous query with its current status, value, error, and loading state.
  * Provides methods to reload the query and dispose of it.
  *
- * @template V - The type of the value when the query is successfully loaded.
+ * @template Res - The type of the value when the query is successfully loaded.
  * @template E - The type of the error when the query fails to load.
  * @public
  */
-export interface Query<V, E> {
+export interface QueryResource<Res, E> {
   /** The current status of the query as an AsyncResult. */
-  readonly status: Signal<AsyncResult<V, E>>
+  readonly status: Signal<AsyncResult<Res, E>>
+  /** Abort the current in-flight request (if any) and clean up. */
+  readonly cancel: (newState?: NonLoading<Res, E>) => void
   /** Disposes of the query, aborting any ongoing requests and cleaning up. */
   readonly dispose: () => void
   /** The current value of the query, or undefined if not loaded or failed. */
-  readonly value: Signal<V | undefined>
+  readonly value: Signal<Res | undefined>
   /** The current error of the query, or undefined if not failed. */
   readonly error: Signal<E | undefined>
   /** Whether the query is currently loading. */
@@ -27,18 +29,23 @@ export interface Query<V, E> {
 /**
  * Options for loading a query, including the request, abort signal, and previous result.
  *
- * @template R - The type of the request.
- * @template V - The type of the value when the query is successfully loaded.
+ * @template Req - The type of the request.
+ * @template Res - The type of the value when the query is successfully loaded.
  * @template E - The type of the error when the query fails to load.
  * @public
  */
-export interface QueryLoadOptions<R, V, E> {
+export interface QueryResourceLoadOptions<Req, Res, E> {
   /** The request to load the query. */
-  readonly request: R
+  readonly request: Req
   /** The signal to abort the loading process if needed. */
   readonly abortSignal: AbortSignal
   /** The previous result of the query loading, if any. */
-  readonly previous: AsyncResult<V, E>
+  readonly previous: AsyncResult<Res, E>
+
+  /** Side-effects */
+  readonly onSuccess?: (value: Res, req: Req) => void
+  readonly onError?: (error: E, req: Req) => void
+  readonly onSettled?: (result: AsyncResult<Res, E>, req: Req) => void
 }
 
 /**
@@ -54,12 +61,23 @@ export interface QueryLoadOptions<R, V, E> {
  * @returns The created asynchronous query.
  * @public
  */
-export const makeQuery = <R, V, E>(
-  request: Value<R>,
-  load: (options: QueryLoadOptions<R, V, E>) => Promise<V>,
+export const makeQueryResource = <Req, Res, E>({
+  request,
+  load,
+  convertError,
+  onSuccess,
+  onError,
+  onSettled,
+}: {
+  request: Value<Req>
+  load: (options: QueryResourceLoadOptions<Req, Res, E>) => Promise<Res>
   convertError: (error: unknown) => E
-): Query<V, E> => {
-  const status = prop<AsyncResult<V, E>>(AsyncResult.notAsked)
+  onSuccess?: (value: Res, req: Req) => void
+  onError?: (error: E, req: Req) => void
+  onSettled?: (result: AsyncResult<Res, E>, req: Req) => void
+}): QueryResource<Res, E> => {
+  let abortController: AbortController | undefined
+  const status = prop<AsyncResult<Res, E>>(AsyncResult.notAsked)
   const value = status.map(r =>
     AsyncResult.isSuccess(r) ? r.value : undefined
   )
@@ -67,18 +85,24 @@ export const makeQuery = <R, V, E>(
     AsyncResult.isFailure(r) ? r.error : undefined
   )
   const loading = status.map(r => AsyncResult.isLoading(r))
-
-  let abortController: AbortController | undefined
+  const abort = () => {
+    /* c8 ignore next */
+    abortController?.abort()
+    abortController = undefined
+  }
+  const cancel = (newState?: NonLoading<Res, E>) => {
+    abort()
+    status.set(newState ?? AsyncResult.notAsked)
+  }
 
   /**
    * Runs the load function with the given request, updating the status accordingly.
    *
-   * @param {R} req - The request to load the query.
+   * @param {Req} req - The request to load the query.
    * @public
    */
-  const runLoad = async (req: R) => {
-    /* c8 ignore next */
-    abortController?.abort()
+  const runLoad = async (req: Req) => {
+    abort()
     abortController = new AbortController()
     const abortSignal = abortController.signal
     const previous = status.get()
@@ -91,10 +115,13 @@ export const makeQuery = <R, V, E>(
       await Promise.resolve()
       abortController = undefined
       status.set(AsyncResult.success(result))
+      onSuccess?.(result, req)
     } catch (error) {
       abortController = undefined
       status.set(AsyncResult.failure(convertError(error)))
+      onError?.(convertError(error), req)
     }
+    onSettled?.(status.get(), req)
   }
 
   /** Reloads the query using the current request. */
@@ -115,6 +142,7 @@ export const makeQuery = <R, V, E>(
     value,
     error,
     loading,
+    cancel,
     reload,
     dispose,
   }

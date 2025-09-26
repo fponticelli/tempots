@@ -52,6 +52,18 @@ export type AsyncResult<V, E> =
   | AsyncFailure<E>
 
 /**
+ * Represents a settled state in an asynchronous result.
+ * @public
+ */
+export type Settled<V, E> = AsyncSuccess<V> | AsyncFailure<E>
+
+/**
+ * Represents a state in an asynchronous result that is not loading.
+ * @public
+ */
+export type NonLoading<V, E> = NotAsked | Settled<V, E>
+
+/**
  * A set of utility functions for working with `AsyncResult`.
  * @public
  */
