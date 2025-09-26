@@ -7,44 +7,44 @@ import {
   Value,
 } from '@tempots/dom'
 import {
-  AsyncResource,
-  makeResource,
-  ResourceLoadOptions,
-} from '../utils/resource'
+  Query,
+  makeQuery,
+  QueryLoadOptions,
+} from '../utils/query'
 import { AsyncResultView } from './async-result-view'
 
 /**
- * Options for displaying the different states of an asynchronous resource.
+ * Options for displaying the different states of an asynchronous query.
  *
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @template V - The type of the value when the query is successfully loaded.
+ * @template E - The type of the error when the query fails to load.
  * @public
  */
-export interface ResourceDisplayOptions<V, E> {
-  /** Function to render when the resource is loading. */
+export interface QueryDisplayOptions<V, E> {
+  /** Function to render when the query is loading. */
   loading?: (previous: Signal<V | undefined>, reload: () => void) => TNode
-  /** Function to render when the resource has failed to load. */
+  /** Function to render when the query has failed to load. */
   failure?: (error: Signal<E>, reload: () => void) => TNode
-  /** Function to render when the resource has successfully loaded. */
+  /** Function to render when the query has successfully loaded. */
   success: (value: Signal<V>, reload: () => void) => TNode
 }
 
 /**
- * Component to display an asynchronous resource based on its current status.
+ * Component to display an asynchronous query based on its current status.
  *
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @template V - The type of the value when the query is successfully loaded.
+ * @template E - The type of the error when the query fails to load.
  *
- * @param {AsyncResource<V, E>} resource - The asynchronous resource to display.
- * @param {ResourceDisplayOptions<V, E>} options - The display options for the resource.
- * @returns {TNode} A node representing the current state of the resource.
+ * @param {Query<V, E>} query - The asynchronous query to display.
+ * @param {QueryDisplayOptions<V, E>} options - The display options for the query.
+ * @returns {TNode} A node representing the current state of the query.
  * @public
  */
-export const ResourceDisplay = <V, E>(
-  resource: AsyncResource<V, E>,
-  options: ResourceDisplayOptions<V, E>
+export const QueryDisplay = <V, E>(
+  query: Query<V, E>,
+  options: QueryDisplayOptions<V, E>
 ) => {
-  const { status, dispose, reload } = resource
+  const { status, dispose, reload } = query
   const { loading, failure: error, success } = options
 
   return Fragment(
@@ -58,7 +58,7 @@ export const ResourceDisplay = <V, E>(
 }
 
 /**
- * Creates a reactive resource component for handling asynchronous data loading.
+ * Creates a reactive query component for handling asynchronous data loading.
  *
  * This component provides a declarative way to handle async operations with proper
  * loading, success, and error states. It automatically manages the lifecycle of
@@ -69,7 +69,7 @@ export const ResourceDisplay = <V, E>(
  * // Basic API data loading
  * const userId = prop(1)
  *
- * const UserProfile = Resource({
+ * const UserProfile = Query({
  *   request: userId,
  *   load: async ({ request }) => {
  *     const response = await fetch(`/api/users/${request}`)
@@ -91,11 +91,11 @@ export const ResourceDisplay = <V, E>(
  *
  * @example
  * ```typescript
- * // Resource with dependencies
+ * // Query with dependencies
  * const searchQuery = prop('')
  * const filters = prop({ category: 'all', sort: 'name' })
  *
- * const SearchResults = Resource({
+ * const SearchResults = Query({
  *   request: computed(() => ({
  *     query: searchQuery.value,
  *     ...filters.value
@@ -127,10 +127,10 @@ export const ResourceDisplay = <V, E>(
  *
  * @example
  * ```typescript
- * // File upload resource
+ * // File upload query
  * const selectedFile = prop<File | null>(null)
  *
- * const FileUpload = Resource({
+ * const FileUpload = Query({
  *   request: selectedFile,
  *   load: async ({ request }) => {
  *     if (!request) throw new Error('No file selected')
@@ -170,23 +170,23 @@ export const ResourceDisplay = <V, E>(
  * @template R - The type of the request parameter
  * @template V - The type of the successful result value
  * @template E - The type of the error (defaults to unknown)
- * @param config - Configuration object for the resource
+ * @param config - Configuration object for the query
  * @param config.request - Signal or value representing the request parameters
- * @param config.load - Async function that loads the resource
+ * @param config.load - Async function that loads the query
  * @param config.mapError - Optional function to transform errors into a specific type
  * @returns Function that takes display options and returns a renderable component
  * @public
  */
-export const Resource = <R, V, E = unknown>({
+export const Query = <R, V, E = unknown>({
   request,
   load,
   mapError = v => v as E,
 }: {
   request: Value<R>
-  load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>
+  load: (options: QueryLoadOptions<R, V, E>) => Promise<V>
   mapError?: (error: unknown) => E
-}): ((displayOptions: ResourceDisplayOptions<V, E>) => Renderable) => {
-  const resource = makeResource(request, load, mapError)
-  return (displayOptions: ResourceDisplayOptions<V, E>): Renderable =>
-    ResourceDisplay(resource, displayOptions)
+}): ((displayOptions: QueryDisplayOptions<V, E>) => Renderable) => {
+  const query = makeQuery(request, load, mapError)
+  return (displayOptions: QueryDisplayOptions<V, E>): Renderable =>
+    QueryDisplay(query, displayOptions)
 }

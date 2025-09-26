@@ -1,14 +1,14 @@
 import { prop, render } from "@tempots/dom"
-import { Resource } from "../src/renderables/resource"
+import { Query } from "../src/renderables/query"
 import { beforeEach, describe, expect, test } from "vitest"
 import { sleep } from "@tempots/std"
 
-describe("resource", () => {
+describe("query", () => {
   beforeEach(() => {
     document.body.innerHTML = ""
   })
 
-  test("resource basics", async () => {
+  test("query basics", async () => {
     const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       await sleep(5)
@@ -18,7 +18,7 @@ describe("resource", () => {
       return request
     }
     const convertError = String
-    const renderable = Resource({
+    const renderable = Query({
       request,
       load,
       mapError: convertError
@@ -45,7 +45,7 @@ describe("resource", () => {
     clear()
   })
 
-  test("resource basics sync", async () => {
+  test("query basics sync", async () => {
     const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       if (request > 2) {
@@ -54,7 +54,7 @@ describe("resource", () => {
       return request
     }
     const convertError = String
-    const renderable = Resource({
+    const renderable = Query({
       request,
       load,
       mapError: convertError
@@ -77,7 +77,7 @@ describe("resource", () => {
     clear()
   })
 
-  test("resource no default loading", async () => {
+  test("query no default loading", async () => {
     const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       if (request > 2) {
@@ -86,7 +86,7 @@ describe("resource", () => {
       return request
     }
     const convertError = String
-    const renderable = Resource({
+    const renderable = Query({
       request,
       load,
       mapError: convertError

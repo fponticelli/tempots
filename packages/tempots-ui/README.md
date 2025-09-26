@@ -72,26 +72,35 @@ render(AppRouter, document.body)
 Location.navigate('/about')
 ```
 
-### Resource Loading
+### Query Loading
 
 Handle async data loading with built-in loading and error states:
 
 ```typescript
-import { html, render } from '@tempots/dom'
-import { Resource } from '@tempots/ui'
+import { html, prop, render } from '@tempots/dom'
+import { Query } from '@tempots/ui'
 
 // Load data from an API
-const userResource = Resource({
-  load: () => fetch('/api/user').then(r => r.json()),
+const userId = prop(1)
+
+const userProfile = Query({
+  request: userId,
+  load: async ({ request, abortSignal }) => {
+    const response = await fetch(`/api/user/${request}`, { signal: abortSignal })
+    if (!response.ok) throw new Error('Failed to load user')
+    return response.json()
+  },
+  mapError: error => error instanceof Error ? error.message : String(error),
+})({
   loading: () => html.div('Loading user...'),
-  error: (err) => html.div('Error loading user: ', err.message),
-  success: (user) => html.div(
-    html.h2(user.name),
-    html.p(user.email)
-  )
+  failure: error => html.div(error.map(message => `Error: ${message}`)),
+  success: user => html.div(
+    html.h2(user.map(u => u.name)),
+    html.p(user.map(u => u.email)),
+  ),
 })
 
-render(userResource, document.body)
+render(userProfile, document.body)
 ```
 
 ### PopOver with Arrow Support
@@ -175,7 +184,7 @@ The library includes the following components and utilities:
 - `InViewport` - Detect when an element is in the viewport
 - `Router` - Simple client-side routing
 - `Location` - Navigation and location utilities
-- `Resource` - Async data loading with loading/error states
+- `Query` - Async data loading with loading/error states
 - `AsyncResultView` - Display async operation results
 - `ResultView` - Display success/failure results
 - `PopOver` - Create popup/popover elements

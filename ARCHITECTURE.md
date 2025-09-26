@@ -117,7 +117,7 @@ Higher-level UI components built on top of @tempots/dom:
 
 - **UI Components**: Reusable UI elements
 - **Routing**: Client-side routing system
-- **Resource Loading**: Async data loading with loading/error states
+- **Query Loading**: Async data loading with loading/error states
 - **Form Helpers**: Input focus and selection utilities
 
 ## Design Patterns

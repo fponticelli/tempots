@@ -2,63 +2,63 @@ import { prop, Signal, Value } from '@tempots/dom'
 import { AsyncResult } from '@tempots/std'
 
 /**
- * Represents an asynchronous resource with its current status, value, error, and loading state.
- * Provides methods to reload the resource and dispose of it.
+ * Represents an asynchronous query with its current status, value, error, and loading state.
+ * Provides methods to reload the query and dispose of it.
  *
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @template V - The type of the value when the query is successfully loaded.
+ * @template E - The type of the error when the query fails to load.
  * @public
  */
-export interface AsyncResource<V, E> {
-  /** The current status of the resource as an AsyncResult. */
+export interface Query<V, E> {
+  /** The current status of the query as an AsyncResult. */
   readonly status: Signal<AsyncResult<V, E>>
-  /** Disposes of the resource, aborting any ongoing requests and cleaning up. */
+  /** Disposes of the query, aborting any ongoing requests and cleaning up. */
   readonly dispose: () => void
-  /** The current value of the resource, or undefined if not loaded or failed. */
+  /** The current value of the query, or undefined if not loaded or failed. */
   readonly value: Signal<V | undefined>
-  /** The current error of the resource, or undefined if not failed. */
+  /** The current error of the query, or undefined if not failed. */
   readonly error: Signal<E | undefined>
-  /** Whether the resource is currently loading. */
+  /** Whether the query is currently loading. */
   readonly loading: Signal<boolean>
-  /** Reloads the resource using the current request. */
+  /** Reloads the query using the current request. */
   readonly reload: () => void
 }
 
 /**
- * Options for loading a resource, including the request, abort signal, and previous result.
+ * Options for loading a query, including the request, abort signal, and previous result.
  *
  * @template R - The type of the request.
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @template V - The type of the value when the query is successfully loaded.
+ * @template E - The type of the error when the query fails to load.
  * @public
  */
-export interface ResourceLoadOptions<R, V, E> {
-  /** The request to load the resource. */
+export interface QueryLoadOptions<R, V, E> {
+  /** The request to load the query. */
   readonly request: R
   /** The signal to abort the loading process if needed. */
   readonly abortSignal: AbortSignal
-  /** The previous result of the resource loading, if any. */
+  /** The previous result of the query loading, if any. */
   readonly previous: AsyncResult<V, E>
 }
 
 /**
- * Creates an asynchronous resource that can be loaded, reloaded, and disposed of.
+ * Creates an asynchronous query that can be loaded, reloaded, and disposed of.
  *
  * @template R - The type of the request.
- * @template V - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @template V - The type of the value when the query is successfully loaded.
+ * @template E - The type of the error when the query fails to load.
  *
- * @param request - The request to load the resource.
- * @param load - The function to load the resource.
+ * @param request - The request to load the query.
+ * @param load - The function to load the query.
  * @param convertError - The function to convert an unknown error into a specific error type.
- * @returns The created asynchronous resource.
+ * @returns The created asynchronous query.
  * @public
  */
-export const makeResource = <R, V, E>(
+export const makeQuery = <R, V, E>(
   request: Value<R>,
-  load: (options: ResourceLoadOptions<R, V, E>) => Promise<V>,
+  load: (options: QueryLoadOptions<R, V, E>) => Promise<V>,
   convertError: (error: unknown) => E
-): AsyncResource<V, E> => {
+): Query<V, E> => {
   const status = prop<AsyncResult<V, E>>(AsyncResult.notAsked)
   const value = status.map(r =>
     AsyncResult.isSuccess(r) ? r.value : undefined
@@ -73,7 +73,7 @@ export const makeResource = <R, V, E>(
   /**
    * Runs the load function with the given request, updating the status accordingly.
    *
-   * @param {R} req - The request to load the resource.
+   * @param {R} req - The request to load the query.
    * @public
    */
   const runLoad = async (req: R) => {
@@ -97,10 +97,10 @@ export const makeResource = <R, V, E>(
     }
   }
 
-  /** Reloads the resource using the current request. */
+  /** Reloads the query using the current request. */
   const reload = () => runLoad(Value.get(request))
 
-  /** Disposes of the resource, aborting any ongoing requests and cleaning up. */
+  /** Disposes of the query, aborting any ongoing requests and cleaning up. */
   const dispose = () => {
     /* c8 ignore next */
     abortController?.abort()

@@ -10,7 +10,7 @@ Tempo UI bridges the gap between the low-level DOM manipulation of @tempots/dom 
 
 - **Component Library**: Pre-built components for common UI patterns
 - **Routing System**: Client-side routing with URL synchronization
-- **Resource Management**: Async data loading with loading/error states
+- **Query Management**: Async data loading with loading/error states
 - **Form Utilities**: Enhanced form controls and input handling
 - **Accessibility**: Built-in accessibility features and ARIA support
 - **Performance**: Optimized components with minimal overhead
@@ -35,7 +35,7 @@ Tempo UI bridges the gap between the low-level DOM manipulation of @tempots/dom 
 - **Anchor**: Enhanced anchor link handling
 
 ### Data Loading
-- **Resource**: Async data loading with loading/error states
+- **Query**: Async data loading with loading/error states
 - **AsyncResultView**: Display async operation results
 - **ResultView**: Display success/failure results
 
@@ -121,13 +121,13 @@ Use(Location, location => {
 }
 ```
 
-## Resource Management
+## Query Management
 
-### Basic Resource Loading
+### Basic Query Loading
 ```typescript
-import { Resource } from '@tempots/ui'
+import { Query } from '@tempots/ui'
 
-const userResource = Resource({
+const userQuery = Query({
   load: () => fetch('/api/user').then(r => r.json()),
   loading: () => html.div('Loading user...'),
   error: (err) => html.div('Error: ', err.message),
@@ -138,10 +138,10 @@ const userResource = Resource({
 })
 ```
 
-### Advanced Resource Patterns
+### Advanced Query Patterns
 ```typescript
-// Resource with dependencies
-const userPosts = Resource({
+// Query with dependencies
+const userPosts = Query({
   load: async () => {
     const user = await fetchUser()
     const posts = await fetchUserPosts(user.id)

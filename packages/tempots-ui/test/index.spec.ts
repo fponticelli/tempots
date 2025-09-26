@@ -18,7 +18,7 @@ describe('index.ts exports', () => {
 
     // Utils
     expect(ui.relativeTime).toBeDefined()
-    expect(ui.Resource).toBeDefined()
+    expect(ui.Query).toBeDefined()
     expect(ui.ticker).toBeDefined()
   })
 

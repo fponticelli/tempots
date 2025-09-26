@@ -111,38 +111,36 @@ render(app, document.body)
 Location.navigate('/about')
 ```
 
-#### Resource
+#### Query
 
 Handle async data loading with loading/error states:
 
 ```typescript
-import { html, render } from '@tempots/dom'
-import { Resource } from '@tempots/ui'
+import { html, prop, render } from '@tempots/dom'
+import { Query } from '@tempots/ui'
 
-// Create a resource that loads data from an API
-const userResource = Resource({
-  key: 'user',
-  loader: async () => {
-    const response = await fetch('https://api.example.com/user')
+// Create a query that loads data from an API
+const userId = prop(1)
+
+const userQueryView = Query({
+  request: userId,
+  load: async ({ request }) => {
+    const response = await fetch(`https://api.example.com/user/${request}`)
     if (!response.ok) throw new Error('Failed to load user')
     return response.json()
-  }
+  },
+  mapError: error => error instanceof Error ? error.message : String(error),
+})({
+  loading: () => html.div('Loading...'),
+  failure: error => html.div(error.map(message => `Error: ${message}`)),
+  success: user => html.div(user.map(u => `Hello, ${u.name}!`)),
 })
 
-// Render it with loading and error states
-const app = html.div(
-  userResource.match({
-    loading: () => html.div('Loading...'),
-    error: (error) => html.div(`Error: ${error.message}`),
-    data: (user) => html.div(`Hello, ${user.name}!`)
-  })
-)
-
 // Render it to the DOM
-render(app, document.body)
+render(userQueryView, document.body)
 
-// Refresh the data
-userResource.refresh()
+// Trigger a reload by changing the request value
+userId.value = 2
 ```
 
 ## Available Components
@@ -155,7 +153,7 @@ The library includes the following components and utilities:
 - `InViewport` - Detect when an element is in the viewport
 - `Router` - Simple client-side routing
 - `Location` - Navigation and location utilities
-- `Resource` - Async data loading with loading/error states
+- `Query` - Async data loading with loading/error states
 - `AsyncResultView` - Display async operation results
 - `ResultView` - Display success/failure results
 - `PopOver` - Create popup/popover elements
