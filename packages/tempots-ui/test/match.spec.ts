@@ -36,6 +36,15 @@ describe('match.ts', () => {
       ])
     })
 
+    it('should parse route with named catch-all', () => {
+      const result = _parseRouteSegments('/files/*rest')
+
+      expect(result).toEqual([
+        { type: 'literal', value: 'files' },
+        { type: 'catch-all', name: 'rest' }
+      ])
+    })
+
     it('should parse complex route', () => {
       const result = _parseRouteSegments('/users/:userId/posts/:postId')
 
@@ -131,12 +140,35 @@ describe('match.ts', () => {
       })
     })
 
+    it('should match named catch-all route', () => {
+      const route: Route = [
+        { type: 'literal', value: 'files' },
+        { type: 'catch-all', name: 'rest' }
+      ]
+      const result = matchesRoute(route, '/files/docs/readme.txt')
+
+      expect(result).toEqual({
+        params: { rest: 'docs/readme.txt' },
+        path: '/files/docs/readme.txt'
+      })
+    })
+
     it('should match catch-all at root', () => {
       const route: Route = [{ type: 'catch-all' }]
       const result = matchesRoute(route, '/any/path/here')
 
       expect(result).toEqual({
         params: {},
+        path: '/any/path/here'
+      })
+    })
+
+    it('should match named catch-all at root', () => {
+      const route: Route = [{ type: 'catch-all', name: 'more' }]
+      const result = matchesRoute(route, '/any/path/here')
+
+      expect(result).toEqual({
+        params: { more: 'any/path/here' },
         path: '/any/path/here'
       })
     })
@@ -266,6 +298,26 @@ describe('match.ts', () => {
         params: {},
         path: '/files/docs/readme.txt',
         route: '/files/*'
+      })
+    })
+
+    it('should handle named catch-all routes', () => {
+      const matcher = _makeRouteMatcher(['/files/*rest'])
+
+      expect(matcher('/files/docs/readme.txt')).toEqual({
+        params: { rest: 'docs/readme.txt' },
+        path: '/files/docs/readme.txt',
+        route: '/files/*rest'
+      })
+    })
+
+    it('should include named catch-all with other params', () => {
+      const matcher = _makeRouteMatcher(['/:userId/*rest'])
+
+      expect(matcher('/123/files/doc.pdf')).toEqual({
+        params: { userId: '123', rest: 'files/doc.pdf' },
+        path: '/123/files/doc.pdf',
+        route: '/:userId/*rest'
       })
     })
 

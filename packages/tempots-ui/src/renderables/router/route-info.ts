@@ -72,6 +72,10 @@ export type RouteCatchAll = {
    * The type of the catch-all
    */
   type: 'catch-all'
+  /**
+   * Optional parameter name that captures the remaining path.
+   */
+  name?: string
 }
 
 /**
@@ -114,7 +118,11 @@ export type ExtractParamsFromTuple<S extends unknown[]> = S extends []
   : S extends [infer H, ...infer R]
     ? H extends `:${infer P}`
       ? [P, ...ExtractParamsFromTuple<R>]
-      : ExtractParamsFromTuple<R>
+      : H extends `*${infer C}`
+        ? C extends ''
+          ? ExtractParamsFromTuple<R>
+          : [C, ...ExtractParamsFromTuple<R>]
+        : ExtractParamsFromTuple<R>
     : never
 
 /**

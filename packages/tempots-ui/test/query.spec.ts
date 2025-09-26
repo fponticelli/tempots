@@ -8,12 +8,12 @@ describe("query", () => {
     document.body.innerHTML = ""
   })
 
-  test("query basics", async () => {
+  test('query basics', async () => {
     const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       await sleep(5)
       if (request > 2) {
-        throw "test"
+        throw 'test'
       }
       return request
     }
@@ -21,35 +21,34 @@ describe("query", () => {
     const renderable = Query({
       request,
       load,
-      mapError: convertError
-    })({
-      success: v => v.map(v => `success: ${v}`),
-      failure: e => e.map(v => `error: ${v}`),
-      loading: p => p.map(v => "loading..." + (v ?? '')),
+      convertError,
+      success: ({ value }) => value.map(v => `success: ${v}`),
+      failure: ({ error }) => error.map(v => `error: ${v}`),
+      pending: ({ previous }) => previous.map(v => 'loading...' + (v ?? '')),
     })
     expect(renderable).toBeDefined()
     const clear = render(renderable, document.body)
-    expect(document.body.innerHTML).toBe("loading...")
+    expect(document.body.innerHTML).toBe('loading...')
     await sleep(5)
-    expect(document.body.innerHTML).toBe("success: 1")
+    expect(document.body.innerHTML).toBe('success: 1')
     request.value = 2
     await sleep(0)
-    expect(document.body.innerHTML).toBe("loading...1")
+    expect(document.body.innerHTML).toBe('loading...1')
     await sleep(5)
-    expect(document.body.innerHTML).toBe("success: 2")
+    expect(document.body.innerHTML).toBe('success: 2')
     request.value = 3
     await sleep(0)
-    expect(document.body.innerHTML).toBe("loading...2")
+    expect(document.body.innerHTML).toBe('loading...2')
     await sleep(5)
-    expect(document.body.innerHTML).toBe("error: test")
+    expect(document.body.innerHTML).toBe('error: test')
     clear()
   })
 
-  test("query basics sync", async () => {
+  test('query basics sync', async () => {
     const request = prop(1)
     const load = async ({ request }: { request: number }) => {
       if (request > 2) {
-        throw "test"
+        throw 'test'
       }
       return request
     }
@@ -57,23 +56,22 @@ describe("query", () => {
     const renderable = Query({
       request,
       load,
-      mapError: convertError
-    })({
-      success: v => v.map(v => `success: ${v}`),
-      failure: e => e.map(v => `error: ${v}`),
-      loading: () => "loading...",
+      convertError,
+      success: ({ value }) => value.map(v => `success: ${v}`),
+      failure: ({ error }) => error.map(v => `error: ${v}`),
+      pending: () => 'loading...',
     })
     expect(renderable).toBeDefined()
     const clear = render(renderable, document.body)
-    expect(document.body.innerHTML).toBe("loading...")
+    expect(document.body.innerHTML).toBe('loading...')
     await sleep(5)
-    expect(document.body.innerHTML).toBe("success: 1")
+    expect(document.body.innerHTML).toBe('success: 1')
     request.value = 2
     await sleep(5)
-    expect(document.body.innerHTML).toBe("success: 2")
+    expect(document.body.innerHTML).toBe('success: 2')
     request.value = 3
     await sleep(5)
-    expect(document.body.innerHTML).toBe("error: test")
+    expect(document.body.innerHTML).toBe('error: test')
     clear()
   })
 
@@ -89,9 +87,8 @@ describe("query", () => {
     const renderable = Query({
       request,
       load,
-      mapError: convertError
-    })({
-      success: v => v.map(v => `success: ${v}`),
+      convertError,
+      success: ({ value }) => value.map(v => `success: ${v}`),
     })
     expect(renderable).toBeDefined()
     const clear = render(renderable, document.body)

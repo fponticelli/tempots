@@ -54,6 +54,11 @@ export const matchesRoute = <P extends string>(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(params as any)[segment.name] = pathSegment
     } else if (segment.type === 'catch-all') {
+      if (segment.name) {
+        const remainder = pathSegments.slice(i).join('/')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(params as any)[segment.name] = remainder
+      }
       return { params, path }
     }
   }
@@ -78,8 +83,9 @@ export const _parseRouteSegments = (route: string): Route =>
     .map((segment): RouteSegment => {
       if (segment.startsWith(':')) {
         return { type: 'param', name: segment.slice(1) }
-      } else if (segment === '*') {
-        return { type: 'catch-all' }
+      } else if (segment.startsWith('*')) {
+        const name = segment.slice(1)
+        return name != '' ? { type: 'catch-all', name } : { type: 'catch-all' }
       } else {
         return { type: 'literal', value: segment }
       }

@@ -53,6 +53,9 @@ const matchNestedRoute = (
       params[segment.name] = pathSegment!
       consumedSegments++
     } else if (segment.type === 'catch-all') {
+      if (segment.name) {
+        params[segment.name] = pathSegments.slice(consumedSegments).join('/')
+      }
       const matchedPath =
         '/' + pathSegments.slice(0, consumedSegments).join('/')
       const remainingPath = '/' + pathSegments.slice(consumedSegments).join('/')

@@ -58,6 +58,16 @@ describe('route-info.ts', () => {
       expect(routeCatchAll.type).toBe('catch-all')
     })
 
+    it('should export RouteCatchAll with optional name', () => {
+      const routeCatchAll: RouteCatchAll = {
+        type: 'catch-all',
+        name: 'rest'
+      }
+
+      expect(routeCatchAll.type).toBe('catch-all')
+      expect(routeCatchAll.name).toBe('rest')
+    })
+
     it('should export RouteSegment union type', () => {
       const paramSegment: RouteSegment = {
         type: 'param',
@@ -234,6 +244,16 @@ describe('route-info.ts', () => {
       expect(Object.keys(validCatchAll)).toEqual(['type'])
     })
 
+    it('should allow RouteCatchAll with name in structure', () => {
+      const namedCatchAll: RouteCatchAll = {
+        type: 'catch-all',
+        name: 'tail'
+      }
+
+      expect(namedCatchAll.type).toBe('catch-all')
+      expect(namedCatchAll.name).toBe('tail')
+    })
+
     it('should handle RouteInfo with optional hash', () => {
       const withHash: RouteInfo<{}> = {
         params: {},
@@ -313,6 +333,30 @@ describe('route-info.ts', () => {
       expect(apiRoute).toHaveLength(3)
       expect(apiRoute[2].type).toBe('catch-all')
       expect(apiRouteInfo.params.version).toBe('v2')
+    })
+
+    it('should support named catch-all route structure', () => {
+      const route: Route = [
+        { type: 'literal', value: 'files' },
+        { type: 'catch-all', name: 'rest' }
+      ]
+
+      const params: MakeParams<ExtractParams<'/files/*rest'>> = {
+        rest: 'docs/report.pdf'
+      }
+
+      expect(route[1]).toEqual({ type: 'catch-all', name: 'rest' })
+      expect(params.rest).toBe('docs/report.pdf')
+    })
+
+    it('should include named catch-all in combined params type', () => {
+      const params: MakeParams<ExtractParams<'/:userId/*more'>> = {
+        userId: '42',
+        more: 'details/extra'
+      }
+
+      expect(params.userId).toBe('42')
+      expect(params.more).toBe('details/extra')
     })
 
     it('should support file system route structure', () => {
