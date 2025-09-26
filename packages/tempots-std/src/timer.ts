@@ -81,9 +81,28 @@ export interface CancelOptions {
  * Represents a throttled function with a cancel method.
  * @public
  */
-export interface ThrottledFunction<T extends unknown[]> {
-  (...args: T): void
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface ThrottledFunction<TArgs extends any[], This = unknown> {
+  (this: This, ...args: TArgs): void
   cancel: (options?: CancelOptions) => void
+}
+
+export interface ThrottleOptions {
+  noTrailing?: boolean
+  noLeading?: boolean
+  debounceMode?: boolean
+}
+
+/**
+ * Options for debouncing a function.
+ * @public
+ */
+export type DebounceOptions = {
+  /**
+   * If true, the callback is executed immediately before the delay.
+   * @default false
+   */
+  atBegin?: boolean
 }
 
 /**
@@ -131,55 +150,40 @@ export interface ThrottledFunction<T extends unknown[]> {
  * Common delay values are 100-250ms for UI updates and 1000ms+ for API calls.
  * @public
  */
-export const throttle = <FN extends (...args: unknown[]) => void>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function throttle<This, F extends (this: This, ...args: any[]) => any>(
   delay: number,
-  callback: FN,
+  callback: F,
   options: ThrottleOptions = {}
-): ThrottledFunction<Parameters<FN>> => {
+): ThrottledFunction<Parameters<F>, This> {
   const { noTrailing = false, noLeading = false, debounceMode } = options
 
   let timeoutID: ReturnType<typeof setTimeout> | undefined
   let cancelled = false
   let lastExec = 0
 
-  /**
-   * Clears any existing timeout if one exists
-   */
   function clearExistingTimeout() {
     if (timeoutID) clearTimeout(timeoutID)
   }
 
-  /**
-   * Cancels the throttled function
-   * @param opts - Options for cancellation behavior
-   */
   function cancel(opts?: CancelOptions) {
     const { upcomingOnly = false } = opts || {}
     clearExistingTimeout()
     cancelled = !upcomingOnly
   }
 
-  /**
-   * The wrapper function that implements the throttling behavior
-   */
-  function wrapper(this: unknown, ...args: unknown[]) {
+  function wrapper(this: This, ...args: Parameters<F>) {
     if (cancelled) return
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this
+    const self = this as This
     const elapsed = Date.now() - lastExec
 
-    /**
-     * Executes the callback with the correct context and arguments
-     */
     function exec() {
       lastExec = Date.now()
-      callback.apply(self, args)
+      // args are already Parameters<F>; self is typed as This
+      callback.apply(self, args as unknown as Parameters<F>)
     }
 
-    /**
-     * Clears the timeout ID
-     */
     function clear() {
       timeoutID = undefined
     }
@@ -194,7 +198,6 @@ export const throttle = <FN extends (...args: unknown[]) => void>(
       if (noLeading) {
         lastExec = Date.now()
         if (!noTrailing) {
-          /* c8 ignore next */
           timeoutID = setTimeout(debounceMode ? clear : exec, delay)
         }
       } else {
@@ -203,25 +206,13 @@ export const throttle = <FN extends (...args: unknown[]) => void>(
     } else if (!noTrailing) {
       timeoutID = setTimeout(
         debounceMode ? clear : exec,
-        debounceMode === undefined ? delay - elapsed : delay
+        debounceMode === undefined ? Math.max(0, delay - elapsed) : delay
       )
     }
   }
 
-  wrapper.cancel = cancel
-  return wrapper
-}
-
-/**
- * Options for debouncing a function.
- * @public
- */
-export type DebounceOptions = {
-  /**
-   * If true, the callback is executed immediately before the delay.
-   * @default false
-   */
-  atBegin?: boolean
+  ;(wrapper as ThrottledFunction<Parameters<F>, This>).cancel = cancel
+  return wrapper as ThrottledFunction<Parameters<F>, This>
 }
 
 /**
@@ -249,21 +240,22 @@ export type DebounceOptions = {
  *
  * @param {number} delay -               A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
  * @param {Function} callback -          A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
- *                                        to `callback` when the debounced-function is executed.
+ *                                       to `callback` when the debounced-function is executed.
  * @param {object} [options] -           An object to configure options.
  * @param {boolean} [options.atBegin] -  Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed `delay` milliseconds
- *                                        after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
- *                                        (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
+ *                                       after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
+ *                                       (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
  *
  * @returns {Function} A new, debounced function.
  * @public
  */
-export const debounce = <FN extends (...args: unknown[]) => void>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<This, F extends (this: This, ...args: any[]) => any>(
   delay: number,
-  callback: FN,
+  callback: F,
   { atBegin = false }: DebounceOptions = {}
-): ThrottledFunction<Parameters<FN>> => {
-  return throttle(delay, callback, { debounceMode: atBegin !== false })
+): ThrottledFunction<Parameters<F>, This> {
+  return throttle<This, F>(delay, callback, { debounceMode: atBegin !== false })
 }
 
 /**

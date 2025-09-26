@@ -87,140 +87,170 @@ describe('Timer utilities - Basic functionality', () => {
     });
   });
 
+  describe('debounce inline typing', () => {
+    test('works correctly with no arguments', () => {
+      debounce(10, () => {})
+      expect(true).toBe(true)
+    })
+    test('works correctly with one argument', () => {
+      debounce(10, (a: string) => {})
+      expect(true).toBe(true)
+    })
+    test('works correctly with arguments', () => {
+      debounce(10, (a: string, b: number, c: boolean) => {})
+      expect(true).toBe(true)
+    })
+  })
+
   describe('debounce', () => {
     test('returns a debounced function with cancel method', () => {
-      const mockFn = vi.fn();
-      const debounced = debounce(1000, mockFn);
+      const mockFn = vi.fn()
+      const debounced = debounce(1000, mockFn)
 
-      expect(typeof debounced).toBe('function');
-      expect(typeof debounced.cancel).toBe('function');
-    });
+      expect(typeof debounced).toBe('function')
+      expect(typeof debounced.cancel).toBe('function')
+    })
 
     test('accepts options parameter', () => {
-      const mockFn = vi.fn();
+      const mockFn = vi.fn()
 
-      expect(() => debounce(1000, mockFn)).not.toThrow();
-      expect(() => debounce(1000, mockFn, {})).not.toThrow();
-      expect(() => debounce(1000, mockFn, { atBegin: true })).not.toThrow();
-      expect(() => debounce(1000, mockFn, { atBegin: false })).not.toThrow();
-    });
+      expect(() => debounce(1000, mockFn)).not.toThrow()
+      expect(() => debounce(1000, mockFn, {})).not.toThrow()
+      expect(() => debounce(1000, mockFn, { atBegin: true })).not.toThrow()
+      expect(() => debounce(1000, mockFn, { atBegin: false })).not.toThrow()
+    })
 
     test('cancel method accepts options', () => {
-      const mockFn = vi.fn();
-      const debounced = debounce(1000, mockFn);
+      const mockFn = vi.fn()
+      const debounced = debounce(1000, mockFn)
 
-      expect(() => debounced.cancel()).not.toThrow();
-      expect(() => debounced.cancel({})).not.toThrow();
-      expect(() => debounced.cancel({ upcomingOnly: true })).not.toThrow();
-      expect(() => debounced.cancel({ upcomingOnly: false })).not.toThrow();
-    });
+      expect(() => debounced.cancel()).not.toThrow()
+      expect(() => debounced.cancel({})).not.toThrow()
+      expect(() => debounced.cancel({ upcomingOnly: true })).not.toThrow()
+      expect(() => debounced.cancel({ upcomingOnly: false })).not.toThrow()
+    })
 
     test('can be called with arguments', () => {
-      const mockFn = vi.fn();
-      const debounced = debounce(1000, mockFn);
+      const mockFn = vi.fn()
+      const debounced = debounce(1000, mockFn)
 
-      expect(() => debounced()).not.toThrow();
-      expect(() => debounced('arg1', 'arg2', 42)).not.toThrow();
-    });
-  });
+      expect(() => debounced()).not.toThrow()
+      expect(() => debounced('arg1', 'arg2', 42)).not.toThrow()
+    })
+  })
 
   describe('delayedAnimationFrame', () => {
     test('returns a cancel function', () => {
       // Mock requestAnimationFrame
-      global.requestAnimationFrame = vi.fn((callback) => {
-        return setTimeout(callback, 16) as any;
-      });
-      global.cancelAnimationFrame = vi.fn();
+      global.requestAnimationFrame = vi.fn(callback => {
+        return setTimeout(callback, 16) as any
+      })
+      global.cancelAnimationFrame = vi.fn()
 
-      const mockFn = vi.fn();
-      const cancel = delayedAnimationFrame(mockFn);
+      const mockFn = vi.fn()
+      const cancel = delayedAnimationFrame(mockFn)
 
-      expect(typeof cancel).toBe('function');
-      expect(() => cancel()).not.toThrow();
-    });
+      expect(typeof cancel).toBe('function')
+      expect(() => cancel()).not.toThrow()
+    })
 
     test('calls requestAnimationFrame', () => {
-      global.requestAnimationFrame = vi.fn((callback) => {
-        return setTimeout(callback, 16) as any;
-      });
-      global.cancelAnimationFrame = vi.fn();
+      global.requestAnimationFrame = vi.fn(callback => {
+        return setTimeout(callback, 16) as any
+      })
+      global.cancelAnimationFrame = vi.fn()
 
-      const mockFn = vi.fn();
-      delayedAnimationFrame(mockFn);
+      const mockFn = vi.fn()
+      delayedAnimationFrame(mockFn)
 
-      expect(global.requestAnimationFrame).toHaveBeenCalledTimes(1);
-    });
+      expect(global.requestAnimationFrame).toHaveBeenCalledTimes(1)
+    })
 
     test('executes callback when animation frame fires', async () => {
-      let frameCallback: ((time: number) => void) | null = null;
-      global.requestAnimationFrame = vi.fn((callback) => {
-        frameCallback = callback;
-        return 123 as any;
-      });
-      global.cancelAnimationFrame = vi.fn();
+      let frameCallback: ((time: number) => void) | null = null
+      global.requestAnimationFrame = vi.fn(callback => {
+        frameCallback = callback
+        return 123 as any
+      })
+      global.cancelAnimationFrame = vi.fn()
 
-      const mockFn = vi.fn();
-      delayedAnimationFrame(mockFn);
+      const mockFn = vi.fn()
+      delayedAnimationFrame(mockFn)
 
       // Trigger the animation frame callback to cover lines 279-281
-      expect(frameCallback).not.toBeNull();
-      frameCallback!(performance.now());
+      expect(frameCallback).not.toBeNull()
+      frameCallback!(performance.now())
 
-      expect(mockFn).toHaveBeenCalledTimes(1);
-      expect(mockFn).toHaveBeenCalledWith(expect.any(Number));
-    });
-  });
+      expect(mockFn).toHaveBeenCalledTimes(1)
+      expect(mockFn).toHaveBeenCalledWith(expect.any(Number))
+    })
+  })
 
   describe('intervalAnimationFrame', () => {
     test('returns a stop function', () => {
       // Mock requestAnimationFrame
-      global.requestAnimationFrame = vi.fn((callback) => {
-        return setTimeout(callback, 16) as any;
-      });
-      global.cancelAnimationFrame = vi.fn();
+      global.requestAnimationFrame = vi.fn(callback => {
+        return setTimeout(callback, 16) as any
+      })
+      global.cancelAnimationFrame = vi.fn()
 
-      const mockFn = vi.fn();
-      const stop = intervalAnimationFrame(mockFn);
+      const mockFn = vi.fn()
+      const stop = intervalAnimationFrame(mockFn)
 
-      expect(typeof stop).toBe('function');
-      expect(() => stop()).not.toThrow();
-    });
+      expect(typeof stop).toBe('function')
+      expect(() => stop()).not.toThrow()
+    })
 
     test('calls requestAnimationFrame', () => {
-      global.requestAnimationFrame = vi.fn((callback) => {
-        return setTimeout(callback, 16) as any;
-      });
-      global.cancelAnimationFrame = vi.fn();
+      global.requestAnimationFrame = vi.fn(callback => {
+        return setTimeout(callback, 16) as any
+      })
+      global.cancelAnimationFrame = vi.fn()
 
-      const mockFn = vi.fn();
-      intervalAnimationFrame(mockFn);
+      const mockFn = vi.fn()
+      intervalAnimationFrame(mockFn)
 
-      expect(global.requestAnimationFrame).toHaveBeenCalled();
-    });
+      expect(global.requestAnimationFrame).toHaveBeenCalled()
+    })
 
     test('executes callback repeatedly when animation frames fire', async () => {
-      let frameCallback: ((time: number) => void) | null = null;
-      let callCount = 0;
-      global.requestAnimationFrame = vi.fn((callback) => {
-        frameCallback = callback;
-        return 123 + callCount++ as any;
-      });
-      global.cancelAnimationFrame = vi.fn();
+      let frameCallback: ((time: number) => void) | null = null
+      let callCount = 0
+      global.requestAnimationFrame = vi.fn(callback => {
+        frameCallback = callback
+        return (123 + callCount++) as any
+      })
+      global.cancelAnimationFrame = vi.fn()
 
-      const mockFn = vi.fn();
-      const stop = intervalAnimationFrame(mockFn);
+      const mockFn = vi.fn()
+      const stop = intervalAnimationFrame(mockFn)
 
       // Trigger the animation frame callback to cover lines 307-309
-      expect(frameCallback).not.toBeNull();
-      frameCallback!(performance.now());
+      expect(frameCallback).not.toBeNull()
+      frameCallback!(performance.now())
 
-      expect(mockFn).toHaveBeenCalledTimes(1);
-      expect(mockFn).toHaveBeenCalledWith(expect.any(Number));
+      expect(mockFn).toHaveBeenCalledTimes(1)
+      expect(mockFn).toHaveBeenCalledWith(expect.any(Number))
 
       // Stop the interval to prevent infinite callbacks
-      stop();
-    });
-  });
+      stop()
+    })
+  })
+
+  describe('throttle inline typing', () => {
+    test('works correctly with no arguments', () => {
+      throttle(10, () => {})
+      expect(true).toBe(true)
+    })
+    test('works correctly with one argument', () => {
+      throttle(10, (a: string) => {})
+      expect(true).toBe(true)
+    })
+    test('works correctly with arguments', () => {
+      throttle(10, (a: string, b: number, c: boolean) => {})
+      expect(true).toBe(true)
+    })
+  })
 
   describe('throttle edge cases for coverage', () => {
     test('covers debounceMode with noLeading=false path (lines 188-189)', () => {
