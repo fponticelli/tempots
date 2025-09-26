@@ -1,5 +1,11 @@
-import { Fragment, OnDispose, Renderable, Signal, TNode } from '@tempots/dom'
-import { AsyncResultView } from './async-result-view'
+import {
+  Fragment,
+  OnDispose,
+  previousSignal,
+  Renderable,
+  Signal,
+  TNode,
+} from '@tempots/dom'
 import { AsyncResult, NonLoading } from '@tempots/std'
 import {
   makeMutationResource,
@@ -16,24 +22,15 @@ import {
  */
 export interface MutationDisplayOptions<Req, Res, E> {
   /** Function to render when the query is loading. */
-  pending?: (options: {
+  content: (options: {
     previous: Signal<Res | undefined>
-    retry: () => void
     execute: (request: Req) => void
     cancel: (newState?: NonLoading<Res, E>) => void
+    pending: Signal<boolean>
+    error: Signal<E | undefined>
+    value: Signal<Res | undefined>
+    status: Signal<AsyncResult<Res, E>>
   }) => TNode
-  /** Function to render when the query has failed to load. */
-  failure?: (options: {
-    error: Signal<E>
-    retry: () => void
-    execute: (request: Req) => void
-  }) => TNode
-  /** Function to render when the query has successfully loaded. */
-  success: (options: {
-    value: Signal<Res>
-    execute: (request: Req) => void
-  }) => TNode
-  notAsked: (options: { execute: (request: Req) => void }) => TNode
 }
 
 /**
@@ -52,40 +49,20 @@ export const MutationDisplay = <Req, Res, E>(
   resource: MutationResource<Req, Res, E>,
   options: MutationDisplayOptions<Req, Res, E>
 ): Renderable => {
-  const { status, dispose, execute } = resource
-  const { pending, failure, success, notAsked } = options
-
-  let lastRequest: Req | undefined
-  const retry = () => {
-    if (lastRequest != null) {
-      execute(lastRequest)
-    }
-  }
-
-  const executeWithRetry = (request: Req) => {
-    lastRequest = request
-    execute(request)
-  }
+  const { status, dispose, execute, cancel, pending, error, value } = resource
+  const { content } = options
+  const previous = previousSignal(value)
 
   return Fragment(
     OnDispose(dispose),
-    AsyncResultView(status, {
-      loading:
-        pending != null
-          ? v =>
-              pending({
-                previous: v,
-                retry,
-                execute: executeWithRetry,
-                cancel: resource.cancel,
-              })
-          : undefined,
-      failure:
-        failure != null
-          ? e => failure({ error: e, retry, execute: executeWithRetry })
-          : undefined,
-      success: value => success({ value, execute: executeWithRetry }),
-      notAsked: () => notAsked({ execute: executeWithRetry }),
+    content({
+      previous,
+      execute,
+      cancel,
+      pending,
+      error,
+      value,
+      status,
     })
   )
 }
@@ -112,10 +89,7 @@ export const Mutation = <Req, Res, E = unknown>({
   onSuccess,
   onError,
   onSettled,
-  pending,
-  failure,
-  success,
-  notAsked,
+  content,
 }: {
   mutate: (options: MutationResourceExecuteOptions<Req, Res, E>) => Promise<Res>
   convertError?: (error: unknown) => E
@@ -130,10 +104,5 @@ export const Mutation = <Req, Res, E = unknown>({
     onError,
     onSettled,
   })
-  return MutationDisplay(resource, {
-    pending,
-    failure,
-    success,
-    notAsked,
-  })
+  return MutationDisplay(resource, { content })
 }

@@ -421,6 +421,48 @@ export const delaySignal = <T>(
 }
 
 /**
+ * Creates a signal that emits the previous value of the input signal.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param signal - The input signal.
+ * @returns - The signal that emits the previous value of the input signal.
+ * @public
+ */
+export const previousSignal = <T>(signal: Signal<T>): Signal<T | undefined> => {
+  let previous: T | undefined = undefined
+  return signal.map(v => {
+    const current = previous
+    previous = v
+    return current
+  })
+}
+
+/**
+ * Creates a signal that emits a sliding window of values from the input signal.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param options - The options for the sliding window.
+ * @returns - The signal that emits the sliding window of values.
+ * @public
+ */
+export const slidingWindowSignal = <T>({
+  size = undefined,
+  signal,
+}: {
+  size: number | undefined
+  signal: Signal<T>
+}) => {
+  const values = [] as T[]
+  return signal.map(v => {
+    values.push(v)
+    if (size != null && values.length > size) {
+      values.shift()
+    }
+    return values.slice()
+  })
+}
+
+/**
  * Binds a function or signal of a function to a set of signals and literals.
  *
  * @typeParam FN - The type of the function to bind.
