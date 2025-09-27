@@ -36,6 +36,14 @@ export const matchesRoute = <P extends string>(
   type Params = ExtractParams<P>
   const pathSegments = path.split('/').filter(segment => segment !== '')
 
+  const decodeParam = (value: string): string => {
+    try {
+      return decodeURIComponent(value)
+    } catch {
+      return value
+    }
+  }
+
   const params = {} as Params
 
   for (let i = 0; i < route.length; i++) {
@@ -52,12 +60,12 @@ export const matchesRoute = <P extends string>(
       }
     } else if (segment.type === 'param') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(params as any)[segment.name] = pathSegment
+      ;(params as any)[segment.name] = decodeParam(pathSegment)
     } else if (segment.type === 'catch-all') {
       if (segment.name) {
         const remainder = pathSegments.slice(i).join('/')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(params as any)[segment.name] = remainder
+        ;(params as any)[segment.name] = decodeParam(remainder)
       }
       return { params, path }
     }

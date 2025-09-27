@@ -112,6 +112,19 @@ describe('match.ts', () => {
       })
     })
 
+    it('should decode percent-encoded parameters', () => {
+      const route: Route = [
+        { type: 'literal', value: 'users' },
+        { type: 'param', name: 'name' }
+      ]
+      const result = matchesRoute(route, '/users/Jane%20Doe')
+
+      expect(result).toEqual({
+        params: { name: 'Jane Doe' },
+        path: '/users/Jane%20Doe'
+      })
+    })
+
     it('should match multiple parameters', () => {
       const route: Route = [
         { type: 'literal', value: 'users' },
@@ -150,6 +163,19 @@ describe('match.ts', () => {
       expect(result).toEqual({
         params: { rest: 'docs/readme.txt' },
         path: '/files/docs/readme.txt'
+      })
+    })
+
+    it('should decode percent-encoded catch-all segments', () => {
+      const route: Route = [
+        { type: 'literal', value: 'files' },
+        { type: 'catch-all', name: 'rest' }
+      ]
+      const result = matchesRoute(route, '/files/docs%2Freadme.txt')
+
+      expect(result).toEqual({
+        params: { rest: 'docs/readme.txt' },
+        path: '/files/docs%2Freadme.txt'
       })
     })
 

@@ -75,6 +75,23 @@ describe("query", () => {
     clear()
   })
 
+  test('query inline type inference', async () => {
+    const renderable = Query({
+      request: 1,
+      load: async ({ request }) => {
+        if (request > 2) {
+          throw 'test'
+        }
+        return request
+      },
+      convertError: String,
+      success: ({ value }) => value.map(v => `success: ${v}`),
+      failure: ({ error }) => error.map(v => `error: ${v}`),
+      pending: () => 'loading...',
+    })
+    expect(renderable).toBeDefined()
+  })
+
   test("query no default loading", async () => {
     const request = prop(1)
     const load = async ({ request }: { request: number }) => {
