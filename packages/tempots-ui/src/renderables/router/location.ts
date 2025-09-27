@@ -2,13 +2,40 @@
  * Runtime location provider that unifies browser and headless navigation while exposing
  * a convenience handle for reading and mutating URL state.
  */
-import { DOMContext, Provider, Signal, makeProviderMark } from '@tempots/dom'
+import {
+  DOMContext,
+  Provider,
+  Signal,
+  Value,
+  computedOf,
+  makeProviderMark,
+} from '@tempots/dom'
 import type { Prop } from '@tempots/dom'
 import { LocationData, urlFromLocation } from './location-data'
 import { makeBrowserLocationSource } from './browser-location'
 import { makeHeadlessLocationSource } from './headless-location'
 import type { NavigationOptions } from './navigation-options'
 export type { NavigationOptions } from './navigation-options'
+
+/**
+ * Options that control how `LocationHandle.match` and `matchSignal` interpret URL parts.
+ *
+ * @public
+ */
+export type LocationMatchOptions = {
+  /**
+   * Whether the search parameters should participate in the match. Defaults to `true`.
+   */
+  includeSearch?: boolean
+  /**
+   * Whether the hash fragment should participate in the match. Defaults to `true`.
+   */
+  includeHash?: boolean
+  /**
+   * Keys that should be ignored when comparing search parameters.
+   */
+  ignoreSearchParams?: string[]
+}
 
 type HistoryAction = 'pushState' | 'replaceState'
 
@@ -63,6 +90,54 @@ const applySearchEntries = (
     }
   }
   return next
+}
+
+const filterLocationForMatch = (
+  location: LocationData,
+  options: LocationMatchOptions | undefined
+): LocationData => {
+  const includeSearch = options?.includeSearch ?? true
+  const includeHash = options?.includeHash ?? true
+  const ignoreParams = options?.ignoreSearchParams ?? []
+
+  let search: Record<string, string>
+  if (!includeSearch) {
+    search = {}
+  } else if (ignoreParams.length === 0) {
+    search = { ...location.search }
+  } else {
+    const ignoreSet = new Set(ignoreParams)
+    search = {}
+    for (const [key, value] of Object.entries(location.search)) {
+      if (!ignoreSet.has(key)) {
+        search[key] = value
+      }
+    }
+  }
+
+  return {
+    pathname: location.pathname,
+    search,
+    hash: includeHash ? location.hash : undefined,
+  }
+}
+
+export const evaluateLocationMatch = (
+  location: LocationData,
+  matcher: string | RegExp | ((location: LocationData) => boolean),
+  options: LocationMatchOptions | undefined
+) => {
+  const filtered = filterLocationForMatch(location, options)
+  if (typeof matcher === 'string') {
+    return urlFromLocation(filtered) === matcher
+  }
+  if (matcher instanceof RegExp) {
+    if (matcher.global || matcher.sticky) {
+      matcher.lastIndex = 0
+    }
+    return matcher.test(urlFromLocation(filtered))
+  }
+  return matcher(filtered)
 }
 
 /**
@@ -155,6 +230,22 @@ const buildHandle = (
   const pathname = location.map(loc => loc.pathname)
   const search = location.map(loc => ({ ...loc.search }))
   const hash = location.map(loc => loc.hash)
+
+  const match = (
+    matcher: string | RegExp | ((location: LocationData) => boolean),
+    matchOptions?: LocationMatchOptions
+  ) => evaluateLocationMatch(source.location.value, matcher, matchOptions)
+
+  const matchSignal = (
+    matcher: Value<string | RegExp | ((location: LocationData) => boolean)>,
+    matchOptions?: LocationMatchOptions
+  ) =>
+    computedOf(
+      location,
+      matcher
+    )((current, currentMatcher) =>
+      evaluateLocationMatch(current, currentMatcher, matchOptions)
+    )
 
   const commit = (
     data: LocationData,
@@ -297,6 +388,8 @@ const buildHandle = (
       updateSearch,
       queryParam,
       run,
+      match,
+      matchSignal,
     },
     dispose,
   }
@@ -411,6 +504,20 @@ export type LocationHandle = {
     mutate: (draft: LocationDraft) => void,
     options?: NavigationOptions
   ) => void
+  /**
+   * Evaluates whether the current location matches the provided matcher, honouring match options.
+   */
+  match: (
+    matcher: string | RegExp | ((location: LocationData) => boolean),
+    options?: LocationMatchOptions
+  ) => boolean
+  /**
+   * Returns a reactive signal that mirrors the result of `match`.
+   */
+  matchSignal: (
+    matcher: Value<string | RegExp | ((location: LocationData) => boolean)>,
+    options?: LocationMatchOptions
+  ) => Signal<boolean>
 }
 
 /**

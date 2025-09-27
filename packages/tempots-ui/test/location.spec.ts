@@ -92,4 +92,58 @@ describe('Location provider', () => {
       cleanup()
     }
   })
+
+  it('should support location matching with filtering options', () => {
+    const { handle, cleanup } = renderWithLocation(
+      'https://example.com/orders/summary?step=shipping&token=xyz#details'
+    )
+
+    try {
+      expect(handle.match('/orders/summary?step=shipping&token=xyz#details')).toBe(
+        true
+      )
+      expect(handle.match('/orders/summary', { includeSearch: false, includeHash: false })).toBe(
+        true
+      )
+      expect(
+        handle.match('/orders/summary?step=shipping', {
+          includeHash: false,
+          ignoreSearchParams: ['token'],
+        })
+      ).toBe(true)
+      expect(
+        handle.match(loc => loc.search.step === 'shipping', {
+          includeHash: false,
+          ignoreSearchParams: ['token'],
+        })
+      ).toBe(true)
+      expect(handle.match(/orders\/summary/)).toBe(true)
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('should expose reactive match signal', () => {
+    const { handle, cleanup } = renderWithLocation(
+      'https://example.com/profile?tab=info'
+    )
+
+    try {
+      const isProfile = handle.matchSignal('/profile?tab=info')
+      expect(isProfile.value).toBe(true)
+
+      handle.setSearchParam('tab', 'settings')
+      expect(isProfile.value).toBe(false)
+
+      const ignoreTab = handle.matchSignal('/profile', {
+        includeSearch: false,
+      })
+      expect(ignoreTab.value).toBe(true)
+
+      handle.setPathname('/account')
+      expect(ignoreTab.value).toBe(false)
+    } finally {
+      cleanup()
+    }
+  })
 })
