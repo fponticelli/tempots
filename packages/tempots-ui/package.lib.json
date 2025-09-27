@@ -1,6 +1,6 @@
 {
   "name": "@tempots/ui",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
