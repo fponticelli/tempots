@@ -16,6 +16,22 @@ import {
  */
 export type Value<T> = Signal<T> | T
 
+function isTruthy<T>(value: T): boolean {
+  return value != null && value !== false && value !== 0 && value !== ''
+}
+
+function isFalsy<T>(value: T): boolean {
+  return !isTruthy(value)
+}
+
+function isNil<T>(value: T): boolean {
+  return value == null
+}
+
+function isDefined<T>(value: T): boolean {
+  return value != null
+}
+
 export const Value = {
   /**
    * Maps a value or a Signal to a new value.
@@ -135,6 +151,31 @@ export const Value = {
       return prop(value, equals)
     }
   },
+
+  /**
+   * Creates a new signal that emits `true` if the value is truthy, `false` otherwise.
+   * @param value - The value or signal to check.
+   * @returns A signal that emits `true` if the value is truthy, `false` otherwise.
+   */
+  truthy: <T>(value: Value<T>): Value<boolean> => Value.map(value, isTruthy),
+  /**
+   * Creates a new signal that emits `true` if the value is falsy, `false` otherwise.
+   * @param value - The value or signal to check.
+   * @returns A signal that emits `true` if the value is falsy, `false` otherwise.
+   */
+  falsy: <T>(value: Value<T>): Value<boolean> => Value.map(value, isFalsy),
+  /**
+   * Creates a new signal that emits `true` if the value is null or undefined, `false` otherwise.
+   * @param value - The value or signal to check.
+   * @returns A signal that emits `true` if the value is null or undefined, `false` otherwise.
+   */
+  nil: <T>(value: Value<T>): Value<boolean> => Value.map(value, isNil),
+  /**
+   * Creates a new signal that emits `true` if the value is not null or undefined, `false` otherwise.
+   * @param value - The value or signal to check.
+   * @returns A signal that emits `true` if the value is not null or undefined, `false` otherwise.
+   */
+  defined: <T>(value: Value<T>): Value<boolean> => Value.map(value, isDefined),
 }
 
 /**
