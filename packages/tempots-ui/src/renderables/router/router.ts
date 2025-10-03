@@ -262,12 +262,13 @@ export const ChildRouter = <
       const route = contextStack.map(stack => {
         // Get the remaining path from the last context in the stack
         const parentContext = stack[stack.length - 1]
-        const remainingPath = parentContext?.remainingPath || ''
 
-        if (remainingPath === '') {
-          console.error('No remaining path for SubRouter', stack)
-          throw new Error('No remaining path for SubRouter')
+        if (parentContext == null) {
+          console.error('No router context available for ChildRouter', stack)
+          throw new Error('No router context available for ChildRouter')
         }
+
+        const remainingPath = parentContext.remainingPath ?? ''
 
         const match = matchRoute(remainingPath)
         if (match == null) {

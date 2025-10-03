@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { RootRouter, ChildRouter } from '../src/renderables/router/router'
 import { runHeadless, Provide } from '@tempots/dom'
 import { Location } from '../src/renderables/router/location'
+import { _makeRouteMatcher } from '../src/renderables/router/match'
 
 describe('Router Integration Tests - Actual Behavior', () => {
   beforeEach(() => {
@@ -29,9 +30,9 @@ describe('Router Integration Tests - Actual Behavior', () => {
               console.log('ChildRouter matched, sub.$.params:', sub.$.params)
               capturedSubParams = sub.$.params
               return Edit(info.$.params.$.id)
-            }
+            },
           })
-        }
+        },
       }
 
       const App = () => Provide(Location, {}, () => RootRouter(routes))
@@ -39,7 +40,7 @@ describe('Router Integration Tests - Actual Behavior', () => {
       // Test with headless environment
       const { clear } = runHeadless(App, {
         startUrl: 'https://example.com/123/edit',
-        selector: 'body'
+        selector: 'body',
       })
 
       try {
@@ -54,11 +55,11 @@ describe('Router Integration Tests - Actual Behavior', () => {
         // If we get here, the routing worked!
         // Check if the values are signals or direct values
         const idValue = (capturedId as any)?.value ?? capturedId
-        const paramsValue = (capturedSubParams as any)?.value ?? capturedSubParams
+        const paramsValue =
+          (capturedSubParams as any)?.value ?? capturedSubParams
 
         expect(idValue).toBe('123')
         expect(paramsValue).toEqual({}) // Should be empty due to parameter isolation
-
       } catch (error) {
         console.log('Unexpected routing error:', (error as Error).message)
 
@@ -89,24 +90,26 @@ describe('Router Integration Tests - Actual Behavior', () => {
             '/posts/:postId': (sub: any) => {
               routerParams.child = sub.$.params
               return `User ${info.$.params.$.userId} Post ${sub.$.params.$.postId}`
-            }
+            },
           })
-        }
+        },
       }
 
       const App = () => Provide(Location, {}, () => RootRouter(routes))
 
       const { clear } = runHeadless(App, {
         startUrl: 'https://example.com/123/posts/456',
-        selector: 'body'
+        selector: 'body',
       })
 
       try {
         await new Promise(resolve => setTimeout(resolve, 10))
 
         // Handle signals properly - extract values
-        const parentValue = (routerParams.parent as any)?.value ?? routerParams.parent
-        const childValue = (routerParams.child as any)?.value ?? routerParams.child
+        const parentValue =
+          (routerParams.parent as any)?.value ?? routerParams.parent
+        const childValue =
+          (routerParams.child as any)?.value ?? routerParams.child
 
         // Parent should have its parameter
         expect(parentValue).toEqual({ userId: '123' })
@@ -114,7 +117,6 @@ describe('Router Integration Tests - Actual Behavior', () => {
         // Child should ONLY have its own parameter, not the parent's
         expect(childValue).toEqual({ postId: '456' })
         expect(childValue).not.toHaveProperty('userId')
-
       } finally {
         clear()
       }
@@ -131,16 +133,16 @@ describe('Router Integration Tests - Actual Behavior', () => {
             '/users': (sub: any) => {
               capturedParams = sub.$.params
               return 'Admin Users'
-            }
+            },
           })
-        }
+        },
       }
 
       const App = () => Provide(Location, {}, () => RootRouter(routes))
 
       const { clear } = runHeadless(App, {
         startUrl: 'https://example.com/admin/users',
-        selector: 'body'
+        selector: 'body',
       })
 
       try {
@@ -151,7 +153,6 @@ describe('Router Integration Tests - Actual Behavior', () => {
 
         // Child router should have empty params since '/users' has no parameters
         expect(paramsValue).toEqual({})
-
       } finally {
         clear()
       }
@@ -175,11 +176,13 @@ describe('Router Integration Tests - Actual Behavior', () => {
           return ChildRouter({
             '/edit': (sub: any) => {
               childHandlerCallCount++
-              console.log(`ChildRouter handler called ${childHandlerCallCount} times`)
+              console.log(
+                `ChildRouter handler called ${childHandlerCallCount} times`
+              )
               return `Edit ${info.$.params.$.id}`
-            }
+            },
           })
-        }
+        },
       }
 
       // Wrap ChildRouter to count its invocations
@@ -199,18 +202,20 @@ describe('Router Integration Tests - Actual Behavior', () => {
           return mockChildRouter({
             '/edit': (_sub: any) => {
               childHandlerCallCount++
-              console.log(`ChildRouter handler called ${childHandlerCallCount} times`)
+              console.log(
+                `ChildRouter handler called ${childHandlerCallCount} times`
+              )
               return `Edit ${info.$.params.$.id}`
-            }
+            },
           })
-        }
+        },
       }
 
       const App = () => Provide(Location, {}, () => RootRouter(routesWithMock))
 
       const { clear } = runHeadless(App, {
         startUrl: 'https://example.com/123/edit',
-        selector: 'body'
+        selector: 'body',
       })
 
       try {
@@ -261,6 +266,59 @@ describe('Router Integration Tests - Actual Behavior', () => {
     })
   })
 
-  // REMOVED: Edge case tests that don't add significant value
-  // The core functionality is already well tested
+  describe('Regression: empty remaining path handling', () => {
+    it('should render child catch-all when parent catch-all has no remaining segments', async () => {
+      let rendered: string | undefined
+      let outerNotFoundHit = false
+
+      const routes = {
+        '/:agencyId/*': (_info: any) => {
+          return ChildRouter({
+            '/prepare': () => {
+              rendered = 'prepare'
+              return 'Prepare'
+            },
+            '/*': () => {
+              rendered = 'child-not-found'
+              return 'Child Not Found'
+            },
+          })
+        },
+        '/*': () => {
+          outerNotFoundHit = true
+          rendered = 'outer-not-found'
+          return 'Outer Not Found'
+        },
+      }
+
+      const App = () => Provide(Location, {}, () => RootRouter(routes))
+
+      const { clear } = runHeadless(App, {
+        startUrl: 'https://example.com/xxx',
+        selector: 'body',
+      })
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 10))
+
+        const renderedValue = (rendered as any)?.value ?? rendered
+        expect(renderedValue).toBe('child-not-found')
+        expect(outerNotFoundHit).toBe(false)
+      } finally {
+        clear()
+      }
+    })
+
+    it('should render parent catch-all when child catch-all is not defined', () => {
+      const rootMatcher = _makeRouteMatcher(['/:agencyId/*', '/*'])
+      const rootMatch = rootMatcher('/xxx')
+
+      expect(rootMatch?.route).toBe('/:agencyId/*')
+
+      const childMatcher = _makeRouteMatcher(['/prepare'])
+      const childMatch = childMatcher('')
+
+      expect(childMatch).toBeNull()
+    })
+  })
 })
