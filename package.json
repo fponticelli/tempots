@@ -13,6 +13,7 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck",
+    "check": "pnpm lint && pnpm format && pnpm typecheck && pnpm test && pnpm build",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage",

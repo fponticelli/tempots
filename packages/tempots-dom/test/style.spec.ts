@@ -27,6 +27,25 @@ describe('Style', () => {
     document.body.removeChild(element)
   })
 
+  test('should set static css variables', () => {
+    const mockContext = {
+      getStyle: vi.fn().mockReturnValue('initial-var'),
+      setStyle: vi.fn(),
+    }
+
+    const styleRenderable = style.variable('--primary-color', 'red')
+    const dispose = styleRenderable(mockContext as any)
+
+    expect(mockContext.getStyle).toHaveBeenCalledWith('--primary-color')
+    expect(mockContext.setStyle).toHaveBeenCalledWith('--primary-color', 'red')
+
+    dispose(true)
+    expect(mockContext.setStyle).toHaveBeenCalledWith(
+      '--primary-color',
+      'initial-var'
+    )
+  })
+
   test('should create signal style renderable', () => {
     const element = document.createElement('div')
     document.body.appendChild(element)
@@ -53,6 +72,29 @@ describe('Style', () => {
     expect(mockContext.setStyle).toHaveBeenCalledWith('backgroundColor', 'white')
 
     document.body.removeChild(element)
+  })
+
+  test('should set signal-based css variables', () => {
+    const valueSignal = prop('10px')
+    const mockContext = {
+      getStyle: vi.fn().mockReturnValue('5px'),
+      setStyle: vi.fn(),
+    }
+
+    const styleRenderable = style.variable('--gap', valueSignal)
+    const dispose = styleRenderable(mockContext as any)
+
+    expect(mockContext.getStyle).toHaveBeenCalledWith('--gap')
+
+    valueSignal.set('12px')
+    expect(mockContext.setStyle).toHaveBeenCalledWith('--gap', '12px')
+
+    dispose(true)
+    expect(mockContext.setStyle).toHaveBeenLastCalledWith('--gap', '5px')
+
+    mockContext.setStyle.mockClear()
+    valueSignal.set('15px')
+    expect(mockContext.setStyle).not.toHaveBeenCalled()
   })
 
   test('should handle disposal with removeTree = false for static style', () => {
