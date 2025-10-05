@@ -195,9 +195,6 @@ export function MonacoEditor({
             esModuleInterop: true,
           })
 
-          // Add @tempots/dom type definitions
-          console.log('Adding @tempots/dom type definitions to Monaco editor')
-
           // Use the comprehensive type definition
           const typeDefinition = createTempotsTypeDefinition()
 
