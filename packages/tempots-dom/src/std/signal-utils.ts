@@ -88,6 +88,10 @@ export type StoredPropOptions<T> = {
    * The default implementation returns the value as is.
    */
   onLoad?: (value: T) => T
+  /**
+   * Whether to sync the value across tabs. Defaults to `true`.
+   */
+  syncTabs?: boolean
 }
 
 /**
@@ -106,6 +110,7 @@ export const storedProp = <T>({
   deserialize = JSON.parse,
   equals = (a, b) => a === b,
   onLoad = value => value,
+  syncTabs = true,
 }: StoredPropOptions<T>): Prop<T> => {
   const initialValue = store.getItem(key)
   const prop = new Prop<T>(
@@ -116,7 +121,75 @@ export const storedProp = <T>({
         : defaultValue,
     equals
   )
-  prop.on(value => store.setItem(key, serialize(value)))
+
+  const windowRef = getWindow() as Window & {
+    BroadcastChannel?: typeof BroadcastChannel
+  }
+  const shouldSyncTabs =
+    syncTabs && typeof windowRef?.BroadcastChannel === 'function'
+  const channelName = `tempo:storedProp:${key}`
+  let syncingFromChannel = false
+  let channel: BroadcastChannel | null = null
+  let instanceId: string | null = null
+
+  if (shouldSyncTabs) {
+    channel = new windowRef!.BroadcastChannel!(channelName)
+    instanceId = `${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .slice(2)}`
+
+    const handleMessage = (
+      event: MessageEvent<{
+        key: string
+        value: string
+        sourceId?: string
+      }>
+    ) => {
+      const data = event.data
+      if (
+        data == null ||
+        typeof data !== 'object' ||
+        data.key !== key ||
+        typeof data.value !== 'string' ||
+        (data.sourceId != null && data.sourceId === instanceId)
+      ) {
+        return
+      }
+
+      try {
+        syncingFromChannel = true
+        const nextValue = onLoad(deserialize(data.value))
+        prop.set(nextValue)
+      } catch (error) {
+        console.warn(
+          `Failed to sync storedProp for key "${key}" via BroadcastChannel`,
+          error
+        )
+      } finally {
+        syncingFromChannel = false
+      }
+    }
+
+    channel.addEventListener('message', handleMessage)
+    prop.onDispose(() => {
+      channel?.removeEventListener('message', handleMessage)
+      channel?.close()
+    })
+  }
+
+  prop.on((value, previousValue) => {
+    const serialized = serialize(value)
+    store.setItem(key, serialized)
+    if (
+      channel != null &&
+      !syncingFromChannel &&
+      previousValue !== undefined &&
+      instanceId != null
+    ) {
+      channel.postMessage({ key, value: serialized, sourceId: instanceId })
+    }
+  })
+
   return prop
 }
 
@@ -160,6 +233,10 @@ export type StorageOptions<T> = {
    * The default implementation returns the value as is.
    */
   onLoad?: (value: T) => T
+  /**
+   * Whether to sync the value across tabs. Defaults to `true`.
+   */
+  syncTabs?: boolean
 }
 
 /**

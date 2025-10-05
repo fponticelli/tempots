@@ -13,6 +13,72 @@ import {
 } from '../src'
 import { sleep } from './helper'
 
+class MockBroadcastChannel {
+  static channels = new Map<string, Set<MockBroadcastChannel>>()
+
+  static reset() {
+    MockBroadcastChannel.channels.clear()
+  }
+
+  public onmessage: ((event: MessageEvent<unknown>) => void) | null = null
+
+  private readonly listeners = new Set<(event: MessageEvent<unknown>) => void>()
+
+  constructor(public readonly name: string) {
+    if (!MockBroadcastChannel.channels.has(name)) {
+      MockBroadcastChannel.channels.set(name, new Set())
+    }
+    MockBroadcastChannel.channels.get(name)!.add(this)
+  }
+
+  postMessage(data: unknown) {
+    const channels = MockBroadcastChannel.channels.get(this.name)
+    if (channels == null) return
+    const deliver = () => {
+      channels.forEach(channel => {
+        const event = { data } as MessageEvent<unknown>
+        channel.listeners.forEach(listener => listener(event))
+        channel.onmessage?.(event)
+      })
+    }
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(deliver)
+    } else {
+      Promise.resolve().then(deliver)
+    }
+  }
+
+  addEventListener(
+    type: string,
+    listener: (event: MessageEvent<unknown>) => void
+  ) {
+    if (type === 'message') {
+      this.listeners.add(listener)
+    }
+  }
+
+  removeEventListener(
+    type: string,
+    listener: (event: MessageEvent<unknown>) => void
+  ) {
+    if (type === 'message') {
+      this.listeners.delete(listener)
+    }
+  }
+
+  close() {
+    const channels = MockBroadcastChannel.channels.get(this.name)
+    if (channels != null) {
+      channels.delete(this)
+      if (channels.size === 0) {
+        MockBroadcastChannel.channels.delete(this.name)
+      }
+    }
+    this.listeners.clear()
+    this.onmessage = null
+  }
+}
+
 describe('MemoryStore', () => {
   let store: MemoryStore
 
@@ -53,6 +119,7 @@ describe('storedProp', () => {
       key: 'test-key',
       defaultValue: 'default',
       store: mockStore,
+      syncTabs: false,
     })
 
     expect(prop.value).toBe('default')
@@ -65,6 +132,7 @@ describe('storedProp', () => {
       key: 'test-key',
       defaultValue: 'default',
       store: mockStore,
+      syncTabs: false,
     })
 
     expect(prop.value).toBe('stored-value')
@@ -75,6 +143,7 @@ describe('storedProp', () => {
       key: 'test-key',
       defaultValue: 'default',
       store: mockStore,
+      syncTabs: false,
     })
 
     prop.value = 'new-value'
@@ -88,6 +157,7 @@ describe('storedProp', () => {
       store: mockStore,
       serialize: obj => `custom:${obj.count}`,
       deserialize: str => ({ count: parseInt(str.replace('custom:', '')) }),
+      syncTabs: false,
     })
 
     prop.value = { count: 42 }
@@ -101,6 +171,7 @@ describe('storedProp', () => {
       store: mockStore,
       serialize: obj => `custom:${obj.count}`,
       deserialize: str => ({ count: parseInt(str.replace('custom:', '')) }),
+      syncTabs: false,
     })
 
     expect(prop2.value).toEqual({ count: 99 })
@@ -111,6 +182,7 @@ describe('storedProp', () => {
       key: 'test-key',
       defaultValue: () => 'function-default',
       store: mockStore,
+      syncTabs: false,
     })
 
     expect(prop.value).toBe('function-default')
@@ -124,9 +196,108 @@ describe('storedProp', () => {
       defaultValue: 'default',
       store: mockStore,
       onLoad: value => `loaded:${value}`,
+      syncTabs: false,
     })
 
     expect(prop.value).toBe('loaded:stored')
+  })
+
+  describe('syncTabs', () => {
+    let originalBroadcastChannel:
+      | typeof window.BroadcastChannel
+      | undefined
+
+    beforeEach(() => {
+      originalBroadcastChannel = window.BroadcastChannel
+      MockBroadcastChannel.reset()
+      ;(
+        window as typeof window & {
+          BroadcastChannel?: typeof BroadcastChannel
+        }
+      ).BroadcastChannel =
+        MockBroadcastChannel as unknown as typeof BroadcastChannel
+    })
+
+    afterEach(() => {
+      MockBroadcastChannel.reset()
+      if (originalBroadcastChannel === undefined) {
+        delete (window as typeof window & {
+          BroadcastChannel?: typeof BroadcastChannel
+        }).BroadcastChannel
+      } else {
+        window.BroadcastChannel = originalBroadcastChannel
+      }
+    })
+
+    test('should sync updates across tabs when supported', async () => {
+      const store = new MemoryStore()
+      const propA = storedProp({
+        key: 'sync-key',
+        defaultValue: 'first',
+        store,
+        syncTabs: true,
+      })
+      const propB = storedProp({
+        key: 'sync-key',
+        defaultValue: 'second',
+        store,
+        syncTabs: true,
+      })
+
+      propA.value = 'updated'
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(propB.value).toBe('updated')
+
+      propA.dispose()
+      propB.dispose()
+    })
+
+    test('should not sync when flag is disabled', async () => {
+      const store = new MemoryStore()
+      const propA = storedProp({
+        key: 'no-sync',
+        defaultValue: 'value-a',
+        store,
+        syncTabs: false,
+      })
+      const propB = storedProp({
+        key: 'no-sync',
+        defaultValue: 'value-b',
+        store,
+        syncTabs: false,
+      })
+
+      propA.value = 'changed'
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(propB.value).toBe('value-a')
+
+      propA.dispose()
+      propB.dispose()
+    })
+
+    test('should ignore syncTabs when broadcast channel is unsupported', () => {
+      delete (window as typeof window & {
+        BroadcastChannel?: typeof BroadcastChannel
+      }).BroadcastChannel
+
+      const store = new MemoryStore()
+      const prop = storedProp({
+        key: 'unsupported-sync',
+        defaultValue: 'value',
+        store,
+        syncTabs: true,
+      })
+
+      expect(() => {
+        prop.value = 'next'
+      }).not.toThrow()
+
+      prop.dispose()
+    })
   })
 })
 
