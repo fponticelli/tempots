@@ -11,7 +11,8 @@ import { ToolsView } from './element/tools-view'
 import { LibrariesView } from './element/libraries-view'
 import { DemosView } from './element/demos-view'
 import { HomeView } from './element/home-view'
-import { Provide } from '@tempots/dom'
+import { Fragment, OnDispose, Provide, Use } from '@tempots/dom'
+import { NavigationService } from '@tempots/ui'
 
 function mapPathToLibraryPageURL(path: string) {
   if (path.startsWith('/library/')) {
@@ -60,9 +61,14 @@ export const AppRouter = (toc: Toc) => {
 
 export function App(toc: Toc) {
   return Provide(Location, {}, () =>
-    PageLayout({
-      sidebar: SideBar(toc),
-      main: AppRouter(toc),
+    Use(Location, handle => {
+      return Fragment(
+        OnDispose(NavigationService.attach(handle)),
+        PageLayout({
+          sidebar: SideBar(toc),
+          main: AppRouter(toc),
+        })
+      )
     })
   )
 }

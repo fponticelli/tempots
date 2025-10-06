@@ -7,7 +7,7 @@ A complete implementation of the [TodoMVC](http://todomvc.com) specification usi
 This demo showcases advanced Tempo concepts and patterns:
 
 - **Complex State Management**: Using reducers and actions for predictable state updates
-- **Local Storage Integration**: Persisting state with `localStorageProp()`
+- **Local Storage Integration**: Persisting state with `localStorageProp()` (including optional cross-tab syncing)
 - **List Rendering**: Dynamic lists with `ForEach()` and item management
 - **Form Handling**: Input validation, keyboard shortcuts, and inline editing
 - **Conditional Rendering**: Showing/hiding UI elements based on state
@@ -32,9 +32,13 @@ Uses a reducer pattern for predictable state updates, similar to Redux.
 localStorageProp<State>({
   defaultValue: { filter: Filter.All, todos: [] },
   key: STORE_KEY,
+  syncTabs: true,
 })
 ```
 Automatically saves and restores state from localStorage.
+
+Enable `syncTabs` (the default) to broadcast todo changes to every open tab via the
+Broadcast Channel API. Disable it if you want each tab to maintain its own copy.
 
 ### 3. Dynamic List Rendering
 ```typescript

@@ -121,6 +121,28 @@ const list = html.ul(
 )
 ```
 
+### Storage-Backed Props
+
+Tempo provides helpers that persist reactive state to Web Storage through `storedProp`,
+`localStorageProp`, and `sessionStorageProp`.
+
+```typescript
+const theme = localStorageProp({
+  key: 'tempo:theme',
+  defaultValue: 'light',
+  syncTabs: true, // the default
+})
+
+theme.value = 'dark' // automatically persisted and broadcast to other tabs
+```
+
+When `syncTabs` is enabled (the default), Tempo uses the Broadcast Channel API to
+propagate updates across browser contexts that share the same origin. If the API is not
+available, or if you prefer to isolate storage changes per tab, set `syncTabs: false`.
+
+All values pass through the provided `serialize`/`deserialize` functions before being
+stored, so cross-tab updates respect custom serialization logic as well.
+
 ## Documentation
 
 For comprehensive documentation, visit the [Tempo Documentation Site](https://tempo-ts.com/).
