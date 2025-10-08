@@ -23,6 +23,7 @@ pnpm add @tempots/dom
 ### Renderables
 
 Renderables are the building blocks of Tempo applications. A Renderable is a function that:
+
 1. Takes a context (typically a DOM context)
 2. Performs some operations on that context (like creating DOM elements)
 3. Returns a cleanup function
@@ -50,8 +51,14 @@ function Counter() {
 
   return html.div(
     html.div('Count: ', count.map(String)),
-    html.button(on.click(() => count.value--), 'Decrement'),
-    html.button(on.click(() => count.value++), 'Increment')
+    html.button(
+      on.click(() => count.value--),
+      'Decrement'
+    ),
+    html.button(
+      on.click(() => count.value++),
+      'Increment'
+    )
   )
 }
 
@@ -114,11 +121,7 @@ import { html, ForEach, prop } from '@tempots/dom'
 
 const items = prop(['Apple', 'Banana', 'Cherry'])
 
-const list = html.ul(
-  ForEach(items, (item) =>
-    html.li(item)
-  )
-)
+const list = html.ul(ForEach(items, item => html.li(item)))
 ```
 
 ### Storage-Backed Props
@@ -142,6 +145,32 @@ available, or if you prefer to isolate storage changes per tab, set `syncTabs: f
 
 All values pass through the provided `serialize`/`deserialize` functions before being
 stored, so cross-tab updates respect custom serialization logic as well.
+
+#### Reactive Storage Keys
+
+Storage keys can be reactive, allowing you to dynamically change which storage location
+a prop reads from and writes to:
+
+```typescript
+const userId = prop('user123')
+
+// Storage key changes when userId changes
+const userTheme = localStorageProp({
+  key: userId.map(id => `user:${id}:theme`),
+  defaultValue: 'light',
+  onKeyChange: 'load', // default: load value from new key
+})
+
+userTheme.value = 'dark' // stored at 'user:user123:theme'
+
+userId.value = 'user456' // switches to 'user:user456:theme' and loads its value
+```
+
+The `onKeyChange` option controls what happens when the key changes:
+
+- `'load'` (default): Load value from the new storage key
+- `'migrate'`: Move the current value to the new key
+- `'keep'`: Keep the current value without loading from the new key
 
 ## Documentation
 

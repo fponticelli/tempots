@@ -203,9 +203,7 @@ describe('storedProp', () => {
   })
 
   describe('syncTabs', () => {
-    let originalBroadcastChannel:
-      | typeof window.BroadcastChannel
-      | undefined
+    let originalBroadcastChannel: typeof window.BroadcastChannel | undefined
 
     beforeEach(() => {
       originalBroadcastChannel = window.BroadcastChannel
@@ -221,9 +219,7 @@ describe('storedProp', () => {
     afterEach(() => {
       MockBroadcastChannel.reset()
       if (originalBroadcastChannel === undefined) {
-        delete (window as typeof window & {
-          BroadcastChannel?: typeof BroadcastChannel
-        }).BroadcastChannel
+        delete (window as any).BroadcastChannel
       } else {
         window.BroadcastChannel = originalBroadcastChannel
       }
@@ -280,9 +276,7 @@ describe('storedProp', () => {
     })
 
     test('should ignore syncTabs when broadcast channel is unsupported', () => {
-      delete (window as typeof window & {
-        BroadcastChannel?: typeof BroadcastChannel
-      }).BroadcastChannel
+      delete (window as any).BroadcastChannel
 
       const store = new MemoryStore()
       const prop = storedProp({
@@ -297,6 +291,203 @@ describe('storedProp', () => {
       }).not.toThrow()
 
       prop.dispose()
+    })
+  })
+
+  describe('reactive key', () => {
+    let mockStore: MemoryStore
+
+    beforeEach(() => {
+      mockStore = new MemoryStore()
+    })
+
+    test('should work with static string key (backward compatibility)', () => {
+      const prop = storedProp({
+        key: 'static-key',
+        defaultValue: 'initial',
+        store: mockStore,
+        syncTabs: false,
+      })
+
+      expect(prop.value).toBe('initial')
+      prop.value = 'updated'
+      expect(mockStore.getItem('static-key')).toBe('"updated"')
+
+      prop.dispose()
+    })
+
+    test('should load value from new key when key changes (default behavior)', async () => {
+      const keySignal = prop('key1')
+      const storedProp1 = storedProp({
+        key: keySignal,
+        defaultValue: 'default',
+        store: mockStore,
+        syncTabs: false,
+      })
+
+      storedProp1.value = 'value1'
+      expect(mockStore.getItem('key1')).toBe('"value1"')
+
+      // Pre-populate key2 with a different value
+      mockStore.setItem('key2', '"value2"')
+
+      // Change key - should load from key2
+      keySignal.value = 'key2'
+      await sleep(10)
+
+      expect(storedProp1.value).toBe('value2')
+      expect(mockStore.getItem('key1')).toBe('"value1"') // old key still has old value
+      expect(mockStore.getItem('key2')).toBe('"value2"')
+
+      storedProp1.dispose()
+    })
+
+    test('should migrate current value to new key when onKeyChange is "migrate"', async () => {
+      const keySignal = prop('key1')
+      const storedProp1 = storedProp({
+        key: keySignal,
+        defaultValue: 'default',
+        store: mockStore,
+        syncTabs: false,
+        onKeyChange: 'migrate',
+      })
+
+      storedProp1.value = 'value1'
+      expect(mockStore.getItem('key1')).toBe('"value1"')
+
+      // Pre-populate key2 with a different value
+      mockStore.setItem('key2', '"value2"')
+
+      // Change key - should migrate current value
+      keySignal.value = 'key2'
+      await sleep(10)
+
+      expect(storedProp1.value).toBe('value1') // keeps current value
+      expect(mockStore.getItem('key1')).toBe('"value1"') // old key still has old value
+      expect(mockStore.getItem('key2')).toBe('"value1"') // new key has migrated value
+
+      storedProp1.dispose()
+    })
+
+    test('should keep current value when onKeyChange is "keep"', async () => {
+      const keySignal = prop('key1')
+      const storedProp1 = storedProp({
+        key: keySignal,
+        defaultValue: 'default',
+        store: mockStore,
+        syncTabs: false,
+        onKeyChange: 'keep',
+      })
+
+      storedProp1.value = 'value1'
+      expect(mockStore.getItem('key1')).toBe('"value1"')
+
+      // Pre-populate key2 with a different value
+      mockStore.setItem('key2', '"value2"')
+
+      // Change key - should keep current value
+      keySignal.value = 'key2'
+      await sleep(10)
+
+      expect(storedProp1.value).toBe('value1') // keeps current value
+      expect(mockStore.getItem('key1')).toBe('"value1"') // old key still has old value
+      expect(mockStore.getItem('key2')).toBe('"value2"') // new key unchanged
+
+      storedProp1.dispose()
+    })
+
+    test('should store current value at new key when loading and new key is empty', async () => {
+      const keySignal = prop('key1')
+      const storedProp1 = storedProp({
+        key: keySignal,
+        defaultValue: 'default',
+        store: mockStore,
+        syncTabs: false,
+        onKeyChange: 'load',
+      })
+
+      storedProp1.value = 'value1'
+      expect(mockStore.getItem('key1')).toBe('"value1"')
+
+      // Change key to empty key
+      keySignal.value = 'key2'
+      await sleep(10)
+
+      expect(storedProp1.value).toBe('value1') // keeps current value since key2 is empty
+      expect(mockStore.getItem('key2')).toBe('"value1"') // new key gets current value
+
+      storedProp1.dispose()
+    })
+
+    test('should handle multiple key changes', async () => {
+      const keySignal = prop('key1')
+      const storedProp1 = storedProp({
+        key: keySignal,
+        defaultValue: 'default',
+        store: mockStore,
+        syncTabs: false,
+        onKeyChange: 'migrate',
+      })
+
+      storedProp1.value = 'value1'
+      expect(mockStore.getItem('key1')).toBe('"value1"')
+
+      keySignal.value = 'key2'
+      await sleep(10)
+      expect(storedProp1.value).toBe('value1')
+      expect(mockStore.getItem('key2')).toBe('"value1"')
+
+      storedProp1.value = 'value2'
+      expect(mockStore.getItem('key2')).toBe('"value2"')
+
+      keySignal.value = 'key3'
+      await sleep(10)
+      expect(storedProp1.value).toBe('value2')
+      expect(mockStore.getItem('key3')).toBe('"value2"')
+
+      storedProp1.dispose()
+    })
+
+    test('should handle BroadcastChannel cleanup on key change', async () => {
+      const originalBroadcastChannel = window.BroadcastChannel
+      MockBroadcastChannel.reset()
+      ;(
+        window as typeof window & {
+          BroadcastChannel?: typeof BroadcastChannel
+        }
+      ).BroadcastChannel =
+        MockBroadcastChannel as unknown as typeof BroadcastChannel
+
+      const keySignal = prop('key1')
+      const storedProp1 = storedProp({
+        key: keySignal,
+        defaultValue: 'default',
+        store: mockStore,
+        syncTabs: true,
+      })
+
+      expect(MockBroadcastChannel.channels.has('tempo:storedProp:key1')).toBe(
+        true
+      )
+
+      keySignal.value = 'key2'
+      await sleep(10)
+
+      expect(MockBroadcastChannel.channels.has('tempo:storedProp:key1')).toBe(
+        false
+      )
+      expect(MockBroadcastChannel.channels.has('tempo:storedProp:key2')).toBe(
+        true
+      )
+
+      storedProp1.dispose()
+      MockBroadcastChannel.reset()
+
+      if (originalBroadcastChannel === undefined) {
+        delete (window as any).BroadcastChannel
+      } else {
+        window.BroadcastChannel = originalBroadcastChannel
+      }
     })
   })
 })

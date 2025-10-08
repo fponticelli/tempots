@@ -40,8 +40,9 @@ export class MemoryStore {
 export type StoredPropOptions<T> = {
   /**
    * The key to use for storing and retrieving the value.
+   * Can be a static string or a reactive signal that changes over time.
    */
-  key: string
+  key: Value<string>
   /**
    * The default value to use if the value is not found in the store.
    * This can be a value of type `T` or a function that returns a value of type `T`.
@@ -92,6 +93,13 @@ export type StoredPropOptions<T> = {
    * Whether to sync the value across tabs. Defaults to `true`.
    */
   syncTabs?: boolean
+  /**
+   * Strategy for handling key changes when using a reactive key.
+   * - 'load' (default): Load value from new key, the current state is already stored at this point
+   * - 'migrate': Move current value to new key and continue with current value
+   * - 'keep': Keep current value without loading from new key
+   */
+  onKeyChange?: 'load' | 'migrate' | 'keep'
 }
 
 /**
@@ -111,8 +119,10 @@ export const storedProp = <T>({
   equals = (a, b) => a === b,
   onLoad = value => value,
   syncTabs = true,
+  onKeyChange = 'load',
 }: StoredPropOptions<T>): Prop<T> => {
-  const initialValue = store.getItem(key)
+  let currentKey = Value.get(key)
+  const initialValue = store.getItem(currentKey)
   const prop = new Prop<T>(
     initialValue != null
       ? onLoad(deserialize(initialValue))
@@ -127,14 +137,16 @@ export const storedProp = <T>({
   }
   const shouldSyncTabs =
     syncTabs && typeof windowRef?.BroadcastChannel === 'function'
-  const channelName = `tempo:storedProp:${key}`
   let syncingFromChannel = false
   let channel: BroadcastChannel | null = null
   let instanceId: string | null = null
 
-  if (shouldSyncTabs) {
-    channel = new windowRef!.BroadcastChannel!(channelName)
-    instanceId = `${Date.now().toString(36)}-${Math.random()
+  const createChannel = (channelKey: string) => {
+    if (!shouldSyncTabs) return null
+
+    const channelName = `tempo:storedProp:${channelKey}`
+    const newChannel = new windowRef!.BroadcastChannel!(channelName)
+    const newInstanceId = `${Date.now().toString(36)}-${Math.random()
       .toString(36)
       .slice(2)}`
 
@@ -149,9 +161,9 @@ export const storedProp = <T>({
       if (
         data == null ||
         typeof data !== 'object' ||
-        data.key !== key ||
+        data.key !== channelKey ||
         typeof data.value !== 'string' ||
-        (data.sourceId != null && data.sourceId === instanceId)
+        (data.sourceId != null && data.sourceId === newInstanceId)
       ) {
         return
       }
@@ -162,7 +174,7 @@ export const storedProp = <T>({
         prop.set(nextValue)
       } catch (error) {
         console.warn(
-          `Failed to sync storedProp for key "${key}" via BroadcastChannel`,
+          `Failed to sync storedProp for key "${channelKey}" via BroadcastChannel`,
           error
         )
       } finally {
@@ -170,23 +182,91 @@ export const storedProp = <T>({
       }
     }
 
-    channel.addEventListener('message', handleMessage)
+    newChannel.addEventListener('message', handleMessage)
     prop.onDispose(() => {
-      channel?.removeEventListener('message', handleMessage)
-      channel?.close()
+      newChannel?.removeEventListener('message', handleMessage)
+      newChannel?.close()
     })
+
+    return { channel: newChannel, instanceId: newInstanceId, handleMessage }
+  }
+
+  const channelData = createChannel(currentKey)
+  if (channelData) {
+    channel = channelData.channel
+    instanceId = channelData.instanceId
+  }
+
+  const handleKeyChange = (newKey: string) => {
+    const oldKey = currentKey
+    if (oldKey === newKey) return
+
+    // Store current value at old key before switching
+    const currentValue = prop.get()
+    const serialized = serialize(currentValue)
+    store.setItem(oldKey, serialized)
+
+    // Close old channel
+    if (channel != null) {
+      channel.close()
+      channel = null
+      instanceId = null
+    }
+
+    // Update current key
+    currentKey = newKey
+
+    // Handle key change strategy
+    if (onKeyChange === 'load') {
+      // Load value from new key
+      const storedValue = store.getItem(newKey)
+      if (storedValue != null) {
+        try {
+          const loadedValue = onLoad(deserialize(storedValue))
+          prop.set(loadedValue)
+        } catch (error) {
+          console.warn(
+            `Failed to load storedProp from new key "${newKey}"`,
+            error
+          )
+        }
+      } else {
+        // No value at new key, store current value there
+        store.setItem(newKey, serialized)
+      }
+    } else if (onKeyChange === 'migrate') {
+      // Move current value to new key
+      store.setItem(newKey, serialized)
+    }
+    // 'keep' does nothing - current value stays, no load from new key
+
+    // Create new channel for new key
+    const newChannelData = createChannel(newKey)
+    if (newChannelData) {
+      channel = newChannelData.channel
+      instanceId = newChannelData.instanceId
+    }
+  }
+
+  // Watch for key changes if key is a signal
+  if (Signal.is(key)) {
+    prop.onDispose(key.on(handleKeyChange))
   }
 
   prop.on((value, previousValue) => {
     const serialized = serialize(value)
-    store.setItem(key, serialized)
+    store.setItem(currentKey, serialized)
     if (
       channel != null &&
       !syncingFromChannel &&
       previousValue !== undefined &&
       instanceId != null
     ) {
-      channel.postMessage({ key, value: serialized, sourceId: instanceId })
+      channel.postMessage({
+        key: currentKey,
+        value: serialized,
+        sourceId: instanceId,
+      })
     }
   })
 
@@ -202,8 +282,9 @@ export const storedProp = <T>({
 export type StorageOptions<T> = {
   /**
    * The key to use for storing and retrieving the value.
+   * Can be a static string or a reactive signal that changes over time.
    */
-  key: string
+  key: Value<string>
   /**
    * The default value to use if the value is not found in the store.
    * This can be a value of type `T` or a function that returns a value of type `T`.
@@ -237,6 +318,13 @@ export type StorageOptions<T> = {
    * Whether to sync the value across tabs. Defaults to `true`.
    */
   syncTabs?: boolean
+  /**
+   * Strategy for handling key changes when using a reactive key.
+   * - 'load' (default): Load value from new key, the current state is already stored at this point
+   * - 'migrate': Move current value to new key and continue with current value
+   * - 'keep': Keep current value without loading from new key
+   */
+  onKeyChange?: 'load' | 'migrate' | 'keep'
 }
 
 /**
