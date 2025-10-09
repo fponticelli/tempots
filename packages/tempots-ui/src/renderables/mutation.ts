@@ -13,6 +13,16 @@ import {
   MutationResourceExecuteOptions,
 } from '../utils/mutation-resource'
 
+export interface MutationContentOptions<Req, Res, E> {
+  previous: Signal<Res | undefined>
+  execute: (request: Req) => void
+  cancel: (newState?: NonLoading<Res, E>) => void
+  pending: Signal<boolean>
+  error: Signal<E | undefined>
+  value: Signal<Res | undefined>
+  status: Signal<AsyncResult<Res, E>>
+}
+
 /**
  * Options for displaying the different states of an asynchronous resource.
  *
@@ -22,15 +32,7 @@ import {
  */
 export interface MutationDisplayOptions<Req, Res, E> {
   /** Function to render when the query is loading. */
-  content: (options: {
-    previous: Signal<Res | undefined>
-    execute: (request: Req) => void
-    cancel: (newState?: NonLoading<Res, E>) => void
-    pending: Signal<boolean>
-    error: Signal<E | undefined>
-    value: Signal<Res | undefined>
-    status: Signal<AsyncResult<Res, E>>
-  }) => TNode
+  content: (options: MutationContentOptions<Req, Res, E>) => TNode
 }
 
 /**
