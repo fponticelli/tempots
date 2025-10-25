@@ -64,6 +64,32 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
 }
 
 /**
+ * Helper function to create an attribute renderable from a value that could be static or a Signal.
+ * Checks if the value is a Signal and delegates to the appropriate renderable creator.
+ */
+const createAttributeRenderable = (
+  name: string,
+  value: unknown
+): Renderable => {
+  if (Signal.is(value as Value<unknown>)) {
+    return signalAttributeRenderable(name, value as Signal<unknown>)
+  } else {
+    return staticAttributeRenderable(name, value)
+  }
+}
+
+/**
+ * Helper function to create a 'set' handler for proxy objects.
+ * Returns a function that accepts a name and value and creates the appropriate renderable.
+ */
+const createSetHandler = (prefix = '') => {
+  return (name: string, value: Value<string>) => {
+    const attrName = prefix ? `${prefix}${name}` : name
+    return createAttributeRenderable(attrName, value)
+  }
+}
+
+/**
  * The `attr` object allows to create any HTML attribute. Either a literal value
  * or `Signal<?>` can be passed as a value. The type of the value is inferred
  * from the attribute name.
@@ -111,27 +137,10 @@ export const attr = new Proxy(
           }
         }
       } else if (name === 'set') {
-        return (name: string, value: SplitNValue<string>) => {
-          if (Signal.is(value as Value<string>)) {
-            return signalAttributeRenderable(name, value as Signal<string>)
-          } else {
-            return staticAttributeRenderable(name, value as string)
-          }
-        }
+        return createSetHandler()
       } else {
-        return (value: SplitNValue<HTMLAttributes[typeof name]>) => {
-          if (Signal.is(value as Value<HTMLAttributes[typeof name]>)) {
-            return signalAttributeRenderable(
-              name,
-              value as Signal<HTMLAttributes[typeof name]>
-            )
-          } else {
-            return staticAttributeRenderable(
-              name,
-              value as HTMLAttributes[typeof name]
-            )
-          }
-        }
+        return (value: SplitNValue<HTMLAttributes[typeof name]>) =>
+          createAttributeRenderable(name, value)
       }
     },
   }
@@ -166,27 +175,10 @@ export const dataAttr = new Proxy(
      */
     get: (_, name: string) => {
       if (name === 'set') {
-        return (name: string, value: Value<string>) => {
-          if (Signal.is(value)) {
-            return signalAttributeRenderable(
-              `data-${name}`,
-              value as Signal<string>
-            )
-          } else {
-            return staticAttributeRenderable(`data-${name}`, value as string)
-          }
-        }
+        return createSetHandler('data-')
       }
-      return (value: Value<string>) => {
-        if (Signal.is(value)) {
-          return signalAttributeRenderable(
-            `data-${name}`,
-            value as Signal<string>
-          )
-        } else {
-          return staticAttributeRenderable(`data-${name}`, value as string)
-        }
-      }
+      return (value: Value<string>) =>
+        createAttributeRenderable(`data-${name}`, value)
     },
   }
 )
@@ -225,30 +217,10 @@ export const aria = new Proxy(
      */
     get: (_, name: keyof AriaAttributes | 'set') => {
       if (name === 'set') {
-        return (name: string, value: Value<string>) => {
-          if (Signal.is(value)) {
-            return signalAttributeRenderable(
-              `aria-${name}`,
-              value as Signal<string>
-            )
-          } else {
-            return staticAttributeRenderable(`aria-${name}`, value as string)
-          }
-        }
+        return createSetHandler('aria-')
       }
-      return (value: SplitNValue<AriaAttributes[typeof name]>) => {
-        if (Signal.is(value as Value<AriaAttributes[typeof name]>)) {
-          return signalAttributeRenderable(
-            `aria-${name}`,
-            value as Signal<AriaAttributes[typeof name]>
-          )
-        } else {
-          return staticAttributeRenderable(
-            `aria-${name}`,
-            value as AriaAttributes[typeof name]
-          )
-        }
-      }
+      return (value: SplitNValue<AriaAttributes[typeof name]>) =>
+        createAttributeRenderable(`aria-${name}`, value)
     },
   }
 )
@@ -286,27 +258,10 @@ export const svgAttr = new Proxy(
      */
     get: (_, name: keyof SVGAttributes | 'set') => {
       if (name === 'set') {
-        return (name: string, value: Value<string>) => {
-          if (Signal.is(value)) {
-            return signalAttributeRenderable(name, value as Signal<string>)
-          } else {
-            return staticAttributeRenderable(name, value as string)
-          }
-        }
+        return createSetHandler()
       }
-      return (value: SplitNValue<SVGAttributes[typeof name]>) => {
-        if (Signal.is(value as Value<SVGAttributes[typeof name]>)) {
-          return signalAttributeRenderable(
-            name,
-            value as Signal<SVGAttributes[typeof name]>
-          )
-        } else {
-          return staticAttributeRenderable(
-            name,
-            value as SVGAttributes[typeof name]
-          )
-        }
-      }
+      return (value: SplitNValue<SVGAttributes[typeof name]>) =>
+        createAttributeRenderable(name, value)
     },
   }
 )
@@ -339,19 +294,8 @@ export const mathAttr = new Proxy(
      *
      */
     get: (_, name: keyof MathMLAttributes) => {
-      return (value: SplitNValue<MathMLAttributes[typeof name]>) => {
-        if (Signal.is(value as Value<MathMLAttributes[typeof name]>)) {
-          return signalAttributeRenderable(
-            name,
-            value as Signal<MathMLAttributes[typeof name]>
-          )
-        } else {
-          return staticAttributeRenderable(
-            name,
-            value as MathMLAttributes[typeof name]
-          )
-        }
-      }
+      return (value: SplitNValue<MathMLAttributes[typeof name]>) =>
+        createAttributeRenderable(name, value)
     },
   }
 )
