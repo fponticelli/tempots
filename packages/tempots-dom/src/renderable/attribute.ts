@@ -83,6 +83,8 @@ export const attr = new Proxy(
     [A in keyof HTMLAttributes]: (
       value: SplitNValue<HTMLAttributes[A]>
     ) => Renderable
+  } & {
+    set: (name: string, value: SplitNValue<string>) => Renderable
   },
   {
     /**
@@ -96,7 +98,7 @@ export const attr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof HTMLAttributes) => {
+    get: (_, name: keyof HTMLAttributes | 'set') => {
       if (name === 'class') {
         return (value: SplitNValue<HTMLAttributes[typeof name]>) => {
           if (Signal.is(value as Value<string>)) {
@@ -106,6 +108,14 @@ export const attr = new Proxy(
               /* c8 ignore next */
               ((value ?? '') as string).split(' ').filter(v => v.length > 0)
             )
+          }
+        }
+      } else if (name === 'set') {
+        return (name: string, value: SplitNValue<string>) => {
+          if (Signal.is(value as Value<string>)) {
+            return signalAttributeRenderable(name, value as Signal<string>)
+          } else {
+            return staticAttributeRenderable(name, value as string)
           }
         }
       } else {
@@ -142,6 +152,8 @@ export const attr = new Proxy(
 export const dataAttr = new Proxy(
   {} as {
     [A in string]: (value: Value<string>) => Renderable
+  } & {
+    set: (name: string, value: Value<string>) => Renderable
   },
   {
     /**
@@ -153,6 +165,18 @@ export const dataAttr = new Proxy(
      *
      */
     get: (_, name: string) => {
+      if (name === 'set') {
+        return (name: string, value: Value<string>) => {
+          if (Signal.is(value)) {
+            return signalAttributeRenderable(
+              `data-${name}`,
+              value as Signal<string>
+            )
+          } else {
+            return staticAttributeRenderable(`data-${name}`, value as string)
+          }
+        }
+      }
       return (value: Value<string>) => {
         if (Signal.is(value)) {
           return signalAttributeRenderable(
@@ -187,6 +211,8 @@ export const aria = new Proxy(
     [A in keyof AriaAttributes]: (
       value: SplitNValue<AriaAttributes[A]>
     ) => Renderable
+  } & {
+    set: (name: string, value: Value<string>) => Renderable
   },
   {
     /**
@@ -197,7 +223,19 @@ export const aria = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof AriaAttributes) => {
+    get: (_, name: keyof AriaAttributes | 'set') => {
+      if (name === 'set') {
+        return (name: string, value: Value<string>) => {
+          if (Signal.is(value)) {
+            return signalAttributeRenderable(
+              `aria-${name}`,
+              value as Signal<string>
+            )
+          } else {
+            return staticAttributeRenderable(`aria-${name}`, value as string)
+          }
+        }
+      }
       return (value: SplitNValue<AriaAttributes[typeof name]>) => {
         if (Signal.is(value as Value<AriaAttributes[typeof name]>)) {
           return signalAttributeRenderable(
@@ -234,6 +272,8 @@ export const svgAttr = new Proxy(
     [S in keyof SVGAttributes]: (
       value: SplitNValue<SVGAttributes[S]>
     ) => Renderable
+  } & {
+    set: (name: string, value: Value<string>) => Renderable
   },
   {
     /**
@@ -244,7 +284,16 @@ export const svgAttr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof SVGAttributes) => {
+    get: (_, name: keyof SVGAttributes | 'set') => {
+      if (name === 'set') {
+        return (name: string, value: Value<string>) => {
+          if (Signal.is(value)) {
+            return signalAttributeRenderable(name, value as Signal<string>)
+          } else {
+            return staticAttributeRenderable(name, value as string)
+          }
+        }
+      }
       return (value: SplitNValue<SVGAttributes[typeof name]>) => {
         if (Signal.is(value as Value<SVGAttributes[typeof name]>)) {
           return signalAttributeRenderable(

@@ -633,6 +633,198 @@ describe('Attribute Renderables', () => {
     })
   })
 
+  describe('attr.set() method', () => {
+    test('should set static attribute with dynamic name', () => {
+      const clear = render(
+        html.div(
+          attr.set('data-custom-id', 'test-123'),
+          attr.set('role', 'button'),
+          'Content'
+        ),
+        document.body
+      )
+
+      const div = document.querySelector('div')!
+      expect(div.getAttribute('data-custom-id')).toBe('test-123')
+      expect(div.getAttribute('role')).toBe('button')
+      clear()
+    })
+
+    test('should set signal attribute with dynamic name', async () => {
+      const customId = prop('initial-id')
+      const role = prop('button')
+
+      const clear = render(
+        html.div(
+          attr.set('data-custom-id', customId),
+          attr.set('role', role),
+          'Content'
+        ),
+        document.body
+      )
+
+      const div = document.querySelector('div')!
+      expect(div.getAttribute('data-custom-id')).toBe('initial-id')
+      expect(div.getAttribute('role')).toBe('button')
+
+      customId.set('updated-id')
+      role.set('link')
+      await waitForUpdate()
+
+      expect(div.getAttribute('data-custom-id')).toBe('updated-id')
+      expect(div.getAttribute('role')).toBe('link')
+      clear()
+    })
+
+    test('should restore original attribute on cleanup with removeTree=true', () => {
+      const div = document.createElement('div')
+      div.setAttribute('custom-attr', 'original-value')
+      document.body.appendChild(div)
+
+      const renderable = attr.set('custom-attr', 'new-value')
+      const dispose = renderable({
+        element: div,
+        makeAccessors: name => ({
+          get: () => div.getAttribute(name),
+          set: value => div.setAttribute(name, value),
+        }),
+      } as any)
+
+      expect(div.getAttribute('custom-attr')).toBe('new-value')
+
+      dispose(true) // removeTree = true
+      expect(div.getAttribute('custom-attr')).toBe('original-value')
+
+      document.body.removeChild(div)
+    })
+  })
+
+  describe('dataAttr.set() method', () => {
+    test('should set static data attribute with dynamic name', () => {
+      const clear = render(
+        html.div(
+          dataAttr.set('custom-field', 'value-123'),
+          dataAttr.set('another', 'test'),
+          'Content'
+        ),
+        document.body
+      )
+
+      const div = document.querySelector('div')!
+      expect(div.getAttribute('data-custom-field')).toBe('value-123')
+      expect(div.getAttribute('data-another')).toBe('test')
+      clear()
+    })
+
+    test('should set signal data attribute with dynamic name', async () => {
+      const customField = prop('initial-value')
+      const another = prop('test')
+
+      const clear = render(
+        html.div(
+          dataAttr.set('custom-field', customField),
+          dataAttr.set('another', another),
+          'Content'
+        ),
+        document.body
+      )
+
+      const div = document.querySelector('div')!
+      expect(div.getAttribute('data-custom-field')).toBe('initial-value')
+      expect(div.getAttribute('data-another')).toBe('test')
+
+      customField.set('updated-value')
+      another.set('changed')
+      await waitForUpdate()
+
+      expect(div.getAttribute('data-custom-field')).toBe('updated-value')
+      expect(div.getAttribute('data-another')).toBe('changed')
+      clear()
+    })
+  })
+
+  describe('aria.set() method', () => {
+    test('should set static aria attribute with dynamic name', () => {
+      const clear = render(
+        html.div(
+          aria.set('custom', 'custom-value'),
+          aria.set('live', 'polite'),
+          'Content'
+        ),
+        document.body
+      )
+
+      const div = document.querySelector('div')!
+      expect(div.getAttribute('aria-custom')).toBe('custom-value')
+      expect(div.getAttribute('aria-live')).toBe('polite')
+      clear()
+    })
+
+    test('should set signal aria attribute with dynamic name', async () => {
+      const custom = prop('initial')
+      const live = prop('polite')
+
+      const clear = render(
+        html.div(aria.set('custom', custom), aria.set('live', live), 'Content'),
+        document.body
+      )
+
+      const div = document.querySelector('div')!
+      expect(div.getAttribute('aria-custom')).toBe('initial')
+      expect(div.getAttribute('aria-live')).toBe('polite')
+
+      custom.set('updated')
+      live.set('assertive')
+      await waitForUpdate()
+
+      expect(div.getAttribute('aria-custom')).toBe('updated')
+      expect(div.getAttribute('aria-live')).toBe('assertive')
+      clear()
+    })
+  })
+
+  describe('svgAttr.set() method', () => {
+    test('should set static SVG attribute with dynamic name', () => {
+      const clear = render(
+        svg.svg(
+          svgAttr.set('custom-attr', 'custom-value'),
+          svgAttr.set('data-test', 'test-value')
+        ),
+        document.body
+      )
+
+      const svgEl = document.querySelector('svg')!
+      expect(svgEl.getAttribute('custom-attr')).toBe('custom-value')
+      expect(svgEl.getAttribute('data-test')).toBe('test-value')
+      clear()
+    })
+
+    test('should set signal SVG attribute with dynamic name', async () => {
+      const customAttr = prop('initial')
+      const dataTest = prop('test')
+
+      const clear = render(
+        svg.svg(
+          svgAttr.set('custom-attr', customAttr),
+          svgAttr.set('data-test', dataTest)
+        ),
+        document.body
+      )
+
+      const svgEl = document.querySelector('svg')!
+      expect(svgEl.getAttribute('custom-attr')).toBe('initial')
+      expect(svgEl.getAttribute('data-test')).toBe('test')
+
+      customAttr.set('updated')
+      dataTest.set('changed')
+      await waitForUpdate()
+
+      expect(svgEl.getAttribute('custom-attr')).toBe('updated')
+      expect(svgEl.getAttribute('data-test')).toBe('changed')
+      clear()
+    })
+  })
+
   describe('edge cases and error handling', () => {
     test('should handle multiple class attributes', () => {
       const clear = render(
