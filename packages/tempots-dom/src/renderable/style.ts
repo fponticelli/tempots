@@ -30,6 +30,21 @@ const signalStyle =
     }
   }
 
+/**
+ * Helper function to create a style renderable from a value that could be static or a Signal.
+ * Checks if the value is a Signal and delegates to the appropriate renderable creator.
+ */
+const createStyleRenderable = (
+  name: keyof CSSStyles | `--${string}`,
+  value: unknown
+): Renderable => {
+  if (Signal.is(value as Value<unknown>)) {
+    return signalStyle(name, value as Signal<string>)
+  } else {
+    return staticStyle(name, value as string)
+  }
+}
+
 export type StyleOptions = Merge<
   {
     [AN in keyof CSSStyles]: (value: NValue<string>) => Renderable
@@ -54,20 +69,9 @@ export const style = new Proxy({} as StyleOptions, {
    */
   get: (_, name: keyof StyleOptions) => {
     if (name === 'variable') {
-      return (name: `--${string}`, value: NValue<string>) => {
-        if (Signal.is(value as Value<string>)) {
-          return signalStyle(name, value as Signal<string>)
-        } else {
-          return staticStyle(name, value as string)
-        }
-      }
+      return (name: `--${string}`, value: NValue<string>) =>
+        createStyleRenderable(name, value)
     }
-    return (value: NValue<string>) => {
-      if (Signal.is(value as Value<string>)) {
-        return signalStyle(name, value as Signal<string>)
-      } else {
-        return staticStyle(name, value as string)
-      }
-    }
+    return (value: NValue<string>) => createStyleRenderable(name, value)
   },
 })
