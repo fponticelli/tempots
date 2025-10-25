@@ -1,9 +1,8 @@
-import { Clear, Renderable, TNode } from '../types/domain'
+import { Renderable, TNode } from '../types/domain'
 import { Value } from '../std/value'
-import { Signal } from '../std/signal'
-import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
+import { handleValueOrSignal, createReactiveRenderable } from './utils'
 
 /**
  * Lazily renders content based on a boolean condition.
@@ -17,39 +16,25 @@ export const When = (
   condition: Value<boolean>,
   then: () => TNode,
   otherwise?: () => TNode
-): Renderable => {
-  if (Signal.is(condition as Value<boolean>)) {
-    const signal = condition as Signal<boolean>
-    return (ctx: DOMContext) => {
-      const newCtx = ctx.makeRef()
-      let clear: Clear = () => {}
-      const disposeHandler = signal.on(isTrue => {
-        clear(true)
-        if (isTrue) {
-          clear = renderableOfTNode(then())(newCtx)
-        } else {
-          clear = renderableOfTNode(otherwise?.())(newCtx)
+): Renderable =>
+  handleValueOrSignal(
+    condition,
+    signal => ctx =>
+      createReactiveRenderable(ctx, signal, isTrue =>
+        isTrue ? then() : otherwise?.()
+      ),
+    literal => {
+      if (literal) {
+        const result = then()
+        if (result != null) {
+          return renderableOfTNode(result)
+          /* c8 ignore next 3 */
         }
-      })
-      return (removeTree: boolean) => {
-        clear(removeTree)
-        disposeHandler()
-        newCtx.clear(removeTree)
+        return Empty
       }
+      return renderableOfTNode(otherwise?.())
     }
-  } else {
-    const literal = condition as boolean
-    if (literal) {
-      const result = then()
-      if (result != null) {
-        return renderableOfTNode(result)
-        /* c8 ignore next 3 */
-      }
-      return Empty
-    }
-    return renderableOfTNode(otherwise?.())
-  }
-}
+  )
 /**
  * Lazily renders content when a condition is false.
  * @param condition - The condition to evaluate

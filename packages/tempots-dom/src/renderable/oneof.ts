@@ -3,6 +3,7 @@ import { Computed, signal, Signal } from '../std/signal'
 import { Value } from '../std/value'
 import { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
+import { handleValueOrSignal } from './utils'
 
 /**
  * Represents a set of options for a one-of type.
@@ -37,12 +38,12 @@ export const OneOf = <T extends Record<string, unknown>>(
   match: Value<T>,
   cases: OneOfOptions<T>
 ): Renderable => {
-  if (Signal.is(match)) {
+  function onSignal(matchSignal: Signal<T>) {
     return (ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       let clearRenderable: Clear | undefined
       let matched: Computed<T[keyof T]> | undefined
-      const keySignal = match.map(value => {
+      const keySignal = matchSignal.map(value => {
         return Object.keys(value)[0] as keyof T // the object only has one field
       })
       let currentKey: keyof T | undefined
@@ -51,7 +52,7 @@ export const OneOf = <T extends Record<string, unknown>>(
           currentKey = newKey
           matched?.dispose()
           clearRenderable?.(true)
-          matched = match.map(value => value[newKey])
+          matched = matchSignal.map(value => value[newKey])
           const child = cases[newKey](matched)
           clearRenderable = renderableOfTNode(child)(newCtx)
         }
@@ -64,8 +65,11 @@ export const OneOf = <T extends Record<string, unknown>>(
       }
     }
   }
-  const key = Object.keys(match)[0] as keyof T
-  return renderableOfTNode(cases[key](signal(match[key])))
+  function onLiteral(literal: T) {
+    const key = Object.keys(literal)[0] as keyof T
+    return renderableOfTNode(cases[key](signal(literal[key])))
+  }
+  return handleValueOrSignal(match, onSignal, onLiteral)
 }
 
 /**

@@ -122,6 +122,7 @@ export type HTMLAttributes = {
   popovertargetaction: 'hide' | 'show' | 'toggle'
   poster: string
   preload: string
+  property: string
   radiogroup: string
   readonly: boolean
   referrerpolicy:

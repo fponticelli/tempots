@@ -4,6 +4,7 @@ import { Prop, Signal, prop, signal } from '../std/signal'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Value } from '../std/value'
+import { handleValueOrSignal } from './utils'
 
 export type NillifyValue<T> =
   | Value<T | null | undefined>
@@ -57,14 +58,13 @@ export const Ensure = <T>(
   then: (value: Signal<NonNillable<T>>) => TNode,
   otherwise?: () => TNode
 ): Renderable => {
-  if (Signal.is(value as Value<T | null | undefined>)) {
-    const signal = value as Signal<T | null | undefined>
+  function onSignal(valueSignal: Signal<T | null | undefined>) {
     return (ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       let clear: Clear = () => {}
       let isNonNillRendered = false
       let feed: Prop<T> | null = null
-      const clearSignal = signal.on(value => {
+      const clearSignal = valueSignal.on(value => {
         if (value == null) {
           clear(true)
           clear = renderableOfTNode(otherwise?.())(newCtx)
@@ -91,18 +91,24 @@ export const Ensure = <T>(
         newCtx.clear(removeTree)
       }
     }
-  } else {
-    const literal = value as T | null | undefined
+  }
+
+  function onLiteral(literal: T | null | undefined) {
     if (literal == null) {
       const result = otherwise?.()
       if (result != null) {
         return renderableOfTNode(result)
-        /* c8 ignore next 3 */
       }
       return Empty
     }
     return renderableOfTNode(then(signal(literal)))
   }
+
+  return handleValueOrSignal(
+    value as Value<T | null | undefined>,
+    onSignal,
+    onLiteral
+  )
 }
 
 /**
