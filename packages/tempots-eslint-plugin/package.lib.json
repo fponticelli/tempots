@@ -1,27 +1,18 @@
 {
-  "name": "@tempots/dom",
-  "version": "31.6.1",
+  "name": "@tempots/eslint-plugin",
+  "version": "0.1.1",
   "type": "module",
-  "main": "./index.cjs",
-  "module": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./src/index.js",
   "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.cjs"
-    }
+    ".": "./src/index.js"
   },
   "license": "Apache-2.0",
-  "description": "Fully-typed frontend framework alternative to React and Angular",
+  "description": "ESLint plugin for TempoTS to catch common signal disposal issues",
   "keywords": [
-    "tempo",
+    "eslint",
+    "eslintplugin",
     "tempots",
-    "ui",
-    "framework",
-    "typescript",
-    "dom",
-    "angular-alternative",
-    "react-alternative"
+    "signals"
   ],
   "homepage": "https://github.com/fponticelli/tempots",
   "bugs": {
@@ -35,5 +26,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "peerDependencies": {
+    "eslint": "^8.0.0 || ^9.0.0"
   }
 }

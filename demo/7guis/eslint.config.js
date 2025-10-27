@@ -1,7 +1,7 @@
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
-import tempots from '@tempots/eslint-plugin'
+import tempots from '../../packages/tempots-eslint-plugin/src/index.js'
 
 export default [
   eslint.configs.recommended,

@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "10.7.0",
+  "version": "10.7.1",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -70,8 +70,8 @@
     "@floating-ui/dom": "1.7.1"
   },
   "peerDependencies": {
-    "@tempots/dom": "workspace:*",
-    "@tempots/std": "workspace:*"
+    "@tempots/dom": "^31.6.1",
+    "@tempots/std": "^0.24.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",

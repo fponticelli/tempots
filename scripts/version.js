@@ -260,26 +260,34 @@ async function publishToNpm(packageDir, oldVersion = null) {
 
   // If we have a pending version update, apply it now
   if (versionInfo) {
-    console.log('📝 Applying version update...')
-    applyVersionUpdate(packageDir)
+    console.log("📝 Applying version update...");
+    applyVersionUpdate(packageDir);
     // Refresh the version after update
-    currentVersion = getVersion(packageJsonPath)
+    currentVersion = getVersion(packageJsonPath);
 
-    // Rebuild the package with the new version
-    console.log('🔨 Rebuilding package with updated version...')
-    const { execSync } = require('child_process')
-    execSync('pnpm build', { cwd: packageDir, stdio: 'inherit' })
-    execSync('cp README.md dist', { cwd: packageDir, stdio: 'inherit' })
+    // Check if package has a build script
+    const hasBuildScript = packageJson.scripts && packageJson.scripts.build;
+    if (hasBuildScript) {
+      // Rebuild the package with the new version
+      console.log("🔨 Rebuilding package with updated version...");
+      const { execSync } = require("child_process");
+      execSync("pnpm build", { cwd: packageDir, stdio: "inherit" });
+      execSync("cp README.md dist", { cwd: packageDir, stdio: "inherit" });
+    }
   }
 
-  const args = ['--access public', '--no-git-checks']
-  if(currentVersion.includes('next')){
-    args.push('--tag next')
+  const args = ["--access public", "--no-git-checks"];
+  if (currentVersion.includes("next")) {
+    args.push("--tag next");
   }
 
-  console.log('\n🚀 Publishing with args:', args.join(' '))
+  console.log("\n🚀 Publishing with args:", args.join(" "));
 
-  const publishCommand = `pnpm publish dist ${args.join(' ')}`
+  // Determine publish directory: use 'dist' if it exists, otherwise publish from root
+  const distDir = path.join(packageDir, "dist");
+  const publishDir = require("fs").existsSync(distDir) ? "dist" : ".";
+
+  const publishCommand = `pnpm publish ${publishDir} ${args.join(" ")}`;
   execSync(publishCommand, { stdio: 'inherit' })
 
   console.log(`✅ Successfully published ${packageName}@${currentVersion}`)
@@ -288,6 +296,10 @@ async function publishToNpm(packageDir, oldVersion = null) {
 function getLibDependencies(packagePath) {
   const dependencies = require(packagePath).peerDependencies
   for (const dependency in dependencies) {
+    // Only update @tempots/* dependencies, leave external dependencies as-is
+    if (!dependency.startsWith('@tempots/')) {
+      continue
+    }
     const p = dependency.replace(/@tempots\//, 'tempots-')
     if (!p) continue
     const jsonPath = path.join(packagePath, '../..', p, 'package.json')
