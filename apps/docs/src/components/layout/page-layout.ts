@@ -98,7 +98,7 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
       ),
       html.div(
         attr.class(
-          'sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 print:hidden'
+          'sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-xs sm:gap-x-6 sm:px-6 lg:px-8 print:hidden'
         ),
         OpenButton(() => sidebarOpen.set(true)),
         html.div(
@@ -112,7 +112,7 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
       ),
       html.main(
         attr.class(
-          'h-[calc(100dvh_-_4rem)] print:h-none overflow-auto print:overflow-visible'
+          'h-[calc(100dvh-4rem)] print:h-none overflow-auto print:overflow-visible'
         ),
         html.div(attr.id('main-anchor')),
         html.div(attr.class('h-full overflow-hidden'), main)

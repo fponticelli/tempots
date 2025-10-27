@@ -44,7 +44,7 @@ type TOCItem = {
 
 const mapLevel: Record<number, string> = {
   1: 'ml-0 font-bold text-md mb-1',
-  2: 'ml-0 font-semibold text-sm border mt-2 mb-1 px-1 py-0.5 bg-gray-100 rounded',
+  2: 'ml-0 font-semibold text-sm border mt-2 mb-1 px-1 py-0.5 bg-gray-100 rounded-sm',
   3: 'list-disc ml-4 text-sm',
   4: 'list-disc ml-6 text-sm',
   5: 'list-disc ml-8 text-sm',

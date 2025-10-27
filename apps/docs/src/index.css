@@ -1,79 +1,93 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@layer utilities {
-  .typography {
-    max-width: 60rem;
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
 
-    h1 {
-      @apply text-4xl font-bold my-4;
-    }
-    h2 {
-      @apply text-2xl font-bold my-4;
-    }
-    h3 {
-      @apply text-xl font-bold my-4;
-    }
-    h4 {
-      @apply text-lg font-bold my-4;
-    }
-    h5 {
-      @apply font-bold my-4;
-    }
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
+@utility typography {
+  max-width: 60rem;
 
-    :not(pre) > code {
-      @apply font-mono mx-0.5 px-1 bg-gray-800 text-gray-200 rounded text-sm;
-    }
+  h1 {
+    @apply text-4xl font-bold my-4;
+  }
+  h2 {
+    @apply text-2xl font-bold my-4;
+  }
+  h3 {
+    @apply text-xl font-bold my-4;
+  }
+  h4 {
+    @apply text-lg font-bold my-4;
+  }
+  h5 {
+    @apply font-bold my-4;
+  }
 
-    pre {
-      @apply my-4 p-4 bg-[#282c34] text-white rounded-lg overflow-x-auto;
-    }
+  :not(pre) > code {
+    @apply font-mono mx-0.5 px-1 bg-gray-800 text-gray-200 rounded-sm text-sm;
+  }
 
-    p {
-      @apply my-2;
-    }
+  pre {
+    @apply my-4 p-4 bg-[#282c34] text-white rounded-lg overflow-x-auto;
+  }
 
-    ul {
-      @apply list-disc my-2 pl-4;
-    }
+  p {
+    @apply my-2;
+  }
 
-    a {
-      @apply text-blue-700 hover:underline;
-    }
+  ul {
+    @apply list-disc my-2 pl-4;
+  }
 
-    table {
-      @apply w-full my-4 border-collapse;
+  a {
+    @apply text-blue-700 hover:underline;
+  }
 
-      td, th {
-        @apply border border-gray-200 px-2 py-0;
-      }
+  table {
+    @apply w-full my-4 border-collapse;
 
-      th {
-        @apply bg-gray-200;
-      }
-
-      td {
-        @apply font-mono text-sm;
-      }
-
-      td:last-child {
-        @apply font-sans text-sm bg-gray-100 text-gray-600;
-      }
-    }
-
-    .breadcrumbs::before {
-      content: " 🏠 ";
-      @apply text-gray-600;
+    td,
+    th {
+      @apply border border-gray-200 px-2 py-0;
     }
 
-    .breadcrumbs {
-      @apply flex flex-row items-center gap-1.5 text-sm text-gray-400 border px-1 rounded bg-gray-100;
+    th {
+      @apply bg-gray-200;
+    }
 
-      span {
-        @apply text-gray-700;
-      }
+    td {
+      @apply font-mono text-sm;
+    }
+
+    td:last-child {
+      @apply font-sans text-sm bg-gray-100 text-gray-600;
+    }
+  }
+
+  .breadcrumbs::before {
+    content: ' 🏠 ';
+    @apply text-gray-600;
+  }
+
+  .breadcrumbs {
+    @apply flex flex-row items-center gap-1.5 text-sm text-gray-400 border px-1 rounded-sm bg-gray-100;
+
+    span {
+      @apply text-gray-700;
     }
   }
 }

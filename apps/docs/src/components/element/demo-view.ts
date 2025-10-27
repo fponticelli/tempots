@@ -32,7 +32,7 @@ export function DemoView(demo: Signal<Demo & { id: string }>) {
     ),
     html.h2(attr.class(Styles.heading.subSmall), demo.$.description),
     html.iframe(
-      attr.class('w-full flex-grow border rounded-md'),
+      attr.class('w-full grow border rounded-md'),
       attr.src(
         demo.map(({ id }) => `/demos/${id}/index.html?base=${getBase(id)}`)
       )

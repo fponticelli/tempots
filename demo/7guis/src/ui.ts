@@ -3,10 +3,10 @@ import { input, attr, html, type Renderable, TNode } from '@tempots/dom'
 const LAYOUT = 'inline-flex items-center justify-center px-3 py-1'
 const TEXT = 'text-base font-medium leading-6 whitespace-no-wrap'
 const BUTTON_STYLE =
-  'border border-gray-300 dark:border-gray-900 rounded-md shadow-sm bg-blue-800 hover:bg-blue-700 text-gray-100'
+  'border border-gray-300 dark:border-gray-900 rounded-md shadow-xs bg-blue-800 hover:bg-blue-700 text-gray-100'
 const INPUT_STYLE =
-  'border border-gray-300 rounded-md shadow-sm bg-white text-gray-800'
-const FOCUS = 'focus:outline-none focus:shadow-outline'
+  'border border-gray-300 rounded-md shadow-xs bg-white text-gray-800'
+const FOCUS = 'focus:outline-hidden focus:shadow-outline'
 const DISABLED = 'disabled:opacity-50 disabled:cursor-not-allowed'
 
 export function Button(...children: TNode[]): Renderable {
