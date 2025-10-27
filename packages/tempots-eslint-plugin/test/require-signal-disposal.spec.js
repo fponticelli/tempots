@@ -3,12 +3,31 @@ import { RuleTester } from 'eslint'
 import tsParser from '@typescript-eslint/parser'
 import rule from '../src/rules/require-signal-disposal.js'
 
-const ruleTester = new RuleTester({
+// Rule tester WITHOUT type checking (heuristics only)
+const ruleTesterHeuristics = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
     parser: tsParser,
     parserOptions: {
+      ecmaFeatures: {
+        jsx: false,
+      },
+    },
+  },
+})
+
+// Rule tester WITH type checking
+const ruleTesterTypeAware = new RuleTester({
+  languageOptions: {
+    ecmaVersion: 2022,
+    sourceType: 'module',
+    parser: tsParser,
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts', '*.js'],
+      },
+      tsconfigRootDir: import.meta.dirname,
       ecmaFeatures: {
         jsx: false,
       },
@@ -23,11 +42,11 @@ describe('require-signal-disposal', () => {
     expect(rule.create).toBeDefined()
   })
 
-  ruleTester.run('require-signal-disposal', rule, {
-    valid: [
-      // Signal properly disposed
-      {
-        code: `
+  // Shared test cases that work in both modes
+  const sharedValidCases = [
+    // Signal properly disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const signal = prop(0)
             return Fragment(
@@ -36,10 +55,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Signal transformation properly disposed
-      {
-        code: `
+    },
+    // Signal transformation properly disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const mapped = someSignal.map(x => x * 2)
             return Fragment(
@@ -48,10 +67,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Signal passed directly to OnDispose
-      {
-        code: `
+    },
+    // Signal passed directly to OnDispose
+    {
+      code: `
           const MyComponent = (ctx) => {
             const signal = prop(0)
             return Fragment(
@@ -60,10 +79,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Signal disposed with arrow function
-      {
-        code: `
+    },
+    // Signal disposed with arrow function
+    {
+      code: `
           const MyComponent = (ctx) => {
             const signal = prop(0)
             return Fragment(
@@ -72,10 +91,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Signal disposed in block statement
-      {
-        code: `
+    },
+    // Signal disposed in block statement
+    {
+      code: `
           const MyComponent = (ctx) => {
             const signal = prop(0)
             return Fragment(
@@ -86,27 +105,27 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Not a renderable function (no ctx parameter)
-      {
-        code: `
+    },
+    // Not a renderable function (no ctx parameter)
+    {
+      code: `
           const helper = () => {
             const signal = prop(0)
             return signal
           }
         `,
-      },
-      // Signal passed as parameter (not created locally)
-      {
-        code: `
+    },
+    // Signal passed as parameter (not created locally)
+    {
+      code: `
           const MyComponent = (ctx) => {
             return html.div(externalSignal)
           }
         `,
-      },
-      // High-level component with Renderable return type - properly disposed
-      {
-        code: `
+    },
+    // High-level component with Renderable return type - properly disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const signal = prop(0)
             return Fragment(
@@ -115,10 +134,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // High-level component returning html - properly disposed
-      {
-        code: `
+    },
+    // High-level component returning html - properly disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const mapped = someSignal.map(x => x * 2)
             return Fragment(
@@ -127,10 +146,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // High-level component returning NotEmpty - properly disposed
-      {
-        code: `
+    },
+    // High-level component returning NotEmpty - properly disposed
+    {
+      code: `
           function Comments({ items }): Renderable {
             const newItems = items.map(items => items.filter(i => i.content != null))
             return Fragment(
@@ -143,10 +162,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // OnDispose inside callback to NotEmpty
-      {
-        code: `
+    },
+    // OnDispose inside callback to NotEmpty
+    {
+      code: `
           function Comments({ items }): Renderable {
             const newItems = items.map(items => items.filter(i => i.content != null))
             return NotEmpty(items, items =>
@@ -157,10 +176,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // OnDispose inside callback to When
-      {
-        code: `
+    },
+    // OnDispose inside callback to When
+    {
+      code: `
           function MyComponent({ condition }): Renderable {
             const derived = condition.map(x => x * 2)
             return When(
@@ -170,10 +189,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // OnDispose inside callback to Ensure
-      {
-        code: `
+    },
+    // OnDispose inside callback to Ensure
+    {
+      code: `
           function MyComponent({ maybeValue }): Renderable {
             const transformed = maybeValue.map(x => x.toUpperCase())
             return Ensure(maybeValue, value =>
@@ -181,10 +200,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // OnDispose with direct signal inside callback to NotEmpty
-      {
-        code: `
+    },
+    // OnDispose with direct signal inside callback to NotEmpty
+    {
+      code: `
           function Comments({ items }): Renderable {
             const newItems = items.map(items => items.filter(i => i.content != null))
             return NotEmpty(items, items =>
@@ -195,10 +214,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // OnDispose with direct signal inside callback to When
-      {
-        code: `
+    },
+    // OnDispose with direct signal inside callback to When
+    {
+      code: `
           function MyComponent({ condition }): Renderable {
             const derived = condition.map(x => x * 2)
             return When(
@@ -208,10 +227,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // OnDispose with direct signal inside callback to Ensure
-      {
-        code: `
+    },
+    // OnDispose with direct signal inside callback to Ensure
+    {
+      code: `
           function MyComponent({ maybeValue }): Renderable {
             const transformed = maybeValue.map(x => x.toUpperCase())
             return Ensure(maybeValue, value =>
@@ -219,24 +238,24 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Arrow function returning html.div
-      {
-        code: `
+    },
+    // Arrow function returning html.div
+    {
+      code: `
           const MyComponent = () => html.div('content')
         `,
-      },
-      // Function declaration returning Fragment
-      {
-        code: `
+    },
+    // Function declaration returning Fragment
+    {
+      code: `
           function MyComponent() {
             return Fragment(html.div('content'))
           }
         `,
-      },
-      // Parent signal disposed, derived signals should not be flagged
-      {
-        code: `
+    },
+    // Parent signal disposed, derived signals should not be flagged
+    {
+      code: `
           function Crud(): Renderable {
             const person = prop({ name: '', surname: '' })
             const isValid = person.map(person => person.name === '' || person.surname === '')
@@ -250,10 +269,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Parent signal disposed with .dispose, derived signals should not be flagged
-      {
-        code: `
+    },
+    // Parent signal disposed with .dispose, derived signals should not be flagged
+    {
+      code: `
           function MyComponent(): Renderable {
             const parent = prop(0)
             const derived1 = parent.map(x => x * 2)
@@ -265,10 +284,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // computed with all dependencies disposed
-      {
-        code: `
+    },
+    // computed with all dependencies disposed
+    {
+      code: `
           function Crud(): Renderable {
             const db = prop({})
             const filter = prop('')
@@ -283,10 +302,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // computedOf with all dependencies disposed
-      {
-        code: `
+    },
+    // computedOf with all dependencies disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const a = prop(1)
             const b = prop(2)
@@ -297,10 +316,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Array.prototype.filter() should not be flagged as signal transformation
-      {
-        code: `
+    },
+    // Array.prototype.filter() should not be flagged as signal transformation
+    {
+      code: `
           function Crud(): Renderable {
             const db = prop({})
             const filter = prop('')
@@ -319,21 +338,11 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Array.prototype.map() on plain array should not be flagged
-      {
-        code: `
-          function MyComponent({ options }: { options: string[] }): Renderable {
-            const labels = options.map((opt, index) => {
-              return \`Option \${index + 1}: \${opt}\`
-            })
-            return html.div(labels.join(', '))
-          }
-        `,
-      },
-      // ForEach callback parameter transformations are managed by ForEach
-      {
-        code: `
+    },
+
+    // ForEach callback parameter transformations are managed by ForEach
+    {
+      code: `
           function Crud(): Renderable {
             const db = prop({})
             const filter = prop('')
@@ -348,10 +357,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Transitive disposal: deleteDisabled depends on count which depends on accounts
-      {
-        code: `
+    },
+    // Transitive disposal: deleteDisabled depends on count which depends on accounts
+    {
+      code: `
           function ForEachDemo(): Renderable {
             const accounts = prop([])
             const count = accounts.map(v => v.length)
@@ -363,10 +372,10 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-      // Computed with mixed dependencies: parameter + disposed signal
-      {
-        code: `
+    },
+    // Computed with mixed dependencies: parameter + disposed signal
+    {
+      code: `
           function CircleDrawer(): Renderable {
             const circles = prop([])
             const currentId = prop(null)
@@ -382,11 +391,11 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
+    },
 
-      // Conditional disposal with Value.map
-      {
-        code: `
+    // Conditional disposal with Value.map
+    {
+      code: `
           function NPMShield(name) {
             const imgSrc = Value.map(name, n => {
               const base = \`https://img.shields.io/npm/v/\${n}\`
@@ -398,43 +407,43 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-      },
-    ],
+    },
+  ]
 
-    invalid: [
-      // Signal created but not disposed
-      {
-        code: `
+  const sharedInvalidCases = [
+    // Signal created but not disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const signal = prop(0)
             return html.div('content')
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'signal', method: 'prop' },
-          },
-        ],
-      },
-      // Signal transformation not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'signal', method: 'prop' },
+        },
+      ],
+    },
+    // Signal transformation not disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const mapped = someSignal.map(x => x * 2)
             return html.div(mapped)
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedTransform',
-            data: { name: 'mapped', method: 'map' },
-          },
-        ],
-      },
-      // Multiple signals, one not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedTransform',
+          data: { name: 'mapped', method: 'map' },
+        },
+      ],
+    },
+    // Multiple signals, one not disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const signal1 = prop(0)
             const signal2 = prop(1)
@@ -444,76 +453,76 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'signal2', method: 'prop' },
-          },
-        ],
-      },
-      // Filter transformation not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'signal2', method: 'prop' },
+        },
+      ],
+    },
+    // Filter transformation not disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const filtered = someSignal.filter(x => x > 0)
             return html.div(filtered)
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedTransform',
-            data: { name: 'filtered', method: 'filter' },
-          },
-        ],
-      },
-      // Computed signal not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedTransform',
+          data: { name: 'filtered', method: 'filter' },
+        },
+      ],
+    },
+    // Computed signal not disposed
+    {
+      code: `
           const MyComponent = (ctx) => {
             const comp = computed(() => a.value + b.value, [a, b])
             return html.div(comp)
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'comp', method: 'computed' },
-          },
-        ],
-      },
-      // High-level component with Renderable return type - signal not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'comp', method: 'computed' },
+        },
+      ],
+    },
+    // High-level component with Renderable return type - signal not disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const signal = prop(0)
             return html.div('content')
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'signal', method: 'prop' },
-          },
-        ],
-      },
-      // High-level component - transformation not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'signal', method: 'prop' },
+        },
+      ],
+    },
+    // High-level component - transformation not disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const mapped = someSignal.map(x => x * 2)
             return html.div(mapped)
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedTransform',
-            data: { name: 'mapped', method: 'map' },
-          },
-        ],
-      },
-      // High-level component like Comments - transformation not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedTransform',
+          data: { name: 'mapped', method: 'map' },
+        },
+      ],
+    },
+    // High-level component like Comments - transformation not disposed
+    {
+      code: `
           function Comments({ items }): Renderable {
             const newItems = items.map(items => items.filter(i => i.content != null))
             return NotEmpty(items, items =>
@@ -523,46 +532,46 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedTransform',
-            data: { name: 'newItems', method: 'map' },
-          },
-        ],
-      },
-      // Function returning Fragment - signal not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedTransform',
+          data: { name: 'newItems', method: 'map' },
+        },
+      ],
+    },
+    // Function returning Fragment - signal not disposed
+    {
+      code: `
           function MyComponent() {
             const signal = prop(0)
             return Fragment(html.div(signal))
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'signal', method: 'prop' },
-          },
-        ],
-      },
-      // Arrow function returning html - transformation not disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'signal', method: 'prop' },
+        },
+      ],
+    },
+    // Arrow function returning html - transformation not disposed
+    {
+      code: `
           const MyComponent = () => {
             const doubled = count.map(x => x * 2)
             return html.div(doubled)
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedTransform',
-            data: { name: 'doubled', method: 'map' },
-          },
-        ],
-      },
-      // computed with only some dependencies disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedTransform',
+          data: { name: 'doubled', method: 'map' },
+        },
+      ],
+    },
+    // computed with only some dependencies disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const a = prop(1)
             const b = prop(2)
@@ -573,20 +582,20 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'b', method: 'prop' },
-          },
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'sum', method: 'computed' },
-          },
-        ],
-      },
-      // computedOf with only some dependencies disposed
-      {
-        code: `
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'b', method: 'prop' },
+        },
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'sum', method: 'computed' },
+        },
+      ],
+    },
+    // computedOf with only some dependencies disposed
+    {
+      code: `
           function MyComponent(): Renderable {
             const a = prop(1)
             const b = prop(2)
@@ -597,17 +606,71 @@ describe('require-signal-disposal', () => {
             )
           }
         `,
-        errors: [
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'a', method: 'prop' },
-          },
-          {
-            messageId: 'undisposedSignal',
-            data: { name: 'sum', method: 'computedOf' },
-          },
-        ],
-      },
+      errors: [
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'a', method: 'prop' },
+        },
+        {
+          messageId: 'undisposedSignal',
+          data: { name: 'sum', method: 'computedOf' },
+        },
+      ],
+    },
+  ]
+
+  // Test cases that require type checking to work correctly
+  const typeAwareValidCases = [
+    // Array.prototype.map() on plain array should not be flagged (requires type checking)
+    {
+      code: `
+        function MyComponent({ options }: { options: string[] }): Renderable {
+          const labels = options.map((opt, index) => {
+            return \`Option \${index + 1}: \${opt}\`
+          })
+          return html.div(labels.join(', '))
+        }
+      `,
+    },
+    // Signal used and disposed in the same element should be valid
+    {
+      code: `
+        function Component() {
+          const a = prop('hello')
+          const A = html.div(OnDispose(a.dispose), a)
+          return html.div(A)
+        }
+      `,
+    },
+  ]
+
+  // Test cases that work with heuristics (Object.keys detection)
+  const heuristicsValidCases = [
+    // Array.prototype.filter() on Object.keys() result should not be flagged
+    {
+      code: `
+        function MyComponent({ current, knownKeys }: { current: Record<string, any>, knownKeys: Set<string> }): Renderable {
+          const currentKeys = Object.keys(current ?? {})
+          const additionalKeys = currentKeys.filter(k => !knownKeys.has(k))
+          return html.div(additionalKeys.join(', '))
+        }
+      `,
+    },
+  ]
+
+  // Run tests with heuristics only (no type checking)
+  ruleTesterHeuristics.run('require-signal-disposal (heuristics)', rule, {
+    valid: [...sharedValidCases, ...heuristicsValidCases],
+    invalid: sharedInvalidCases,
+  })
+
+  // Run tests with type checking enabled
+  ruleTesterTypeAware.run('require-signal-disposal (type-aware)', rule, {
+    valid: [
+      ...sharedValidCases,
+      ...heuristicsValidCases,
+      ...typeAwareValidCases,
     ],
+    invalid: sharedInvalidCases,
   })
 })

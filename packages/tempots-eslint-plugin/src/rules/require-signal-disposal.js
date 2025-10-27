@@ -793,13 +793,23 @@ export default {
 
                 // If not already known, check type annotations
                 if (!isKnownSignal) {
-                  // Check declared variables
-                  const parentVar = context.sourceCode
-                    .getDeclaredVariables(node.parent.parent || node.parent)
-                    .find(v => v.name === parentSignal)
+                  // Find the variable in the scope chain
+                  let parentVar = null
+                  let searchScope = context.sourceCode.getScope(node)
+
+                  while (searchScope && !parentVar) {
+                    parentVar = searchScope.variables.find(
+                      v => v.name === parentSignal
+                    )
+                    if (!parentVar) {
+                      searchScope = searchScope.upper
+                    }
+                  }
 
                   if (parentVar && parentVar.defs.length > 0) {
                     const def = parentVar.defs[0]
+
+                    // Check explicit type annotation
                     if (def.node.id && def.node.id.typeAnnotation) {
                       hasTypeAnnotation = true
                       const typeNode = def.node.id.typeAnnotation.typeAnnotation
@@ -807,6 +817,33 @@ export default {
                       // If it has an array type annotation, it's definitely not a signal
                       if (isArrayType(typeNode)) {
                         isKnownSignal = false
+                      }
+                    }
+
+                    // Check if initialized from known array-returning functions
+                    if (!hasTypeAnnotation && def.node.init) {
+                      const init = def.node.init
+                      // Check for Object.keys(), Object.values(), Object.entries(), Array.from(), etc.
+                      if (
+                        init.type === 'CallExpression' &&
+                        init.callee.type === 'MemberExpression' &&
+                        init.callee.object.type === 'Identifier'
+                      ) {
+                        const objName = init.callee.object.name
+                        const methodName = init.callee.property.name
+
+                        // Known array-returning methods
+                        if (
+                          (objName === 'Object' &&
+                            (methodName === 'keys' ||
+                              methodName === 'values' ||
+                              methodName === 'entries')) ||
+                          (objName === 'Array' &&
+                            (methodName === 'from' || methodName === 'of'))
+                        ) {
+                          hasTypeAnnotation = true
+                          isKnownSignal = false // Definitely not a signal
+                        }
                       }
                     }
                   }
