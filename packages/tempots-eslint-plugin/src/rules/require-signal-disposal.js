@@ -347,11 +347,68 @@ export default {
               if (containsOnDispose(stmt.argument, signalName)) {
                 return true
               }
+              // Check if return statement uses a variable that contains the disposal
+              if (
+                containsOnDisposeViaVariable(stmt.argument, signalName, scope)
+              ) {
+                return true
+              }
             }
           }
         }
 
         current = current.parent
+      }
+
+      return false
+    }
+
+    function containsOnDisposeViaVariable(node, signalName, currentScope) {
+      // Check if node references a variable that contains OnDispose for the signal
+      if (!node) return false
+
+      // If it's an identifier, check if that variable contains the disposal
+      if (node.type === 'Identifier') {
+        const varName = node.name
+        // Find the variable declaration using context.sourceCode.getScope
+        let searchScope = context.sourceCode.getScope(node)
+
+        while (searchScope) {
+          if (searchScope.variables) {
+            const variable = searchScope.variables.find(v => v.name === varName)
+            if (variable && variable.defs.length > 0) {
+              const def = variable.defs[0]
+              if (def.node && def.node.init) {
+                // Check if the variable's initialization contains OnDispose for this signal
+                if (containsOnDispose(def.node.init, signalName)) {
+                  return true
+                }
+              }
+            }
+          }
+          searchScope = searchScope.upper
+        }
+      }
+
+      // Recursively check in call expressions (e.g., html.div(A))
+      if (node.type === 'CallExpression') {
+        for (const arg of node.arguments) {
+          if (containsOnDisposeViaVariable(arg, signalName, currentScope)) {
+            return true
+          }
+        }
+      }
+
+      // Check in array expressions
+      if (node.type === 'ArrayExpression') {
+        for (const element of node.elements) {
+          if (
+            element &&
+            containsOnDisposeViaVariable(element, signalName, currentScope)
+          ) {
+            return true
+          }
+        }
       }
 
       return false

@@ -632,7 +632,7 @@ describe('require-signal-disposal', () => {
         }
       `,
     },
-    // Signal used and disposed in the same element should be valid
+    // Signal used and disposed in an indirect value that is returned
     {
       code: `
         function Component() {
@@ -642,7 +642,20 @@ describe('require-signal-disposal', () => {
         }
       `,
     },
+    // Signal used and disposed (shorthand) in an indirect value that is returned
+    {
+      code: `
+        function Component() {
+          const a = prop('hello')
+          const A = html.div(OnDispose(a), a)
+          return html.div(A)
+        }
+      `,
+    },
   ]
+
+  // Test cases that should fail - signal created but not properly disposed
+  const additionalInvalidCases = []
 
   // Test cases that work with heuristics (Object.keys detection)
   const heuristicsValidCases = [
@@ -661,7 +674,7 @@ describe('require-signal-disposal', () => {
   // Run tests with heuristics only (no type checking)
   ruleTesterHeuristics.run('require-signal-disposal (heuristics)', rule, {
     valid: [...sharedValidCases, ...heuristicsValidCases],
-    invalid: sharedInvalidCases,
+    invalid: [...sharedInvalidCases, ...additionalInvalidCases],
   })
 
   // Run tests with type checking enabled
@@ -671,6 +684,6 @@ describe('require-signal-disposal', () => {
       ...heuristicsValidCases,
       ...typeAwareValidCases,
     ],
-    invalid: sharedInvalidCases,
+    invalid: [...sharedInvalidCases, ...additionalInvalidCases],
   })
 })
