@@ -320,6 +320,17 @@ describe('require-signal-disposal', () => {
           }
         `,
       },
+      // Array.prototype.map() on plain array should not be flagged
+      {
+        code: `
+          function MyComponent({ options }: { options: string[] }): Renderable {
+            const labels = options.map((opt, index) => {
+              return \`Option \${index + 1}: \${opt}\`
+            })
+            return html.div(labels.join(', '))
+          }
+        `,
+      },
       // ForEach callback parameter transformations are managed by ForEach
       {
         code: `

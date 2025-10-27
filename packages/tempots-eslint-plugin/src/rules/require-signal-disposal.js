@@ -658,13 +658,154 @@ export default {
               // Extract parent signal name
               const parentSignal = callee.object.name
 
-              scope.signals.set(node.id.name, {
-                node: node.init,
-                method: callee.property.name,
-                isTransform: true,
-                parentSignal,
-                parentSignals: null,
-              })
+              // Helper function to check if a type annotation is a signal type
+              const isSignalType = typeNode => {
+                if (!typeNode) return false
+                if (typeNode.type === 'TSTypeReference' && typeNode.typeName) {
+                  const typeName = typeNode.typeName.name
+                  return (
+                    typeName === 'Signal' ||
+                    typeName === 'Prop' ||
+                    typeName === 'Computed' ||
+                    typeName === 'Value' ||
+                    typeName === 'ReadonlySignal'
+                  )
+                }
+                return false
+              }
+
+              // Helper function to check if a type annotation is an array type
+              const isArrayType = typeNode => {
+                if (!typeNode) return false
+                return (
+                  typeNode.type === 'TSArrayType' ||
+                  (typeNode.type === 'TSTypeReference' &&
+                    typeNode.typeName &&
+                    typeNode.typeName.name === 'Array')
+                )
+              }
+
+              // Check if parent is a known signal (already tracked in our signals map)
+              let isKnownSignal = false
+              let hasTypeAnnotation = false
+
+              // Check all parent scopes for the signal
+              let checkScope = scope
+              while (checkScope) {
+                if (checkScope.signals.has(parentSignal)) {
+                  isKnownSignal = true
+                  break
+                }
+                checkScope = checkScope.parent
+              }
+
+              // If not already known, check type annotations
+              if (!isKnownSignal) {
+                // Check declared variables
+                const parentVar = context.sourceCode
+                  .getDeclaredVariables(node.parent.parent || node.parent)
+                  .find(v => v.name === parentSignal)
+
+                if (parentVar && parentVar.defs.length > 0) {
+                  const def = parentVar.defs[0]
+                  if (def.node.id && def.node.id.typeAnnotation) {
+                    hasTypeAnnotation = true
+                    const typeNode = def.node.id.typeAnnotation.typeAnnotation
+                    isKnownSignal = isSignalType(typeNode)
+                    // If it has an array type annotation, it's definitely not a signal
+                    if (isArrayType(typeNode)) {
+                      isKnownSignal = false
+                    }
+                  }
+                }
+
+                // Check if it's a parameter with type annotation
+                if (!hasTypeAnnotation) {
+                  let currentNode = node
+                  while (
+                    currentNode &&
+                    currentNode.type !== 'FunctionDeclaration' &&
+                    currentNode.type !== 'ArrowFunctionExpression' &&
+                    currentNode.type !== 'FunctionExpression'
+                  ) {
+                    currentNode = currentNode.parent
+                  }
+
+                  if (currentNode && currentNode.params) {
+                    const param = currentNode.params.find(
+                      p =>
+                        (p.type === 'Identifier' && p.name === parentSignal) ||
+                        (p.type === 'ObjectPattern' &&
+                          p.properties.some(
+                            prop =>
+                              prop.type === 'Property' &&
+                              prop.key.name === parentSignal
+                          ))
+                    )
+
+                    if (param) {
+                      // Check for type annotation on parameter
+                      if (
+                        param.typeAnnotation &&
+                        param.typeAnnotation.typeAnnotation
+                      ) {
+                        hasTypeAnnotation = true
+                        const typeNode = param.typeAnnotation.typeAnnotation
+                        isKnownSignal = isSignalType(typeNode)
+                        // If it has an array type annotation, it's definitely not a signal
+                        if (isArrayType(typeNode)) {
+                          isKnownSignal = false
+                        }
+                      }
+
+                      // Also check in ObjectPattern properties
+                      if (
+                        !hasTypeAnnotation &&
+                        param.type === 'ObjectPattern'
+                      ) {
+                        const prop = param.properties.find(
+                          p =>
+                            p.type === 'Property' && p.key.name === parentSignal
+                        )
+                        if (
+                          prop &&
+                          prop.value.typeAnnotation &&
+                          prop.value.typeAnnotation.typeAnnotation
+                        ) {
+                          hasTypeAnnotation = true
+                          const typeNode =
+                            prop.value.typeAnnotation.typeAnnotation
+                          isKnownSignal = isSignalType(typeNode)
+                          // If it has an array type annotation, it's definitely not a signal
+                          if (isArrayType(typeNode)) {
+                            isKnownSignal = false
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              // Decision logic:
+              // 1. If it's already tracked as a signal, it's a signal
+              // 2. If it has a type annotation:
+              //    - If it's a signal type, it's a signal
+              //    - If it's an array type, it's NOT a signal
+              //    - Otherwise, it's NOT a signal (conservative)
+              // 3. If it has NO type annotation, assume it's a signal (for backward compatibility)
+              const shouldTrack =
+                isKnownSignal || (!hasTypeAnnotation && !isKnownSignal)
+
+              if (shouldTrack) {
+                scope.signals.set(node.id.name, {
+                  node: node.init,
+                  method: callee.property.name,
+                  isTransform: true,
+                  parentSignal,
+                  parentSignals: null,
+                })
+              }
             }
           }
 

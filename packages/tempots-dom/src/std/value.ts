@@ -127,6 +127,18 @@ export const Value = {
   },
 
   /**
+   * Returns a function that disposes of a value or a Signal.
+   * If the value is a Signal, it returns a function that disposes of the Signal.
+   * If the value is not a Signal, it returns a function that does nothing.
+   * @param value - The value or Signal instance to dispose of.
+   * @returns A function to dispose of the value or Signal.
+   */
+  disposeFn:
+    <T>(value: Value<T>) =>
+    () =>
+      Value.dispose(value),
+
+  /**
    * Derives a Prop from a Signal.
    * If the value is a Signal, it returns a new Prop with the derived value.
    * If the value is not a Signal, it returns a new Prop with the value.
