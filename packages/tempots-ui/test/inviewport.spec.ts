@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { InViewport, WhenInViewport, type InViewportMode } from '../src/renderables/inviewport'
+import {
+  InViewport,
+  WhenInViewport,
+  type InViewportMode,
+} from '../src/renderables/inviewport'
 import { html, render, Signal } from '@tempots/dom'
 import { sleep } from '@tempots/std'
 
@@ -28,7 +32,7 @@ describe('inviewport.ts', () => {
       const view = InViewport(
         { mode: 'partial' },
         (isVisible: Signal<boolean>) =>
-          isVisible.map(visible => visible ? 'Visible' : 'Not visible')
+          isVisible.map(visible => (visible ? 'Visible' : 'Not visible'))
       )
 
       const clear = render(view, document.body)
@@ -44,11 +48,13 @@ describe('inviewport.ts', () => {
       const observeSpy = vi.fn()
       const disconnectSpy = vi.fn()
 
-      global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-        observe: observeSpy,
-        unobserve: vi.fn(),
-        disconnect: disconnectSpy
-      })) as any
+      global.IntersectionObserver = vi.fn().mockImplementation(function () {
+        return {
+          observe: observeSpy,
+          unobserve: vi.fn(),
+          disconnect: disconnectSpy,
+        }
+      }) as any
 
       const view = InViewport(
         { mode: 'partial' },
@@ -81,10 +87,8 @@ describe('inviewport.ts', () => {
     })
 
     it('should work with full mode', async () => {
-      const view = InViewport(
-        { mode: 'full' },
-        (isVisible: Signal<boolean>) =>
-          isVisible.map(visible => `Full: ${visible}`)
+      const view = InViewport({ mode: 'full' }, (isVisible: Signal<boolean>) =>
+        isVisible.map(visible => `Full: ${visible}`)
       )
 
       const clear = render(view, document.body)
@@ -112,15 +116,11 @@ describe('inviewport.ts', () => {
 
     it('should handle multiple InViewport components', async () => {
       const container = html.div(
-        InViewport(
-          { mode: 'partial' },
-          (isVisible: Signal<boolean>) =>
-            html.div(isVisible.map(visible => `First: ${visible}`))
+        InViewport({ mode: 'partial' }, (isVisible: Signal<boolean>) =>
+          html.div(isVisible.map(visible => `First: ${visible}`))
         ),
-        InViewport(
-          { mode: 'full' },
-          (isVisible: Signal<boolean>) =>
-            html.div(isVisible.map(visible => `Second: ${visible}`))
+        InViewport({ mode: 'full' }, (isVisible: Signal<boolean>) =>
+          html.div(isVisible.map(visible => `Second: ${visible}`))
         )
       )
 
@@ -136,11 +136,13 @@ describe('inviewport.ts', () => {
     it('should clean up observers on dispose', async () => {
       const disconnectSpy = vi.fn()
 
-      global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-        disconnect: disconnectSpy
-      })) as any
+      global.IntersectionObserver = vi.fn().mockImplementation(function () {
+        return {
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+          disconnect: disconnectSpy,
+        }
+      }) as any
 
       const view = InViewport(
         { mode: 'partial' },
@@ -253,9 +255,13 @@ describe('inviewport.ts', () => {
         (isVisible: Signal<boolean>) =>
           html.div(
             html.h1('Title'),
-            html.p(isVisible.map(visible =>
-              visible ? 'Complex content is visible' : 'Complex content is hidden'
-            )),
+            html.p(
+              isVisible.map(visible =>
+                visible
+                  ? 'Complex content is visible'
+                  : 'Complex content is hidden'
+              )
+            ),
             html.button('Action')
           )
       )
@@ -264,7 +270,9 @@ describe('inviewport.ts', () => {
       await sleep(10)
 
       expect(document.querySelector('h1')?.textContent).toBe('Title')
-      expect(document.querySelector('p')?.textContent).toBe('Complex content is hidden')
+      expect(document.querySelector('p')?.textContent).toBe(
+        'Complex content is hidden'
+      )
       expect(document.querySelector('button')?.textContent).toBe('Action')
 
       clear()
@@ -308,21 +316,25 @@ describe('inviewport.ts', () => {
       const observeSpy = vi.fn()
       const unobserveSpy = vi.fn()
 
-      global.IntersectionObserver = vi.fn().mockImplementation((callback) => {
-        observerCallback = callback
-        return {
-          observe: observeSpy,
-          unobserve: unobserveSpy,
-          disconnect: vi.fn()
-        }
-      })
+      global.IntersectionObserver = vi
+        .fn()
+        .mockImplementation(function (callback) {
+          observerCallback = callback
+          return {
+            observe: observeSpy,
+            unobserve: unobserveSpy,
+            disconnect: vi.fn(),
+          }
+        })
 
       let capturedSignal: Signal<boolean> | null = null
       const view = InViewport(
         { mode: 'partial' },
         (isVisible: Signal<boolean>) => {
           capturedSignal = isVisible
-          return isVisible.map(visible => visible ? 'Now Visible' : 'Not Visible')
+          return isVisible.map(visible =>
+            visible ? 'Now Visible' : 'Not Visible'
+          )
         }
       )
 
@@ -340,7 +352,7 @@ describe('inviewport.ts', () => {
       if (observerCallback && capturedSignal) {
         const mockEntry = {
           target: observeSpy.mock.calls[0][0], // The observed element
-          isIntersecting: true
+          isIntersecting: true,
         } as IntersectionObserverEntry
 
         // This should trigger lines 51-54
@@ -354,7 +366,7 @@ describe('inviewport.ts', () => {
         // Simulate entry becoming not visible
         const mockEntryNotVisible = {
           target: observeSpy.mock.calls[0][0],
-          isIntersecting: false
+          isIntersecting: false,
         } as IntersectionObserverEntry
 
         observerCallback([mockEntryNotVisible], {} as IntersectionObserver)
@@ -373,21 +385,25 @@ describe('inviewport.ts', () => {
       const observeSpy = vi.fn()
       const unobserveSpy = vi.fn()
 
-      global.IntersectionObserver = vi.fn().mockImplementation((callback) => {
-        observerCallback = callback
-        return {
-          observe: observeSpy,
-          unobserve: unobserveSpy,
-          disconnect: vi.fn()
-        }
-      })
+      global.IntersectionObserver = vi
+        .fn()
+        .mockImplementation(function (callback) {
+          observerCallback = callback
+          return {
+            observe: observeSpy,
+            unobserve: unobserveSpy,
+            disconnect: vi.fn(),
+          }
+        })
 
       let capturedSignal: Signal<boolean> | null = null
       const view = InViewport(
         { mode: 'partial', once: true },
         (isVisible: Signal<boolean>) => {
           capturedSignal = isVisible
-          return isVisible.map(visible => visible ? 'Visible Once' : 'Not Visible Once')
+          return isVisible.map(visible =>
+            visible ? 'Visible Once' : 'Not Visible Once'
+          )
         }
       )
 
@@ -404,7 +420,7 @@ describe('inviewport.ts', () => {
       if (observerCallback && capturedSignal) {
         const mockEntry = {
           target: observeSpy.mock.calls[0][0],
-          isIntersecting: true
+          isIntersecting: true,
         } as IntersectionObserverEntry
 
         // This should trigger the callback and then the once cleanup (lines 168-169)
@@ -427,21 +443,25 @@ describe('inviewport.ts', () => {
       let observerCallback: IntersectionObserverCallback | null = null
       const observeSpy = vi.fn()
 
-      global.IntersectionObserver = vi.fn().mockImplementation((callback) => {
-        observerCallback = callback
-        return {
-          observe: observeSpy,
-          unobserve: vi.fn(),
-          disconnect: vi.fn()
-        }
-      })
+      global.IntersectionObserver = vi
+        .fn()
+        .mockImplementation(function (callback) {
+          observerCallback = callback
+          return {
+            observe: observeSpy,
+            unobserve: vi.fn(),
+            disconnect: vi.fn(),
+          }
+        })
 
       let capturedSignal: Signal<boolean> | null = null
       const view = InViewport(
         { mode: 'partial' },
         (isVisible: Signal<boolean>) => {
           capturedSignal = isVisible
-          return isVisible.map(visible => visible ? 'Multiple Visible' : 'Multiple Not Visible')
+          return isVisible.map(visible =>
+            visible ? 'Multiple Visible' : 'Multiple Not Visible'
+          )
         }
       )
 
@@ -453,12 +473,12 @@ describe('inviewport.ts', () => {
         const mockEntries = [
           {
             target: observeSpy.mock.calls[0][0],
-            isIntersecting: true
+            isIntersecting: true,
           },
           {
             target: observeSpy.mock.calls[0][0], // Same target
-            isIntersecting: false
-          }
+            isIntersecting: false,
+          },
         ] as IntersectionObserverEntry[]
 
         // This should process all entries in the forEach loop

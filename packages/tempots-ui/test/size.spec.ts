@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { Rect, getAbsoluteRect, ElementRect, WindowSize } from '../src/renderables/size'
+import {
+  Rect,
+  getAbsoluteRect,
+  ElementRect,
+  WindowSize,
+} from '../src/renderables/size'
 import { html, render, prop } from '@tempots/dom'
 import { sleep } from '@tempots/std'
 
@@ -32,7 +37,7 @@ class MockResizeObserver {
         contentRect: element.getBoundingClientRect(),
         borderBoxSize: [],
         contentBoxSize: [],
-        devicePixelContentBoxSize: []
+        devicePixelContentBoxSize: [],
       }
       this.callback([entry], this)
     }
@@ -55,7 +60,7 @@ describe('size.ts', () => {
     originalResizeObserver = global.ResizeObserver
 
     // Mock ResizeObserver
-    global.ResizeObserver = vi.fn().mockImplementation((callback) => {
+    global.ResizeObserver = vi.fn().mockImplementation(function (callback) {
       mockResizeObserver = new MockResizeObserver(callback)
       return mockResizeObserver
     }) as any
@@ -68,8 +73,14 @@ describe('size.ts', () => {
   afterEach(() => {
     // Restore original values
     global.ResizeObserver = originalResizeObserver
-    Object.defineProperty(window, 'scrollX', { value: originalScrollX, writable: true })
-    Object.defineProperty(window, 'scrollY', { value: originalScrollY, writable: true })
+    Object.defineProperty(window, 'scrollX', {
+      value: originalScrollX,
+      writable: true,
+    })
+    Object.defineProperty(window, 'scrollY', {
+      value: originalScrollY,
+      writable: true,
+    })
   })
 
   describe('Rect class', () => {
@@ -185,7 +196,7 @@ describe('size.ts', () => {
         bottom: 70,
         x: 10,
         y: 20,
-        toJSON: () => ({})
+        toJSON: () => ({}),
       }
 
       vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(mockRect)
@@ -217,7 +228,7 @@ describe('size.ts', () => {
         bottom: 70,
         x: 10,
         y: 20,
-        toJSON: () => ({})
+        toJSON: () => ({}),
       }
 
       vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(mockRect)
@@ -241,7 +252,7 @@ describe('size.ts', () => {
     it('should provide rect signal to child function', async () => {
       const rectValues: Rect[] = []
 
-      const view = ElementRect((rect) => {
+      const view = ElementRect(rect => {
         rectValues.push(rect.value)
         return rect.map(r => `Rect: ${r.width}x${r.height}`)
       })
@@ -260,13 +271,15 @@ describe('size.ts', () => {
       const observeSpy = vi.fn()
       const disconnectSpy = vi.fn()
 
-      global.ResizeObserver = vi.fn().mockImplementation(() => ({
-        observe: observeSpy,
-        unobserve: vi.fn(),
-        disconnect: disconnectSpy
-      })) as any
+      global.ResizeObserver = vi.fn().mockImplementation(function () {
+        return {
+          observe: observeSpy,
+          unobserve: vi.fn(),
+          disconnect: disconnectSpy,
+        }
+      }) as any
 
-      const view = ElementRect((rect) =>
+      const view = ElementRect(rect =>
         rect.map(r => `Size: ${r.width}x${r.height}`)
       )
 
@@ -286,7 +299,7 @@ describe('size.ts', () => {
       const originalRO = global.ResizeObserver
       delete (global as any).ResizeObserver
 
-      const view = ElementRect((rect) =>
+      const view = ElementRect(rect =>
         rect.map(r => `No RO: ${r.width}x${r.height}`)
       )
 
@@ -307,17 +320,17 @@ describe('size.ts', () => {
       const observeSpy = vi.fn()
       const disconnectSpy = vi.fn()
 
-      global.ResizeObserver = vi.fn().mockImplementation((callback) => {
+      global.ResizeObserver = vi.fn().mockImplementation(function (callback) {
         resizeCallback = callback
         return {
           observe: observeSpy,
           unobserve: vi.fn(),
-          disconnect: disconnectSpy
+          disconnect: disconnectSpy,
         }
       }) as any
 
       let currentRect: Rect | null = null
-      const view = ElementRect((rect) => {
+      const view = ElementRect(rect => {
         currentRect = rect.value
         return rect.map(r => `Size: ${r.width}x${r.height}`)
       })
@@ -343,7 +356,7 @@ describe('size.ts', () => {
         bottom: 130,
         x: 20,
         y: 30,
-        toJSON: () => ({})
+        toJSON: () => ({}),
       })
 
       // Trigger the resize callback to cover lines 253-254
@@ -353,7 +366,7 @@ describe('size.ts', () => {
           contentRect: observedElement.getBoundingClientRect(),
           borderBoxSize: [],
           contentBoxSize: [],
-          devicePixelContentBoxSize: []
+          devicePixelContentBoxSize: [],
         }
         resizeCallback([mockEntry], {} as ResizeObserver)
         await sleep(10)
@@ -379,8 +392,14 @@ describe('size.ts', () => {
     })
 
     afterEach(() => {
-      Object.defineProperty(window, 'innerWidth', { value: originalInnerWidth, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: originalInnerHeight, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: originalInnerWidth,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: originalInnerHeight,
+        writable: true,
+      })
     })
 
     it('should be a function', () => {
@@ -388,10 +407,16 @@ describe('size.ts', () => {
     })
 
     it('should provide window size signal', async () => {
-      Object.defineProperty(window, 'innerWidth', { value: 1024, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 768, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 1024,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 768,
+        writable: true,
+      })
 
-      const view = WindowSize((size) =>
+      const view = WindowSize(size =>
         size.map(s => `Window: ${s.width}x${s.height}`)
       )
 
@@ -404,25 +429,37 @@ describe('size.ts', () => {
     })
 
     it('should handle window resize events', async () => {
-      Object.defineProperty(window, 'innerWidth', { value: 800, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 600, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 800,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 600,
+        writable: true,
+      })
 
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener')
       const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
 
-      const view = WindowSize((size) =>
+      const view = WindowSize(size =>
         size.map(s => `Window: ${s.width}x${s.height}`)
       )
 
       const clear = render(view, document.body)
       await sleep(10)
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'resize',
+        expect.any(Function)
+      )
       expect(document.body.textContent).toBe('Window: 800x600')
 
       clear()
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'resize',
+        expect.any(Function)
+      )
 
       addEventListenerSpy.mockRestore()
       removeEventListenerSpy.mockRestore()
@@ -430,10 +467,16 @@ describe('size.ts', () => {
 
     it('should handle undefined window dimensions', async () => {
       // Set window dimensions to undefined to test fallback
-      Object.defineProperty(window, 'innerWidth', { value: undefined, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: undefined, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: undefined,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: undefined,
+        writable: true,
+      })
 
-      const view = WindowSize((size) =>
+      const view = WindowSize(size =>
         size.map(s => `Window: ${s.width}x${s.height}`)
       )
 
@@ -446,18 +489,26 @@ describe('size.ts', () => {
     })
 
     it('should update size when window is resized', async () => {
-      Object.defineProperty(window, 'innerWidth', { value: 1000, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 800, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 1000,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 800,
+        writable: true,
+      })
 
       let resizeHandler: ((event: Event) => void) | null = null
 
-      const addEventListenerSpy = vi.spyOn(window, 'addEventListener').mockImplementation((event, handler) => {
-        if (event === 'resize') {
-          resizeHandler = handler as (event: Event) => void
-        }
-      })
+      const addEventListenerSpy = vi
+        .spyOn(window, 'addEventListener')
+        .mockImplementation((event, handler) => {
+          if (event === 'resize') {
+            resizeHandler = handler as (event: Event) => void
+          }
+        })
 
-      const view = WindowSize((size) =>
+      const view = WindowSize(size =>
         size.map(s => `Window: ${s.width}x${s.height}`)
       )
 
@@ -467,8 +518,14 @@ describe('size.ts', () => {
       expect(document.body.textContent).toBe('Window: 1000x800')
 
       // Simulate window resize
-      Object.defineProperty(window, 'innerWidth', { value: 1200, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 900, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 1200,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 900,
+        writable: true,
+      })
 
       if (resizeHandler != null) {
         resizeHandler(new Event('resize'))
@@ -481,19 +538,27 @@ describe('size.ts', () => {
     })
 
     it('should trigger onResize callback to cover lines 293-294', async () => {
-      Object.defineProperty(window, 'innerWidth', { value: 500, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 400, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 500,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 400,
+        writable: true,
+      })
 
       let capturedResizeHandler: ((event: Event) => void) | null = null
 
       // Capture the resize handler
-      const addEventListenerSpy = vi.spyOn(window, 'addEventListener').mockImplementation((event: string, handler: any) => {
-        if (event === 'resize') {
-          capturedResizeHandler = handler
-        }
-      })
+      const addEventListenerSpy = vi
+        .spyOn(window, 'addEventListener')
+        .mockImplementation((event: string, handler: any) => {
+          if (event === 'resize') {
+            capturedResizeHandler = handler
+          }
+        })
 
-      const view = WindowSize((size) =>
+      const view = WindowSize(size =>
         size.map(s => `Window: ${s.width}x${s.height}`)
       )
 
@@ -504,8 +569,14 @@ describe('size.ts', () => {
       expect(document.body.textContent).toBe('Window: 500x400')
 
       // Change window dimensions
-      Object.defineProperty(window, 'innerWidth', { value: 800, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 600, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 800,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 600,
+        writable: true,
+      })
 
       // Trigger the resize handler to cover lines 293-294
       if (capturedResizeHandler) {
@@ -515,21 +586,30 @@ describe('size.ts', () => {
 
       // Verify the resize handler was captured and can be called
       expect(capturedResizeHandler).toBeDefined()
-      expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'resize',
+        expect.any(Function)
+      )
 
       clear()
       addEventListenerSpy.mockRestore()
     })
 
     it('should handle multiple WindowSize components', async () => {
-      Object.defineProperty(window, 'innerWidth', { value: 1024, writable: true })
-      Object.defineProperty(window, 'innerHeight', { value: 768, writable: true })
+      Object.defineProperty(window, 'innerWidth', {
+        value: 1024,
+        writable: true,
+      })
+      Object.defineProperty(window, 'innerHeight', {
+        value: 768,
+        writable: true,
+      })
 
       const container = html.div(
-        WindowSize((size) =>
+        WindowSize(size =>
           html.div(size.map(s => `First: ${s.width}x${s.height}`))
         ),
-        WindowSize((size) =>
+        WindowSize(size =>
           html.div(size.map(s => `Second: ${s.width}x${s.height}`))
         )
       )

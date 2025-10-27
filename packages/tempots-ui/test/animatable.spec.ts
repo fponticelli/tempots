@@ -12,13 +12,25 @@ import {
   applyAnimatable,
   type AnimatableProps,
   type ColorChannels,
-  type BoxShadow
+  type BoxShadow,
 } from '../src/dom/animatable'
 
 // Mock WebKitCSSMatrix for testing
-global.WebKitCSSMatrix = vi.fn().mockImplementation(() => ({
-  m11: 1, m12: 0, m13: 0, m21: 0, m22: 1, m23: 0, m31: 0, m41: 0, m42: 0, m43: 0, m33: 1
-}))
+global.WebKitCSSMatrix = vi.fn().mockImplementation(function () {
+  return {
+    m11: 1,
+    m12: 0,
+    m13: 0,
+    m21: 0,
+    m22: 1,
+    m23: 0,
+    m31: 0,
+    m41: 0,
+    m42: 0,
+    m43: 0,
+    m33: 1,
+  }
+})
 
 describe('animatable.ts', () => {
   let element: HTMLElement
@@ -112,7 +124,10 @@ describe('animatable.ts', () => {
 
   describe('interpolateColor', () => {
     it('should interpolate between two colors', () => {
-      const interpolator = interpolateColor('rgb(0, 0, 0)', 'rgb(255, 255, 255)')
+      const interpolator = interpolateColor(
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)'
+      )
       expect(interpolator(0)).toBe('rgba(0, 0, 0, 1)')
       expect(interpolator(0.5)).toBe('rgba(127.5, 127.5, 127.5, 1)')
       expect(interpolator(1)).toBe('rgba(255, 255, 255, 1)')
@@ -120,11 +135,17 @@ describe('animatable.ts', () => {
 
     it('should cache color interpolation functions', () => {
       // First call should create and cache the interpolation function
-      const interpolator1 = interpolateColor('rgb(0, 0, 0)', 'rgb(255, 255, 255)')
+      const interpolator1 = interpolateColor(
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)'
+      )
       const result1 = interpolator1(0.5)
 
       // Second call with same parameters should use cached function
-      const interpolator2 = interpolateColor('rgb(0, 0, 0)', 'rgb(255, 255, 255)')
+      const interpolator2 = interpolateColor(
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)'
+      )
       const result2 = interpolator2(0.5)
 
       expect(result1).toBe(result2)
@@ -135,13 +156,25 @@ describe('animatable.ts', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
 
       // First call should create and cache the interpolation function
-      applyInterpolatedAnimatableProp(element, 'color', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'color',
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)',
+        0.5
+      )
       expect(spy).toHaveBeenCalledWith('color', 'rgba(127.5, 127.5, 127.5, 1)')
 
       spy.mockClear()
 
       // Second call with same parameters should use cached function
-      applyInterpolatedAnimatableProp(element, 'color', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'color',
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)',
+        0.5
+      )
       expect(spy).toHaveBeenCalledWith('color', 'rgba(127.5, 127.5, 127.5, 1)')
     })
   })
@@ -177,16 +210,31 @@ describe('animatable.ts', () => {
   describe('getComputedAnimatableProp', () => {
     it('should get transform properties', () => {
       const mockMatrix = {
-        m41: 10, m42: 20, m43: 30,
-        m12: 0.1, m21: 0.2, m31: 0.3,
-        m11: 1.5, m22: 2.0, m33: 2.5,
-        m13: 0.4, m23: 0.5
+        m41: 10,
+        m42: 20,
+        m43: 30,
+        m12: 0.1,
+        m21: 0.2,
+        m31: 0.3,
+        m11: 1.5,
+        m22: 2.0,
+        m33: 2.5,
+        m13: 0.4,
+        m23: 0.5,
       }
-      global.WebKitCSSMatrix = vi.fn().mockReturnValue(mockMatrix)
+      global.WebKitCSSMatrix = vi.fn().mockImplementation(function () {
+        return mockMatrix
+      })
 
-      expect(getComputedAnimatableProp(mockComputedStyle, 'translateX')).toBe(10)
-      expect(getComputedAnimatableProp(mockComputedStyle, 'translateY')).toBe(20)
-      expect(getComputedAnimatableProp(mockComputedStyle, 'translateZ')).toBe(30)
+      expect(getComputedAnimatableProp(mockComputedStyle, 'translateX')).toBe(
+        10
+      )
+      expect(getComputedAnimatableProp(mockComputedStyle, 'translateY')).toBe(
+        20
+      )
+      expect(getComputedAnimatableProp(mockComputedStyle, 'translateZ')).toBe(
+        30
+      )
       expect(getComputedAnimatableProp(mockComputedStyle, 'rotateX')).toBe(0.1)
       expect(getComputedAnimatableProp(mockComputedStyle, 'rotateY')).toBe(0.2)
       expect(getComputedAnimatableProp(mockComputedStyle, 'rotateZ')).toBe(0.3)
@@ -198,14 +246,17 @@ describe('animatable.ts', () => {
     })
 
     it('should get filter properties', () => {
-      mockComputedStyle.filter = 'grayscale(50%) sepia(25%) saturate(150%) hue-rotate(90deg) invert(75%) brightness(120%) contrast(110%) blur(5px)'
+      mockComputedStyle.filter =
+        'grayscale(50%) sepia(25%) saturate(150%) hue-rotate(90deg) invert(75%) brightness(120%) contrast(110%) blur(5px)'
 
       expect(getComputedAnimatableProp(mockComputedStyle, 'grayScale')).toBe(50)
       expect(getComputedAnimatableProp(mockComputedStyle, 'sepia')).toBe(25)
       expect(getComputedAnimatableProp(mockComputedStyle, 'saturate')).toBe(150)
       expect(getComputedAnimatableProp(mockComputedStyle, 'hueRotate')).toBe(90)
       expect(getComputedAnimatableProp(mockComputedStyle, 'invert')).toBe(75)
-      expect(getComputedAnimatableProp(mockComputedStyle, 'brightness')).toBe(120)
+      expect(getComputedAnimatableProp(mockComputedStyle, 'brightness')).toBe(
+        120
+      )
       expect(getComputedAnimatableProp(mockComputedStyle, 'contrast')).toBe(110)
       expect(getComputedAnimatableProp(mockComputedStyle, 'blur')).toBe(5)
     })
@@ -218,12 +269,18 @@ describe('animatable.ts', () => {
     it('should handle missing filter properties', () => {
       mockComputedStyle.filter = ''
 
-      expect(getComputedAnimatableProp(mockComputedStyle, 'grayScale')).toBeNaN()
+      expect(
+        getComputedAnimatableProp(mockComputedStyle, 'grayScale')
+      ).toBeNaN()
       expect(getComputedAnimatableProp(mockComputedStyle, 'sepia')).toBeNaN()
       expect(getComputedAnimatableProp(mockComputedStyle, 'saturate')).toBeNaN()
-      expect(getComputedAnimatableProp(mockComputedStyle, 'hueRotate')).toBeNaN()
+      expect(
+        getComputedAnimatableProp(mockComputedStyle, 'hueRotate')
+      ).toBeNaN()
       expect(getComputedAnimatableProp(mockComputedStyle, 'invert')).toBeNaN()
-      expect(getComputedAnimatableProp(mockComputedStyle, 'brightness')).toBeNaN()
+      expect(
+        getComputedAnimatableProp(mockComputedStyle, 'brightness')
+      ).toBeNaN()
       expect(getComputedAnimatableProp(mockComputedStyle, 'contrast')).toBeNaN()
       expect(getComputedAnimatableProp(mockComputedStyle, 'blur')).toBeNaN()
     })
@@ -334,14 +391,26 @@ describe('animatable.ts', () => {
 
     it('should interpolate color values', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
-      applyInterpolatedAnimatableProp(element, 'color', 'rgb(0,0,0)', 'rgb(255,255,255)', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'color',
+        'rgb(0,0,0)',
+        'rgb(255,255,255)',
+        0.5
+      )
       expect(spy).toHaveBeenCalled()
     })
 
     it('should handle string interpolation for color properties', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
       // Test that the function doesn't crash with string values
-      applyInterpolatedAnimatableProp(element, 'backgroundColor', 'red', 'blue', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'backgroundColor',
+        'red',
+        'blue',
+        0.5
+      )
       // The function should handle this gracefully, even if interpolation fails
       expect(spy).toHaveBeenCalledWith('backgroundColor', expect.any(String))
     })
@@ -356,20 +425,38 @@ describe('animatable.ts', () => {
 
     it('should handle borderColor interpolation', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
-      applyInterpolatedAnimatableProp(element, 'borderColor', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'borderColor',
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)',
+        0.5
+      )
       expect(spy).toHaveBeenCalledWith('borderColor', expect.any(String))
     })
 
     it('should handle outlineColor interpolation', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
-      applyInterpolatedAnimatableProp(element, 'outlineColor', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'outlineColor',
+        'rgb(0, 0, 0)',
+        'rgb(255, 255, 255)',
+        0.5
+      )
       expect(spy).toHaveBeenCalledWith('outlineColor', expect.any(String))
     })
 
     it('should handle textShadow interpolation', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
       // Use invalid shadow strings to test graceful handling
-      applyInterpolatedAnimatableProp(element, 'textShadow', 'invalid-shadow', 'another-invalid-shadow', 0.5)
+      applyInterpolatedAnimatableProp(
+        element,
+        'textShadow',
+        'invalid-shadow',
+        'another-invalid-shadow',
+        0.5
+      )
       expect(spy).toHaveBeenCalledWith('textShadow', expect.any(String))
     })
 
@@ -398,7 +485,7 @@ describe('animatable.ts', () => {
         width: 100,
         height: 200,
         translateX: 10,
-        blur: 5
+        blur: 5,
       }
 
       applyAnimatable(element, styles)
@@ -410,7 +497,7 @@ describe('animatable.ts', () => {
     it('should skip null values', () => {
       const styles: AnimatableProps = {
         width: 100,
-        height: undefined
+        height: undefined,
       }
 
       const spy = vi.spyOn(element.style, 'setProperty')

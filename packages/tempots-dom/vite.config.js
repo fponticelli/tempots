@@ -14,6 +14,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
+      include: ['src/**/*.{js,ts}'],
       exclude: [
         ...configDefaults.coverage.exclude,
         'src/types/**',
@@ -23,19 +24,18 @@ export default defineConfig({
         'docs/**',
         '**/*.d.ts',
         'vite.config.js',
-        'eslint.config.js'
+        'eslint.config.js',
       ],
       thresholds: {
         global: {
           statements: 97,
           branches: 98,
           functions: 98,
-          lines: 97
-        }
+          lines: 97,
+        },
       },
-      all: true,
-      skipFull: false
-    }
+      skipFull: false,
+    },
   },
   build: {
     copyPublicDir: false,
@@ -47,8 +47,8 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        extend: true
-      }
+        extend: true,
+      },
     },
   },
 })
