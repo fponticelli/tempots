@@ -1,6 +1,6 @@
 # Integration Guide
 
-This guide explains how to integrate `eslint-plugin-tempots` into your TempoTS project.
+This guide explains how to integrate `@tempots/eslint-plugin` into your TempoTS project.
 
 ## For TempoTS Monorepo
 
@@ -14,7 +14,7 @@ Add the plugin as a dev dependency to packages that need it:
 // packages/tempots-dom/package.json
 {
   "devDependencies": {
-    "eslint-plugin-tempots": "workspace:*"
+    "@tempots/eslint-plugin": "workspace:*"
   }
 }
 ```
@@ -26,7 +26,7 @@ Add the plugin as a dev dependency to packages that need it:
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -69,14 +69,14 @@ To use this plugin in your own TempoTS project:
 ### 1. Install the plugin
 
 ```bash
-pnpm add -D eslint-plugin-tempots
+pnpm add -D @tempots/eslint-plugin
 ```
 
 ### 2. Configure ESLint
 
 ```javascript
 // eslint.config.js
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 
 export default [
   tempots.configs.recommended,
@@ -88,7 +88,7 @@ Or configure manually:
 
 ```javascript
 // eslint.config.js
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 
 export default [
   {
@@ -111,10 +111,10 @@ export default [
   rules: {
     // Warn (recommended for development)
     'tempots/require-signal-disposal': 'warn',
-    
+
     // Error (strict mode)
     'tempots/require-signal-disposal': 'error',
-    
+
     // Off (disable)
     'tempots/require-signal-disposal': 'off',
   }
@@ -129,7 +129,7 @@ export default [
     'tempots/require-signal-disposal': ['warn', {
       // Check signal transformations (.map, .filter, etc.)
       checkTransforms: true,
-      
+
       // Check signal creations (prop, signal, computed)
       checkCreations: true,
     }],
@@ -141,11 +141,11 @@ export default [
 
 ```javascript
 // Recommended (warnings only)
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 export default [tempots.configs.recommended]
 
 // Strict (errors)
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 export default [tempots.configs.strict]
 ```
 
@@ -173,7 +173,7 @@ const MyComponent = (ctx) => {
   /* eslint-disable tempots/require-signal-disposal */
   const signal = prop(0)
   /* eslint-enable tempots/require-signal-disposal */
-  
+
   return html.div('content')
 }
 ```

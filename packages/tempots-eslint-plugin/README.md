@@ -1,11 +1,11 @@
-# eslint-plugin-tempots
+# @tempots/eslint-plugin
 
 ESLint plugin for TempoTS to help catch common signal disposal issues and prevent memory leaks.
 
 ## Installation
 
 ```bash
-pnpm add -D eslint-plugin-tempots
+pnpm add -D @tempots/eslint-plugin
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ Add `tempots` to the plugins section of your ESLint configuration:
 
 ```javascript
 // eslint.config.js
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 
 export default [
   {
@@ -32,7 +32,7 @@ Or use the recommended configuration:
 
 ```javascript
 // eslint.config.js
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 
 export default [
   tempots.configs.recommended,

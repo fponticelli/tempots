@@ -1,0 +1,57 @@
+{
+  "name": "@tempots/eslint-plugin",
+  "private": false,
+  "version": "0.1.0",
+  "description": "ESLint plugin for TempoTS to catch common signal disposal issues",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "tempots",
+    "signals"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest --watch",
+    "lint": "eslint src",
+    "format": "eslint src --fix",
+    "package:patch": "node -e 'require(\"./scripts/make.cjs\").update(\"patch\")'",
+    "package:minor": "node -e 'require(\"./scripts/make.cjs\").update(\"minor\")'",
+    "package:major": "node -e 'require(\"./scripts/make.cjs\").update(\"major\")'",
+    "package:next": "node -e 'require(\"./scripts/make.cjs\").update(\"next\")'",
+    "npm:publish:impl": "node -e 'require(\"./scripts/make.cjs\").publish()'",
+    "npm:publish": "pnpm package:patch && pnpm npm:publish:impl",
+    "npm:publish:minor": "pnpm package:minor && pnpm npm:publish:impl",
+    "npm:publish:major": "pnpm package:major && pnpm npm:publish:impl",
+    "npm:publish:next": "pnpm package:next && pnpm npm:publish:impl"
+  },
+  "peerDependencies": {
+    "eslint": "^8.0.0 || ^9.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "vitest": "^4.0.3"
+  }
+}

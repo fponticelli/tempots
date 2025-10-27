@@ -39,6 +39,9 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.1.16)
+      '@tempots/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../packages/tempots-eslint-plugin
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
@@ -63,9 +66,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
-      eslint-plugin-tempots:
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin-tempots
       front-matter:
         specifier: ^4.0.2
         version: 4.0.2
@@ -136,6 +136,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.16
         version: 4.1.16
+      '@tempots/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../packages/tempots-eslint-plugin
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.46.2
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
@@ -151,9 +154,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
-      eslint-plugin-tempots:
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin-tempots
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -182,6 +182,9 @@ importers:
       '@eslint/js':
         specifier: ^9.38.0
         version: 9.38.0
+      '@tempots/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../packages/tempots-eslint-plugin
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.46.2
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
@@ -197,9 +200,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
-      eslint-plugin-tempots:
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin-tempots
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -237,6 +237,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.16
         version: 4.1.16
+      '@tempots/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../packages/tempots-eslint-plugin
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.46.2
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
@@ -252,9 +255,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
-      eslint-plugin-tempots:
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin-tempots
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -292,6 +292,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.16
         version: 4.1.16
+      '@tempots/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../packages/tempots-eslint-plugin
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.46.2
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
@@ -307,9 +310,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
-      eslint-plugin-tempots:
-        specifier: workspace:*
-        version: link:../../packages/eslint-plugin-tempots
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -334,27 +334,6 @@ importers:
       vite:
         specifier: ^7.1.12
         version: 7.1.12(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
-
-  packages/eslint-plugin-tempots:
-    devDependencies:
-      '@eslint/js':
-        specifier: ^9.38.0
-        version: 9.38.0
-      eslint:
-        specifier: ^9.38.0
-        version: 9.38.0(jiti@2.6.1)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@9.38.0(jiti@2.6.1))
-      eslint-plugin-prettier:
-        specifier: ^5.5.4
-        version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
-      prettier:
-        specifier: ^3.6.2
-        version: 3.6.2
-      vitest:
-        specifier: ^4.0.3
-        version: 4.0.4(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/tempots-dom:
     devDependencies:
@@ -409,6 +388,27 @@ importers:
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.3)(vite@7.1.12(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
+      vitest:
+        specifier: ^4.0.3
+        version: 4.0.4(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+
+  packages/tempots-eslint-plugin:
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.38.0
+        version: 9.38.0
+      eslint:
+        specifier: ^9.38.0
+        version: 9.38.0(jiti@2.6.1)
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.38.0(jiti@2.6.1))
+      eslint-plugin-prettier:
+        specifier: ^5.5.4
+        version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(prettier@3.6.2)
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
       vitest:
         specifier: ^4.0.3
         version: 4.0.4(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)

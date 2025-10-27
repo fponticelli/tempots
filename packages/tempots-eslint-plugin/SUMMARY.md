@@ -2,16 +2,18 @@
 
 ## What We Built
 
-A custom ESLint plugin (`eslint-plugin-tempots`) that helps developers catch signal disposal issues in TempoTS applications.
+A custom ESLint plugin (`@tempots/eslint-plugin`) that helps developers catch signal disposal issues in TempoTS applications.
 
 ## Key Features
 
 ### 1. Automatic Detection
+
 - Detects signals created with `prop()`, `signal()`, `computed()`, `computedOf()`
 - Detects signal transformations: `.map()`, `.filter()`, `.flatMap()`, `.debounce()`, etc.
 - Only checks within renderable functions (functions with `ctx` parameter)
 
 ### 2. Smart Analysis
+
 - Recognizes multiple disposal patterns:
   - `OnDispose(signal.dispose)`
   - `OnDispose(() => signal.dispose())`
@@ -20,6 +22,7 @@ A custom ESLint plugin (`eslint-plugin-tempots`) that helps developers catch sig
 - Avoids false positives for signals passed as parameters
 
 ### 3. Configurable
+
 - Two preset configs: `recommended` (warnings) and `strict` (errors)
 - Options to enable/disable checking for creations vs transformations
 - Easy to disable for specific cases with ESLint comments
@@ -27,7 +30,7 @@ A custom ESLint plugin (`eslint-plugin-tempots`) that helps developers catch sig
 ## Files Created
 
 ```
-packages/eslint-plugin-tempots/
+packages/tempots-eslint-plugin/
 ├── package.json                          # Package configuration
 ├── README.md                             # User documentation
 ├── INTEGRATION.md                        # Integration guide
@@ -59,16 +62,16 @@ packages/eslint-plugin-tempots/
 
 ```typescript
 // ❌ Will trigger warning
-const MyComponent = (ctx) => {
-  const signal = prop(0)  // Created but not disposed
+const MyComponent = ctx => {
+  const signal = prop(0) // Created but not disposed
   return html.div('content')
 }
 
 // ✅ No warning
-const MyComponent = (ctx) => {
+const MyComponent = ctx => {
   const signal = prop(0)
   return Fragment(
-    OnDispose(signal.dispose),  // Properly disposed
+    OnDispose(signal.dispose), // Properly disposed
     html.div('content')
   )
 }
@@ -77,6 +80,7 @@ const MyComponent = (ctx) => {
 ## Test Results
 
 All 12 tests passing:
+
 - ✅ 6 valid cases (no warnings)
 - ✅ 5 invalid cases (correct warnings)
 - ✅ Rule definition and metadata
@@ -84,42 +88,51 @@ All 12 tests passing:
 ## Integration Options
 
 ### Option 1: Use in TempoTS Monorepo
+
 Add to packages that need it:
+
 ```json
 {
   "devDependencies": {
-    "eslint-plugin-tempots": "workspace:*"
+    "@tempots/eslint-plugin": "workspace:*"
   }
 }
 ```
 
 ### Option 2: Publish to npm
+
 After testing, can be published for external use:
+
 ```bash
-cd packages/eslint-plugin-tempots
+cd packages/tempots-eslint-plugin
 pnpm publish
 ```
 
 ### Option 3: Use Locally
+
 Reference directly in ESLint configs:
+
 ```javascript
-import tempots from './packages/eslint-plugin-tempots/src/index.js'
+import tempots from '@tempots/eslint-plugin'
 ```
 
 ## Limitations
 
 ### Known Limitations
+
 1. **Scope Detection**: Only checks functions with `ctx` parameter
 2. **Complex Patterns**: May miss signals stored in objects/arrays
 3. **Conditional Disposal**: Doesn't track control flow
 4. **Indirect References**: Doesn't track signals passed through variables
 
 ### By Design
+
 These limitations are intentional to avoid false positives. The rule focuses on high-confidence cases.
 
 ## Future Enhancements
 
 Potential improvements:
+
 1. **Auto-fix**: Automatically add `OnDispose` calls
 2. **Better Scope Detection**: Recognize more renderable patterns
 3. **Flow Analysis**: Track signals through assignments
@@ -129,6 +142,7 @@ Potential improvements:
 ## Usage Recommendations
 
 ### For Development
+
 ```javascript
 {
   rules: {
@@ -138,6 +152,7 @@ Potential improvements:
 ```
 
 ### For CI/CD
+
 ```javascript
 {
   rules: {
@@ -147,6 +162,7 @@ Potential improvements:
 ```
 
 ### For Learning
+
 Enable the rule while learning TempoTS to build good habits around signal disposal.
 
 ## Performance
@@ -168,6 +184,7 @@ Enable the rule while learning TempoTS to build good habits around signal dispos
 This ESLint plugin provides a practical solution to help developers remember to dispose signals in TempoTS applications. While it has limitations, it catches the most common cases and serves as a helpful reminder during development.
 
 The plugin is:
+
 - ✅ Tested and working
 - ✅ Well-documented
 - ✅ Configurable
@@ -175,4 +192,3 @@ The plugin is:
 - ✅ Easy to integrate
 
 It's a valuable addition to the TempoTS ecosystem that can help prevent memory leaks and improve code quality.
-

@@ -1,8 +1,8 @@
-// Example ESLint configuration using eslint-plugin-tempots
+// Example ESLint configuration using @tempots/eslint-plugin
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
-import tempots from 'eslint-plugin-tempots'
+import tempots from '@tempots/eslint-plugin'
 
 export default [
   eslint.configs.recommended,
