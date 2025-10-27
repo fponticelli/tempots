@@ -2,6 +2,9 @@ import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 
 export type DisposeCallback = (removeTree: boolean, ctx: DOMContext) => void
+export type WithDispose = {
+  dispose: DisposeCallback
+}
 
 /**
  * Creates a renderable function that will be called when the component is unmounted.
@@ -10,7 +13,13 @@ export type DisposeCallback = (removeTree: boolean, ctx: DOMContext) => void
  * @public
  */
 export const OnDispose =
-  (...fns: DisposeCallback[]): Renderable =>
+  (...fns: (DisposeCallback | WithDispose)[]): Renderable =>
   (ctx: DOMContext) =>
   (removeTree: boolean) =>
-    fns.forEach(fn => fn(removeTree, ctx))
+    fns.forEach(disposable => {
+      if (typeof disposable === 'function') {
+        disposable(removeTree, ctx)
+      } else {
+        disposable.dispose(removeTree, ctx)
+      }
+    })

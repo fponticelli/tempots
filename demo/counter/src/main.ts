@@ -1,9 +1,18 @@
-import { attr, html, Renderable, on, prop, render } from '@tempots/dom'
+import {
+  attr,
+  html,
+  Renderable,
+  on,
+  prop,
+  render,
+  OnDispose,
+} from '@tempots/dom'
 
 function App(): Renderable {
   const count = prop(0)
   const disabled = count.map(v => v === 0)
   return html.div(
+    OnDispose(count),
     attr.class('app'),
     html.div(attr.class('count count-small'), 'count'),
     html.div(

@@ -7,6 +7,14 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
   {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     ignores: [
       '*.js',
       '*.mjs',

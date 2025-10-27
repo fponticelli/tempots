@@ -10,6 +10,7 @@ import {
   Fragment,
   Portal,
   OneOfValue,
+  OnDispose,
 } from '@tempots/dom'
 import { Button } from './ui'
 import { Counter } from './counter'
@@ -56,6 +57,7 @@ function demoButton(demo: Demo, currentDemo: Prop<Demo>): Renderable {
 export function App(): Renderable {
   const currentDemo = prop<Demo>('Temperature')
   return Fragment(
+    OnDispose(currentDemo),
     Portal(
       'body',
       attr.class(

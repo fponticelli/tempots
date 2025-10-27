@@ -38,7 +38,7 @@ export function Temperature(): Renderable {
     }
   })
   return flex.col(
-    OnDispose(clear),
+    OnDispose(clear, celsius, fahrenheit, tchange),
     attr.class('gap-2'),
     flex.row(
       attr.class('gap-2 items-center'),

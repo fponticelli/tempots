@@ -1,4 +1,13 @@
-import { attr, TNode, html, prop, Signal, When } from '@tempots/dom'
+import {
+  attr,
+  TNode,
+  html,
+  prop,
+  Signal,
+  When,
+  Fragment,
+  OnDispose,
+} from '@tempots/dom'
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
 import { Toc } from '../../model/domain'
@@ -25,25 +34,28 @@ export function MenuLink({
   active: Signal<string>
 }) {
   const isActive = active.map(a => a === href)
-  return When(
-    isActive,
-    () =>
-      html.span(
-        attr.class(
-          'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600'
+  return Fragment(
+    OnDispose(isActive),
+    When(
+      isActive,
+      () =>
+        html.span(
+          attr.class(
+            'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600'
+          ),
+          icon,
+          label
         ),
-        icon,
-        label
-      ),
-    () =>
-      Anchor(
-        href,
-        attr.class(
-          'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
-        ),
-        icon,
-        label
-      )
+      () =>
+        Anchor(
+          href,
+          attr.class(
+            'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
+          ),
+          icon,
+          label
+        )
+    )
   )
 }
 
@@ -65,32 +77,36 @@ export function SectionLink({
   active: Signal<string>
 }) {
   const isActive = active.map(a => a === href)
-  return When(
-    isActive,
-    () =>
-      html.span(
-        attr.class(
-          'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
+  return Fragment(
+    OnDispose(isActive),
+    When(
+      isActive,
+      () =>
+        html.span(
+          attr.class(
+            'group flex gap-x-3 rounded-md bg-gray-50 p-1 text-sm font-semibold leading-6 text-blue-600 hover:bg-white hover:text-blue-600'
+          ),
+          FakeIcon(icon),
+          html.span(attr.class('truncate'), label)
         ),
-        FakeIcon(icon),
-        html.span(attr.class('truncate'), label)
-      ),
-    () =>
-      Anchor(
-        href,
-        attr.class(
-          'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
-        ),
-        external ? attr.target('_blank') : null,
-        FakeIcon(icon),
-        html.span(attr.class('truncate'), label)
-      )
+      () =>
+        Anchor(
+          href,
+          attr.class(
+            'group flex gap-x-3 rounded-md p-1 text-sm font-semibold leading-6 text-gray-700 hover:bg-white hover:text-blue-600'
+          ),
+          external ? attr.target('_blank') : null,
+          FakeIcon(icon),
+          html.span(attr.class('truncate'), label)
+        )
+    )
   )
 }
 
 export function SideBar({ libraries, demos, pages }: Toc) {
   const active = prop('/')
   return html.div(
+    OnDispose(active),
     attr.class(
       'flex grow flex-col gap-y-5 overflow-y-auto bg-gray-100 px-6 pb-4 border-r'
     ),

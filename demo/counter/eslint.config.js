@@ -1,11 +1,28 @@
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
+import tempots from 'eslint-plugin-tempots'
 
-export default tseslint.config(
+export default [
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    plugins: {
+      tempots,
+    },
+    rules: {
+      'tempots/require-signal-disposal': 'warn',
+    },
+  },
   {
     ignores: [
       '*.js',
@@ -17,5 +34,5 @@ export default tseslint.config(
       'demo/*/dist/',
       'dist/',
     ],
-  }
-)
+  },
+]

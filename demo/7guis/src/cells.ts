@@ -13,6 +13,7 @@ import {
   computed,
   Fragment,
   emitValue,
+  OnDispose,
 } from '@tempots/dom'
 import { bmiData } from './cell-sample'
 import { InputText } from './ui'
@@ -178,6 +179,7 @@ export function Cells(): Renderable {
 
   const editing = prop<string | null>(null)
   return html.div(
+    OnDispose(editing),
     attr.class('max-w-full max-h-[calc(100dvh-98px)] overflow-auto'),
     html.table(
       attr.class('relative'),

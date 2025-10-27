@@ -6,6 +6,7 @@ import {
   prop,
   BindDate,
   emitValue,
+  OnDispose,
 } from '@tempots/dom'
 import { Button, InputDate, Select } from './ui'
 import { flex } from './components/flex'
@@ -15,6 +16,7 @@ export function FlightBooker(): Renderable {
   const departure = prop(new Date())
   const returnValue = prop(new Date())
   return flex.col(
+    OnDispose(oneWay, departure, returnValue),
     attr.class('gap-2 w-64'),
     Select(
       on.change(emitValue(v => oneWay.set(v === 'One-way'))),

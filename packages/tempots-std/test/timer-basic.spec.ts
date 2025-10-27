@@ -435,13 +435,25 @@ describe('Timer utilities - Basic functionality', () => {
     });
 
     test('functions work with very large delays', () => {
-      const mockFn = vi.fn();
-      const largeDelay = Number.MAX_SAFE_INTEGER;
+      const mockFn = vi.fn()
+      const largeDelay = Number.MAX_SAFE_INTEGER
 
-      expect(() => delayed(mockFn, largeDelay)).not.toThrow();
-      expect(() => interval(mockFn, largeDelay)).not.toThrow();
-      expect(() => throttle(largeDelay, mockFn)).not.toThrow();
-      expect(() => debounce(largeDelay, mockFn)).not.toThrow();
+      // Create and immediately dispose to avoid Node.js TimeoutOverflowWarning
+      const delayedDispose = delayed(mockFn, largeDelay)
+      expect(delayedDispose).toBeDefined()
+      delayedDispose()
+
+      const intervalDispose = interval(mockFn, largeDelay)
+      expect(intervalDispose).toBeDefined()
+      intervalDispose()
+
+      const throttled = throttle(largeDelay, mockFn)
+      expect(throttled).toBeDefined()
+      throttled.cancel()
+
+      const debounced = debounce(largeDelay, mockFn)
+      expect(debounced).toBeDefined()
+      debounced.cancel()
     });
 
     test('cancel and stop functions can be called multiple times', () => {

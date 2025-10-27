@@ -192,18 +192,12 @@ describe('Value utilities', () => {
 
   describe('Value.toSignal with custom equals', () => {
     test('should create signal from literal with custom equals', () => {
-      const customEquals = (a: { id: number }, b: { id: number }) => a.id === b.id
+      const customEquals = (a: { id: number }, b: { id: number }) =>
+        a.id === b.id
       const signalFromLiteral = Value.toSignal({ id: 1 }, customEquals)
 
       expect(signalFromLiteral.value).toEqual({ id: 1 })
       // Note: Value.toSignal creates read-only signals from literals
-    })
-
-    test('should return existing signal unchanged', () => {
-      const original = prop(42)
-      const result = Value.toSignal(original)
-
-      expect(result).toBe(original) // Should be the same instance
     })
   })
 

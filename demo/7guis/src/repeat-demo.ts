@@ -8,6 +8,7 @@ import {
   ElementPosition,
   Repeat,
   When,
+  OnDispose,
 } from '@tempots/dom'
 import { Button } from './ui'
 import { flex } from './components/flex'
@@ -16,6 +17,7 @@ export function RepeatDemo(): Renderable {
   const count = prop(5)
   const deleteDisabled = count.map(count => count === 0)
   return flex.col(
+    OnDispose(count),
     attr.class('gap-2 items-center'),
     flex.row(Txt(count.map(count => `Count: ${count}`))),
     flex.row(

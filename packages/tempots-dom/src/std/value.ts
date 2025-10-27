@@ -67,7 +67,8 @@ export const Value = {
     equals?: (a: T, b: T) => boolean
   ): Signal<T> => {
     if (Signal.is(value)) {
-      return value
+      // derive is necessary to avoid disposing the original signal
+      return value.derive()
     } else {
       return signal(value, equals)
     }

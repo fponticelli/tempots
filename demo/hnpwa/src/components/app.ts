@@ -10,6 +10,7 @@ import {
   OneOfType,
   Portal,
   attr,
+  OnDispose,
 } from '@tempots/dom'
 import { Feed, Route, toTitle } from '../route'
 import { LinkRoute } from './link-route'
@@ -69,7 +70,10 @@ function HeaderLink({ route, feed }: { route: Signal<Route>; feed: Feed }) {
   const whenTrue = () =>
     html.span(aria.current('page'), toTitle(Route.feeds(feed, 1)))
   const whenFalse = () => LinkRoute({ route: signal(Route.feeds(feed, 1)) })
-  return When(condition, whenTrue, whenFalse)
+  return Fragment(
+    OnDispose(condition.dispose),
+    When(condition, whenTrue, whenFalse)
+  )
 }
 
 export function App(route: Signal<Route>, page: Signal<Page>) {

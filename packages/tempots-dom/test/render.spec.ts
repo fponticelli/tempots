@@ -216,19 +216,17 @@ describe('Render', () => {
       clear()
     })
 
-    test('should use signal for startUrl', () => {
+    test('should use signal for startUrl', async () => {
       const urlSignal = prop('https://signal.com')
-      const { clear, currentURL } = runHeadless(
-        () => html.div('Hello'),
-        {
-          selector: 'body',
-          startUrl: urlSignal
-        }
-      )
+      const { clear, currentURL } = runHeadless(() => html.div('Hello'), {
+        selector: 'body',
+        startUrl: urlSignal,
+      })
 
       expect(currentURL.value).toBe('https://signal.com')
 
       urlSignal.set('https://updated.com')
+      await sleep()
       expect(currentURL.value).toBe('https://updated.com')
 
       clear()

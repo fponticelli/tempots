@@ -1,4 +1,4 @@
-import { attr, html, Value } from '@tempots/dom'
+import { attr, html, OnDispose, Value } from '@tempots/dom'
 
 export function NPMShield(name: Value<string>, label?: string | null) {
   const imgSrc = Value.map(name, n => {
@@ -8,6 +8,7 @@ export function NPMShield(name: Value<string>, label?: string | null) {
     return `${base}?style=flat-square`
   })
   return html.a(
+    OnDispose(() => Value.dispose(imgSrc)),
     attr.class('inline-block'),
     attr.target('_blank'),
     attr.href(Value.map(name, n => `https://www.npmjs.com/package/${n}`)),

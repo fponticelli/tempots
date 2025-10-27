@@ -62,43 +62,21 @@ describe("Signal", () => {
     p.set(2);
     expect(c.value).toStrictEqual(3);
   });
-  test("filter", () => {
-    const p = prop(1);
-    const c1 = p.filter(v => v % 2 === 0, 0);
-    expect(c1.value).toStrictEqual(0);
-    p.set(2);
-    expect(c1.value).toStrictEqual(2);
-    p.set(3);
-    expect(c1.value).toStrictEqual(2);
-    const c2 = p.filter(v => v % 2 === 0);
-    expect(c2.value).toStrictEqual(3);
-    p.set(4);
-    expect(c2.value).toStrictEqual(4);
-    p.set(5);
-    expect(c2.value).toStrictEqual(4);
-  });
-  test("Value.maybeToSignal", () => {
-    const p = prop(1);
-    const s = signal(1);
-    const c = p.map(v => v + 1);
-    expect(Value.maybeToSignal(p)).toStrictEqual(p);
-    expect(Value.maybeToSignal(s)).toStrictEqual(s);
-    expect(Value.maybeToSignal(c)).toStrictEqual(c);
-    const v = 1;
-    expect(Value.maybeToSignal(v)).toBeInstanceOf(Signal);
-    expect(Value.maybeToSignal(null)).toBeUndefined();
-    expect(Value.maybeToSignal(undefined)).toBeUndefined();
-  });
-  test("Value.toSignal", () => {
-    const p = prop(1);
-    const s = signal(1);
-    const c = p.map(v => v + 1);
-    expect(Value.toSignal(p)).toStrictEqual(p);
-    expect(Value.toSignal(s)).toStrictEqual(s);
-    expect(Value.toSignal(c)).toStrictEqual(c);
-    const v = 1;
-    expect(Value.toSignal(v)).toBeInstanceOf(Signal);
-  });
+  test('filter', () => {
+    const p = prop(1)
+    const c1 = p.filter(v => v % 2 === 0, 0)
+    expect(c1.value).toStrictEqual(0)
+    p.set(2)
+    expect(c1.value).toStrictEqual(2)
+    p.set(3)
+    expect(c1.value).toStrictEqual(2)
+    const c2 = p.filter(v => v % 2 === 0)
+    expect(c2.value).toStrictEqual(3)
+    p.set(4)
+    expect(c2.value).toStrictEqual(4)
+    p.set(5)
+    expect(c2.value).toStrictEqual(4)
+  })
   test("flatMap", () => {
     const p = prop(1);
     const c = p.flatMap(v => signal(v + 1));

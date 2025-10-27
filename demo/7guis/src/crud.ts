@@ -8,6 +8,7 @@ import {
   prop,
   ForEach,
   emitValue,
+  OnDispose,
 } from '@tempots/dom'
 import { Button, InputText, Select } from './ui'
 import { flex } from './components/flex'
@@ -41,6 +42,7 @@ export function Crud(): Renderable {
   }, [db, filter])
 
   return flex.row(
+    OnDispose(person, currentId, filter, db),
     attr.class('gap-4 items-center'),
     flex.col(
       attr.class('gap-2'),

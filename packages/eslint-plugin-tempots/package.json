@@ -1,0 +1,35 @@
+{
+  "name": "eslint-plugin-tempots",
+  "version": "0.1.0",
+  "description": "ESLint plugin for TempoTS to catch common signal disposal issues",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest --watch",
+    "lint": "eslint src",
+    "format": "eslint src --fix"
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "tempots",
+    "signals"
+  ],
+  "author": "Franco Ponticelli <franco.ponticelli@gmail.com>",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "eslint": "^8.0.0 || ^9.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "vitest": "^4.0.3"
+  }
+}

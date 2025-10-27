@@ -24,6 +24,7 @@ export function HtmlToTempo() {
   )
   const tempo = prop('')
   return html.div(
+    OnDispose(content, tempo),
     attr.class('h-full p-4 flex flex-col gap-2'),
     HTMLTitle('Tempo • HTML to Tempo'),
     OpenGraph({
