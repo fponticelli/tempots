@@ -652,6 +652,37 @@ describe('require-signal-disposal', () => {
         }
       `,
     },
+    // Chained Array.prototype.filter() should not be flagged (requires type checking)
+    {
+      code: `
+        function MyComponent(): Renderable {
+          const a = [1, 2, 3].filter(v => v % 2 === 0)
+          const aprime = a.filter(v => v % 1 === 0)
+          return html.div(aprime.join(', '))
+        }
+      `,
+    },
+    // Chained Array.prototype.filter() on Object.keys() result should not be flagged
+    {
+      code: `
+        function MyComponent({ obj }: { obj: Record<string, any> }): Renderable {
+          const a = Object.keys(obj)
+          const aprime = a.filter(v => v.startsWith('a'))
+          return html.div(aprime.join(', '))
+        }
+      `,
+    },
+    // Multiple levels of chained Array.prototype.filter() should not be flagged
+    {
+      code: `
+        function MyComponent({ obj }: { obj: Record<string, any> }): Renderable {
+          const a = Object.keys(obj)
+          const aprime = a.filter(v => v.startsWith('a'))
+          const asecond = aprime.filter(v => v.length > 2)
+          return html.div(asecond.join(', '))
+        }
+      `,
+    },
   ]
 
   // Test cases that should fail - signal created but not properly disposed
