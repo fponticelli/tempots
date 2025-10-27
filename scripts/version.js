@@ -137,7 +137,7 @@ function updateDependencies(newVersion, libName, packageDir) {
   );
   for (const key in json.peerDependencies) {
     if (key === libName) {
-      json.peerDependencies[key] = newVersion
+      json.peerDependencies[key] = `^${newVersion}`;
     }
   }
   require('fs').writeFileSync(packagePath, JSON.stringify(json, null, 2))
@@ -292,7 +292,7 @@ function getLibDependencies(packagePath) {
     if (!p) continue
     const jsonPath = path.join(packagePath, '../..', p, 'package.json')
     const version = getVersion(jsonPath)
-    dependencies[dependency] = version
+    dependencies[dependency] = `^${version}`;
   }
   return dependencies
 }

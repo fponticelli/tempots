@@ -70,8 +70,8 @@
     "@floating-ui/dom": "1.7.1"
   },
   "peerDependencies": {
-    "@tempots/dom": "31.6.0",
-    "@tempots/std": "0.24.0"
+    "@tempots/dom": "workspace:*",
+    "@tempots/std": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
