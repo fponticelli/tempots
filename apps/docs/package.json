@@ -17,7 +17,7 @@
     "@tempots/dom": "workspace:*",
     "@tempots/std": "workspace:*",
     "@tempots/ui": "workspace:*",
-    "happy-dom": "18.0.1"
+    "happy-dom": "20.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
@@ -34,7 +34,7 @@
     "front-matter": "^4.0.2",
     "fs-extra": "^11.3.2",
     "highlight.js": "^11.11.1",
-    "marked": "15.0.5",
+    "marked": "16.4.1",
     "marked-highlight": "^2.2.2",
     "monaco-editor": "0.52.2",
     "postcss": "^8.5.6",

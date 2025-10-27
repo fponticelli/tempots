@@ -27,8 +27,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tempots-ui
       happy-dom:
-        specifier: 18.0.1
-        version: 18.0.1
+        specifier: 20.0.8
+        version: 20.0.8
     devDependencies:
       '@eslint/js':
         specifier: ^9.38.0
@@ -73,11 +73,11 @@ importers:
         specifier: ^11.11.1
         version: 11.11.1
       marked:
-        specifier: 15.0.5
-        version: 15.0.5
+        specifier: 16.4.1
+        version: 16.4.1
       marked-highlight:
         specifier: ^2.2.2
-        version: 2.2.2(marked@15.0.5)
+        version: 2.2.2(marked@16.4.1)
       monaco-editor:
         specifier: 0.52.2
         version: 0.52.2
@@ -113,7 +113,7 @@ importers:
         version: 1.1.0(monaco-editor@0.52.2)
       vitest:
         specifier: ^4.0.3
-        version: 4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
       yaml:
         specifier: ^2.8.1
         version: 2.8.1
@@ -342,7 +342,7 @@ importers:
         version: 8.46.2(eslint@9.38.0(jiti@1.21.6))(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: ^4.0.3
-        version: 4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
       eslint:
         specifier: ^9.38.0
         version: 9.38.0(jiti@1.21.6)
@@ -353,8 +353,8 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@1.21.6)))(eslint@9.38.0(jiti@1.21.6))(prettier@3.6.2)
       happy-dom:
-        specifier: 18.0.1
-        version: 18.0.1
+        specifier: 20.0.8
+        version: 20.0.8
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -375,7 +375,7 @@ importers:
         version: 5.1.4(typescript@5.9.3)(vite@7.1.12(@types/node@24.9.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: ^4.0.3
-        version: 4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/tempots-std:
     devDependencies:
@@ -399,7 +399,7 @@ importers:
         version: 8.46.2(eslint@9.38.0(jiti@1.21.6))(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: ^4.0.3
-        version: 4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
       eslint:
         specifier: ^9.38.0
         version: 9.38.0(jiti@1.21.6)
@@ -429,7 +429,7 @@ importers:
         version: 5.1.4(typescript@5.9.3)(vite@7.1.12(@types/node@24.9.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: ^4.0.3
-        version: 4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/tempots-ui:
     dependencies:
@@ -463,7 +463,7 @@ importers:
         version: 8.46.2(eslint@9.38.0(jiti@1.21.6))(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: ^4.0.3
-        version: 4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
       eslint:
         specifier: ^9.38.0
         version: 9.38.0(jiti@1.21.6)
@@ -474,8 +474,8 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4(eslint-config-prettier@10.1.8(eslint@9.38.0(jiti@1.21.6)))(eslint@9.38.0(jiti@1.21.6))(prettier@3.6.2)
       happy-dom:
-        specifier: 18.0.1
-        version: 18.0.1
+        specifier: 20.0.8
+        version: 20.0.8
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -496,7 +496,7 @@ importers:
         version: 5.1.4(typescript@5.9.3)(vite@7.1.12(@types/node@24.9.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: ^4.0.3
-        version: 4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+        version: 4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
 
 packages:
 
@@ -1125,8 +1125,8 @@ packages:
   '@types/node@20.17.9':
     resolution: {integrity: sha512-0JOXkRyLanfGPE2QRCwgxhzlBAvaRdCNMcvbd7jFfpmD4eEXll7LRwy5ymJmyeZqk7Nh7eD2LeUyQ68BbndmXw==}
 
-  '@types/node@20.19.1':
-    resolution: {integrity: sha512-jJD50LtlD2dodAEO653i3YF04NWak6jN3ky+Ri3Em3mGR39/glWiboM/IePaRbgwSfqM1TpGXfAg8ohn/4dTgA==}
+  '@types/node@20.19.23':
+    resolution: {integrity: sha512-yIdlVVVHXpmqRhtyovZAcSy0MiPcYWGkoO4CGe/+jpP0hmNuihm4XhHbADpK++MsiLHP5MVlv+bcgdF99kSiFQ==}
 
   '@types/node@24.9.1':
     resolution: {integrity: sha512-QoiaXANRkSXK6p0Duvt56W208du4P9Uye9hWLWgGMDTEoKPhuenzNcC4vGUmrNkiOKTlIrBoyNQYNpSwfEZXSg==}
@@ -1740,8 +1740,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  happy-dom@18.0.1:
-    resolution: {integrity: sha512-qn+rKOW7KWpVTtgIUi6RVmTBZJSe2k0Db0vh1f7CWrWclkkc7/Q+FrOfkZIb2eiErLyqu5AXEzE7XthO9JVxRA==}
+  happy-dom@20.0.8:
+    resolution: {integrity: sha512-TlYaNQNtzsZ97rNMBAm8U+e2cUQXNithgfCizkDgc11lgmN4j9CKMhO3FPGKWQYPwwkFcPpoXYF/CqEPLgzfOg==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -1931,9 +1931,9 @@ packages:
     peerDependencies:
       marked: '>=4 <17'
 
-  marked@15.0.5:
-    resolution: {integrity: sha512-xN+kSuqHjxWg+Q47yhhZMUP+kO1qHobvXkkm6FX+7N6lDvanLDd8H7AQ0jWDDyq+fDt/cSrJaBGyWYHXy0KQWA==}
-    engines: {node: '>= 18'}
+  marked@16.4.1:
+    resolution: {integrity: sha512-ntROs7RaN3EvWfy3EZi14H4YxmT6A5YvywfhO+0pm+cH/dnSQRmdAmoFIc3B9aiwTehyk7pESH4ofyBY+V5hZg==}
+    engines: {node: '>= 20'}
     hasBin: true
 
   merge2@1.4.1:
@@ -3136,7 +3136,7 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@20.19.1':
+  '@types/node@20.19.23':
     dependencies:
       undici-types: 6.21.0
 
@@ -3244,7 +3244,7 @@ snapshots:
       '@typescript-eslint/types': 8.46.2
       eslint-visitor-keys: 4.2.1
 
-  '@vitest/coverage-v8@4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vitest/coverage-v8@4.0.3(vitest@4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.3
@@ -3257,7 +3257,7 @@ snapshots:
       magicast: 0.3.5
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -3845,9 +3845,9 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  happy-dom@18.0.1:
+  happy-dom@20.0.8:
     dependencies:
-      '@types/node': 20.19.1
+      '@types/node': 20.19.23
       '@types/whatwg-mimetype': 3.0.2
       whatwg-mimetype: 3.0.0
 
@@ -4021,11 +4021,11 @@ snapshots:
   make-error@1.3.6:
     optional: true
 
-  marked-highlight@2.2.2(marked@15.0.5):
+  marked-highlight@2.2.2(marked@16.4.1):
     dependencies:
-      marked: 15.0.5
+      marked: 16.4.1
 
-  marked@15.0.5: {}
+  marked@16.4.1: {}
 
   merge2@1.4.1: {}
 
@@ -4584,7 +4584,7 @@ snapshots:
       tsx: 4.20.6
       yaml: 2.8.1
 
-  vitest@4.0.3(@types/node@24.9.1)(happy-dom@18.0.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1):
+  vitest@4.0.3(@types/node@24.9.1)(happy-dom@20.0.8)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.3
       '@vitest/mocker': 4.0.3(vite@7.1.12(@types/node@24.9.1)(jiti@1.21.6)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1))
@@ -4608,7 +4608,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.9.1
-      happy-dom: 18.0.1
+      happy-dom: 20.0.8
     transitivePeerDependencies:
       - jiti
       - less
