@@ -227,6 +227,27 @@ export class Signal<T> {
   }
 
   /**
+   * Registers a listener function to be called whenever the value of the signal changes.
+   * The listener function will not be called with the current value of the signal.
+   * Returns a function that can be called to unregister the listener.
+   *
+   * @param listener - The listener function to be called when the value of the signal changes.
+   * @param options - Options for the listener.
+   */
+  readonly onChange = (
+    listener: (value: T, previousValue: T) => void,
+    options: ListenerOptions = {}
+  ) => {
+    let count = 0
+    const actualListener = (value: T, previousValue: T | undefined) => {
+      if (count++ > 0) {
+        listener(value, previousValue!)
+      }
+    }
+    return this.on(actualListener, options)
+  }
+
+  /**
    * @internal
    */
   protected readonly _setAndNotify = (newV: T) => {
