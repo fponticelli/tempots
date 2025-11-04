@@ -1588,56 +1588,56 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 2.2 DisposalScope Helper Methods
 
-- [ ] **Write tests for scope.prop()**
-  - [ ] Test: `scope.prop()` creates and tracks signal
-  - [ ] Test: `scope.prop()` works in async contexts
-  - [ ] Test: signal is disposed when scope is disposed
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scope.prop()**
+  - [x] Test: `scope.prop()` creates and tracks signal
+  - [x] Test: `scope.prop()` works in async contexts
+  - [x] Test: signal is disposed when scope is disposed
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scope.prop()**
-  - [ ] Add `prop()` method to `DisposalScope` class
-  - [ ] Use `untracked()` to avoid double-tracking
-  - [ ] Call `this.track(signal)`
-  - [ ] Run tests (should pass)
+- [x] **Implement scope.prop()**
+  - [x] Add `prop()` method to `DisposalScope` class
+  - [x] Use `untracked()` to avoid double-tracking
+  - [x] Call `this.track(signal)`
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for scope.computed()**
-  - [ ] Test: `scope.computed(fn, deps)` creates and tracks signal
-  - [ ] Test: works in async contexts
-  - [ ] Test: respects dependencies array
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scope.computed()**
+  - [x] Test: `scope.computed(fn, deps)` creates and tracks signal
+  - [x] Test: works in async contexts
+  - [x] Test: respects dependencies array
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scope.computed()**
-  - [ ] Add `computed()` method to `DisposalScope` class
-  - [ ] Run tests (should pass)
+- [x] **Implement scope.computed()**
+  - [x] Add `computed()` method to `DisposalScope` class
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for scope.effect()**
-  - [ ] Test: `scope.effect(fn, signals)` creates and tracks effect
-  - [ ] Test: works in async contexts
-  - [ ] Test: respects signals array
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scope.effect()**
+  - [x] Test: `scope.effect(fn, signals)` creates and tracks effect
+  - [x] Test: works in async contexts
+  - [x] Test: respects signals array
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scope.effect()**
-  - [ ] Add `effect()` method to `DisposalScope` class
-  - [ ] Run tests (should pass)
+- [x] **Implement scope.effect()**
+  - [x] Add `effect()` method to `DisposalScope` class
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for scope.computedOf()**
-  - [ ] Test: `scope.computedOf(a, b)((a, b) => ...)` creates and tracks signal
-  - [ ] Test: curried signature works correctly
-  - [ ] Test: works with mixed signals and literals
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scope.computedOf()**
+  - [x] Test: `scope.computedOf(a, b)((a, b) => ...)` creates and tracks signal
+  - [x] Test: curried signature works correctly
+  - [x] Test: works with mixed signals and literals
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scope.computedOf()**
-  - [ ] Add `computedOf()` method with curried signature
-  - [ ] Run tests (should pass)
+- [x] **Implement scope.computedOf()**
+  - [x] Add `computedOf()` method with curried signature
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for scope.effectOf()**
-  - [ ] Test: `scope.effectOf(a, b)((a, b) => ...)` creates and tracks effect
-  - [ ] Test: curried signature works correctly
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scope.effectOf()**
+  - [x] Test: `scope.effectOf(a, b)((a, b) => ...)` creates and tracks effect
+  - [x] Test: curried signature works correctly
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scope.effectOf()**
-  - [ ] Add `effectOf()` method with curried signature
-  - [ ] Run tests (should pass)
+- [x] **Implement scope.effectOf()**
+  - [x] Add `effectOf()` method with curried signature
+  - [x] Run tests (should pass)
 
 ### Phase 3: Renderable Integration
 
