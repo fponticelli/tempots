@@ -1429,3 +1429,729 @@ Update all demos to remove `OnDispose()` calls and verify they still work correc
 3. Should we provide a way to "transfer" a signal from one scope to another?
 4. Should `WithScope` be the recommended pattern for all components, or only for those with async signals?
 5. Should we add a `createRoot()` function (like Solid.js) for creating top-level scopes outside of renderables?
+
+---
+
+## Implementation Task List (TDD Approach)
+
+This section provides a detailed, step-by-step task list for implementing automatic signal disposal using Test-Driven Development (TDD). Each task follows the pattern: mock → test → fail → implement → pass.
+
+### Phase 1: Core Infrastructure Setup
+
+#### 1.1 DisposalScope Class Foundation
+
+- [ ] **Create mock DisposalScope class**
+  - [ ] Create `packages/tempots-dom/src/std/disposal-scope.ts`
+  - [ ] Add empty `DisposalScope` class with method stubs
+  - [ ] Export from `packages/tempots-dom/src/std/index.ts`
+
+- [ ] **Write tests for DisposalScope.track()**
+  - [ ] Create `packages/tempots-dom/test/disposal-scope.spec.ts`
+  - [ ] Test: tracking a signal adds it to the scope
+  - [ ] Test: tracking multiple signals
+  - [ ] Test: tracking the same signal twice (should be idempotent)
+  - [ ] Test: tracking a disposed signal throws error
+  - [ ] Test: tracking in a disposed scope throws error
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement DisposalScope.track()**
+  - [ ] Implement `_signals: Set<Signal<unknown>>`
+  - [ ] Implement `track(signal)` method with validation
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for DisposalScope.dispose()**
+  - [ ] Test: dispose() calls dispose() on all tracked signals
+  - [ ] Test: dispose() clears the signal set
+  - [ ] Test: dispose() is idempotent (calling twice is safe)
+  - [ ] Test: disposed property returns true after disposal
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement DisposalScope.dispose()**
+  - [ ] Implement `_disposed: boolean` flag
+  - [ ] Implement `dispose()` method
+  - [ ] Implement `disposed` getter
+  - [ ] Run tests (should pass)
+
+#### 1.2 Global Scope Stack
+
+- [ ] **Create mock scope stack module**
+  - [ ] Create `packages/tempots-dom/src/std/scope-stack.ts`
+  - [ ] Add `scopeStack: DisposalScope[]` variable
+  - [ ] Add function stubs: `pushScope`, `popScope`, `getCurrentScope`
+  - [ ] Export from `packages/tempots-dom/src/std/index.ts`
+
+- [ ] **Write tests for scope stack operations**
+  - [ ] Create `packages/tempots-dom/test/scope-stack.spec.ts`
+  - [ ] Test: `getCurrentScope()` returns null when stack is empty
+  - [ ] Test: `pushScope()` adds scope to stack
+  - [ ] Test: `getCurrentScope()` returns the last pushed scope
+  - [ ] Test: `popScope()` removes the last scope
+  - [ ] Test: `popScope()` on empty stack throws error
+  - [ ] Test: nested push/pop operations maintain correct order
+  - [ ] Test: `getScopeStack()` returns read-only array
+  - [ ] Test: `getParentScope()` returns parent or null
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scope stack operations**
+  - [ ] Implement `pushScope(scope)`
+  - [ ] Implement `popScope()`
+  - [ ] Implement `getCurrentScope()`
+  - [ ] Implement `getScopeStack()`
+  - [ ] Implement `getParentScope()`
+  - [ ] Run tests (should pass)
+
+#### 1.3 Scope Helper Functions
+
+- [ ] **Write tests for withScope()**
+  - [ ] Test: `withScope()` pushes scope before calling function
+  - [ ] Test: `withScope()` pops scope after function completes
+  - [ ] Test: `withScope()` pops scope even if function throws
+  - [ ] Test: `withScope()` returns function result
+  - [ ] Test: `withScope()` does NOT dispose the scope
+  - [ ] Test: nested `withScope()` calls maintain correct stack
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement withScope()**
+  - [ ] Implement `withScope(scope, fn)` with try/finally
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for scoped()**
+  - [ ] Test: `scoped()` creates a new scope
+  - [ ] Test: `scoped()` pushes and pops scope
+  - [ ] Test: `scoped()` disposes scope after function completes
+  - [ ] Test: `scoped()` disposes scope even if function throws
+  - [ ] Test: `scoped()` returns function result
+  - [ ] Test: signals created in `scoped()` are disposed
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scoped()**
+  - [ ] Implement `scoped(fn)` using `withScope()` and `dispose()`
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for untracked()**
+  - [ ] Test: `untracked()` saves current scope stack
+  - [ ] Test: `untracked()` clears scope stack during execution
+  - [ ] Test: `untracked()` restores scope stack after execution
+  - [ ] Test: `untracked()` restores scope stack even if function throws
+  - [ ] Test: signals created in `untracked()` are NOT tracked
+  - [ ] Test: nested `untracked()` calls work correctly
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement untracked()**
+  - [ ] Implement `untracked(fn)` with save/restore logic
+  - [ ] Run tests (should pass)
+
+### Phase 2: Signal Auto-Registration
+
+#### 2.1 Modify Signal Creation Functions
+
+- [ ] **Write tests for prop() auto-registration**
+  - [ ] Test: `prop()` called inside a scope is tracked
+  - [ ] Test: `prop()` called outside a scope is NOT tracked
+  - [ ] Test: `prop()` in nested scopes is tracked in innermost scope
+  - [ ] Test: disposing scope disposes the prop signal
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement prop() auto-registration**
+  - [ ] Modify `prop()` in `packages/tempots-dom/src/std/signal.ts`
+  - [ ] Add `getCurrentScope()?.track(signal)` after signal creation
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for computed() auto-registration**
+  - [ ] Test: `computed()` called inside a scope is tracked
+  - [ ] Test: `computed()` called outside a scope is NOT tracked
+  - [ ] Test: disposing scope disposes the computed signal
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement computed() auto-registration**
+  - [ ] Modify `computed()` to call `getCurrentScope()?.track(signal)`
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for effect() auto-registration**
+  - [ ] Test: `effect()` called inside a scope is tracked
+  - [ ] Test: disposing scope disposes the effect
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement effect() auto-registration**
+  - [ ] Modify `effect()` to wrap dispose function in trackable object
+  - [ ] Call `getCurrentScope()?.track(disposable)`
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for signal.map() auto-registration**
+  - [ ] Test: derived signals from `.map()` are tracked
+  - [ ] Test: disposing scope disposes derived signals
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement signal.map() auto-registration**
+  - [ ] Modify all signal derivation methods (`.map()`, `.filter()`, `.at()`, etc.)
+  - [ ] Add auto-registration to each
+  - [ ] Run tests (should pass)
+
+#### 2.2 DisposalScope Helper Methods
+
+- [ ] **Write tests for scope.prop()**
+  - [ ] Test: `scope.prop()` creates and tracks signal
+  - [ ] Test: `scope.prop()` works in async contexts
+  - [ ] Test: signal is disposed when scope is disposed
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scope.prop()**
+  - [ ] Add `prop()` method to `DisposalScope` class
+  - [ ] Use `untracked()` to avoid double-tracking
+  - [ ] Call `this.track(signal)`
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for scope.computed()**
+  - [ ] Test: `scope.computed(fn, deps)` creates and tracks signal
+  - [ ] Test: works in async contexts
+  - [ ] Test: respects dependencies array
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scope.computed()**
+  - [ ] Add `computed()` method to `DisposalScope` class
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for scope.effect()**
+  - [ ] Test: `scope.effect(fn, signals)` creates and tracks effect
+  - [ ] Test: works in async contexts
+  - [ ] Test: respects signals array
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scope.effect()**
+  - [ ] Add `effect()` method to `DisposalScope` class
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for scope.computedOf()**
+  - [ ] Test: `scope.computedOf(a, b)((a, b) => ...)` creates and tracks signal
+  - [ ] Test: curried signature works correctly
+  - [ ] Test: works with mixed signals and literals
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scope.computedOf()**
+  - [ ] Add `computedOf()` method with curried signature
+  - [ ] Run tests (should pass)
+
+- [ ] **Write tests for scope.effectOf()**
+  - [ ] Test: `scope.effectOf(a, b)((a, b) => ...)` creates and tracks effect
+  - [ ] Test: curried signature works correctly
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement scope.effectOf()**
+  - [ ] Add `effectOf()` method with curried signature
+  - [ ] Run tests (should pass)
+
+### Phase 3: Renderable Integration
+
+#### 3.1 renderWithContext
+
+- [ ] **Write tests for renderWithContext scope**
+  - [ ] Test: `renderWithContext` creates a scope
+  - [ ] Test: signals created in renderable are tracked
+  - [ ] Test: calling clear() disposes the scope
+  - [ ] Test: calling clear() disposes all tracked signals
+  - [ ] Test: nested renderables have separate scopes
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement renderWithContext scope**
+  - [ ] Modify `renderWithContext` in `packages/tempots-dom/src/renderWithContext.ts`
+  - [ ] Create `DisposalScope` at start
+  - [ ] Use `withScope()` to wrap renderable execution
+  - [ ] Call `scope.dispose()` in clear function
+  - [ ] Run tests (should pass)
+
+#### 3.2 createReactiveRenderable (When/Unless)
+
+- [ ] **Write tests for When/Unless scopes**
+  - [ ] Test: each branch creates its own scope
+  - [ ] Test: switching branches disposes old scope
+  - [ ] Test: signals in then branch are disposed when switching to else
+  - [ ] Test: signals in else branch are disposed when switching to then
+  - [ ] Test: nested When creates nested scopes
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement createReactiveRenderable scope**
+  - [ ] Modify `createReactiveRenderable` in `packages/tempots-dom/src/renderables/when.ts`
+  - [ ] Create scope for each branch
+  - [ ] Use `withScope()` when executing branch renderable
+  - [ ] Dispose old scope when switching branches
+  - [ ] Run tests (should pass)
+
+#### 3.3 Repeat
+
+- [ ] **Write tests for Repeat scopes**
+  - [ ] Test: each iteration creates its own scope
+  - [ ] Test: removing an item disposes its scope
+  - [ ] Test: adding an item creates a new scope
+  - [ ] Test: reordering items maintains their scopes
+  - [ ] Test: signals created in item renderable are disposed with item
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement Repeat scope**
+  - [ ] Modify `Repeat` in `packages/tempots-dom/src/renderables/repeat.ts`
+  - [ ] Create scope for each iteration
+  - [ ] Use `withScope()` when executing item renderable
+  - [ ] Dispose scope when item is removed
+  - [ ] Run tests (should pass)
+
+#### 3.4 WithScope Helper
+
+- [ ] **Write tests for WithScope renderable**
+  - [ ] Test: `WithScope` provides scope to callback
+  - [ ] Test: scope is available in async contexts
+  - [ ] Test: scope is disposed when component unmounts
+  - [ ] Test: `scope.prop()` works in setTimeout
+  - [ ] Test: `scope.computedOf()` works in fetch callbacks
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement WithScope renderable**
+  - [ ] Create `WithScope` in `packages/tempots-dom/src/renderables/with-scope.ts`
+  - [ ] Use `withScope()` helper internally
+  - [ ] Pass scope to user callback
+  - [ ] Export from main index
+  - [ ] Run tests (should pass)
+
+### Phase 4: Integration Tests
+
+#### 4.1 Component Lifecycle Tests
+
+- [ ] **Write integration tests for component lifecycle**
+  - [ ] Test: mounting component creates scope
+  - [ ] Test: unmounting component disposes scope
+  - [ ] Test: remounting creates new scope
+  - [ ] Test: multiple instances have separate scopes
+  - [ ] Run tests (should fail)
+
+- [ ] **Verify component lifecycle**
+  - [ ] Fix any issues found
+  - [ ] Run tests (should pass)
+
+#### 4.2 Conditional Rendering Tests
+
+- [ ] **Write integration tests for When/Unless**
+  - [ ] Test: toggling When disposes old branch signals
+  - [ ] Test: nested When creates nested scopes
+  - [ ] Test: Unless works correctly
+  - [ ] Run tests (should fail)
+
+- [ ] **Verify conditional rendering**
+  - [ ] Fix any issues found
+  - [ ] Run tests (should pass)
+
+#### 4.3 List Rendering Tests
+
+- [ ] **Write integration tests for ForEach/Repeat**
+  - [ ] Test: adding items creates new scopes
+  - [ ] Test: removing items disposes scopes
+  - [ ] Test: reordering maintains scopes
+  - [ ] Test: filtering disposes removed item scopes
+  - [ ] Run tests (should fail)
+
+- [ ] **Verify list rendering**
+  - [ ] Fix any issues found
+  - [ ] Run tests (should pass)
+
+#### 4.4 Async Context Tests
+
+- [ ] **Write integration tests for async contexts**
+  - [ ] Test: setTimeout with scope.prop() works
+  - [ ] Test: fetch callbacks with scope.computedOf() work
+  - [ ] Test: event handlers with scope.effect() work
+  - [ ] Test: signals are disposed when component unmounts (even if async pending)
+  - [ ] Run tests (should fail)
+
+- [ ] **Verify async contexts**
+  - [ ] Fix any issues found
+  - [ ] Run tests (should pass)
+
+### Phase 5: Memory Leak Testing
+
+#### 5.1 Unit-Level Memory Tests
+
+- [ ] **Write memory leak tests**
+  - [ ] Test: creating and disposing 1000 scopes doesn't leak
+  - [ ] Test: creating and disposing 1000 signals doesn't leak
+  - [ ] Test: toggling When 1000 times doesn't leak
+  - [ ] Test: adding/removing list items 1000 times doesn't leak
+  - [ ] Run tests (should fail if leaks exist)
+
+- [ ] **Fix any memory leaks**
+  - [ ] Use WeakMap/WeakSet where appropriate
+  - [ ] Ensure all references are cleared on disposal
+  - [ ] Run tests (should pass)
+
+#### 5.2 E2E Memory Tests
+
+- [ ] **Create E2E memory test scenarios**
+  - [ ] Create test page with counter component
+  - [ ] Create test page with conditional rendering
+  - [ ] Create test page with dynamic list
+  - [ ] Add memory profiling scripts
+
+- [ ] **Run E2E memory tests**
+  - [ ] Use browser dev tools to profile memory
+  - [ ] Mount/unmount components 1000 times
+  - [ ] Verify memory returns to baseline
+  - [ ] Document results
+
+### Phase 6: Demo Updates
+
+#### 6.1 Update Existing Demos
+
+- [ ] **Update counter demo**
+  - [ ] Remove all `OnDispose()` calls
+  - [ ] Verify signals are auto-disposed
+  - [ ] Test manually in browser
+
+- [ ] **Update todomvc demo**
+  - [ ] Remove all `OnDispose()` calls
+  - [ ] Verify no memory leaks
+  - [ ] Test manually in browser
+
+- [ ] **Update 7guis demos**
+  - [ ] Remove all `OnDispose()` calls from all 7 demos
+  - [ ] Verify each demo works correctly
+  - [ ] Test manually in browser
+
+- [ ] **Update hnpwa demo**
+  - [ ] Remove all `OnDispose()` calls
+  - [ ] Verify navigation doesn't leak memory
+  - [ ] Test manually in browser
+
+- [ ] **Run all demos**
+  - [ ] `pnpm build:demos`
+  - [ ] Manually test each demo
+  - [ ] Profile memory usage
+  - [ ] Document any issues
+
+### Phase 7: ESLint Plugin Updates
+
+#### 7.1 Update Existing Rules
+
+- [ ] **Update require-signal-disposal rule**
+  - [ ] Modify to warn on `OnDispose()` usage
+  - [ ] Suggest removing `OnDispose()` calls
+  - [ ] Add tests for new warnings
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement rule updates**
+  - [ ] Update rule implementation
+  - [ ] Run tests (should pass)
+
+#### 7.2 Add New Rules
+
+- [ ] **Create async-context-scope rule**
+  - [ ] Write tests for detecting async contexts
+  - [ ] Test: warn on `prop()` in setTimeout
+  - [ ] Test: warn on `computed()` in fetch callback
+  - [ ] Test: warn on `computedOf()` in event handler
+  - [ ] Test: suggest `scope.prop()`, `scope.computed()`, etc.
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement async-context-scope rule**
+  - [ ] Detect async contexts (setTimeout, fetch, addEventListener, etc.)
+  - [ ] Detect signal creation in async contexts
+  - [ ] Suggest scope methods
+  - [ ] Run tests (should pass)
+
+- [ ] **Create sync-context-scope rule**
+  - [ ] Write tests for detecting sync contexts
+  - [ ] Test: warn on `scope.prop()` in renderable body
+  - [ ] Test: suggest using global `prop()` instead
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement sync-context-scope rule**
+  - [ ] Detect sync contexts (renderable body)
+  - [ ] Detect scope method usage
+  - [ ] Suggest global functions
+  - [ ] Run tests (should pass)
+
+- [ ] **Create module-level-signal rule**
+  - [ ] Write tests for detecting module-level signals
+  - [ ] Test: warn on signals created outside renderables
+  - [ ] Test: suggest moving into renderable or using `untracked()`
+  - [ ] Run tests (should fail)
+
+- [ ] **Implement module-level-signal rule**
+  - [ ] Detect module-level signal creation
+  - [ ] Provide helpful suggestions
+  - [ ] Run tests (should pass)
+
+#### 7.3 Update Plugin Documentation
+
+- [ ] **Update ESLint plugin README**
+  - [ ] Document new rules
+  - [ ] Add examples for each rule
+  - [ ] Update migration guide
+
+- [ ] **Publish updated plugin**
+  - [ ] Bump version
+  - [ ] Run all plugin tests
+  - [ ] Publish to npm
+
+### Phase 8: Codebase Cleanup
+
+#### 8.1 Remove OnDispose Usage
+
+- [ ] **Find all OnDispose usage**
+  - [ ] Run: `git grep -n "OnDispose" packages/`
+  - [ ] Create list of files to update
+
+- [ ] **Remove OnDispose from tempots-dom**
+  - [ ] Update all files in `packages/tempots-dom/src/`
+  - [ ] Remove `OnDispose()` calls
+  - [ ] Verify tests still pass
+
+- [ ] **Remove OnDispose from tempots-std**
+  - [ ] Update all files in `packages/tempots-std/src/`
+  - [ ] Remove `OnDispose()` calls
+  - [ ] Verify tests still pass
+
+- [ ] **Remove OnDispose from tempots-ui**
+  - [ ] Update all files in `packages/tempots-ui/src/`
+  - [ ] Remove `OnDispose()` calls
+  - [ ] Verify tests still pass
+
+#### 8.2 Deprecate OnDispose
+
+- [ ] **Mark OnDispose as deprecated**
+  - [ ] Add `@deprecated` JSDoc tag
+  - [ ] Add deprecation message suggesting removal
+  - [ ] Keep implementation for backward compatibility
+
+- [ ] **Add deprecation warning**
+  - [ ] Add console.warn in dev mode when OnDispose is called
+  - [ ] Include migration instructions in warning
+
+### Phase 9: Documentation Updates
+
+#### 9.1 API Documentation
+
+- [ ] **Update signal documentation**
+  - [ ] Document automatic disposal behavior
+  - [ ] Update examples to remove OnDispose
+  - [ ] Add section on scope tracking
+
+- [ ] **Update renderable documentation**
+  - [ ] Document scope creation at lifecycle boundaries
+  - [ ] Add examples of automatic disposal
+  - [ ] Document WithScope helper
+
+- [ ] **Update migration guide**
+  - [ ] Add section on removing OnDispose
+  - [ ] Add examples of before/after
+  - [ ] Document edge cases (untracked, async contexts)
+
+#### 9.2 README Updates
+
+- [ ] **Update main README**
+  - [ ] Update quick start examples
+  - [ ] Remove OnDispose from examples
+  - [ ] Add note about automatic disposal
+
+- [ ] **Update package READMEs**
+  - [ ] Update tempots-dom README
+  - [ ] Update tempots-std README
+  - [ ] Update tempots-ui README
+
+#### 9.3 Tutorial Updates
+
+- [ ] **Update getting started tutorial**
+  - [ ] Remove OnDispose from examples
+  - [ ] Add section on automatic disposal
+  - [ ] Add section on async contexts
+
+- [ ] **Update advanced topics**
+  - [ ] Add guide on scope tracking
+  - [ ] Add guide on untracked signals
+  - [ ] Add guide on WithScope
+
+### Phase 10: Testing & Verification
+
+#### 10.1 Test Coverage
+
+- [ ] **Verify test coverage**
+  - [ ] Run: `pnpm test:coverage`
+  - [ ] Ensure ≥80% statement coverage for new code
+  - [ ] Ensure ≥75% branch coverage for new code
+  - [ ] Update COVERAGE.md
+
+- [ ] **Add missing tests**
+  - [ ] Identify uncovered code paths
+  - [ ] Write tests for uncovered paths
+  - [ ] Run coverage again
+
+#### 10.2 Integration Testing
+
+- [ ] **Run full test suite**
+  - [ ] Run: `pnpm test`
+  - [ ] Verify all tests pass
+  - [ ] Fix any failing tests
+
+- [ ] **Run type checking**
+  - [ ] Run: `pnpm typecheck`
+  - [ ] Fix any type errors
+
+- [ ] **Run linting**
+  - [ ] Run: `pnpm lint`
+  - [ ] Fix any linting errors
+
+- [ ] **Run formatting**
+  - [ ] Run: `pnpm format`
+  - [ ] Commit formatting changes
+
+#### 10.3 Build Verification
+
+- [ ] **Build all packages**
+  - [ ] Run: `pnpm build`
+  - [ ] Verify no build errors
+  - [ ] Verify dist files are generated
+
+- [ ] **Build demos**
+  - [ ] Run: `pnpm build:demos`
+  - [ ] Verify all demos build successfully
+
+- [ ] **Test demos in browser**
+  - [ ] Start dev server for each demo
+  - [ ] Manually test functionality
+  - [ ] Profile memory usage
+  - [ ] Verify no console errors
+
+### Phase 11: Performance Testing
+
+#### 11.1 Benchmark Creation
+
+- [ ] **Create performance benchmarks**
+  - [ ] Benchmark: signal creation (with vs without auto-tracking)
+  - [ ] Benchmark: scope creation/disposal
+  - [ ] Benchmark: component mount/unmount
+  - [ ] Benchmark: list rendering (1000 items)
+
+- [ ] **Run benchmarks**
+  - [ ] Run before implementation (baseline)
+  - [ ] Run after implementation
+  - [ ] Compare results
+  - [ ] Document any performance regressions
+
+#### 11.2 Performance Optimization
+
+- [ ] **Optimize hot paths**
+  - [ ] Profile scope stack operations
+  - [ ] Optimize `getCurrentScope()` if needed
+  - [ ] Optimize `track()` if needed
+  - [ ] Re-run benchmarks
+
+- [ ] **Document performance characteristics**
+  - [ ] Add performance notes to documentation
+  - [ ] Document any trade-offs
+  - [ ] Add recommendations for large apps
+
+### Phase 12: Release Preparation
+
+#### 12.1 Version Bumping
+
+- [ ] **Update package versions**
+  - [ ] Bump tempots-dom to next major version
+  - [ ] Bump tempots-std to next major version
+  - [ ] Bump tempots-ui to next major version
+  - [ ] Update inter-package dependencies
+
+#### 12.2 Changelog
+
+- [ ] **Update CHANGELOG.md**
+  - [ ] Add "Breaking Changes" section
+  - [ ] Document OnDispose deprecation
+  - [ ] Document automatic disposal feature
+  - [ ] Document new WithScope helper
+  - [ ] Document ESLint plugin updates
+  - [ ] Add migration guide link
+
+#### 12.3 Release Notes
+
+- [ ] **Write release notes**
+  - [ ] Highlight automatic disposal feature
+  - [ ] Explain breaking changes
+  - [ ] Provide migration examples
+  - [ ] Link to documentation
+
+#### 12.4 Pre-Release Checklist
+
+- [ ] **Final verification**
+  - [ ] All tests pass: `pnpm test`
+  - [ ] All demos work: `pnpm build:demos`
+  - [ ] Type checking passes: `pnpm typecheck`
+  - [ ] Linting passes: `pnpm lint`
+  - [ ] Build succeeds: `pnpm build`
+  - [ ] Coverage meets targets: `pnpm test:coverage`
+  - [ ] Documentation is up to date
+  - [ ] CHANGELOG is updated
+  - [ ] No memory leaks in demos
+
+### Phase 13: Release
+
+#### 13.1 Git Operations
+
+- [ ] **Create release branch**
+  - [ ] Create branch: `release/automatic-disposal`
+  - [ ] Commit all changes
+  - [ ] Push to remote
+
+- [ ] **Create pull request**
+  - [ ] Create PR with detailed description
+  - [ ] Link to specification document
+  - [ ] Request reviews
+  - [ ] Address review feedback
+
+#### 13.2 Publishing
+
+- [ ] **Merge to main**
+  - [ ] Ensure all CI checks pass
+  - [ ] Merge PR
+  - [ ] Pull latest main
+
+- [ ] **Tag release**
+  - [ ] Create git tag for version
+  - [ ] Push tag to remote
+
+- [ ] **Publish to npm**
+  - [ ] Publish tempots-dom
+  - [ ] Publish tempots-std
+  - [ ] Publish tempots-ui
+  - [ ] Verify packages on npm
+
+#### 13.3 Post-Release
+
+- [ ] **Announce release**
+  - [ ] Post release notes
+  - [ ] Update documentation site
+  - [ ] Notify users of breaking changes
+
+- [ ] **Monitor for issues**
+  - [ ] Watch for bug reports
+  - [ ] Monitor npm downloads
+  - [ ] Be ready for hotfix if needed
+
+---
+
+## Task Summary
+
+**Total Tasks: ~200+**
+
+**Estimated Timeline:**
+- Phase 1-2 (Core Infrastructure): 3-4 days
+- Phase 3 (Renderable Integration): 2-3 days
+- Phase 4-5 (Integration & Memory Tests): 2-3 days
+- Phase 6 (Demo Updates): 1-2 days
+- Phase 7 (ESLint Plugin): 2-3 days
+- Phase 8 (Codebase Cleanup): 1-2 days
+- Phase 9 (Documentation): 2-3 days
+- Phase 10-11 (Testing & Performance): 2-3 days
+- Phase 12-13 (Release): 1-2 days
+
+**Total: 16-25 days (3-5 weeks)**
+
+**Key Principles:**
+1. ✅ **TDD First**: Write tests before implementation
+2. ✅ **Red-Green-Refactor**: Fail → Pass → Optimize
+3. ✅ **Incremental**: Small, testable changes
+4. ✅ **Coverage**: Maintain ≥80% statement coverage
+5. ✅ **No Regressions**: All existing tests must pass
