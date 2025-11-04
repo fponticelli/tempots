@@ -1694,20 +1694,20 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 3.4 WithScope Helper
 
-- [ ] **Write tests for WithScope renderable**
-  - [ ] Test: `WithScope` provides scope to callback
-  - [ ] Test: scope is available in async contexts
-  - [ ] Test: scope is disposed when component unmounts
-  - [ ] Test: `scope.prop()` works in setTimeout
-  - [ ] Test: `scope.computedOf()` works in fetch callbacks
-  - [ ] Run tests (should fail)
+- [x] **Write tests for WithScope renderable**
+  - [x] Test: `WithScope` provides scope to callback
+  - [x] Test: scope is available in async contexts
+  - [x] Test: scope is disposed when component unmounts
+  - [x] Test: `scope.prop()` works in setTimeout
+  - [x] Test: `scope.computedOf()` works in fetch callbacks
+  - [x] Run tests (should fail)
 
-- [ ] **Implement WithScope renderable**
-  - [ ] Create `WithScope` in `packages/tempots-dom/src/renderables/with-scope.ts`
-  - [ ] Use `withScope()` helper internally
-  - [ ] Pass scope to user callback
-  - [ ] Export from main index
-  - [ ] Run tests (should pass)
+- [x] **Implement WithScope renderable**
+  - [x] Create `WithScope` in `packages/tempots-dom/src/renderables/with-scope.ts`
+  - [x] Use `withScope()` helper internally
+  - [x] Pass scope to user callback
+  - [x] Export from main index
+  - [x] Run tests (should pass)
 
 ### Phase 4: Integration Tests
 
