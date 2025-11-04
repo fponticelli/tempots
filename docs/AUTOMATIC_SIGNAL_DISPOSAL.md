@@ -1713,16 +1713,16 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 4.1 Component Lifecycle Tests
 
-- [ ] **Write integration tests for component lifecycle**
-  - [ ] Test: mounting component creates scope
-  - [ ] Test: unmounting component disposes scope
-  - [ ] Test: remounting creates new scope
-  - [ ] Test: multiple instances have separate scopes
-  - [ ] Run tests (should fail)
+- [x] **Write integration tests for component lifecycle**
+  - [x] Test: mounting component creates scope
+  - [x] Test: unmounting component disposes scope
+  - [x] Test: remounting creates new scope
+  - [x] Test: multiple instances have separate scopes
+  - [x] Run tests (should fail)
 
-- [ ] **Verify component lifecycle**
-  - [ ] Fix any issues found
-  - [ ] Run tests (should pass)
+- [x] **Verify component lifecycle**
+  - [x] Fix any issues found
+  - [x] Run tests (should pass)
 
 #### 4.2 Conditional Rendering Tests
 
