@@ -1,3 +1,5 @@
+import { getCurrentScope } from './scope-stack'
+
 /**
  * Represents any type of signal.
  * It can be a Signal, Prop, or Computed.
@@ -854,6 +856,13 @@ export const computed = <T>(
 ): Computed<T> => {
   const computed = new Computed(fn, equals)
   dependencies.forEach(signal => signal.setDerivative(computed))
+
+  // Auto-register with current scope if one exists
+  const currentScope = getCurrentScope()
+  if (currentScope != null) {
+    currentScope.track(computed)
+  }
+
   return computed
 }
 /**
@@ -911,7 +920,17 @@ export const effect = (
 export const prop = <T>(
   value: T,
   equals: (a: T, b: T) => boolean = (a, b) => a === b
-): Prop<T> => new Prop(value, equals)
+): Prop<T> => {
+  const signal = new Prop(value, equals)
+
+  // Auto-register with current scope if one exists
+  const currentScope = getCurrentScope()
+  if (currentScope != null) {
+    currentScope.track(signal)
+  }
+
+  return signal
+}
 
 /**
  * Creates a signal with the specified initial value and equality function.

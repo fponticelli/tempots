@@ -1440,142 +1440,141 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 1.1 DisposalScope Class Foundation
 
-- [ ] **Create mock DisposalScope class**
-  - [ ] Create `packages/tempots-dom/src/std/disposal-scope.ts`
-  - [ ] Add empty `DisposalScope` class with method stubs
-  - [ ] Export from `packages/tempots-dom/src/std/index.ts`
+- [x] **Create mock DisposalScope class**
+  - [x] Create `packages/tempots-dom/src/std/disposal-scope.ts`
+  - [x] Add empty `DisposalScope` class with method stubs
+  - [x] Export from `packages/tempots-dom/src/std/index.ts`
 
-- [ ] **Write tests for DisposalScope.track()**
-  - [ ] Create `packages/tempots-dom/test/disposal-scope.spec.ts`
-  - [ ] Test: tracking a signal adds it to the scope
-  - [ ] Test: tracking multiple signals
-  - [ ] Test: tracking the same signal twice (should be idempotent)
-  - [ ] Test: tracking a disposed signal throws error
-  - [ ] Test: tracking in a disposed scope throws error
-  - [ ] Run tests (should fail)
+- [x] **Write tests for DisposalScope.track()**
+  - [x] Create `packages/tempots-dom/test/disposal-scope.spec.ts`
+  - [x] Test: tracking a signal adds it to the scope
+  - [x] Test: tracking multiple signals
+  - [x] Test: tracking the same signal twice (should be idempotent)
+  - [x] Test: tracking a disposed signal throws error
+  - [x] Test: tracking in a disposed scope throws error
+  - [x] Run tests (should fail)
 
-- [ ] **Implement DisposalScope.track()**
-  - [ ] Implement `_signals: Set<Signal<unknown>>`
-  - [ ] Implement `track(signal)` method with validation
-  - [ ] Run tests (should pass)
+- [x] **Implement DisposalScope.track()**
+  - [x] Implement `_signals: Set<Signal<unknown>>`
+  - [x] Implement `track(signal)` method with validation
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for DisposalScope.dispose()**
-  - [ ] Test: dispose() calls dispose() on all tracked signals
-  - [ ] Test: dispose() clears the signal set
-  - [ ] Test: dispose() is idempotent (calling twice is safe)
-  - [ ] Test: disposed property returns true after disposal
-  - [ ] Run tests (should fail)
+- [x] **Write tests for DisposalScope.dispose()**
+  - [x] Test: dispose() calls dispose() on all tracked signals
+  - [x] Test: dispose() clears the signal set
+  - [x] Test: dispose() is idempotent (calling twice is safe)
+  - [x] Test: disposed property returns true after disposal
+  - [x] Run tests (should fail)
 
-- [ ] **Implement DisposalScope.dispose()**
-  - [ ] Implement `_disposed: boolean` flag
-  - [ ] Implement `dispose()` method
-  - [ ] Implement `disposed` getter
-  - [ ] Run tests (should pass)
+- [x] **Implement DisposalScope.dispose()**
+  - [x] Implement `_disposed: boolean` flag
+  - [x] Implement `dispose()` method
+  - [x] Implement `disposed` getter
+  - [x] Run tests (should pass)
 
 #### 1.2 Global Scope Stack
 
-- [ ] **Create mock scope stack module**
-  - [ ] Create `packages/tempots-dom/src/std/scope-stack.ts`
-  - [ ] Add `scopeStack: DisposalScope[]` variable
-  - [ ] Add function stubs: `pushScope`, `popScope`, `getCurrentScope`
-  - [ ] Export from `packages/tempots-dom/src/std/index.ts`
+- [x] **Create mock scope stack module**
+  - [x] Create `packages/tempots-dom/src/std/scope-stack.ts`
+  - [x] Add `scopeStack: DisposalScope[]` variable
+  - [x] Add function stubs: `pushScope`, `popScope`, `getCurrentScope`
+  - [x] Export from `packages/tempots-dom/src/std/index.ts`
 
-- [ ] **Write tests for scope stack operations**
-  - [ ] Create `packages/tempots-dom/test/scope-stack.spec.ts`
-  - [ ] Test: `getCurrentScope()` returns null when stack is empty
-  - [ ] Test: `pushScope()` adds scope to stack
-  - [ ] Test: `getCurrentScope()` returns the last pushed scope
-  - [ ] Test: `popScope()` removes the last scope
-  - [ ] Test: `popScope()` on empty stack throws error
-  - [ ] Test: nested push/pop operations maintain correct order
-  - [ ] Test: `getScopeStack()` returns read-only array
-  - [ ] Test: `getParentScope()` returns parent or null
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scope stack operations**
+  - [x] Create `packages/tempots-dom/test/scope-stack.spec.ts`
+  - [x] Test: `getCurrentScope()` returns null when stack is empty
+  - [x] Test: `pushScope()` adds scope to stack
+  - [x] Test: `getCurrentScope()` returns the last pushed scope
+  - [x] Test: `popScope()` removes the last scope
+  - [x] Test: `popScope()` on empty stack throws error
+  - [x] Test: nested push/pop operations maintain correct order
+  - [x] Test: `getScopeStack()` returns read-only array
+  - [x] Test: `getParentScope()` returns parent or null
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scope stack operations**
-  - [ ] Implement `pushScope(scope)`
-  - [ ] Implement `popScope()`
-  - [ ] Implement `getCurrentScope()`
-  - [ ] Implement `getScopeStack()`
-  - [ ] Implement `getParentScope()`
-  - [ ] Run tests (should pass)
+- [x] **Implement scope stack operations**
+  - [x] Implement `pushScope(scope)`
+  - [x] Implement `popScope()`
+  - [x] Implement `getCurrentScope()`
+  - [x] Implement `getScopeStack()`
+  - [x] Implement `getParentScope()`
+  - [x] Run tests (should pass)
 
 #### 1.3 Scope Helper Functions
 
-- [ ] **Write tests for withScope()**
-  - [ ] Test: `withScope()` pushes scope before calling function
-  - [ ] Test: `withScope()` pops scope after function completes
-  - [ ] Test: `withScope()` pops scope even if function throws
-  - [ ] Test: `withScope()` returns function result
-  - [ ] Test: `withScope()` does NOT dispose the scope
-  - [ ] Test: nested `withScope()` calls maintain correct stack
-  - [ ] Run tests (should fail)
+- [x] **Write tests for withScope()**
+  - [x] Test: `withScope()` pushes scope before calling function
+  - [x] Test: `withScope()` pops scope after function completes
+  - [x] Test: `withScope()` pops scope even if function throws
+  - [x] Test: `withScope()` returns function result
+  - [x] Test: `withScope()` does NOT dispose the scope
+  - [x] Test: nested `withScope()` calls maintain correct stack
+  - [x] Run tests (should fail)
 
-- [ ] **Implement withScope()**
-  - [ ] Implement `withScope(scope, fn)` with try/finally
-  - [ ] Run tests (should pass)
+- [x] **Implement withScope()**
+  - [x] Implement `withScope(scope, fn)` with try/finally
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for scoped()**
-  - [ ] Test: `scoped()` creates a new scope
-  - [ ] Test: `scoped()` pushes and pops scope
-  - [ ] Test: `scoped()` disposes scope after function completes
-  - [ ] Test: `scoped()` disposes scope even if function throws
-  - [ ] Test: `scoped()` returns function result
-  - [ ] Test: signals created in `scoped()` are disposed
-  - [ ] Run tests (should fail)
+- [x] **Write tests for scoped()**
+  - [x] Test: `scoped()` creates a new scope
+  - [x] Test: `scoped()` pushes and pops scope
+  - [x] Test: `scoped()` disposes scope after function completes
+  - [x] Test: `scoped()` disposes scope even if function throws
+  - [x] Test: `scoped()` returns function result
+  - [ ] Test: signals created in `scoped()` are disposed (skipped - Phase 2)
+  - [x] Run tests (should fail)
 
-- [ ] **Implement scoped()**
-  - [ ] Implement `scoped(fn)` using `withScope()` and `dispose()`
-  - [ ] Run tests (should pass)
+- [x] **Implement scoped()**
+  - [x] Implement `scoped(fn)` using `withScope()` and `dispose()`
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for untracked()**
-  - [ ] Test: `untracked()` saves current scope stack
-  - [ ] Test: `untracked()` clears scope stack during execution
-  - [ ] Test: `untracked()` restores scope stack after execution
-  - [ ] Test: `untracked()` restores scope stack even if function throws
-  - [ ] Test: signals created in `untracked()` are NOT tracked
-  - [ ] Test: nested `untracked()` calls work correctly
-  - [ ] Run tests (should fail)
+- [x] **Write tests for untracked()**
+  - [x] Test: `untracked()` saves current scope stack
+  - [x] Test: `untracked()` clears scope stack during execution
+  - [x] Test: `untracked()` restores scope stack after execution
+  - [x] Test: `untracked()` restores scope stack even if function throws
+  - [ ] Test: signals created in `untracked()` are NOT tracked (skipped - Phase 2)
+  - [x] Test: nested `untracked()` calls work correctly
+  - [x] Run tests (should fail)
 
-- [ ] **Implement untracked()**
-  - [ ] Implement `untracked(fn)` with save/restore logic
-  - [ ] Run tests (should pass)
+- [x] **Implement untracked()**
+  - [x] Implement `untracked(fn)` with save/restore logic
+  - [x] Run tests (should pass)
 
 ### Phase 2: Signal Auto-Registration
 
 #### 2.1 Modify Signal Creation Functions
 
-- [ ] **Write tests for prop() auto-registration**
-  - [ ] Test: `prop()` called inside a scope is tracked
-  - [ ] Test: `prop()` called outside a scope is NOT tracked
-  - [ ] Test: `prop()` in nested scopes is tracked in innermost scope
-  - [ ] Test: disposing scope disposes the prop signal
-  - [ ] Run tests (should fail)
+- [x] **Write tests for prop() auto-registration**
+  - [x] Test: `prop()` called inside a scope is tracked
+  - [x] Test: `prop()` called outside a scope is NOT tracked
+  - [x] Test: `prop()` in nested scopes is tracked in innermost scope
+  - [x] Test: disposing scope disposes the prop signal
+  - [x] Run tests (should fail)
 
-- [ ] **Implement prop() auto-registration**
-  - [ ] Modify `prop()` in `packages/tempots-dom/src/std/signal.ts`
-  - [ ] Add `getCurrentScope()?.track(signal)` after signal creation
-  - [ ] Run tests (should pass)
+- [x] **Implement prop() auto-registration**
+  - [x] Modify `prop()` in `packages/tempots-dom/src/std/signal.ts`
+  - [x] Add `getCurrentScope()?.track(signal)` after signal creation
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for computed() auto-registration**
-  - [ ] Test: `computed()` called inside a scope is tracked
-  - [ ] Test: `computed()` called outside a scope is NOT tracked
-  - [ ] Test: disposing scope disposes the computed signal
-  - [ ] Run tests (should fail)
+- [x] **Write tests for computed() auto-registration**
+  - [x] Test: `computed()` called inside a scope is tracked
+  - [x] Test: `computed()` called outside a scope is NOT tracked
+  - [x] Test: disposing scope disposes the computed signal
+  - [x] Run tests (should fail)
 
-- [ ] **Implement computed() auto-registration**
-  - [ ] Modify `computed()` to call `getCurrentScope()?.track(signal)`
-  - [ ] Run tests (should pass)
+- [x] **Implement computed() auto-registration**
+  - [x] Modify `computed()` to call `getCurrentScope()?.track(signal)`
+  - [x] Run tests (should pass)
 
-- [ ] **Write tests for effect() auto-registration**
-  - [ ] Test: `effect()` called inside a scope is tracked
-  - [ ] Test: disposing scope disposes the effect
-  - [ ] Run tests (should fail)
+- [x] **Write tests for effect() auto-registration**
+  - [x] Test: `effect()` called inside a scope is tracked
+  - [x] Test: disposing scope disposes the effect
+  - [x] Run tests (should fail)
 
-- [ ] **Implement effect() auto-registration**
-  - [ ] Modify `effect()` to wrap dispose function in trackable object
-  - [ ] Call `getCurrentScope()?.track(disposable)`
-  - [ ] Run tests (should pass)
+- [x] **Implement effect() auto-registration**
+  - [x] Note: `effect()` already uses `computed()` internally, so auto-tracking works automatically
+  - [x] Run tests (should pass)
 
 - [ ] **Write tests for signal.map() auto-registration**
   - [ ] Test: derived signals from `.map()` are tracked
