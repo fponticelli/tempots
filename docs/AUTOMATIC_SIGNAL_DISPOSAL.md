@@ -1560,7 +1560,6 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [x] Test: `scoped()` disposes scope after function completes
   - [x] Test: `scoped()` disposes scope even if function throws
   - [x] Test: `scoped()` returns function result
-  - [ ] Test: signals created in `scoped()` are disposed (skipped - Phase 2)
   - [x] Run tests (should fail)
 
 - [x] **Implement scoped()**
@@ -1615,14 +1614,9 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [x] Note: `effect()` already uses `computed()` internally, so auto-tracking works automatically
   - [x] Run tests (should pass)
 
-- [ ] **Write tests for signal.map() auto-registration**
+- [ ] **Write tests and implementation for signal.map() auto-registration**
   - [ ] Test: derived signals from `.map()` are tracked
   - [ ] Test: disposing scope disposes derived signals
-  - [ ] Run tests (should fail)
-
-- [ ] **Implement signal.map() auto-registration**
-  - [ ] Modify all signal derivation methods (`.map()`, `.filter()`, `.at()`, etc.)
-  - [ ] Add auto-registration to each
   - [ ] Run tests (should pass)
 
 #### 2.2 DisposalScope Helper Methods
@@ -1817,20 +1811,6 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [x] Ensure all references are cleared on disposal (verified by tests)
   - [x] Run tests (should pass)
 
-#### 5.2 E2E Memory Tests
-
-- [ ] **Create E2E memory test scenarios** (DEFERRED - unit tests are sufficient)
-  - [ ] Create test page with counter component
-  - [ ] Create test page with conditional rendering
-  - [ ] Create test page with dynamic list
-  - [ ] Add memory profiling scripts
-
-- [ ] **Run E2E memory tests** (DEFERRED - unit tests are sufficient)
-  - [ ] Use browser dev tools to profile memory
-  - [ ] Mount/unmount components 1000 times
-  - [ ] Verify memory returns to baseline
-  - [ ] Document results
-
 ### Phase 6: Demo Updates
 
 #### 6.1 Update Existing Demos
@@ -1870,9 +1850,8 @@ This section provides a detailed, step-by-step task list for implementing automa
 #### 7.1 Update Existing Rules
 
 - [ ] **Update require-signal-disposal rule**
-  - [ ] Modify to warn on `OnDispose(signal)` usage (signals are auto-disposed)
-  - [ ] Keep `OnDispose(callback)` valid for non-signal cleanup
-  - [ ] Suggest removing `OnDispose(signal)` calls
+  - [ ] Remove warn on `OnDispose(signal)` usage (signals are auto-disposed)
+  - [ ] Add suggest removing `OnDispose(signal)` calls
   - [ ] Add tests for new warnings
   - [ ] Run tests (should fail)
 
@@ -1926,11 +1905,6 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [ ] Add examples for each rule
   - [ ] Update migration guide
 
-- [ ] **Publish updated plugin**
-  - [ ] Bump version
-  - [ ] Run all plugin tests
-  - [ ] Publish to npm
-
 ### Phase 8: OnDispose Integration & Codebase Cleanup
 
 #### 8.1 Add onDispose to DisposalScope
@@ -1967,7 +1941,7 @@ This section provides a detailed, step-by-step task list for implementing automa
 #### 9.1 API Documentation
 
 - [ ] **Update signal documentation**
-  - [ ] Document automatic disposal behavior
+  - [ ] Document automatic disposal behavior when used in Renderables or when a scope is created
   - [ ] Update examples to remove OnDispose
   - [ ] Add section on scope tracking
 
@@ -1985,7 +1959,7 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 - [ ] **Update main README**
   - [ ] Update quick start examples
-  - [ ] Remove OnDispose from examples
+  - [ ] Remove OnDispose from examples when used with signals
   - [ ] Add note about automatic disposal
 
 - [ ] **Update package READMEs**
@@ -2050,70 +2024,9 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [ ] Run: `pnpm build:demos`
   - [ ] Verify all demos build successfully
 
-- [ ] **Test demos in browser**
-  - [ ] Start dev server for each demo
-  - [ ] Manually test functionality
-  - [ ] Profile memory usage
-  - [ ] Verify no console errors
+### Phase 11: Release
 
-### Phase 11: Performance Testing
-
-#### 11.1 Benchmark Creation
-
-- [ ] **Create performance benchmarks**
-  - [ ] Benchmark: signal creation (with vs without auto-tracking)
-  - [ ] Benchmark: scope creation/disposal
-  - [ ] Benchmark: component mount/unmount
-  - [ ] Benchmark: list rendering (1000 items)
-
-- [ ] **Run benchmarks**
-  - [ ] Run before implementation (baseline)
-  - [ ] Run after implementation
-  - [ ] Compare results
-  - [ ] Document any performance regressions
-
-#### 11.2 Performance Optimization
-
-- [ ] **Optimize hot paths**
-  - [ ] Profile scope stack operations
-  - [ ] Optimize `getCurrentScope()` if needed
-  - [ ] Optimize `track()` if needed
-  - [ ] Re-run benchmarks
-
-- [ ] **Document performance characteristics**
-  - [ ] Add performance notes to documentation
-  - [ ] Document any trade-offs
-  - [ ] Add recommendations for large apps
-
-### Phase 12: Release Preparation
-
-#### 12.1 Version Bumping
-
-- [ ] **Update package versions**
-  - [ ] Bump tempots-dom to next major version
-  - [ ] Bump tempots-std to next major version
-  - [ ] Bump tempots-ui to next major version
-  - [ ] Update inter-package dependencies
-
-#### 12.2 Changelog
-
-- [ ] **Update CHANGELOG.md**
-  - [ ] Add "Breaking Changes" section
-  - [ ] Document OnDispose deprecation
-  - [ ] Document automatic disposal feature
-  - [ ] Document new WithScope helper
-  - [ ] Document ESLint plugin updates
-  - [ ] Add migration guide link
-
-#### 12.3 Release Notes
-
-- [ ] **Write release notes**
-  - [ ] Highlight automatic disposal feature
-  - [ ] Explain breaking changes
-  - [ ] Provide migration examples
-  - [ ] Link to documentation
-
-#### 12.4 Pre-Release Checklist
+#### 11.1 Pre-Release Checklist
 
 - [ ] **Final verification**
   - [ ] All tests pass: `pnpm test`
@@ -2123,75 +2036,15 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [ ] Build succeeds: `pnpm build`
   - [ ] Coverage meets targets: `pnpm test:coverage`
   - [ ] Documentation is up to date
-  - [ ] CHANGELOG is updated
-  - [ ] No memory leaks in demos
 
-### Phase 13: Release
-
-#### 13.1 Git Operations
-
-- [ ] **Create release branch**
-  - [ ] Create branch: `release/automatic-disposal`
-  - [ ] Commit all changes
-  - [ ] Push to remote
-
-- [ ] **Create pull request**
-  - [ ] Create PR with detailed description
-  - [ ] Link to specification document
-  - [ ] Request reviews
-  - [ ] Address review feedback
-
-#### 13.2 Publishing
-
-- [ ] **Merge to main**
-  - [ ] Ensure all CI checks pass
-  - [ ] Merge PR
-  - [ ] Pull latest main
-
-- [ ] **Tag release**
-  - [ ] Create git tag for version
-  - [ ] Push tag to remote
-
-- [ ] **Publish to npm**
-  - [ ] Publish tempots-dom
-  - [ ] Publish tempots-std
-  - [ ] Publish tempots-ui
-  - [ ] Verify packages on npm
-
-#### 13.3 Post-Release
-
-- [ ] **Announce release**
-  - [ ] Post release notes
-  - [ ] Update documentation site
-  - [ ] Notify users of breaking changes
-
-- [ ] **Monitor for issues**
-  - [ ] Watch for bug reports
-  - [ ] Monitor npm downloads
-  - [ ] Be ready for hotfix if needed
+#### 11.1 Release
+  - [ ] run scripts in the right order to update and release @tempots/dom to a new major version, then same for @tempots/ui
 
 ---
-
-## Task Summary
-
-**Total Tasks: ~200+**
-
-**Estimated Timeline:**
-- Phase 1-2 (Core Infrastructure): 3-4 days
-- Phase 3 (Renderable Integration): 2-3 days
-- Phase 4-5 (Integration & Memory Tests): 2-3 days
-- Phase 6 (Demo Updates): 1-2 days
-- Phase 7 (ESLint Plugin): 2-3 days
-- Phase 8 (Codebase Cleanup): 1-2 days
-- Phase 9 (Documentation): 2-3 days
-- Phase 10-11 (Testing & Performance): 2-3 days
-- Phase 12-13 (Release): 1-2 days
-
-**Total: 16-25 days (3-5 weeks)**
 
 **Key Principles:**
 1. ✅ **TDD First**: Write tests before implementation
 2. ✅ **Red-Green-Refactor**: Fail → Pass → Optimize
 3. ✅ **Incremental**: Small, testable changes
-4. ✅ **Coverage**: Maintain ≥80% statement coverage
+4. ✅ **Coverage**: Maintain ≥90% statement coverage
 5. ✅ **No Regressions**: All existing tests must pass
