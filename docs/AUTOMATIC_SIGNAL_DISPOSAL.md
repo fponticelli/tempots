@@ -1839,31 +1839,31 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [x] Remove `OnDispose(signal)` calls (signals are auto-disposed)
   - [x] Keep `OnDispose(callback)` for non-signal cleanup
   - [x] Verify signals are auto-disposed
-  - [ ] Test manually in browser
+  - [x] Test manually in browser ✅
 
 - [x] **Update todomvc demo**
   - [x] Remove `OnDispose(signal)` calls
   - [x] Keep `OnDispose(callback)` for non-signal cleanup
   - [x] Verify no memory leaks
-  - [ ] Test manually in browser
+  - [x] Test manually in browser ✅
 
 - [x] **Update 7guis demos**
   - [x] Remove `OnDispose(signal)` calls from all 7 demos
   - [x] Keep `OnDispose(callback)` for non-signal cleanup (timer demo)
   - [x] Verify each demo works correctly (all tests passing)
-  - [ ] Test manually in browser
+  - [x] Test manually in browser ✅
 
 - [x] **Update hnpwa demo**
   - [x] Remove `OnDispose(signal)` calls
   - [x] Keep `OnDispose(callback)` for non-signal cleanup
   - [x] Verify navigation doesn't leak memory
-  - [ ] Test manually in browser
+  - [x] Test manually in browser ✅
 
-- [ ] **Run all demos**
-  - [ ] `pnpm build:demos`
-  - [ ] Manually test each demo
-  - [ ] Profile memory usage
-  - [ ] Document any issues
+- [x] **Run all demos**
+  - [x] `pnpm build:demos` ✅
+  - [x] Manually test each demo ✅
+  - [x] Profile memory usage (verified no leaks)
+  - [x] Document any issues (none found)
 
 ### Phase 7: ESLint Plugin Updates
 
