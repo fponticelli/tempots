@@ -72,7 +72,6 @@ export function ForEachDemo(): Renderable {
   }
 
   return flex.col(
-    OnDispose(accounts),
     attr.class('gap-2 items-center'),
     flex.row(Txt(count.map(count => `Count: ${count}`))),
     flex.row(

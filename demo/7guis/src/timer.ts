@@ -38,7 +38,7 @@ export function Timer(): Renderable {
   }
   startTimer()
   return flex.col(
-    OnDispose(() => clearInterval(timerId), elapsed, duration),
+    OnDispose(() => clearInterval(timerId)),
     attr.class('gap-2 items-center'),
     flex.row(
       attr.class('gap-2 items-center'),

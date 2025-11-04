@@ -13,7 +13,6 @@ import {
   Signal,
   When,
   emitValue,
-  OnDispose,
 } from '@tempots/dom'
 import { AutoFocus, AutoSelect } from '@tempots/ui'
 import { Action, AllFilters, Filter, State, Todo } from './types'
@@ -51,7 +50,6 @@ export const App = () => {
   const editing = prop(null as null | Todo)
   const dispatch = state.reducer(update)
   return Fragment(
-    OnDispose(adding, editing),
     html.section(
       attr.class('todoapp'),
       html.div(

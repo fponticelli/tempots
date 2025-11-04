@@ -10,7 +10,6 @@ import {
   computed,
   ForEach,
   emitValueAsNumber,
-  OnDispose,
 } from '@tempots/dom'
 import { Button, Range } from './ui'
 import { flex } from './components/flex'
@@ -146,7 +145,6 @@ export function CircleDrawer(): Renderable {
     redoHistory.set([])
   }
   return flex.col(
-    OnDispose(circles, undoHistory, redoHistory, currentId, radius),
     attr.class('gap-4'),
     flex.row(
       attr.class('gap-2 items-center justify-center'),

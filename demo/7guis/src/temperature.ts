@@ -1,7 +1,6 @@
 import { Txt } from './components/txt'
 import {
   emitValue,
-  OnDispose,
   Signal,
   attr,
   on,
@@ -26,7 +25,7 @@ export function Temperature(): Renderable {
   const celsius = prop<string | number>('22')
   const fahrenheit = prop<string | number>('71.6')
   const tchange = prop<TempChange>({ unit: 'c', value: '' })
-  const clear = tchange.on(tchange => {
+  tchange.on(tchange => {
     const value = Number(tchange.value)
     if (tchange.value.trim() === '' || !Number.isFinite(value)) {
       return
@@ -38,7 +37,6 @@ export function Temperature(): Renderable {
     }
   })
   return flex.col(
-    OnDispose(clear, celsius, fahrenheit, tchange),
     attr.class('gap-2'),
     flex.row(
       attr.class('gap-2 items-center'),
