@@ -1012,9 +1012,14 @@ const ThemedComponent: Renderable = (ctx) => {
 **`OnDispose()` is NOT deprecated** - it remains useful for disposing non-signal resources (DOM event listeners, timers, subscriptions, etc.).
 
 **Changes:**
-1. **OnDispose now integrates with DisposalScope** - `OnDispose()` will register disposal callbacks with the current scope
-2. **Signals are automatically disposed** - no need for `OnDispose(signal)` in most cases
-3. **OnDispose still needed for non-signal cleanup** - use it for DOM listeners, timers, fetch cancellation, etc.
+1. **Signals are automatically disposed** - no need for `OnDispose(signal)` in most cases
+2. **OnDispose keeps its current implementation** - it receives `(removeTree: boolean, ctx: DOMContext)` parameters which are important for conditional cleanup
+3. **scope.onDispose() added as convenience** - for simple cleanup that doesn't need `removeTree` parameter
+4. **OnDispose still needed for non-signal cleanup** - use it for DOM listeners, timers, fetch cancellation, etc.
+
+**Why OnDispose keeps its current implementation:**
+
+The `removeTree` parameter is important for conditional cleanup. For example, you might only want to remove event listeners if the DOM tree is being removed (otherwise the browser handles it automatically). The `scope.onDispose()` convenience method doesn't have access to `removeTree`, so OnDispose remains the best choice for DOM-related cleanup.
 
 **Note:** `OnDispose(signal.dispose)` and `OnDispose(signal)` are equivalent and both valid, but unnecessary in most cases since signals are auto-disposed.
 
@@ -1928,7 +1933,7 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 ### Phase 8: OnDispose Integration & Codebase Cleanup
 
-#### 8.1 Integrate OnDispose with DisposalScope
+#### 8.1 Add onDispose to DisposalScope
 
 - [ ] **Add onDispose method to DisposalScope**
   - [ ] Implement `scope.onDispose(callback)` method
@@ -1936,10 +1941,7 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [ ] Call callbacks in `dispose()` method
   - [ ] Write tests for onDispose
 
-- [ ] **Update OnDispose to use current scope**
-  - [ ] Modify OnDispose implementation to call `getCurrentScope()?.onDispose(callback)`
-  - [ ] Keep backward compatibility for when no scope exists
-  - [ ] Write tests for OnDispose with scope integration
+**Note:** OnDispose will keep its current implementation because it receives the `removeTree` parameter which is important for conditional cleanup (e.g., only removing event listeners if the tree is being removed). The `scope.onDispose()` method is a convenience for simple cleanup that doesn't need `removeTree`.
 
 #### 8.2 Remove Unnecessary OnDispose Calls for Signals
 
