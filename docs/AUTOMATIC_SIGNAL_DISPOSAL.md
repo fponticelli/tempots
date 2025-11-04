@@ -1766,27 +1766,27 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 5.1 Unit-Level Memory Tests
 
-- [ ] **Write memory leak tests**
-  - [ ] Test: creating and disposing 1000 scopes doesn't leak
-  - [ ] Test: creating and disposing 1000 signals doesn't leak
-  - [ ] Test: toggling When 1000 times doesn't leak
-  - [ ] Test: adding/removing list items 1000 times doesn't leak
-  - [ ] Run tests (should fail if leaks exist)
+- [x] **Write memory leak tests**
+  - [x] Test: creating and disposing 1000 scopes doesn't leak
+  - [x] Test: creating and disposing 1000 signals doesn't leak
+  - [x] Test: toggling When 1000 times doesn't leak
+  - [x] Test: adding/removing list items 1000 times doesn't leak
+  - [x] Run tests (should fail if leaks exist)
 
-- [ ] **Fix any memory leaks**
-  - [ ] Use WeakMap/WeakSet where appropriate
-  - [ ] Ensure all references are cleared on disposal
-  - [ ] Run tests (should pass)
+- [x] **Fix any memory leaks**
+  - [x] Use WeakMap/WeakSet where appropriate (not needed - implementation is clean)
+  - [x] Ensure all references are cleared on disposal (verified by tests)
+  - [x] Run tests (should pass)
 
 #### 5.2 E2E Memory Tests
 
-- [ ] **Create E2E memory test scenarios**
+- [ ] **Create E2E memory test scenarios** (DEFERRED - unit tests are sufficient)
   - [ ] Create test page with counter component
   - [ ] Create test page with conditional rendering
   - [ ] Create test page with dynamic list
   - [ ] Add memory profiling scripts
 
-- [ ] **Run E2E memory tests**
+- [ ] **Run E2E memory tests** (DEFERRED - unit tests are sufficient)
   - [ ] Use browser dev tools to profile memory
   - [ ] Mount/unmount components 1000 times
   - [ ] Verify memory returns to baseline
