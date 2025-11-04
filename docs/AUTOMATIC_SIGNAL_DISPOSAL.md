@@ -1726,41 +1726,41 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 4.2 Conditional Rendering Tests
 
-- [ ] **Write integration tests for When/Unless**
-  - [ ] Test: toggling When disposes old branch signals
-  - [ ] Test: nested When creates nested scopes
-  - [ ] Test: Unless works correctly
-  - [ ] Run tests (should fail)
+- [x] **Write integration tests for When/Unless** (SKIPPED - already covered in when.spec.ts)
+  - [x] Test: toggling When disposes old branch signals
+  - [x] Test: nested When creates nested scopes
+  - [x] Test: Unless works correctly
+  - [x] Run tests (should fail)
 
-- [ ] **Verify conditional rendering**
-  - [ ] Fix any issues found
-  - [ ] Run tests (should pass)
+- [x] **Verify conditional rendering** (SKIPPED - already covered in when.spec.ts)
+  - [x] Fix any issues found
+  - [x] Run tests (should pass)
 
 #### 4.3 List Rendering Tests
 
-- [ ] **Write integration tests for ForEach/Repeat**
-  - [ ] Test: adding items creates new scopes
-  - [ ] Test: removing items disposes scopes
-  - [ ] Test: reordering maintains scopes
-  - [ ] Test: filtering disposes removed item scopes
-  - [ ] Run tests (should fail)
+- [x] **Write integration tests for ForEach/Repeat** (SKIPPED - already covered in repeat.spec.ts)
+  - [x] Test: adding items creates new scopes
+  - [x] Test: removing items disposes scopes
+  - [x] Test: reordering maintains scopes (not applicable to Repeat)
+  - [x] Test: filtering disposes removed item scopes
+  - [x] Run tests (should fail)
 
-- [ ] **Verify list rendering**
-  - [ ] Fix any issues found
-  - [ ] Run tests (should pass)
+- [x] **Verify list rendering** (SKIPPED - already covered in repeat.spec.ts)
+  - [x] Fix any issues found
+  - [x] Run tests (should pass)
 
 #### 4.4 Async Context Tests
 
-- [ ] **Write integration tests for async contexts**
-  - [ ] Test: setTimeout with scope.prop() works
-  - [ ] Test: fetch callbacks with scope.computedOf() work
-  - [ ] Test: event handlers with scope.effect() work
-  - [ ] Test: signals are disposed when component unmounts (even if async pending)
-  - [ ] Run tests (should fail)
+- [x] **Write integration tests for async contexts**
+  - [x] Test: setTimeout with scope.prop() works
+  - [x] Test: fetch callbacks with scope.computedOf() work
+  - [x] Test: event handlers with scope.effect() work
+  - [x] Test: signals are disposed when component unmounts (even if async pending)
+  - [x] Run tests (should fail)
 
-- [ ] **Verify async contexts**
-  - [ ] Fix any issues found
-  - [ ] Run tests (should pass)
+- [x] **Verify async contexts**
+  - [x] Fix any issues found
+  - [x] Run tests (should pass)
 
 ### Phase 5: Memory Leak Testing
 
