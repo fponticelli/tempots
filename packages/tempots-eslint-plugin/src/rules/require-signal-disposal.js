@@ -62,6 +62,8 @@ export default {
         'Signal "{{name}}" created via {{method}} should be disposed with OnDispose({{name}}.dispose)',
       undisposedTransform:
         'Signal transformation "{{name}}" created via .{{method}}() should be disposed with OnDispose({{name}}.dispose)',
+      inlineSignalCreation:
+        'Inline signal creation via {{method}} should be assigned to a variable and disposed with OnDispose(). The signal lifecycle is tied to its parent and may cause memory leaks.',
     },
     schema: [
       {
@@ -129,6 +131,14 @@ export default {
 
         const type = typeChecker.getTypeAtLocation(tsNode)
         const typeString = typeChecker.typeToString(type)
+
+        // Debug: log the type string
+        // console.log(
+        //   'Type string for node:',
+        //   typeString,
+        //   'Node type:',
+        //   node.type
+        // )
 
         // Check if it's a signal type
         if (
@@ -1020,6 +1030,121 @@ export default {
               })
             }
           }
+        }
+      },
+
+      // Detect inline signal creation (signals created but not assigned to variables)
+      CallExpression(node) {
+        if (!getCurrentScope()) return
+
+        // Skip if this call expression is part of a variable declaration (already handled)
+        if (
+          node.parent &&
+          node.parent.type === 'VariableDeclarator' &&
+          node.parent.init === node
+        ) {
+          return
+        }
+
+        // Skip if this call expression is the callee of another call expression
+        // (e.g., computedOf(signal) in computedOf(signal)(fn) - we only want to check the outer call)
+        if (
+          node.parent &&
+          node.parent.type === 'CallExpression' &&
+          node.parent.callee === node
+        ) {
+          return
+        }
+
+        // Skip if this is inside an OnDispose call or inside a callback function
+        let current = node.parent
+        while (current) {
+          if (
+            current.type === 'CallExpression' &&
+            current.callee.type === 'Identifier' &&
+            current.callee.name === 'OnDispose'
+          ) {
+            return
+          }
+          // Skip if inside a callback function (arrow function or function expression)
+          // This handles cases like: items.map(items => items.filter(...))
+          // where the filter is inside the map callback
+          if (
+            (current.type === 'ArrowFunctionExpression' ||
+              current.type === 'FunctionExpression') &&
+            current.parent &&
+            current.parent.type === 'CallExpression'
+          ) {
+            return
+          }
+          current = current.parent
+        }
+
+        // Try type-aware detection first
+        let isSignal = null
+        if (shouldUseTypeInfo && typeChecker) {
+          isSignal = isSignalTypeViaTypeChecker(node)
+        }
+
+        // Fall back to heuristics if type info unavailable
+        if (isSignal === null) {
+          // Check if this looks like a signal creation/transformation
+          const { callee } = node
+
+          // Check for signal transformation methods: signal.map(), signal.filter(), etc.
+          if (
+            callee.type === 'MemberExpression' &&
+            callee.property.type === 'Identifier'
+          ) {
+            const methodName = callee.property.name
+            if (SIGNAL_TRANSFORM_METHODS.has(methodName)) {
+              isSignal = true
+            }
+          }
+          // Check for signal creation functions: computed(), computedOf(), etc.
+          else if (callee.type === 'Identifier') {
+            if (SIGNAL_CREATION_METHODS.has(callee.name)) {
+              isSignal = true
+            }
+          }
+          // Check for computedOf(signal)(fn) pattern
+          else if (
+            callee.type === 'CallExpression' &&
+            callee.callee.type === 'Identifier' &&
+            (callee.callee.name === 'computedOf' ||
+              callee.callee.name === 'effectOf')
+          ) {
+            isSignal = true
+          }
+        }
+
+        if (isSignal === true) {
+          // This is an inline signal creation - report it
+          let method = 'unknown'
+
+          // Try to determine the method name
+          if (node.callee.type === 'Identifier') {
+            method = node.callee.name
+          } else if (
+            node.callee.type === 'MemberExpression' &&
+            node.callee.property.type === 'Identifier'
+          ) {
+            method = node.callee.property.name
+          } else if (
+            node.callee.type === 'CallExpression' &&
+            node.callee.callee.type === 'Identifier'
+          ) {
+            // Handle computedOf(signal)(fn) pattern
+            method = node.callee.callee.name
+          }
+
+          context.report({
+            node,
+            messageId: 'inlineSignalCreation',
+            data: {
+              method,
+            },
+          })
         }
       },
     }

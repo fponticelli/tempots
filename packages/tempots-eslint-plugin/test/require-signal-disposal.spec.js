@@ -688,6 +688,87 @@ describe('require-signal-disposal', () => {
   // Test cases that should fail - signal created but not properly disposed
   const additionalInvalidCases = []
 
+  // Test cases for inline signal creation (type-aware only)
+  const inlineSignalCreationInvalidCases = [
+    // Inline computedOf usage
+    {
+      code: `
+        function Component({ signal }: { signal: Signal<string> }): Renderable {
+          return html.div(computedOf(signal)(v => v.toUpperCase()))
+        }
+      `,
+      errors: [
+        {
+          messageId: 'inlineSignalCreation',
+          data: { method: 'computedOf' },
+        },
+      ],
+    },
+    // Inline signal.map usage
+    {
+      code: `
+        function Component({ signal }: { signal: Signal<number> }): Renderable {
+          return html.div(signal.map(v => v * 2))
+        }
+      `,
+      errors: [
+        {
+          messageId: 'inlineSignalCreation',
+          data: { method: 'map' },
+        },
+      ],
+    },
+    // Inline signal.filter usage
+    {
+      code: `
+        function Component({ signal }: { signal: Signal<number> }): Renderable {
+          return html.div(signal.filter(v => v > 0))
+        }
+      `,
+      errors: [
+        {
+          messageId: 'inlineSignalCreation',
+          data: { method: 'filter' },
+        },
+      ],
+    },
+    // Inline computed usage
+    {
+      code: `
+        function Component({ a, b }: { a: Signal<number>, b: Signal<number> }): Renderable {
+          return html.div(computed(() => a.value + b.value, [a, b]))
+        }
+      `,
+      errors: [
+        {
+          messageId: 'inlineSignalCreation',
+          data: { method: 'computed' },
+        },
+      ],
+    },
+    // Multiple inline signal creations
+    {
+      code: `
+        function Component({ signal }: { signal: Signal<string> }): Renderable {
+          return html.div(
+            signal.map(v => v.toUpperCase()),
+            signal.filter(v => v.length > 0)
+          )
+        }
+      `,
+      errors: [
+        {
+          messageId: 'inlineSignalCreation',
+          data: { method: 'map' },
+        },
+        {
+          messageId: 'inlineSignalCreation',
+          data: { method: 'filter' },
+        },
+      ],
+    },
+  ]
+
   // Test cases that work with heuristics (Object.keys detection)
   const heuristicsValidCases = [
     // Array.prototype.filter() on Object.keys() result should not be flagged
@@ -715,6 +796,10 @@ describe('require-signal-disposal', () => {
       ...heuristicsValidCases,
       ...typeAwareValidCases,
     ],
-    invalid: [...sharedInvalidCases, ...additionalInvalidCases],
+    invalid: [
+      ...sharedInvalidCases,
+      ...additionalInvalidCases,
+      ...inlineSignalCreationInvalidCases,
+    ],
   })
 })
