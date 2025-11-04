@@ -1677,20 +1677,20 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 3.3 Repeat
 
-- [ ] **Write tests for Repeat scopes**
-  - [ ] Test: each iteration creates its own scope
-  - [ ] Test: removing an item disposes its scope
-  - [ ] Test: adding an item creates a new scope
-  - [ ] Test: reordering items maintains their scopes
-  - [ ] Test: signals created in item renderable are disposed with item
-  - [ ] Run tests (should fail)
+- [x] **Write tests for Repeat scopes**
+  - [x] Test: each iteration creates its own scope
+  - [x] Test: removing an item disposes its scope
+  - [x] Test: adding an item creates a new scope
+  - [x] Test: reordering items maintains their scopes
+  - [x] Test: signals created in item renderable are disposed with item
+  - [x] Run tests (should fail)
 
-- [ ] **Implement Repeat scope**
-  - [ ] Modify `Repeat` in `packages/tempots-dom/src/renderables/repeat.ts`
-  - [ ] Create scope for each iteration
-  - [ ] Use `withScope()` when executing item renderable
-  - [ ] Dispose scope when item is removed
-  - [ ] Run tests (should pass)
+- [x] **Implement Repeat scope**
+  - [x] Modify `Repeat` in `packages/tempots-dom/src/renderables/repeat.ts`
+  - [x] Create scope for each iteration
+  - [x] Use `withScope()` when executing item renderable
+  - [x] Dispose scope when item is removed
+  - [x] Run tests (should pass)
 
 #### 3.4 WithScope Helper
 

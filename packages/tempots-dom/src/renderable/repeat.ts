@@ -8,6 +8,8 @@ import { Empty } from './empty'
 import { Fragment } from './fragment'
 import { OnDispose } from './on-dispose'
 import { When } from './when'
+import { DisposalScope } from '../std/disposal-scope'
+import { withScope } from '../std/scope-stack'
 
 /**
  * Renders content a specified number of times, with each iteration receiving position information.
@@ -103,24 +105,47 @@ export const Repeat = (
         const length = times.derive()
         const newCtx = ctx.makeRef()
         const clears: Clear[] = []
+        const scopes: DisposalScope[] = []
 
         length.on(newLength => {
+          // Remove items from the end
           const toRemove = clears.splice(newLength)
+          const scopesToDispose = scopes.splice(newLength)
+
+          // Dispose scopes for removed items
+          for (const scope of scopesToDispose) {
+            scope.dispose()
+          }
+
+          // Clear DOM for removed items
           for (const remove of toRemove) {
             remove(true)
           }
+
+          // Add new items
           for (let i = clears.length; i < newLength; i++) {
             const pos = new ElementPosition(i, length)
+            const scope = new DisposalScope()
+            scopes.push(scope)
+
             clears.push(
-              Fragment(
-                OnDispose(pos.dispose),
-                renderableOfTNode(element(pos))
-              )(newCtx)
+              withScope(scope, () =>
+                Fragment(
+                  OnDispose(pos.dispose),
+                  renderableOfTNode(element(pos))
+                )(newCtx)
+              )
             )
           }
         })
 
         return (removeTree: boolean) => {
+          // Dispose all scopes
+          for (const scope of scopes) {
+            scope.dispose()
+          }
+          scopes.length = 0
+
           length.dispose()
           for (const clear of clears) {
             clear(removeTree)
