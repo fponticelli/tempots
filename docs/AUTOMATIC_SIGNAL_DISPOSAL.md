@@ -1830,28 +1830,28 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 6.1 Update Existing Demos
 
-- [ ] **Update counter demo**
-  - [ ] Remove `OnDispose(signal)` calls (signals are auto-disposed)
-  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
-  - [ ] Verify signals are auto-disposed
+- [x] **Update counter demo**
+  - [x] Remove `OnDispose(signal)` calls (signals are auto-disposed)
+  - [x] Keep `OnDispose(callback)` for non-signal cleanup
+  - [x] Verify signals are auto-disposed
   - [ ] Test manually in browser
 
-- [ ] **Update todomvc demo**
-  - [ ] Remove `OnDispose(signal)` calls
-  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
-  - [ ] Verify no memory leaks
+- [x] **Update todomvc demo**
+  - [x] Remove `OnDispose(signal)` calls
+  - [x] Keep `OnDispose(callback)` for non-signal cleanup
+  - [x] Verify no memory leaks
   - [ ] Test manually in browser
 
-- [ ] **Update 7guis demos**
-  - [ ] Remove `OnDispose(signal)` calls from all 7 demos
-  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
-  - [ ] Verify each demo works correctly
+- [x] **Update 7guis demos**
+  - [x] Remove `OnDispose(signal)` calls from all 7 demos
+  - [x] Keep `OnDispose(callback)` for non-signal cleanup (timer demo)
+  - [x] Verify each demo works correctly (all tests passing)
   - [ ] Test manually in browser
 
-- [ ] **Update hnpwa demo**
-  - [ ] Remove `OnDispose(signal)` calls
-  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
-  - [ ] Verify navigation doesn't leak memory
+- [x] **Update hnpwa demo**
+  - [x] Remove `OnDispose(signal)` calls
+  - [x] Keep `OnDispose(callback)` for non-signal cleanup
+  - [x] Verify navigation doesn't leak memory
   - [ ] Test manually in browser
 
 - [ ] **Run all demos**
