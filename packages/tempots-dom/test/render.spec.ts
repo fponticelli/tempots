@@ -9,12 +9,15 @@ import {
   html,
   attr,
   prop,
+  computed,
+  effect,
   BrowserContext,
   HeadlessContext,
   makeProviderMark,
   _NODE_PLACEHOLDER_ATTR,
-  CLASS_PLACEHOLDER_ATTR
+  CLASS_PLACEHOLDER_ATTR,
 } from '../src'
+import type { Prop, Computed, Renderable } from '../src'
 import { sleep } from './helper'
 
 describe('Render', () => {
@@ -37,7 +40,9 @@ describe('Render', () => {
       document.body.innerHTML = '<div id="app"></div>'
       const clear = render(html.div('Hello World'), '#app')
 
-      expect(document.querySelector('#app')?.innerHTML).toBe('<div>Hello World</div>')
+      expect(document.querySelector('#app')?.innerHTML).toBe(
+        '<div>Hello World</div>'
+      )
       clear()
     })
 
@@ -69,7 +74,9 @@ describe('Render', () => {
 
       const clear = render(html.div('New content'), container, { clear: false })
 
-      expect(container.innerHTML).toBe('<p>Existing content</p><div>New content</div>')
+      expect(container.innerHTML).toBe(
+        '<p>Existing content</p><div>New content</div>'
+      )
       clear()
       document.body.removeChild(container)
     })
@@ -80,7 +87,9 @@ describe('Render', () => {
 
       const clear = render(html.div('Hello'), '#app', { doc: customDoc })
 
-      expect(customDoc.querySelector('#app')?.innerHTML).toBe('<div>Hello</div>')
+      expect(customDoc.querySelector('#app')?.innerHTML).toBe(
+        '<div>Hello</div>'
+      )
       clear()
     })
 
@@ -105,10 +114,7 @@ describe('Render', () => {
       document.body.appendChild(container)
 
       const disposeSpy = vi.fn()
-      const clear = render(
-        html.div('test'),
-        child
-      )
+      const clear = render(html.div('test'), child)
 
       // Remove parent element
       container.removeChild(child)
@@ -130,11 +136,9 @@ describe('Render', () => {
       container.appendChild(child)
       document.body.appendChild(container)
 
-      const clear = render(
-        html.div('test'),
-        child,
-        { disposeWithParent: false }
-      )
+      const clear = render(html.div('test'), child, {
+        disposeWithParent: false,
+      })
 
       // Remove parent element
       container.removeChild(child)
@@ -154,14 +158,10 @@ describe('Render', () => {
       // Just test that the providers option is accepted without error
       const testMark = makeProviderMark<string>('TestProvider')
       const providers = {
-        [testMark]: ['test-value', undefined] as [string, undefined]
+        [testMark]: ['test-value', undefined] as [string, undefined],
       }
 
-      const clear = render(
-        html.div('test'),
-        document.body,
-        { providers }
-      )
+      const clear = render(html.div('test'), document.body, { providers })
 
       expect(document.body.innerHTML).toBe('<div>test</div>')
       clear()
@@ -192,6 +192,144 @@ describe('Render', () => {
       clear(true) // Remove tree
       expect(element.innerHTML).toBe('')
     })
+
+    describe('automatic signal disposal', () => {
+      test('should track signals created in renderable', async () => {
+        const element = document.createElement('div')
+        const ctx = BrowserContext.of(element, undefined, {})
+        let signal: Prop<number> | null = null
+
+        const MyComponent: Renderable = () => {
+          signal = prop(0)
+          return () => {}
+        }
+
+        const clear = renderWithContext(MyComponent, ctx)
+
+        expect(signal).not.toBeNull()
+        expect(signal!.isDisposed()).toBe(false)
+
+        clear()
+
+        // Signal should be disposed when clear() is called
+        expect(signal!.isDisposed()).toBe(true)
+      })
+
+      test('should dispose all tracked signals when clear() is called', async () => {
+        const element = document.createElement('div')
+        const ctx = BrowserContext.of(element, undefined, {})
+        const signals: Array<Prop<number>> = []
+
+        const MyComponent: Renderable = () => {
+          signals.push(prop(1))
+          signals.push(prop(2))
+          signals.push(prop(3))
+          return () => {}
+        }
+
+        const clear = renderWithContext(MyComponent, ctx)
+
+        expect(signals).toHaveLength(3)
+        signals.forEach(s => expect(s.isDisposed()).toBe(false))
+
+        clear()
+
+        // All signals should be disposed
+        signals.forEach(s => expect(s.isDisposed()).toBe(true))
+      })
+
+      test('should dispose computed signals', async () => {
+        const element = document.createElement('div')
+        const ctx = BrowserContext.of(element, undefined, {})
+        let source: Prop<number> | null = null
+        let derived: Computed<number> | null = null
+
+        const MyComponent: Renderable = () => {
+          source = prop(10)
+          derived = computed(() => source!.value * 2, [source])
+          return () => {}
+        }
+
+        const clear = renderWithContext(MyComponent, ctx)
+
+        expect(source).not.toBeNull()
+        expect(derived).not.toBeNull()
+        expect(source!.isDisposed()).toBe(false)
+        expect(derived!.isDisposed()).toBe(false)
+
+        clear()
+
+        expect(source!.isDisposed()).toBe(true)
+        expect(derived!.isDisposed()).toBe(true)
+      })
+
+      test('should dispose effects', async () => {
+        const element = document.createElement('div')
+        const ctx = BrowserContext.of(element, undefined, {})
+        const source = prop(0)
+        let callCount = 0
+
+        const MyComponent: Renderable = () => {
+          effect(() => {
+            callCount++
+            source.value
+          }, [source])
+          return () => {}
+        }
+
+        const clear = renderWithContext(MyComponent, ctx)
+
+        await sleep()
+        expect(callCount).toBe(1)
+
+        source.set(1)
+        await sleep()
+        expect(callCount).toBe(2)
+
+        clear()
+
+        // Effect should be disposed, so changing source shouldn't trigger it
+        source.set(2)
+        await sleep()
+        expect(callCount).toBe(2)
+
+        // Clean up
+        source.dispose()
+      })
+
+      test('should create separate scopes for nested renderables', () => {
+        const element = document.createElement('div')
+        const ctx = BrowserContext.of(element, undefined, {})
+        let outerSignal: Prop<number> | null = null
+        let innerSignal: Prop<number> | null = null
+
+        const InnerComponent: Renderable = () => {
+          innerSignal = prop(20)
+          return () => {}
+        }
+
+        const OuterComponent: Renderable = ctx => {
+          outerSignal = prop(10)
+          const innerClear = renderWithContext(InnerComponent, ctx)
+          return () => {
+            innerClear()
+          }
+        }
+
+        const clear = renderWithContext(OuterComponent, ctx)
+
+        expect(outerSignal).not.toBeNull()
+        expect(innerSignal).not.toBeNull()
+        expect(outerSignal!.isDisposed()).toBe(false)
+        expect(innerSignal!.isDisposed()).toBe(false)
+
+        // Clearing outer should dispose both scopes
+        clear()
+
+        expect(outerSignal!.isDisposed()).toBe(true)
+        expect(innerSignal!.isDisposed()).toBe(true)
+      })
+    })
   })
 
   describe('runHeadless', () => {
@@ -204,13 +342,10 @@ describe('Render', () => {
     })
 
     test('should use custom startUrl', () => {
-      const { clear, currentURL } = runHeadless(
-        () => html.div('Hello'),
-        {
-          selector: 'body',
-          startUrl: 'https://custom.com'
-        }
-      )
+      const { clear, currentURL } = runHeadless(() => html.div('Hello'), {
+        selector: 'body',
+        startUrl: 'https://custom.com',
+      })
 
       expect(currentURL.value).toBe('https://custom.com')
       clear()
@@ -233,10 +368,9 @@ describe('Render', () => {
     })
 
     test('should use custom selector', () => {
-      const { clear, root } = runHeadless(
-        () => html.div('Hello'),
-        { selector: '#custom' }
-      )
+      const { clear, root } = runHeadless(() => html.div('Hello'), {
+        selector: '#custom',
+      })
 
       expect(root.selector).toBe('#custom')
       clear()
@@ -246,7 +380,7 @@ describe('Render', () => {
       const testMark = makeProviderMark<string>('TestProvider')
       const onUseSpy = vi.fn()
       const providers = {
-        [testMark]: ['test-value', onUseSpy] as [string, () => void]
+        [testMark]: ['test-value', onUseSpy] as [string, () => void],
       }
 
       let capturedValue: string | undefined
@@ -259,7 +393,7 @@ describe('Render', () => {
         },
         {
           selector: 'body',
-          providers
+          providers,
         }
       )
 
@@ -291,17 +425,17 @@ describe('Render', () => {
       const mockElement = { id: 'test' }
       const adapter = new HeadlessAdapter({
         select: (_selector: string) => [mockElement],
-        getAttribute: (_el, attr) => attr === 'test' ? 'value' : null,
+        getAttribute: (_el, attr) => (attr === 'test' ? 'value' : null),
         setAttribute: (_el, _attr, _value) => {},
-        getClass: (_el) => 'test-class',
+        getClass: _el => 'test-class',
         setClass: (_el, _cls) => {},
-        getStyles: (_el) => ({ color: 'red' }),
+        getStyles: _el => ({ color: 'red' }),
         setStyles: (_el, _styles) => {},
         appendHTML: (_el, _html) => {},
-        getInnerHTML: (_el) => '<span>inner</span>',
+        getInnerHTML: _el => '<span>inner</span>',
         setInnerHTML: (_el, _html) => {},
-        getInnerText: (_el) => 'inner text',
-        setInnerText: (_el, _text) => {}
+        getInnerText: _el => 'inner text',
+        setInnerText: (_el, _text) => {},
       })
 
       expect(adapter.select('div')).toEqual([mockElement])
@@ -320,7 +454,7 @@ describe('Render', () => {
         innerHTML: '',
         innerText: '',
         className: '',
-        styles: {}
+        styles: {},
       }
 
       const adapter = new HeadlessAdapter({
@@ -328,20 +462,30 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls || '' },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls || ''
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       const { root, clear } = runHeadless(() => html.div('Test content'))
@@ -359,7 +503,7 @@ describe('Render', () => {
         innerHTML: 'original html',
         innerText: 'original text',
         className: 'original-class',
-        styles: { color: 'blue' }
+        styles: { color: 'blue' },
       }
 
       const adapter = new HeadlessAdapter({
@@ -367,20 +511,30 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls || '' },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls || ''
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       const { root, clear } = runHeadless(() =>
@@ -417,14 +571,16 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as HTMLElement).getAttribute(attr),
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as HTMLElement).removeAttribute(attr)
+            ;(el as HTMLElement).removeAttribute(attr)
           } else {
-            (el as HTMLElement).setAttribute(attr, value)
+            ;(el as HTMLElement).setAttribute(attr, value)
           }
         },
-        getClass: (el) => (el as HTMLElement).className,
-        setClass: (el, cls) => { (el as HTMLElement).className = cls || '' },
-        getStyles: (el) => {
+        getClass: el => (el as HTMLElement).className,
+        setClass: (el, cls) => {
+          ;(el as HTMLElement).className = cls || ''
+        },
+        getStyles: el => {
           const styles: Record<string, string> = {}
           const computedStyle = getComputedStyle(el as HTMLElement)
           for (let i = 0; i < computedStyle.length; i++) {
@@ -435,14 +591,20 @@ describe('Render', () => {
         },
         setStyles: (el, styles) => {
           Object.entries(styles).forEach(([prop, value]) => {
-            (el as HTMLElement).style.setProperty(prop, value)
+            ;(el as HTMLElement).style.setProperty(prop, value)
           })
         },
-        getInnerHTML: (el) => (el as HTMLElement).innerHTML,
-        setInnerHTML: (el, html) => { (el as HTMLElement).innerHTML = html },
-        appendHTML: (el, html) => { (el as HTMLElement).innerHTML += html },
-        getInnerText: (el) => (el as HTMLElement).textContent || '',
-        setInnerText: (el, text) => { (el as HTMLElement).textContent = text }
+        getInnerHTML: el => (el as HTMLElement).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as HTMLElement).innerHTML = html
+        },
+        appendHTML: (el, html) => {
+          ;(el as HTMLElement).innerHTML += html
+        },
+        getInnerText: el => (el as HTMLElement).textContent || '',
+        setInnerText: (el, text) => {
+          ;(el as HTMLElement).textContent = text
+        },
       })
 
       const { root, clear } = runHeadless(() => html.div('Test content'))
@@ -470,7 +632,7 @@ describe('Render', () => {
         setInnerHTML: () => {},
         appendHTML: () => {},
         getInnerText: () => '',
-        setInnerText: () => {}
+        setInnerText: () => {},
       })
 
       const { root, clear } = runHeadless(() => html.div('Test content'))
@@ -658,11 +820,9 @@ describe('Render', () => {
       // Pre-populate the target element
       document.body.innerHTML = '<div>existing content</div>'
 
-      const clear = render(
-        html.span('new content'),
-        document.body,
-        { clear: false }
-      )
+      const clear = render(html.span('new content'), document.body, {
+        clear: false,
+      })
 
       // Should append, not replace
       expect(document.body.children.length).toBe(2)
@@ -678,11 +838,9 @@ describe('Render', () => {
       // Pre-populate the target element
       document.body.innerHTML = '<div>existing content</div>'
 
-      const clear = render(
-        html.span('new content'),
-        document.body,
-        { clear: true }
-      )
+      const clear = render(html.span('new content'), document.body, {
+        clear: true,
+      })
 
       // Should replace, not append
       expect(document.body.children.length).toBe(1)
@@ -693,11 +851,7 @@ describe('Render', () => {
     })
 
     test('should handle render with undefined options', () => {
-      const clear = render(
-        html.div('test'),
-        document.body,
-        undefined
-      )
+      const clear = render(html.div('test'), document.body, undefined)
 
       expect(document.body.innerHTML).toBe('<div>test</div>')
       clear()
@@ -707,10 +861,7 @@ describe('Render', () => {
       const element = document.createElement('div')
       const ctx = BrowserContext.of(element, undefined, {})
 
-      const clear = renderWithContext(
-        html.span('Hello'),
-        ctx
-      )
+      const clear = renderWithContext(html.span('Hello'), ctx)
 
       expect(element.innerHTML).toBe('<span>Hello</span>')
 
@@ -729,7 +880,7 @@ describe('Render', () => {
         innerHTML: 'original-html',
         innerText: '',
         className: '',
-        styles: {}
+        styles: {},
       }
 
       const adapter = new HeadlessAdapter({
@@ -737,27 +888,38 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls || '' },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls || ''
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       // Create a headless environment with a portal that has innerHTML
       const { root, clear } = runHeadless(() => {
         return (ctx: any) => {
           const portalCtx = ctx.makePortal('#test-portal')
-          portalCtx.element.properties.innerHTML = '<span>portal innerHTML</span>'
+          portalCtx.element.properties.innerHTML =
+            '<span>portal innerHTML</span>'
           return () => {}
         }
       })
@@ -779,7 +941,7 @@ describe('Render', () => {
         innerHTML: '',
         innerText: 'original-text',
         className: '',
-        styles: {}
+        styles: {},
       }
 
       const adapter = new HeadlessAdapter({
@@ -787,20 +949,30 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls || '' },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls || ''
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       // Create a headless environment with a portal that has innerText
@@ -829,7 +1001,7 @@ describe('Render', () => {
         innerHTML: '',
         innerText: '',
         className: 'original-class',
-        styles: {}
+        styles: {},
       }
 
       const adapter = new HeadlessAdapter({
@@ -837,20 +1009,30 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       // Create a headless environment with a portal that has classes
@@ -880,7 +1062,7 @@ describe('Render', () => {
         innerHTML: '',
         innerText: '',
         className: '',
-        styles: { color: 'blue', fontSize: '12px' }
+        styles: { color: 'blue', fontSize: '12px' },
       }
 
       const adapter = new HeadlessAdapter({
@@ -888,20 +1070,30 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls || '' },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls || ''
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       // Create a headless environment with a portal that has styles
@@ -928,11 +1120,14 @@ describe('Render', () => {
 
     test('should cover portal rendering with attributes feature (lines 408-429)', () => {
       const mockElement = {
-        attributes: new Map([['data-original', 'value'], ['id', 'original-id']]),
+        attributes: new Map([
+          ['data-original', 'value'],
+          ['id', 'original-id'],
+        ]),
         innerHTML: '',
         innerText: '',
         className: '',
-        styles: {}
+        styles: {},
       }
 
       const adapter = new HeadlessAdapter({
@@ -940,20 +1135,30 @@ describe('Render', () => {
         getAttribute: (el, attr) => (el as any).attributes.get(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as any).attributes.delete(attr)
+            ;(el as any).attributes.delete(attr)
           } else {
-            (el as any).attributes.set(attr, value)
+            ;(el as any).attributes.set(attr, value)
           }
         },
-        getClass: (el) => (el as any).className,
-        setClass: (el, cls) => { (el as any).className = cls || '' },
-        getStyles: (el) => (el as any).styles,
-        setStyles: (el, styles) => { (el as any).styles = styles },
-        appendHTML: (el, html) => { (el as any).innerHTML += html },
-        getInnerHTML: (el) => (el as any).innerHTML,
-        setInnerHTML: (el, html) => { (el as any).innerHTML = html },
-        getInnerText: (el) => (el as any).innerText,
-        setInnerText: (el, text) => { (el as any).innerText = text }
+        getClass: el => (el as any).className,
+        setClass: (el, cls) => {
+          ;(el as any).className = cls || ''
+        },
+        getStyles: el => (el as any).styles,
+        setStyles: (el, styles) => {
+          ;(el as any).styles = styles
+        },
+        appendHTML: (el, html) => {
+          ;(el as any).innerHTML += html
+        },
+        getInnerHTML: el => (el as any).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as any).innerHTML = html
+        },
+        getInnerText: el => (el as any).innerText,
+        setInnerText: (el, text) => {
+          ;(el as any).innerText = text
+        },
       })
 
       // Create a headless environment with a portal that has attributes
@@ -988,17 +1193,20 @@ describe('Render', () => {
 
       const adapter = new HeadlessAdapter({
         select: (_selector: string) => [targetElement],
-        getAttribute: (el, attr) => (el as HTMLElement).getAttribute(attr) || null,
+        getAttribute: (el, attr) =>
+          (el as HTMLElement).getAttribute(attr) || null,
         setAttribute: (el, attr, value) => {
           if (value === null) {
-            (el as HTMLElement).removeAttribute(attr)
+            ;(el as HTMLElement).removeAttribute(attr)
           } else {
-            (el as HTMLElement).setAttribute(attr, value)
+            ;(el as HTMLElement).setAttribute(attr, value)
           }
         },
-        getClass: (el) => (el as HTMLElement).className,
-        setClass: (el, cls) => { (el as HTMLElement).className = cls },
-        getStyles: (el) => {
+        getClass: el => (el as HTMLElement).className,
+        setClass: (el, cls) => {
+          ;(el as HTMLElement).className = cls
+        },
+        getStyles: el => {
           const styles: Record<string, string> = {}
           const computedStyle = getComputedStyle(el as HTMLElement)
           for (let i = 0; i < computedStyle.length; i++) {
@@ -1009,14 +1217,20 @@ describe('Render', () => {
         },
         setStyles: (el, styles) => {
           Object.entries(styles).forEach(([prop, value]) => {
-            (el as HTMLElement).style.setProperty(prop, value)
+            ;(el as HTMLElement).style.setProperty(prop, value)
           })
         },
-        appendHTML: (el, html) => { (el as HTMLElement).innerHTML += html },
-        getInnerHTML: (el) => (el as HTMLElement).innerHTML,
-        setInnerHTML: (el, html) => { (el as HTMLElement).innerHTML = html },
-        getInnerText: (el) => (el as HTMLElement).textContent || '',
-        setInnerText: (el, text) => { (el as HTMLElement).textContent = text }
+        appendHTML: (el, html) => {
+          ;(el as HTMLElement).innerHTML += html
+        },
+        getInnerHTML: el => (el as HTMLElement).innerHTML,
+        setInnerHTML: (el, html) => {
+          ;(el as HTMLElement).innerHTML = html
+        },
+        getInnerText: el => (el as HTMLElement).textContent || '',
+        setInnerText: (el, text) => {
+          ;(el as HTMLElement).textContent = text
+        },
       })
 
       // Create a headless environment with a portal that uses HTMLElement selector
@@ -1033,7 +1247,9 @@ describe('Render', () => {
       adapter.setFromRoot(root, false)
 
       // Verify that the portal content was processed
-      expect(targetElement.innerHTML).toContain('Portal with HTMLElement selector')
+      expect(targetElement.innerHTML).toContain(
+        'Portal with HTMLElement selector'
+      )
 
       // Clean up
       document.body.removeChild(targetElement)

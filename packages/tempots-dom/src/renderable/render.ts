@@ -8,9 +8,15 @@ import {
 import { BrowserContext } from '../dom/browser-context'
 import { HeadlessContext, HeadlessPortal } from '../dom/headless-context'
 import { Value } from '../std/value'
+import { DisposalScope } from '../std/disposal-scope'
+import { withScope } from '../std/scope-stack'
 
 /**
  * Renders the given `renderable` with the provided `ctx` DOM context.
+ *
+ * Creates a DisposalScope for automatic signal disposal. All signals created
+ * during the renderable execution are tracked and disposed when the clear
+ * function is called.
  *
  * @param renderable - The renderable node to be rendered.
  * @param ctx - The DOM context to be used for rendering.
@@ -18,8 +24,17 @@ import { Value } from '../std/value'
  * @public
  */
 export const renderWithContext = (renderable: Renderable, ctx: DOMContext) => {
-  const clear = renderable(ctx)
-  return (removeTree: boolean = true) => clear(removeTree)
+  // Create a disposal scope for automatic signal tracking
+  const scope = new DisposalScope()
+
+  // Execute the renderable within the scope context
+  const clear = withScope(scope, () => renderable(ctx))
+
+  return (removeTree: boolean = true) => {
+    // Dispose all tracked signals before clearing the DOM
+    scope.dispose()
+    clear(removeTree)
+  }
 }
 
 /**

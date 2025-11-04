@@ -1643,20 +1643,20 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 3.1 renderWithContext
 
-- [ ] **Write tests for renderWithContext scope**
-  - [ ] Test: `renderWithContext` creates a scope
-  - [ ] Test: signals created in renderable are tracked
-  - [ ] Test: calling clear() disposes the scope
-  - [ ] Test: calling clear() disposes all tracked signals
-  - [ ] Test: nested renderables have separate scopes
-  - [ ] Run tests (should fail)
+- [x] **Write tests for renderWithContext scope**
+  - [x] Test: `renderWithContext` creates a scope
+  - [x] Test: signals created in renderable are tracked
+  - [x] Test: calling clear() disposes the scope
+  - [x] Test: calling clear() disposes all tracked signals
+  - [x] Test: nested renderables have separate scopes
+  - [x] Run tests (should fail)
 
-- [ ] **Implement renderWithContext scope**
-  - [ ] Modify `renderWithContext` in `packages/tempots-dom/src/renderWithContext.ts`
-  - [ ] Create `DisposalScope` at start
-  - [ ] Use `withScope()` to wrap renderable execution
-  - [ ] Call `scope.dispose()` in clear function
-  - [ ] Run tests (should pass)
+- [x] **Implement renderWithContext scope**
+  - [x] Modify `renderWithContext` in `packages/tempots-dom/src/renderWithContext.ts`
+  - [x] Create `DisposalScope` at start
+  - [x] Use `withScope()` to wrap renderable execution
+  - [x] Call `scope.dispose()` in clear function
+  - [x] Run tests (should pass)
 
 #### 3.2 createReactiveRenderable (When/Unless)
 
