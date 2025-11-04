@@ -1935,11 +1935,12 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 8.1 Add onDispose to DisposalScope
 
-- [ ] **Add onDispose method to DisposalScope**
-  - [ ] Implement `scope.onDispose(callback)` method
-  - [ ] Store callbacks in array
-  - [ ] Call callbacks in `dispose()` method
-  - [ ] Write tests for onDispose
+- [x] **Add onDispose method to DisposalScope**
+  - [x] Implement `scope.onDispose(callback)` method
+  - [x] Store callbacks in array
+  - [x] Call callbacks in `dispose()` method before disposing signals
+  - [x] Write tests for onDispose (8 comprehensive tests)
+  - [x] All 880 tests passing ✅
 
 **Note:** OnDispose will keep its current implementation because it receives the `removeTree` parameter which is important for conditional cleanup (e.g., only removing event listeners if the tree is being removed). The `scope.onDispose()` method is a convenience for simple cleanup that doesn't need `removeTree`.
 
@@ -2010,8 +2011,8 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 - [ ] **Verify test coverage**
   - [ ] Run: `pnpm test:coverage`
-  - [ ] Ensure ≥80% statement coverage for new code
-  - [ ] Ensure ≥75% branch coverage for new code
+  - [ ] Ensure ≥95% statement coverage for new code
+  - [ ] Ensure ≥85% branch coverage for new code
   - [ ] Update COVERAGE.md
 
 - [ ] **Add missing tests**
