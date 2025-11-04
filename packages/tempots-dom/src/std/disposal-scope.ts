@@ -12,6 +12,7 @@ import { computedOf, effectOf } from './value'
  */
 export class DisposalScope {
   private _signals: Set<AnySignal> = new Set()
+  private _callbacks: Array<() => void> = []
   private _disposed: boolean = false
 
   /**
@@ -33,6 +34,22 @@ export class DisposalScope {
   }
 
   /**
+   * Register a disposal callback to be called when this scope is disposed.
+   * Callbacks are called before signals are disposed.
+   * Use this for cleanup that doesn't need the `removeTree` parameter.
+   *
+   * @param callback - The callback to call on disposal
+   * @throws Error if the scope has already been disposed
+   * @public
+   */
+  onDispose(callback: () => void): void {
+    if (this._disposed) {
+      throw new Error('Cannot register callback in disposed scope')
+    }
+    this._callbacks.push(callback)
+  }
+
+  /**
    * Dispose all signals tracked by this scope.
    * This method is idempotent - calling it multiple times is safe.
    *
@@ -42,6 +59,19 @@ export class DisposalScope {
     if (this._disposed) return
     this._disposed = true
 
+    // Call disposal callbacks first (before disposing signals)
+    // Catch errors to ensure all callbacks run
+    for (const callback of this._callbacks) {
+      try {
+        callback()
+      } catch (error) {
+        // Log error but continue with other callbacks
+        console.error('Error in disposal callback:', error)
+      }
+    }
+    this._callbacks.length = 0
+
+    // Then dispose all signals
     for (const signal of this._signals) {
       signal.dispose()
     }

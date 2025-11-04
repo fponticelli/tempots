@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { DisposalScope } from '../src/std/disposal-scope'
 import { prop } from '../src/std/signal'
 
@@ -107,5 +107,123 @@ describe('DisposalScope', () => {
       expect(scope.disposed).toBe(true)
     })
   })
-})
 
+  describe('onDispose()', () => {
+    test('registers a callback to be called on disposal', () => {
+      const scope = new DisposalScope()
+      const callback = vi.fn()
+
+      scope.onDispose(callback)
+
+      expect(callback).not.toHaveBeenCalled()
+
+      scope.dispose()
+
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+
+    test('registers multiple callbacks', () => {
+      const scope = new DisposalScope()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn()
+      const callback3 = vi.fn()
+
+      scope.onDispose(callback1)
+      scope.onDispose(callback2)
+      scope.onDispose(callback3)
+
+      scope.dispose()
+
+      expect(callback1).toHaveBeenCalledTimes(1)
+      expect(callback2).toHaveBeenCalledTimes(1)
+      expect(callback3).toHaveBeenCalledTimes(1)
+    })
+
+    test('callbacks are called in registration order', () => {
+      const scope = new DisposalScope()
+      const order: number[] = []
+
+      scope.onDispose(() => order.push(1))
+      scope.onDispose(() => order.push(2))
+      scope.onDispose(() => order.push(3))
+
+      scope.dispose()
+
+      expect(order).toEqual([1, 2, 3])
+    })
+
+    test('callbacks are called before signals are disposed', () => {
+      const scope = new DisposalScope()
+      const signal = prop(42)
+      scope.track(signal)
+
+      let signalValueInCallback: number | undefined
+
+      scope.onDispose(() => {
+        signalValueInCallback = signal.value
+      })
+
+      scope.dispose()
+
+      expect(signalValueInCallback).toBe(42)
+      expect(signal.isDisposed()).toBe(true)
+    })
+
+    test('callbacks are not called multiple times on repeated dispose()', () => {
+      const scope = new DisposalScope()
+      const callback = vi.fn()
+
+      scope.onDispose(callback)
+
+      scope.dispose()
+      scope.dispose()
+      scope.dispose()
+
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+
+    test('registering callback in disposed scope throws error', () => {
+      const scope = new DisposalScope()
+      scope.dispose()
+
+      expect(() => scope.onDispose(() => {})).toThrow()
+    })
+
+    test('callback errors do not prevent other callbacks from running', () => {
+      const scope = new DisposalScope()
+      const callback1 = vi.fn()
+      const callback2 = vi.fn(() => {
+        throw new Error('Test error')
+      })
+      const callback3 = vi.fn()
+
+      scope.onDispose(callback1)
+      scope.onDispose(callback2)
+      scope.onDispose(callback3)
+
+      // dispose() should not throw even if a callback throws
+      expect(() => scope.dispose()).not.toThrow()
+
+      expect(callback1).toHaveBeenCalledTimes(1)
+      expect(callback2).toHaveBeenCalledTimes(1)
+      expect(callback3).toHaveBeenCalledTimes(1)
+    })
+
+    test('works with both signals and callbacks', () => {
+      const scope = new DisposalScope()
+      const signal = prop(0)
+      const callback = vi.fn()
+
+      scope.track(signal)
+      scope.onDispose(callback)
+
+      expect(signal.isDisposed()).toBe(false)
+      expect(callback).not.toHaveBeenCalled()
+
+      scope.dispose()
+
+      expect(signal.isDisposed()).toBe(true)
+      expect(callback).toHaveBeenCalledTimes(1)
+    })
+  })
+})
