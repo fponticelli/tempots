@@ -1660,20 +1660,20 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 #### 3.2 createReactiveRenderable (When/Unless)
 
-- [ ] **Write tests for When/Unless scopes**
-  - [ ] Test: each branch creates its own scope
-  - [ ] Test: switching branches disposes old scope
-  - [ ] Test: signals in then branch are disposed when switching to else
-  - [ ] Test: signals in else branch are disposed when switching to then
-  - [ ] Test: nested When creates nested scopes
-  - [ ] Run tests (should fail)
+- [x] **Write tests for When/Unless scopes**
+  - [x] Test: each branch creates its own scope
+  - [x] Test: switching branches disposes old scope
+  - [x] Test: signals in then branch are disposed when switching to else
+  - [x] Test: signals in else branch are disposed when switching to then
+  - [x] Test: nested When creates nested scopes
+  - [x] Run tests (should fail)
 
-- [ ] **Implement createReactiveRenderable scope**
-  - [ ] Modify `createReactiveRenderable` in `packages/tempots-dom/src/renderables/when.ts`
-  - [ ] Create scope for each branch
-  - [ ] Use `withScope()` when executing branch renderable
-  - [ ] Dispose old scope when switching branches
-  - [ ] Run tests (should pass)
+- [x] **Implement createReactiveRenderable scope**
+  - [x] Modify `createReactiveRenderable` in `packages/tempots-dom/src/renderables/when.ts`
+  - [x] Create scope for each branch
+  - [x] Use `withScope()` when executing branch renderable
+  - [x] Dispose old scope when switching branches
+  - [x] Run tests (should pass)
 
 #### 3.3 Repeat
 

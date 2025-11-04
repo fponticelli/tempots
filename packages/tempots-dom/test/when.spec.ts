@@ -1,5 +1,15 @@
 import { describe, expect, test, vi, beforeEach } from "vitest";
-import { prop, WithElement, render, When, Unless, html } from "../src";
+import {
+  prop,
+  WithElement,
+  render,
+  When,
+  Unless,
+  html,
+  computed,
+  effect,
+} from '../src'
+import type { Prop, Computed } from '../src'
 import { sleep } from "./helper";
 
 describe("When", () => {
@@ -383,3 +393,208 @@ describe("Unless", () => {
     expect(document.body.innerHTML).toBe('')
   });
 });
+
+describe('When/Unless - Automatic Signal Disposal', () => {
+  beforeEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  test('should dispose signals when switching from then to else branch', async () => {
+    const condition = prop(true)
+    let thenSignal: Prop<number> | null = null
+    let elseSignal: Prop<number> | null = null
+
+    const clear = render(
+      When(
+        condition,
+        () => {
+          thenSignal = prop(10)
+          return html.div('Then')
+        },
+        () => {
+          elseSignal = prop(20)
+          return html.div('Else')
+        }
+      ),
+      document.body
+    )
+
+    // Initially in then branch
+    expect(thenSignal).not.toBeNull()
+    expect(elseSignal).toBeNull()
+    expect(thenSignal!.isDisposed()).toBe(false)
+
+    // Switch to else branch
+    condition.set(false)
+    await sleep()
+
+    // Then signal should be disposed, else signal should be created
+    expect(thenSignal!.isDisposed()).toBe(true)
+    expect(elseSignal).not.toBeNull()
+    expect(elseSignal!.isDisposed()).toBe(false)
+
+    // Clean up
+    clear()
+    expect(elseSignal!.isDisposed()).toBe(true)
+  })
+
+  test('should dispose signals when switching from else to then branch', async () => {
+    const condition = prop(false)
+    let thenSignal: Prop<number> | null = null
+    let elseSignal: Prop<number> | null = null
+
+    const clear = render(
+      When(
+        condition,
+        () => {
+          thenSignal = prop(10)
+          return html.div('Then')
+        },
+        () => {
+          elseSignal = prop(20)
+          return html.div('Else')
+        }
+      ),
+      document.body
+    )
+
+    // Initially in else branch
+    expect(elseSignal).not.toBeNull()
+    expect(thenSignal).toBeNull()
+    expect(elseSignal!.isDisposed()).toBe(false)
+
+    // Switch to then branch
+    condition.set(true)
+    await sleep()
+
+    // Else signal should be disposed, then signal should be created
+    expect(elseSignal!.isDisposed()).toBe(true)
+    expect(thenSignal).not.toBeNull()
+    expect(thenSignal!.isDisposed()).toBe(false)
+
+    // Clean up
+    clear()
+    expect(thenSignal!.isDisposed()).toBe(true)
+  })
+
+  test('should dispose computed signals in branches', async () => {
+    const condition = prop(true)
+    let thenSource: Prop<number> | null = null
+    let thenDerived: Computed<number> | null = null
+
+    const clear = render(
+      When(
+        condition,
+        () => {
+          thenSource = prop(10)
+          thenDerived = computed(() => thenSource!.value * 2, [thenSource])
+          return html.div('Then')
+        },
+        () => html.div('Else')
+      ),
+      document.body
+    )
+
+    expect(thenSource).not.toBeNull()
+    expect(thenDerived).not.toBeNull()
+    expect(thenSource!.isDisposed()).toBe(false)
+    expect(thenDerived!.isDisposed()).toBe(false)
+
+    // Switch to else branch
+    condition.set(false)
+    await sleep()
+
+    // Both signals should be disposed
+    expect(thenSource!.isDisposed()).toBe(true)
+    expect(thenDerived!.isDisposed()).toBe(true)
+
+    clear()
+  })
+
+  test('should dispose effects in branches', async () => {
+    const condition = prop(true)
+    const source = prop(0)
+    let thenCallCount = 0
+    let elseCallCount = 0
+
+    const clear = render(
+      When(
+        condition,
+        () => {
+          effect(() => {
+            thenCallCount++
+            source.value
+          }, [source])
+          return html.div('Then')
+        },
+        () => {
+          effect(() => {
+            elseCallCount++
+            source.value
+          }, [source])
+          return html.div('Else')
+        }
+      ),
+      document.body
+    )
+
+    await sleep()
+    expect(thenCallCount).toBe(1)
+    expect(elseCallCount).toBe(0)
+
+    source.set(1)
+    await sleep()
+    expect(thenCallCount).toBe(2)
+    expect(elseCallCount).toBe(0)
+
+    // Switch to else branch
+    condition.set(false)
+    await sleep()
+    expect(thenCallCount).toBe(2) // Then effect should be disposed
+    expect(elseCallCount).toBe(1) // Else effect should start
+
+    source.set(2)
+    await sleep()
+    expect(thenCallCount).toBe(2) // Then effect still disposed
+    expect(elseCallCount).toBe(2) // Else effect should trigger
+
+    clear()
+    source.dispose()
+  })
+
+  test('should handle nested When with separate scopes', async () => {
+    const outerCondition = prop(true)
+    const innerCondition = prop(true)
+    let outerSignal: Prop<number> | null = null
+    let innerSignal: Prop<number> | null = null
+
+    const clear = render(
+      When(outerCondition, () => {
+        outerSignal = prop(10)
+        return When(innerCondition, () => {
+          innerSignal = prop(20)
+          return html.div('Inner')
+        })
+      }),
+      document.body
+    )
+
+    expect(outerSignal).not.toBeNull()
+    expect(innerSignal).not.toBeNull()
+    expect(outerSignal!.isDisposed()).toBe(false)
+    expect(innerSignal!.isDisposed()).toBe(false)
+
+    // Toggle inner condition - should only dispose inner signal
+    innerCondition.set(false)
+    await sleep()
+    expect(outerSignal!.isDisposed()).toBe(false)
+    expect(innerSignal!.isDisposed()).toBe(true)
+
+    // Toggle outer condition - should dispose outer signal
+    outerCondition.set(false)
+    await sleep()
+    expect(outerSignal!.isDisposed()).toBe(true)
+
+    clear()
+  })
+})

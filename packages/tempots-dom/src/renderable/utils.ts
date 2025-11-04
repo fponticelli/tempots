@@ -3,6 +3,8 @@ import { DOMContext } from '../dom/dom-context'
 import { Signal } from '../std/signal'
 import { Value } from '../std/value'
 import { renderableOfTNode } from './element'
+import { DisposalScope } from '../std/disposal-scope'
+import { withScope } from '../std/scope-stack'
 
 /**
  * Helper function to handle a value that could be either a Signal or a static value.
@@ -33,6 +35,7 @@ export const handleValueOrSignal = <T, R>(
  * - Setting up a signal listener that re-renders on changes
  * - Properly cleaning up the old render before creating a new one
  * - Disposing the signal listener and context on cleanup
+ * - Creating a disposal scope for each branch to track signals
  *
  * @param ctx - The parent DOM context
  * @param signal - The signal to watch for changes
@@ -47,11 +50,22 @@ export const createReactiveRenderable = <T>(
 ): Clear => {
   const newCtx = ctx.makeRef()
   let clear: Clear = () => {}
+  let currentScope: DisposalScope | null = null
+
   const disposeHandler = signal.on(value => {
+    // Dispose the old scope before rendering the new branch
+    currentScope?.dispose()
     clear(true)
-    clear = renderableOfTNode(render(value))(newCtx)
+
+    // Create a new scope for the new branch
+    currentScope = new DisposalScope()
+    clear = withScope(currentScope, () =>
+      renderableOfTNode(render(value))(newCtx)
+    )
   })
+
   return (removeTree: boolean) => {
+    currentScope?.dispose()
     clear(removeTree)
     disposeHandler()
     newCtx.clear(removeTree)
