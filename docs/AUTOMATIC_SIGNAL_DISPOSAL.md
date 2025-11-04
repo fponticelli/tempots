@@ -1007,16 +1007,20 @@ const ThemedComponent: Renderable = (ctx) => {
 
 ## Breaking Changes
 
-### Removed/Deprecated APIs
+### OnDispose Integration with Scope
 
-1. **`OnDispose()` is deprecated** - signals are now automatically disposed
-2. **Manual `.dispose()` calls are discouraged** - let scopes handle disposal
+**`OnDispose()` is NOT deprecated** - it remains useful for disposing non-signal resources (DOM event listeners, timers, subscriptions, etc.).
 
-**Note:** `OnDispose(signal.dispose)` and `OnDispose(signal)` are equivalent and both valid. The latter is preferred as it's more concise.
+**Changes:**
+1. **OnDispose now integrates with DisposalScope** - `OnDispose()` will register disposal callbacks with the current scope
+2. **Signals are automatically disposed** - no need for `OnDispose(signal)` in most cases
+3. **OnDispose still needed for non-signal cleanup** - use it for DOM listeners, timers, fetch cancellation, etc.
+
+**Note:** `OnDispose(signal.dispose)` and `OnDispose(signal)` are equivalent and both valid, but unnecessary in most cases since signals are auto-disposed.
 
 ### Migration Guide
 
-**Before:**
+**Before (signals):**
 
 ```typescript
 const MyComponent: Renderable = (ctx) => {
@@ -1030,7 +1034,7 @@ const MyComponent: Renderable = (ctx) => {
 };
 ```
 
-**After:**
+**After (signals - auto-disposed):**
 
 ```typescript
 const MyComponent: Renderable = (ctx) => {
@@ -1039,6 +1043,25 @@ const MyComponent: Renderable = (ctx) => {
 
   return html.div(signal2);
   // Signals automatically disposed when component unmounts
+};
+```
+
+**OnDispose still useful for non-signal cleanup:**
+
+```typescript
+const MyComponent: Renderable = (ctx) => {
+  const signal = prop(0);
+
+  // Set up a timer
+  const timerId = setInterval(() => {
+    signal.set(signal.value + 1);
+  }, 1000);
+
+  // OnDispose is still needed for non-signal resources!
+  return Fragment(
+    OnDispose(() => clearInterval(timerId)),
+    html.div(signal.map(String))
+  );
 };
 ```
 
@@ -1140,10 +1163,11 @@ When the inner scope is disposed, only `inner` is disposed. When the outer scope
 **Required Changes:**
 
 1. **Remove warnings for signals in renderables** - they're now auto-tracked
-2. **Add warning for `OnDispose()` usage** - it's deprecated
-3. **Add warning for signals at module level** - they're not auto-tracked
-4. **Add warning for signals in `untracked()`** - they need manual disposal
-5. **Add warning for async signal creation** - suggest using `WithScope` with explicit tracking
+2. **Add warning for `OnDispose(signal)` usage** - signals are auto-disposed, OnDispose not needed
+3. **Keep OnDispose valid for non-signal cleanup** - timers, listeners, etc.
+4. **Add warning for signals at module level** - they're not auto-tracked
+5. **Add warning for signals in `untracked()`** - they need manual disposal
+6. **Add warning for async signal creation** - suggest using `WithScope` with explicit tracking
 
 **New Rules:**
 
@@ -1154,12 +1178,21 @@ const MyComponent: Renderable = (ctx) => {
   return html.div(signal)
 }
 
-// ⚠️ Warning: OnDispose is deprecated
+// ⚠️ Warning: OnDispose(signal) is unnecessary - signals are auto-disposed
 const MyComponent: Renderable = (ctx) => {
   const signal = prop(0)
   return Fragment(
-    OnDispose(signal),  // ← Warn here (both OnDispose(signal) and OnDispose(signal.dispose) are valid)
+    OnDispose(signal),  // ← Warn here - signal is auto-disposed
     html.div(signal)
+  )
+}
+
+// ✅ No warning - OnDispose for non-signal cleanup
+const MyComponent: Renderable = (ctx) => {
+  const timerId = setInterval(() => {}, 1000)
+  return Fragment(
+    OnDispose(() => clearInterval(timerId)),  // ← Valid use of OnDispose
+    html.div('test')
   )
 }
 
@@ -1225,7 +1258,8 @@ const SyncComponent: Renderable = (ctx) => {
 **Keep and update the plugin** with the following priorities:
 
 1. **High Priority:**
-   - Warn on `OnDispose()` usage (suggest removal)
+   - Warn on `OnDispose(signal)` usage (signals are auto-disposed, suggest removal)
+   - Keep `OnDispose(callback)` valid for non-signal cleanup
    - Warn on module-level signal creation (suggest moving into renderable or using `untracked()` with manual disposal)
    - Warn on `prop()` in async contexts (suggest `scope.prop()` instead)
    - Warn on `computed(fn, deps)` in async contexts (suggest `scope.computed(fn, deps)` instead)
@@ -1797,22 +1831,26 @@ This section provides a detailed, step-by-step task list for implementing automa
 #### 6.1 Update Existing Demos
 
 - [ ] **Update counter demo**
-  - [ ] Remove all `OnDispose()` calls
+  - [ ] Remove `OnDispose(signal)` calls (signals are auto-disposed)
+  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
   - [ ] Verify signals are auto-disposed
   - [ ] Test manually in browser
 
 - [ ] **Update todomvc demo**
-  - [ ] Remove all `OnDispose()` calls
+  - [ ] Remove `OnDispose(signal)` calls
+  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
   - [ ] Verify no memory leaks
   - [ ] Test manually in browser
 
 - [ ] **Update 7guis demos**
-  - [ ] Remove all `OnDispose()` calls from all 7 demos
+  - [ ] Remove `OnDispose(signal)` calls from all 7 demos
+  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
   - [ ] Verify each demo works correctly
   - [ ] Test manually in browser
 
 - [ ] **Update hnpwa demo**
-  - [ ] Remove all `OnDispose()` calls
+  - [ ] Remove `OnDispose(signal)` calls
+  - [ ] Keep `OnDispose(callback)` for non-signal cleanup
   - [ ] Verify navigation doesn't leak memory
   - [ ] Test manually in browser
 
@@ -1827,8 +1865,9 @@ This section provides a detailed, step-by-step task list for implementing automa
 #### 7.1 Update Existing Rules
 
 - [ ] **Update require-signal-disposal rule**
-  - [ ] Modify to warn on `OnDispose()` usage
-  - [ ] Suggest removing `OnDispose()` calls
+  - [ ] Modify to warn on `OnDispose(signal)` usage (signals are auto-disposed)
+  - [ ] Keep `OnDispose(callback)` valid for non-signal cleanup
+  - [ ] Suggest removing `OnDispose(signal)` calls
   - [ ] Add tests for new warnings
   - [ ] Run tests (should fail)
 
@@ -1887,39 +1926,38 @@ This section provides a detailed, step-by-step task list for implementing automa
   - [ ] Run all plugin tests
   - [ ] Publish to npm
 
-### Phase 8: Codebase Cleanup
+### Phase 8: OnDispose Integration & Codebase Cleanup
 
-#### 8.1 Remove OnDispose Usage
+#### 8.1 Integrate OnDispose with DisposalScope
 
-- [ ] **Find all OnDispose usage**
+- [ ] **Add onDispose method to DisposalScope**
+  - [ ] Implement `scope.onDispose(callback)` method
+  - [ ] Store callbacks in array
+  - [ ] Call callbacks in `dispose()` method
+  - [ ] Write tests for onDispose
+
+- [ ] **Update OnDispose to use current scope**
+  - [ ] Modify OnDispose implementation to call `getCurrentScope()?.onDispose(callback)`
+  - [ ] Keep backward compatibility for when no scope exists
+  - [ ] Write tests for OnDispose with scope integration
+
+#### 8.2 Remove Unnecessary OnDispose Calls for Signals
+
+- [ ] **Find all OnDispose usage for signals**
   - [ ] Run: `git grep -n "OnDispose" packages/`
-  - [ ] Create list of files to update
+  - [ ] Identify which calls are for signals vs non-signal resources
 
-- [ ] **Remove OnDispose from tempots-dom**
+- [ ] **Remove OnDispose calls for signals in tempots-dom**
   - [ ] Update all files in `packages/tempots-dom/src/`
-  - [ ] Remove `OnDispose()` calls
+  - [ ] Remove `OnDispose(signal)` calls (signals are auto-disposed)
+  - [ ] Keep `OnDispose(callback)` for non-signal resources
   - [ ] Verify tests still pass
 
-- [ ] **Remove OnDispose from tempots-std**
-  - [ ] Update all files in `packages/tempots-std/src/`
-  - [ ] Remove `OnDispose()` calls
-  - [ ] Verify tests still pass
-
-- [ ] **Remove OnDispose from tempots-ui**
+- [ ] **Remove OnDispose calls for signals in tempots-ui**
   - [ ] Update all files in `packages/tempots-ui/src/`
-  - [ ] Remove `OnDispose()` calls
+  - [ ] Remove `OnDispose(signal)` calls
+  - [ ] Keep `OnDispose(callback)` for non-signal resources
   - [ ] Verify tests still pass
-
-#### 8.2 Deprecate OnDispose
-
-- [ ] **Mark OnDispose as deprecated**
-  - [ ] Add `@deprecated` JSDoc tag
-  - [ ] Add deprecation message suggesting removal
-  - [ ] Keep implementation for backward compatibility
-
-- [ ] **Add deprecation warning**
-  - [ ] Add console.warn in dev mode when OnDispose is called
-  - [ ] Include migration instructions in warning
 
 ### Phase 9: Documentation Updates
 
