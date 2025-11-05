@@ -206,7 +206,7 @@ export default {
 
           context.report({
             node,
-            messageId: 'asyncSignalCreationGeneric',
+            messageId: 'asyncSignalDisposalGeneric',
           })
         }
       },

@@ -15,14 +15,8 @@ export default [
       },
     },
   },
-  {
-    plugins: {
-      tempots,
-    },
-    rules: {
-      'tempots/require-signal-disposal': 'warn',
-    },
-  },
+  // Use the recommended config for automatic signal disposal
+  tempots.configs.recommended,
   {
     ignores: [
       '*.js',

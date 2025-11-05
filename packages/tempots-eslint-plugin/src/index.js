@@ -6,7 +6,7 @@ import requireAsyncSignalDisposal from './rules/require-async-signal-disposal.js
 import noSignalReassignment from './rules/no-signal-reassignment.js'
 import preferConstSignals from './rules/prefer-const-signals.js'
 
-export default {
+const plugin = {
   rules: {
     // DEPRECATED: Signals are now automatically disposed in @tempots/dom >= 1.0.0
     // This rule is kept for backward compatibility but will be removed in a future version
@@ -20,9 +20,15 @@ export default {
     'no-signal-reassignment': noSignalReassignment,
     'prefer-const-signals': preferConstSignals,
   },
+}
+
+export default {
+  ...plugin,
   configs: {
     recommended: {
-      plugins: ['tempots'],
+      plugins: {
+        tempots: plugin,
+      },
       rules: {
         // Warn about signals created at module level
         'tempots/no-module-level-signals': 'warn',
@@ -40,7 +46,9 @@ export default {
     },
     // Strict config for maximum safety
     strict: {
-      plugins: ['tempots'],
+      plugins: {
+        tempots: plugin,
+      },
       rules: {
         'tempots/no-module-level-signals': 'error',
         'tempots/no-unnecessary-disposal': 'error',
@@ -52,7 +60,9 @@ export default {
     },
     // Legacy config for backward compatibility
     legacy: {
-      plugins: ['tempots'],
+      plugins: {
+        tempots: plugin,
+      },
       rules: {
         'tempots/require-signal-disposal': 'warn',
       },

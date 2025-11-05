@@ -53,6 +53,7 @@ export default {
   create(context) {
     // Track which variables are signals
     const signalVariables = new Map() // variable name -> scope
+    const sourceCode = context.sourceCode || context.getSourceCode()
 
     /**
      * Check if a node is a signal creation call
@@ -99,7 +100,7 @@ export default {
         if (node.id.type !== 'Identifier') return
 
         if (isSignalCreation(node.init)) {
-          const scope = context.getScope()
+          const scope = sourceCode.getScope(node)
           signalVariables.set(node.id.name, scope)
         }
       },
