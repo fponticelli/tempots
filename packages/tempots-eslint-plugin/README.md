@@ -1,6 +1,6 @@
 # @tempots/eslint-plugin
 
-ESLint plugin for TempoTS to help catch common signal disposal issues and prevent memory leaks.
+ESLint plugin for TempoTS to help catch common signal usage issues and prevent memory leaks.
 
 ## Installation
 
@@ -22,7 +22,7 @@ export default [
       tempots,
     },
     rules: {
-      'tempots/require-signal-disposal': 'warn',
+      'tempots/no-module-level-signals': 'warn',
     },
   },
 ]
@@ -40,47 +40,63 @@ export default [
 ]
 ```
 
+## Automatic Signal Disposal
+
+**Important:** As of @tempots/dom >= 1.0.0, signals are automatically disposed when components unmount. You no longer need to manually call `OnDispose(signal.dispose)` for signals created within renderables!
+
+```typescript
+const MyComponent = ctx => {
+  const count = prop(0) // ✨ Auto-disposed
+  const doubled = count.map(x => x * 2) // ✨ Auto-disposed
+
+  return html.div('Count: ', count, ' Doubled: ', doubled)
+  // No OnDispose needed!
+}
+```
+
 ## Rules
 
-### `require-signal-disposal`
+### `no-module-level-signals` (Recommended)
 
-Detects signals created within renderables that aren't properly disposed.
+Warns about signals created at module level (outside renderables).
 
-**Why?** When you create signals within components (using `prop()`, `signal()`, `.map()`, etc.), those signals need to be disposed when the component is unmounted to prevent memory leaks.
+**Why?** With automatic signal disposal, signals created within renderables are automatically tracked and disposed. However, signals created at module level will be tracked by the global scope and may cause unexpected behavior.
 
 #### ❌ Incorrect
 
 ```typescript
-const MyComponent = (ctx) => {
-  const signal = prop(0)  // Created but never disposed!
-  return html.div('content')
-}
+// Module level - will be tracked by global scope!
+const globalCount = prop(0)
+const doubled = globalCount.map(x => x * 2)
 
-const AnotherComponent = (ctx) => {
-  const mapped = someSignal.map(x => x * 2)  // Transformation not disposed!
-  return html.div(mapped)
+const MyComponent = ctx => {
+  return html.div(globalCount)
 }
 ```
 
 #### ✅ Correct
 
 ```typescript
-const MyComponent = (ctx) => {
-  const signal = prop(0)
-  return Fragment(
-    OnDispose(signal.dispose),  // Properly disposed
-    html.div('content')
-  )
+// Option 1: Move inside renderable (auto-disposed)
+const MyComponent = ctx => {
+  const count = prop(0) // ✨ Auto-disposed
+  return html.div(count)
 }
 
-const AnotherComponent = (ctx) => {
-  const mapped = someSignal.map(x => x * 2)
-  return Fragment(
-    OnDispose(mapped.dispose),  // Transformation disposed
-    html.div(mapped)
-  )
+// Option 2: Use untracked() for long-lived signals
+const globalCount = untracked(() => prop(0)) // Explicitly long-lived
+// Remember to dispose manually when done: globalCount.dispose()
+
+const MyComponent = ctx => {
+  return html.div(globalCount)
 }
 ```
+
+### `require-signal-disposal` (Deprecated)
+
+**⚠️ DEPRECATED:** This rule is deprecated as of @tempots/dom >= 1.0.0 because signals are now automatically disposed. It is kept for backward compatibility with older versions but will be removed in a future release.
+
+For projects using @tempots/dom >= 1.0.0, use `no-module-level-signals` instead.
 
 #### Options
 
@@ -95,57 +111,7 @@ const AnotherComponent = (ctx) => {
 }
 ```
 
-**Type Information Mode:**
-
-The rule can use TypeScript's type checker for more accurate signal detection:
-
-- **`'auto'` (default)**: Automatically uses type checking if TypeScript services are available, falls back to heuristics otherwise
-- **`'always'`**: Always requires type checking (will error if TypeScript services aren't available)
-- **`'never'`**: Never uses type checking, always uses heuristics
-
-**With type checking enabled**, the rule can accurately distinguish between:
-```typescript
-// ✅ Not flagged - TypeScript knows this is string[]
-function MyComponent({ options }: { options: string[] }) {
-  const labels = options.map(opt => opt.toUpperCase())
-  return html.div(labels.join(', '))
-}
-
-// ⚠️ Flagged - TypeScript knows this is Signal<number>
-function MyComponent({ count }: { count: Signal<number> }) {
-  const doubled = count.map(x => x * 2)  // Needs disposal!
-  return html.div(doubled)
-}
-```
-
-**Without type checking** (heuristics mode), the rule assumes any `.map()` call might be on a signal unless it has an explicit array type annotation.
-
-#### When to disable
-
-You can disable this rule for specific cases using ESLint comments:
-
-```typescript
-const MyComponent = (ctx) => {
-  // eslint-disable-next-line tempots/require-signal-disposal
-  const signal = prop(0)  // I know what I'm doing
-  return html.div('content')
-}
-```
-
-**Valid reasons to disable:**
-- The signal is returned from the component (caller's responsibility)
-- The signal is stored in a parent scope and managed elsewhere
-- You're using a custom disposal pattern the rule doesn't recognize
-
-## Limitations
-
-This rule uses static analysis and has some limitations:
-
-1. **False positives**: May flag signals that are disposed in ways the rule doesn't recognize
-2. **False negatives**: May miss signals stored in objects/arrays or disposed conditionally
-3. **Scope**: Only checks within renderable functions (functions with a `ctx` parameter)
-
-When in doubt, use `OnDispose` to be explicit about cleanup.
+See the legacy documentation for details on this deprecated rule.
 
 ## Contributing
 
@@ -154,4 +120,3 @@ See the main [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
 ## License
 
 Apache-2.0
-

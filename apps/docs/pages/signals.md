@@ -68,6 +68,14 @@ You can also create side effects using the `effect()` function. The function tak
 
 You can transform signals using the `map()`, `filter()`, `flatMap()`, and other functions. These functions create a new signal that is derived from the original signal.
 
+```ts
+const count = prop(0)
+const doubled = count.map(x => x * 2)  // ✨ Auto-disposed
+const positive = count.filter(x => x > 0)  // ✨ Auto-disposed
+```
+
+**Automatic Disposal:** All derived signals (created with `.map()`, `.filter()`, `.flatMap()`, etc.) are automatically tracked and disposed when used within renderables. No manual cleanup needed!
+
 Since you will often work with signals of objects, you might find the `$` property useful. `$` is an object that contains signals for each property of the object. This makes it easy to work with signals of objects.
 
 ```ts
@@ -76,6 +84,42 @@ console.log(prop.$.name.value) // John
 ```
 
 The `at()` function is equivalent to `$` and it takes the key as an argument.
+
+## Automatic Memory Management
+
+When you create signals within a renderable, Tempo automatically tracks them and disposes them when the component is removed from the DOM. This applies to:
+
+- **Signal creation**: `prop()`, `signal()`, `computed()`, `computedOf()`
+- **Signal transformations**: `.map()`, `.filter()`, `.flatMap()`, `.filterMap()`, etc.
+- **Effects**: `effect()` functions
+
+```ts
+import { html, prop, render } from '@tempots/dom'
+
+const MyComponent = () => {
+  const count = prop(0)  // ✨ Auto-disposed
+  const doubled = count.map(x => x * 2)  // ✨ Auto-disposed
+
+  return html.div(
+    'Count: ', count,
+    ' Doubled: ', doubled
+  )
+}
+
+const clear = render(MyComponent(), document.body)
+// Later: clear() will automatically dispose count and doubled
+```
+
+### Long-Lived Signals
+
+If you need to create a signal that outlives the current component scope, use `untracked()`:
+
+```ts
+import { untracked, prop } from '@tempots/dom'
+
+const globalState = untracked(() => prop(0))  // Not auto-disposed
+// Remember to dispose manually when done: globalState.dispose()
+```
 
 ## Next Steps
 

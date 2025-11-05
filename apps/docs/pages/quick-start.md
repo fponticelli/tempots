@@ -51,7 +51,7 @@ const count = prop(0)
 
 // Define a template
 const Counter = html.div(
-  html.h1(count.map(v => `count: ${v}`)),
+  html.h1(count.map(v => `count: ${v}`)),  // ✨ Auto-disposed
   html.div(
     html.button(on.click(() => count.value++), '+'),
     html.button(on.click(() => count.value--), '-'),
@@ -67,6 +67,17 @@ The `count` signal is updated by mutating the `count.value` that computes a new 
 What about ``count.map(v => `count: ${v}`)``? This is a `Computed` signal that is derived from the `count` signal. It will update whenever `count` changes. The `map()` function is a helper function that maps the value of the signal to a new value.
 
 Events are handled by using the functions associated to the `on` object. The `on.click()` function creates an event listener for the `click` event.
+
+### Automatic Memory Management
+
+**Important:** Signals created within renderables (like `count` and `count.map(...)` above) are automatically tracked and disposed when the component is removed from the DOM. This means:
+
+- ✅ No manual cleanup needed
+- ✅ No memory leaks
+- ✅ Works with all signal types: `prop()`, `signal()`, `computed()`
+- ✅ Works with derived signals: `.map()`, `.filter()`, `.flatMap()`, etc.
+
+Tempo automatically creates a disposal scope for each renderable and tracks all signals created within it. When the renderable is removed from the DOM, all tracked signals are automatically disposed.
 
 Note that differently from other frameworks, Tempo does not make a distinction between children nodes, attributes, properties, or event handlers. Everything satisfies the same `Renderable` type and `Renderable`s can be nested in any component that accept children. This brings a lot of flexibility and simplicity to the API. One example is that you can use the `Portal` component not just to render the content of a selected element but also change/add to its attributes, classes and event handlers.
 

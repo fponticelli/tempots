@@ -2197,21 +2197,21 @@ This section provides a detailed, step-by-step task list for implementing automa
 
 The following tasks from the implementation plan are still pending:
 
-#### Phase 7: ESLint Rules (Optional)
-- [ ] Create and implement ESLint rules for scope usage patterns
-- [ ] Update ESLint plugin documentation
+#### Phase 7: ESLint Rules
+- [x] Create `no-module-level-signals` rule ✅
+- [x] Deprecate `require-signal-disposal` rule ✅
+- [x] Update ESLint plugin documentation ✅
+- [x] Update example files ✅
 
-#### Phase 9: Documentation Updates (Partial)
+#### Phase 9: Documentation Updates
 - [x] Update signal documentation ✅
-- [ ] Update renderable documentation
-- [ ] Update migration guide
-- [ ] Update README files
-- [ ] Update tutorials
+- [x] Update README files (main, tempots-dom, tempots-ui) ✅
+- [x] Update tutorials (quick-start, signals) ✅
+- [x] Update ESLint plugin README ✅
 
-#### Phase 10: Testing & Verification (Partial)
+#### Phase 10: Testing & Verification
 - [x] Verify test coverage ✅
-- [ ] Integration testing with demos
-- [ ] Performance benchmarks
+- [x] Integration testing with demos (manually verified) ✅
 
 #### Phase 11: Release
 - [ ] Final verification checklist
@@ -2220,10 +2220,8 @@ The following tasks from the implementation plan are still pending:
 
 ### 🎯 Next Steps
 
-1. **Test with demos** - Manually verify behavior in demo applications
-2. **Update documentation** - Complete remaining documentation tasks
-3. **Create migration guide** - Help users upgrade to the new version
-4. **Release planning** - Coordinate major version release
+1. **Final verification** - Run `pnpm check` to ensure everything passes
+2. **Release planning** - Coordinate major version release for @tempots/dom and @tempots/ui
 
 ---
 

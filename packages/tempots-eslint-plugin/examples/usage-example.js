@@ -13,17 +13,14 @@ export default [
       tempots,
     },
     rules: {
-      // Warn about undisposed signals (recommended for development)
-      'tempots/require-signal-disposal': 'warn',
+      // Recommended: Warn about signals created at module level
+      // (Signals are now automatically disposed in @tempots/dom >= 1.0.0)
+      'tempots/no-module-level-signals': 'warn',
 
-      // Or use error for stricter enforcement
-      // "tempots/require-signal-disposal": "error",
-
-      // Or customize the options
-      // "tempots/require-signal-disposal": ["warn", {
-      //   checkTransforms: true,  // Check .map(), .filter(), etc.
-      //   checkCreations: true,   // Check prop(), signal(), computed()
-      // }],
+      // DEPRECATED: The require-signal-disposal rule is deprecated
+      // because signals are now automatically disposed.
+      // Only use this if you're on an older version of @tempots/dom
+      // 'tempots/require-signal-disposal': 'warn',
     },
   },
   {

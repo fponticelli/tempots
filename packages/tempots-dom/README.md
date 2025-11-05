@@ -50,7 +50,7 @@ function Counter() {
   const count = prop(0)
 
   return html.div(
-    html.div('Count: ', count.map(String)),
+    html.div('Count: ', count.map(String)),  // ✨ Auto-disposed
     html.button(
       on.click(() => count.value--),
       'Decrement'
@@ -64,6 +64,11 @@ function Counter() {
 
 render(Counter(), document.body)
 ```
+
+**Automatic Memory Management:** Signals created within renderables are automatically tracked and disposed when the component is removed from the DOM. This includes:
+- Signals created with `prop()`, `signal()`, `computed()`
+- Derived signals from `.map()`, `.filter()`, `.flatMap()`, etc.
+- No manual `OnDispose()` calls needed!
 
 ### HTML Elements
 

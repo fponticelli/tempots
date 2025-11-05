@@ -3,6 +3,7 @@ import { computed, effect, prop } from './signal'
 import { untracked, withScope } from './scope-stack'
 import type { Value } from './value'
 import { computedOf, effectOf } from './value'
+import { ValueTypes } from '../types/domain'
 
 /**
  * A DisposalScope tracks signals created during its lifetime and disposes them when the scope ends.
@@ -152,7 +153,7 @@ export class DisposalScope {
    */
   computedOf<T extends Value<unknown>[]>(...args: T) {
     return <O>(
-      fn: (...args: any[]) => O,
+      fn: (...args: ValueTypes<T>) => O,
       equals?: (a: O, b: O) => boolean
     ): Computed<O> => {
       const signal = untracked(() => computedOf(...args)(fn, equals))
@@ -171,7 +172,7 @@ export class DisposalScope {
    */
   effectOf<T extends Value<unknown>[]>(...args: T) {
     return (
-      fn: (...args: any[]) => void,
+      fn: (...args: ValueTypes<T>) => void,
       options?: ListenerOptions
     ): (() => void) => {
       // Use withScope to ensure the computed signal created by effectOf() is tracked

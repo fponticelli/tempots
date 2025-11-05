@@ -17,6 +17,7 @@ Tempo is a modern, lightweight UI framework for building dynamic frontend applic
 - **Zero Dependencies**: Lightweight and efficient with no external dependencies
 - **Predictable Rendering**: Direct DOM updates without a virtual DOM for better performance
 - **Reactive by Design**: Built-in reactive state management with Signals
+- **Automatic Memory Management**: Signals are automatically disposed when components unmount - no manual cleanup needed
 - **Type-Safe**: Fully typed with TypeScript for better developer experience
 - **Fine-Grained Control**: Precise control over rendering and updates when needed
 
@@ -60,7 +61,7 @@ function Counter() {
     html.h1('Counter Example'),
     html.div(
       'Count: ',
-      count.map(String)
+      count.map(String)  // ✨ Automatically disposed when component unmounts
     ),
     html.button(
       on.click(() => count.value--),
@@ -76,6 +77,8 @@ function Counter() {
 // Render to the DOM
 render(Counter(), document.getElementById('app'))
 ```
+
+**Note:** Signals created within components (like `count` and `count.map(String)`) are automatically tracked and disposed when the component is removed from the DOM. No manual cleanup required!
 
 ## Packages
 
