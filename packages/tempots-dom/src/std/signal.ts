@@ -338,10 +338,22 @@ export class Signal<T> {
    * )
    * ```
    *
+   * **Auto-Disposal:** The returned computed signal is automatically registered with the current
+   * disposal scope (if one exists). When used within a renderable or `WithScope()`, the signal
+   * will be automatically disposed when the component unmounts. No manual `OnDispose()` needed!
+   *
+   * ```typescript
+   * const MyComponent: Renderable = (ctx) => {
+   *   const count = prop(0);
+   *   const doubled = count.map(x => x * 2);  // ✅ Auto-disposed
+   *   return html.div(doubled);
+   * };
+   * ```
+   *
    * @typeParam O - The type of the transformed value
    * @param fn - Function that transforms the signal's value to a new value
    * @param equals - Optional function to determine if two transformed values are equal (defaults to strict equality)
-   * @returns A new computed signal with the transformed value
+   * @returns A new computed signal with the transformed value (auto-registered with current scope)
    */
   readonly map = <O>(
     fn: (value: T) => O,
@@ -627,9 +639,28 @@ export class Computed<T> extends Signal<T> {
   protected _isDirty = false
 
   /**
-   * Represents a Signal object.
-   * @param _fn - The function that returns the value of the signal.
+   * Creates a new Computed signal.
+   *
+   * **Auto-Registration:** This constructor automatically registers the signal with the current
+   * disposal scope (if one exists). This ensures that computed signals created by methods like
+   * `.map()`, `.flatMap()`, `.filter()`, etc. are automatically tracked and disposed.
+   *
+   * When a computed signal is created within a renderable or `WithScope()`, it will be
+   * automatically disposed when the component unmounts or the scope is disposed.
+   *
+   * To create a computed signal that outlives the current scope, use `untracked()`:
+   * ```typescript
+   * const globalSignal = untracked(() => mySignal.map(x => x * 2));
+   * // Remember to dispose manually: globalSignal.dispose()
+   * ```
+   *
+   * @param _fn - The function that computes the value of the signal.
    * @param equals - The function used to compare two values of type T for equality.
+   *
+   * @see {@link computed} - Factory function for creating computed signals with explicit dependencies
+   * @see {@link Signal.map} - Creates a computed signal by transforming values
+   * @see {@link getCurrentScope} - Get the current disposal scope
+   * @see {@link untracked} - Create signals outside of scope tracking
    */
   constructor(
     private readonly _fn: () => T,
@@ -638,6 +669,12 @@ export class Computed<T> extends Signal<T> {
     // cheat to avoid reading when possibly not necessary
     super(undefined as T, equals)
     this.setDirty()
+
+    // Auto-register with current scope if one exists
+    const currentScope = getCurrentScope()
+    if (currentScope != null) {
+      currentScope.track(this)
+    }
   }
 
   /**
@@ -683,6 +720,23 @@ export class Computed<T> extends Signal<T> {
   /** {@inheritDoc Signal.value} */
   get value() {
     return this.get()
+  }
+
+  /**
+   * Disposes the computed signal and cancels any pending recomputations.
+   * This override increments the schedule count to invalidate all pending
+   * microtasks before disposing the signal.
+   */
+  readonly dispose = () => {
+    if (this._disposed) return
+    // Increment schedule count to invalidate all pending recomputations
+    // This ensures that any microtasks queued before disposal won't execute
+    this._scheduleCount++
+    // Mark as disposed and clean up listeners and derivatives
+    this._disposed = true
+    this._onDisposeListeners.forEach(l => l())
+    this._onDisposeListeners.length = 0
+    this._derivatives.length = 0
   }
 }
 
@@ -857,11 +911,7 @@ export const computed = <T>(
   const computed = new Computed(fn, equals)
   dependencies.forEach(signal => signal.setDerivative(computed))
 
-  // Auto-register with current scope if one exists
-  const currentScope = getCurrentScope()
-  if (currentScope != null) {
-    currentScope.track(computed)
-  }
+  // Note: Auto-registration is now handled by the Computed constructor
 
   return computed
 }

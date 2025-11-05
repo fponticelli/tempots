@@ -6,7 +6,6 @@ import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
-import { OnDispose } from './on-dispose'
 import { When } from './when'
 import { DisposalScope } from '../std/disposal-scope'
 import { withScope } from '../std/scope-stack'
@@ -90,7 +89,6 @@ export const Repeat = (
         pos.total.map(v => v - 1)
       )
       return Fragment(
-        OnDispose(sepPos.dispose),
         renderableOfTNode(element(pos)),
         When(
           pos.isLast,
@@ -129,12 +127,7 @@ export const Repeat = (
             scopes.push(scope)
 
             clears.push(
-              withScope(scope, () =>
-                Fragment(
-                  OnDispose(pos.dispose),
-                  renderableOfTNode(element(pos))
-                )(newCtx)
-              )
+              withScope(scope, () => renderableOfTNode(element(pos))(newCtx))
             )
           }
         })
@@ -159,10 +152,7 @@ export const Repeat = (
       return Fragment(
         ...Array.from({ length: times }, (_, i) => i).map(i => {
           const pos = new ElementPosition(i, length)
-          return Fragment(
-            OnDispose(pos.dispose),
-            renderableOfTNode(element(pos))
-          )
+          return renderableOfTNode(element(pos))
         })
       )
     }

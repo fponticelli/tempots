@@ -59,7 +59,17 @@ export class ElementPosition {
     return this.#lastSignal
   }
 
+  /**
+   * Disposes the internal signal created by `isLast`.
+   *
+   * **Note:** With automatic signal disposal, this method is now a no-op when used within
+   * a disposal scope (e.g., inside a renderable). The signal created by `isLast` is
+   * automatically tracked and disposed when the scope ends. This method is kept for
+   * backward compatibility and for cases where ElementPosition is used outside a scope.
+   */
   readonly dispose = () => {
+    // Note: The signal is now auto-disposed via scope tracking in most cases.
+    // This manual disposal is kept for backward compatibility and edge cases.
     this.#lastSignal?.dispose()
     this.#lastSignal = undefined
   }

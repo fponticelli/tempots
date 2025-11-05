@@ -271,8 +271,8 @@ export const PopOver = (
                         })
                       )
                     : null,
+                  // arrowSignal is automatically disposed by the scope
                   OnDispose(
-                    arrowSignal.dispose,
                     autoUpdate(target, floatingEl, updatePosition),
                     cancel
                   )

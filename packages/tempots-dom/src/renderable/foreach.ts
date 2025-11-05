@@ -2,9 +2,7 @@ import type { TNode, Renderable } from '../types/domain'
 import { Signal } from '../std/signal'
 import { ElementPosition } from '../std/element-position'
 import { Repeat } from './repeat'
-import { Fragment } from './fragment'
 import { renderableOfTNode } from './element'
-import { OnDispose } from './on-dispose'
 import { Value } from '../std/value'
 
 /**
@@ -78,10 +76,8 @@ export const ForEach = <T>(
     times,
     pos => {
       const signal = arr.map(v => v[pos.index])
-      return Fragment(
-        OnDispose(signal.dispose),
-        renderableOfTNode(item(signal, pos))
-      )
+      // Signal is automatically disposed by the scope when the item is removed
+      return renderableOfTNode(item(signal, pos))
     },
     separator
   )

@@ -163,6 +163,84 @@ describe('signal-auto-registration', () => {
     })
   })
 
+  describe('signal.map() auto-registration', () => {
+    test('derived signals from .map() are tracked', () => {
+      const scope = new DisposalScope()
+      let source: ReturnType<typeof prop> | null = null
+      let derived: ReturnType<(typeof prop<number>)['map']> | null = null
+
+      pushScope(scope)
+      source = prop(5)
+      derived = source.map(x => x * 2)
+      popScope()
+
+      expect(source.isDisposed()).toBe(false)
+      expect(derived.isDisposed()).toBe(false)
+
+      scope.dispose()
+
+      expect(source.isDisposed()).toBe(true)
+      expect(derived.isDisposed()).toBe(true)
+    })
+
+    test('disposing scope disposes derived signals', () => {
+      const scope = new DisposalScope()
+      let source: ReturnType<typeof prop> | null = null
+      let derived1: ReturnType<(typeof prop<number>)['map']> | null = null
+      let derived2: ReturnType<(typeof prop<number>)['map']> | null = null
+
+      pushScope(scope)
+      source = prop(10)
+      derived1 = source.map(x => x * 2)
+      derived2 = derived1.map(x => x + 1)
+      popScope()
+
+      expect(source.isDisposed()).toBe(false)
+      expect(derived1.isDisposed()).toBe(false)
+      expect(derived2.isDisposed()).toBe(false)
+
+      scope.dispose()
+
+      expect(source.isDisposed()).toBe(true)
+      expect(derived1.isDisposed()).toBe(true)
+      expect(derived2.isDisposed()).toBe(true)
+    })
+
+    test('derived signals created outside scope are NOT tracked', () => {
+      const source = prop(5)
+      const derived = source.map(x => x * 2)
+
+      expect(source.isDisposed()).toBe(false)
+      expect(derived.isDisposed()).toBe(false)
+
+      // Clean up
+      derived.dispose()
+      source.dispose()
+    })
+
+    test('chained map() calls are all tracked', () => {
+      const scope = new DisposalScope()
+      let source: ReturnType<typeof prop> | null = null
+      let step1: ReturnType<(typeof prop<number>)['map']> | null = null
+      let step2: ReturnType<(typeof prop<number>)['map']> | null = null
+      let step3: ReturnType<(typeof prop<string>)['map']> | null = null
+
+      pushScope(scope)
+      source = prop(5)
+      step1 = source.map(x => x * 2)
+      step2 = step1.map(x => x + 10)
+      step3 = step2.map(x => `Result: ${x}`)
+      popScope()
+
+      scope.dispose()
+
+      expect(source.isDisposed()).toBe(true)
+      expect(step1.isDisposed()).toBe(true)
+      expect(step2.isDisposed()).toBe(true)
+      expect(step3.isDisposed()).toBe(true)
+    })
+  })
+
   describe('scoped() integration', () => {
     const sleep = () => new Promise(resolve => setTimeout(resolve, 0))
 
