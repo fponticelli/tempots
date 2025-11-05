@@ -8,21 +8,33 @@ export default [
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
-  {
-    plugins: {
-      tempots,
-    },
-    rules: {
-      // Recommended: Warn about signals created at module level
-      // (Signals are now automatically disposed in @tempots/dom >= 1.0.0)
-      'tempots/no-module-level-signals': 'warn',
 
-      // DEPRECATED: The require-signal-disposal rule is deprecated
-      // because signals are now automatically disposed.
-      // Only use this if you're on an older version of @tempots/dom
-      // 'tempots/require-signal-disposal': 'warn',
-    },
-  },
+  // Option 1: Use the recommended config (easiest)
+  tempots.configs.recommended,
+
+  // Option 2: Customize individual rules
+  // {
+  //   plugins: {
+  //     tempots,
+  //   },
+  //   rules: {
+  //     // Warn about signals created at module level
+  //     'tempots/no-module-level-signals': 'warn',
+  //
+  //     // Warn about unnecessary manual disposal (auto-disposed signals)
+  //     'tempots/no-unnecessary-disposal': 'warn',
+  //
+  //     // Error on untracked signals without disposal (memory leak)
+  //     'tempots/require-untracked-disposal': 'error',
+  //
+  //     // Warn about signals in async contexts (not auto-disposed)
+  //     'tempots/no-async-signal-creation': 'warn',
+  //   },
+  // },
+
+  // Option 3: Use strict config for maximum safety
+  // tempots.configs.strict,
+
   {
     ignores: [
       '*.js',

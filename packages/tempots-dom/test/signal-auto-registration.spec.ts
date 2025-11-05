@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from 'vitest'
-import { prop, computed, effect } from '../src/std/signal'
+import { prop, computed, effect, Prop, Computed } from '../src/std/signal'
 import { DisposalScope } from '../src/std/disposal-scope'
 import { scopeStack, pushScope, popScope, scoped } from '../src/std/scope-stack'
 
@@ -12,7 +12,7 @@ describe('signal-auto-registration', () => {
   describe('prop() auto-registration', () => {
     test('prop() called inside a scope is tracked', () => {
       const scope = new DisposalScope()
-      let signal: ReturnType<typeof prop> | null = null
+      let signal: Prop<number> | null = null
 
       pushScope(scope)
       signal = prop(0)
@@ -39,9 +39,9 @@ describe('signal-auto-registration', () => {
 
     test('multiple prop() calls in same scope are all tracked', () => {
       const scope = new DisposalScope()
-      let signal1: ReturnType<typeof prop> | null = null
-      let signal2: ReturnType<typeof prop> | null = null
-      let signal3: ReturnType<typeof prop> | null = null
+      let signal1: Prop<number> | null = null
+      let signal2: Prop<number> | null = null
+      let signal3: Prop<number> | null = null
 
       pushScope(scope)
       signal1 = prop(1)
@@ -85,8 +85,8 @@ describe('signal-auto-registration', () => {
   describe('computed() auto-registration', () => {
     test('computed() called inside a scope is tracked', () => {
       const scope = new DisposalScope()
-      let source: ReturnType<typeof prop> | null = null
-      let derived: ReturnType<typeof computed> | null = null
+      let source: Prop<number> | null = null
+      let derived: Computed<number> | null = null
 
       pushScope(scope)
       source = prop(0)
@@ -116,7 +116,7 @@ describe('signal-auto-registration', () => {
 
     test('effect() called inside a scope is tracked', async () => {
       const scope = new DisposalScope()
-      let source: ReturnType<typeof prop> | null = null
+      let source: Prop<number> | null = null
       let callCount = 0
 
       pushScope(scope)
@@ -166,8 +166,8 @@ describe('signal-auto-registration', () => {
   describe('signal.map() auto-registration', () => {
     test('derived signals from .map() are tracked', () => {
       const scope = new DisposalScope()
-      let source: ReturnType<typeof prop> | null = null
-      let derived: ReturnType<(typeof prop<number>)['map']> | null = null
+      let source: Prop<number> | null = null
+      let derived: Computed<number> | null = null
 
       pushScope(scope)
       source = prop(5)
@@ -220,10 +220,10 @@ describe('signal-auto-registration', () => {
 
     test('chained map() calls are all tracked', () => {
       const scope = new DisposalScope()
-      let source: ReturnType<typeof prop> | null = null
-      let step1: ReturnType<(typeof prop<number>)['map']> | null = null
-      let step2: ReturnType<(typeof prop<number>)['map']> | null = null
-      let step3: ReturnType<(typeof prop<string>)['map']> | null = null
+      let source: Prop<number> | null = null
+      let step1: Computed<number> | null = null
+      let step2: Computed<number> | null = null
+      let step3: Computed<string> | null = null
 
       pushScope(scope)
       source = prop(5)
@@ -245,7 +245,7 @@ describe('signal-auto-registration', () => {
     const sleep = () => new Promise(resolve => setTimeout(resolve, 0))
 
     test('signals created in scoped() are disposed', () => {
-      let signal: ReturnType<typeof prop> | null = null
+      let signal: Prop<number> | null = null
 
       scoped(() => {
         signal = prop(0)
@@ -255,8 +255,8 @@ describe('signal-auto-registration', () => {
     })
 
     test('computed created in scoped() is disposed', () => {
-      let source: ReturnType<typeof prop> | null = null
-      let derived: ReturnType<typeof computed> | null = null
+      let source: Prop<number> | null = null
+      let derived: Computed<number> | null = null
 
       scoped(() => {
         source = prop(0)
@@ -268,7 +268,7 @@ describe('signal-auto-registration', () => {
     })
 
     test('effect created in scoped() is disposed before it runs', async () => {
-      let source: ReturnType<typeof prop> | null = null
+      let source: Prop<number> | null = null
       let callCount = 0
 
       scoped(() => {

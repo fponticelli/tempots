@@ -1,5 +1,10 @@
 import requireSignalDisposal from './rules/require-signal-disposal.js'
 import noModuleLevelSignals from './rules/no-module-level-signals.js'
+import noUnnecessaryDisposal from './rules/no-unnecessary-disposal.js'
+import requireUntrackedDisposal from './rules/require-untracked-disposal.js'
+import requireAsyncSignalDisposal from './rules/require-async-signal-disposal.js'
+import noSignalReassignment from './rules/no-signal-reassignment.js'
+import preferConstSignals from './rules/prefer-const-signals.js'
 
 export default {
   rules: {
@@ -7,15 +12,42 @@ export default {
     // This rule is kept for backward compatibility but will be removed in a future version
     'require-signal-disposal': requireSignalDisposal,
 
-    // Recommended: Warn about signals created at module level
+    // Recommended rules for automatic signal disposal era
     'no-module-level-signals': noModuleLevelSignals,
+    'no-unnecessary-disposal': noUnnecessaryDisposal,
+    'require-untracked-disposal': requireUntrackedDisposal,
+    'require-async-signal-disposal': requireAsyncSignalDisposal,
+    'no-signal-reassignment': noSignalReassignment,
+    'prefer-const-signals': preferConstSignals,
   },
   configs: {
     recommended: {
       plugins: ['tempots'],
       rules: {
-        // New recommended rule for automatic signal disposal
+        // Warn about signals created at module level
         'tempots/no-module-level-signals': 'warn',
+        // Warn about unnecessary manual disposal (auto-disposed signals)
+        'tempots/no-unnecessary-disposal': 'warn',
+        // Error on untracked signals without disposal (memory leak)
+        'tempots/require-untracked-disposal': 'error',
+        // Warn about signals in async contexts (require manual disposal)
+        'tempots/require-async-signal-disposal': 'warn',
+        // Error on signal variable reassignment (memory leak)
+        'tempots/no-signal-reassignment': 'error',
+        // Warn about using let/var instead of const for signals
+        'tempots/prefer-const-signals': 'warn',
+      },
+    },
+    // Strict config for maximum safety
+    strict: {
+      plugins: ['tempots'],
+      rules: {
+        'tempots/no-module-level-signals': 'error',
+        'tempots/no-unnecessary-disposal': 'error',
+        'tempots/require-untracked-disposal': 'error',
+        'tempots/require-async-signal-disposal': 'error',
+        'tempots/no-signal-reassignment': 'error',
+        'tempots/prefer-const-signals': 'error',
       },
     },
     // Legacy config for backward compatibility

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { DisposalScope } from '../src/std/disposal-scope'
-import { prop, computed, effect } from '../src/std/signal'
+import { prop, computed, effect, Prop, Computed } from '../src/std/signal'
 import { untracked } from '../src/std/scope-stack'
 
 describe('DisposalScope helper methods', () => {
@@ -20,7 +20,7 @@ describe('DisposalScope helper methods', () => {
 
     test('works in async contexts', async () => {
       const scope = new DisposalScope()
-      let signal: ReturnType<typeof prop> | null = null
+      let signal: Prop<number> | null = null
 
       await Promise.resolve().then(() => {
         signal = scope.prop(100)
@@ -78,7 +78,7 @@ describe('DisposalScope helper methods', () => {
     test('works in async contexts', async () => {
       const scope = new DisposalScope()
       const source = prop(5)
-      let derived: ReturnType<typeof computed> | null = null
+      let derived: Computed<number> | null = null
 
       await Promise.resolve().then(() => {
         derived = scope.computed(() => source.value * 3, [source])
@@ -287,7 +287,7 @@ describe('DisposalScope helper methods', () => {
     test('works in async contexts', async () => {
       const scope = new DisposalScope()
       const source = prop(10)
-      let derived: ReturnType<typeof computed> | null = null
+      let derived: Computed<number> | null = null
 
       await Promise.resolve().then(() => {
         derived = scope.computedOf(source, 2)((a, b) => a * b)
