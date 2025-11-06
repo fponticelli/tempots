@@ -477,8 +477,8 @@ importers:
         specifier: 1.7.1
         version: 1.7.1
       '@tempots/dom':
-        specifier: ^31.6.1
-        version: 31.6.1
+        specifier: ^32.0.0
+        version: 32.0.0
       '@tempots/std':
         specifier: ^0.24.0
         version: 0.24.0
@@ -1171,8 +1171,8 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
-  '@tempots/dom@31.6.1':
-    resolution: {integrity: sha512-06M+fKPt1jjIqBC8rbO6ca1mnC0bm8oRauzaaIHTo77SKOn201WoGlWkFtkai/E5Rni9Ru2P90VgbpFZXxUukg==}
+  '@tempots/dom@32.0.0':
+    resolution: {integrity: sha512-tIxuEUWVMLlmUudNMihEa8TwWEJcP/pTql2QGyoFQkbQdSnf8sW93yP2p4AumUmq+OOns6FSaPmrSxt//FJwDQ==}
 
   '@tempots/std@0.24.0':
     resolution: {integrity: sha512-8YhRh41k0hVYp6hnoOAQ8Qw5ANUXlp4UZdArZwev9v4RIJ8hmYoKadqCOqfU42njO3qaR0Ks9sS/YdC4zXb2LA==}
@@ -2970,7 +2970,7 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.16
 
-  '@tempots/dom@31.6.1': {}
+  '@tempots/dom@32.0.0': {}
 
   '@tempots/std@0.24.0': {}
 

@@ -9,6 +9,16 @@ export default defineConfig({
   test: {
     ...configDefaults,
     environment: 'happy-dom',
+    environmentOptions: {
+      happyDOM: {
+        settings: {
+          disableJavaScriptFileLoading: true,
+          disableJavaScriptEvaluation: false,
+          disableCSSFileLoading: true,
+          enableFileSystemHttpRequests: false,
+        },
+      },
+    },
     globals: true,
     coverage: {
       provider: 'v8',

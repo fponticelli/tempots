@@ -57,6 +57,7 @@ export default {
   create(context) {
     let functionDepth = 0
     let isInRenderable = false
+    const signals = new Set() // Track signal variable names
 
     /**
      * Check if we're inside a function that looks like a renderable
@@ -115,6 +116,9 @@ export default {
             parent.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier'
           ) {
+            // Track this variable as a signal
+            signals.add(parent.id.name)
+
             context.report({
               node,
               messageId: 'moduleLevelSignal',
@@ -132,19 +136,31 @@ export default {
           node.callee.property.type === 'Identifier' &&
           SIGNAL_TRANSFORM_METHODS.has(node.callee.property.name)
         ) {
-          const parent = node.parent
-          if (
-            parent.type === 'VariableDeclarator' &&
-            parent.id.type === 'Identifier'
-          ) {
-            context.report({
-              node,
-              messageId: 'moduleLevelTransform',
-              data: {
-                name: parent.id.name,
-                method: node.callee.property.name,
-              },
-            })
+          // Check if the object is a tracked signal
+          const objectName =
+            node.callee.object.type === 'Identifier'
+              ? node.callee.object.name
+              : null
+
+          // Only flag if the object is a known signal
+          if (objectName && signals.has(objectName)) {
+            const parent = node.parent
+            if (
+              parent.type === 'VariableDeclarator' &&
+              parent.id.type === 'Identifier'
+            ) {
+              // Track the result as a signal too
+              signals.add(parent.id.name)
+
+              context.report({
+                node,
+                messageId: 'moduleLevelTransform',
+                data: {
+                  name: parent.id.name,
+                  method: node.callee.property.name,
+                },
+              })
+            }
           }
         }
       },

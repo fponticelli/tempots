@@ -28,8 +28,12 @@
     "README.md"
   ],
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
   },
   "license": "Apache-2.0",
   "scripts": {

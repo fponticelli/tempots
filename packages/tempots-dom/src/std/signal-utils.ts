@@ -31,6 +31,24 @@ export class MemoryStore {
   }
 }
 
+// Singleton instances for fallback storage
+let memoryLocalStorage: MemoryStore | null = null
+let memorySessionStorage: MemoryStore | null = null
+
+const getMemoryLocalStorage = (): MemoryStore => {
+  if (!memoryLocalStorage) {
+    memoryLocalStorage = new MemoryStore()
+  }
+  return memoryLocalStorage
+}
+
+const getMemorySessionStorage = (): MemoryStore => {
+  if (!memorySessionStorage) {
+    memorySessionStorage = new MemoryStore()
+  }
+  return memorySessionStorage
+}
+
 /**
  * Represents the properties required for storing and retrieving a value of type `T`.
  *
@@ -334,12 +352,19 @@ export type StorageOptions<T> = {
  * @returns The created prop.
  * @public
  */
-export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
-  storedProp({
+export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
+  const win = getWindow()
+  const storage = win?.localStorage
+  // Ensure we have a valid storage object with getItem/setItem methods
+  const store =
+    storage && typeof storage.getItem === 'function'
+      ? storage
+      : getMemoryLocalStorage()
+  return storedProp({
     ...options,
-    /* c8 ignore next 3 */
-    store: getWindow()?.localStorage ?? new MemoryStore(),
+    store,
   })
+}
 
 /**
  * Creates a prop that stores its value in the session storage.
@@ -348,12 +373,19 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
  * @returns A prop that stores its value in the session storage.
  * @public
  */
-export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
-  storedProp({
+export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
+  const win = getWindow()
+  const storage = win?.sessionStorage
+  // Ensure we have a valid storage object with getItem/setItem methods
+  const store =
+    storage && typeof storage.getItem === 'function'
+      ? storage
+      : getMemorySessionStorage()
+  return storedProp({
     ...options,
-    /* c8 ignore next 3 */
-    store: getWindow()?.sessionStorage ?? new MemoryStore(),
+    store,
   })
+}
 
 function raf(fn: FrameRequestCallback) {
   if (typeof requestAnimationFrame === 'function') {
