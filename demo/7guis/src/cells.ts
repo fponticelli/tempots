@@ -145,9 +145,11 @@ class CellValue {
     setTimeout(() => {
       this.formula.on(formula => {
         this._value.dispose()
+        // eslint-disable-next-line tempots/require-async-signal-disposal
         const references = extractCellReferences(formula)
           .map(ref => ctx.get(ref)?.value)
           .filter(v => v != null) as Signal<string>[]
+        // eslint-disable-next-line tempots/require-async-signal-disposal
         this._value = computed(
           () => evalFormula(formula, this.ctx),
           [...references]
