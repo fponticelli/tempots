@@ -46,10 +46,12 @@ export default {
     messages: {
       unnecessaryDisposal:
         'Signal "{{name}}" is automatically disposed. Remove OnDispose({{name}}.dispose) - it\'s unnecessary and may cause double-disposal.',
+      unnecessaryDisposalDirect:
+        'Signal "{{name}}" is automatically disposed. Remove OnDispose({{name}}) - it\'s unnecessary and may cause double-disposal.',
       unnecessaryDisposalGeneric:
         'This signal is automatically disposed in renderables. Manual OnDispose() is unnecessary.',
     },
-    fixable: 'code',
+    fixable: null,
     schema: [],
   },
 
@@ -182,15 +184,23 @@ export default {
                 node,
                 messageId: 'unnecessaryDisposal',
                 data: { name: signalName },
-                fix(fixer) {
-                  // Remove the entire OnDispose() call
-                  return fixer.remove(node.parent)
-                },
               })
             }
           }
 
-          // Pattern 2: OnDispose(() => signal.dispose())
+          // Pattern 2: OnDispose(signal) - direct signal reference
+          if (arg.type === 'Identifier') {
+            const signalName = arg.name
+            if (signals.has(signalName)) {
+              context.report({
+                node,
+                messageId: 'unnecessaryDisposalDirect',
+                data: { name: signalName },
+              })
+            }
+          }
+
+          // Pattern 3: OnDispose(() => signal.dispose())
           if (
             arg.type === 'ArrowFunctionExpression' ||
             arg.type === 'FunctionExpression'
@@ -223,9 +233,6 @@ export default {
                   node,
                   messageId: 'unnecessaryDisposal',
                   data: { name: signalName },
-                  fix(fixer) {
-                    return fixer.remove(node.parent)
-                  },
                 })
               }
             }
