@@ -107,18 +107,18 @@ export function ForEachDemo(): Renderable {
       attr.class('gap-2'),
       ForEach(
         accounts,
-        $account => {
+        account => {
           const duration = Math.random() * 2000 + 1000
           const newBalance = animateSignals(
             10000,
-            $account.at('balance').get,
-            [$account],
+            account.at('balance').get,
+            [account],
             { duration: 1500, easing: easeOutCubic }
           )
           const timer = setInterval(() => {
             updateBalance(
-              $account.value.name,
-              getNewBalance($account.value.balance)
+              account.value.name,
+              getNewBalance(account.value.balance)
             )
           }, duration)
           return flex.row(
@@ -126,7 +126,7 @@ export function ForEachDemo(): Renderable {
               clearInterval(timer)
             }),
             attr.class('gap-2 justify-between items-center w-96'),
-            Txt($account.at('name')),
+            Txt(account.at('name')),
             flex.row(
               attr.class('gap-2 items-center'),
               Txt(
@@ -141,7 +141,7 @@ export function ForEachDemo(): Renderable {
               Button(
                 'Delete',
                 on.click(() => {
-                  removeAccount($account.value.name)
+                  removeAccount(account.value.name)
                 })
               )
             )

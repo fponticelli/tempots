@@ -187,18 +187,18 @@ export function CircleDrawer(): Renderable {
             addCircle(x, y, radius.value)
           }
         }),
-        ForEach(circles, ($circle: Signal<Circle>) => {
+        ForEach(circles, (circle: Signal<Circle>) => {
           const selectedClass = computed(
             (): string =>
-              currentId.value === $circle.value.id ? 'fill-red-600' : '',
-            [currentId, $circle]
+              currentId.value === circle.value.id ? 'fill-red-600' : '',
+            [currentId, circle]
           )
           return svg.circle(
             attr.class('fill-none stroke-gray-600 stoke-1'),
             attr.class(selectedClass),
-            svgAttr.cx($circle.map(c => c.x)),
-            svgAttr.cy($circle.map(c => c.y)),
-            svgAttr.r($circle.map(c => c.r))
+            svgAttr.cx(circle.map(c => c.x)),
+            svgAttr.cy(circle.map(c => c.y)),
+            svgAttr.r(circle.map(c => c.r))
           )
         })
       )
