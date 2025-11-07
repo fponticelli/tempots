@@ -12,6 +12,8 @@
  * @type {import('eslint').Rule.RuleModule}
  */
 
+import { isRenderable } from '../utils/type-utils.js'
+
 const SIGNAL_CREATION_METHODS = new Set([
   'prop',
   'signal',
@@ -59,33 +61,11 @@ export default {
     let isInRenderable = false
     const signals = new Set() // Track signal variable names
 
-    /**
-     * Check if we're inside a function that looks like a renderable
-     */
-    function checkIfRenderable(node) {
-      // Arrow function: (ctx) => ...
-      // Function expression: function(ctx) { ... }
-      // Function declaration: function MyComponent(ctx) { ... }
-
-      if (node.params.length === 1) {
-        const param = node.params[0]
-        // Check if parameter name suggests it's a context (ctx, context, etc.)
-        if (param.type === 'Identifier') {
-          const name = param.name.toLowerCase()
-          if (name === 'ctx' || name === 'context') {
-            return true
-          }
-        }
-      }
-
-      return false
-    }
-
     return {
       // Track function entry
       ':function'(node) {
         functionDepth++
-        if (checkIfRenderable(node)) {
+        if (isRenderable(node, context)) {
           isInRenderable = true
         }
       },

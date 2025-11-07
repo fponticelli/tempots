@@ -10,7 +10,7 @@ A custom ESLint plugin (`@tempots/eslint-plugin`) that helps developers catch si
 
 - Detects signals created with `prop()`, `signal()`, `computed()`, `computedOf()`
 - Detects signal transformations: `.map()`, `.filter()`, `.flatMap()`, `.debounce()`, etc.
-- Only checks within renderable functions (functions with `ctx` parameter)
+- Uses TypeScript type checking to identify renderables (functions with `DOMContext` parameter), with fallback to heuristic detection
 
 ### 2. Smart Analysis
 
@@ -53,7 +53,10 @@ packages/tempots-eslint-plugin/
 
 ### Detection Algorithm
 
-1. **Scope Tracking**: Tracks when entering/exiting renderable functions
+1. **Scope Tracking**: Uses TypeScript type information to identify renderables:
+   - **Component with context**: Has exactly 1 parameter of type `DOMContext` (or subtypes) AND returns `Clear`
+   - **Component without context**: Returns `TNode` or `Renderable` (regardless of parameters)
+   - Falls back to heuristic detection (exactly 1 parameter named `ctx` or `context`) when type information is unavailable
 2. **Signal Creation**: Records signals created via tracked methods
 3. **Disposal Check**: Searches for `OnDispose` calls with the signal's `.dispose` method
 4. **Reporting**: Reports signals that weren't disposed
@@ -120,7 +123,7 @@ import tempots from '@tempots/eslint-plugin'
 
 ### Known Limitations
 
-1. **Scope Detection**: Only checks functions with `ctx` parameter
+1. **Scope Detection**: Uses TypeScript type information when available, falls back to parameter name heuristic (`ctx` or `context`) otherwise
 2. **Complex Patterns**: May miss signals stored in objects/arrays
 3. **Conditional Disposal**: Doesn't track control flow
 4. **Indirect References**: Doesn't track signals passed through variables
@@ -134,10 +137,8 @@ These limitations are intentional to avoid false positives. The rule focuses on 
 Potential improvements:
 
 1. **Auto-fix**: Automatically add `OnDispose` calls
-2. **Better Scope Detection**: Recognize more renderable patterns
-3. **Flow Analysis**: Track signals through assignments
-4. **Custom Patterns**: Allow users to define their own disposal patterns
-5. **TypeScript Support**: Use type information for better detection
+2. **Flow Analysis**: Track signals through assignments
+3. **Custom Patterns**: Allow users to define their own disposal patterns
 
 ## Usage Recommendations
 

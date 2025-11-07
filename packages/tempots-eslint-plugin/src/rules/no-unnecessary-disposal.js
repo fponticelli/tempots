@@ -10,6 +10,8 @@
  * @type {import('eslint').Rule.RuleModule}
  */
 
+import { isRenderable } from '../utils/type-utils.js'
+
 const SIGNAL_CREATION_METHODS = new Set([
   'prop',
   'signal',
@@ -62,20 +64,6 @@ export default {
     const functionStack = []
 
     /**
-     * Check if we're inside a function that looks like a renderable
-     */
-    function isRenderable(node) {
-      if (node.params.length === 1) {
-        const param = node.params[0]
-        if (param.type === 'Identifier') {
-          const name = param.name.toLowerCase()
-          return name === 'ctx' || name === 'context'
-        }
-      }
-      return false
-    }
-
-    /**
      * Check if a call expression is a signal creation
      */
     function isSignalCreation(node) {
@@ -125,7 +113,7 @@ export default {
         functionStack.push(currentFunction)
         currentFunction = node
 
-        if (isRenderable(node)) {
+        if (isRenderable(node, context)) {
           signalsByScope.set(node, new Set())
         }
       },

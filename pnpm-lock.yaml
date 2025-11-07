@@ -476,12 +476,6 @@ importers:
       '@floating-ui/dom':
         specifier: 1.7.1
         version: 1.7.1
-      '@tempots/dom':
-        specifier: ^32.0.0
-        version: 32.0.0
-      '@tempots/std':
-        specifier: ^0.24.0
-        version: 0.24.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.38.0
@@ -492,6 +486,12 @@ importers:
       '@microsoft/api-extractor':
         specifier: ^7.53.3
         version: 7.53.3(@types/node@24.9.1)
+      '@tempots/dom':
+        specifier: workspace:*
+        version: link:../tempots-dom
+      '@tempots/std':
+        specifier: workspace:*
+        version: link:../tempots-std
       '@types/node':
         specifier: ^24.9.1
         version: 24.9.1
@@ -1170,12 +1170,6 @@ packages:
     resolution: {integrity: sha512-w31dd8HOx3k9vPtcQh5QHP9GwKcgbMp87j58qi6xgiBnFFtKEAgCWnDw4qUT8aHwkCp8bKvb/KGKWWHedP0AAg==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
-
-  '@tempots/dom@32.0.0':
-    resolution: {integrity: sha512-tIxuEUWVMLlmUudNMihEa8TwWEJcP/pTql2QGyoFQkbQdSnf8sW93yP2p4AumUmq+OOns6FSaPmrSxt//FJwDQ==}
-
-  '@tempots/std@0.24.0':
-    resolution: {integrity: sha512-8YhRh41k0hVYp6hnoOAQ8Qw5ANUXlp4UZdArZwev9v4RIJ8hmYoKadqCOqfU42njO3qaR0Ks9sS/YdC4zXb2LA==}
 
   '@ts-morph/common@0.26.1':
     resolution: {integrity: sha512-Sn28TGl/4cFpcM+jwsH1wLncYq3FtN/BIpem+HOygfBWPT5pAeS5dB4VFVzV8FbnOKHpDLZmvAl4AjPEev5idA==}
@@ -2969,10 +2963,6 @@ snapshots:
     dependencies:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.16
-
-  '@tempots/dom@32.0.0': {}
-
-  '@tempots/std@0.24.0': {}
 
   '@ts-morph/common@0.26.1':
     dependencies:
