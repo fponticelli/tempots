@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "11.0.0",
+  "version": "12.0.0",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -70,7 +70,7 @@
     "@floating-ui/dom": "1.7.1"
   },
   "peerDependencies": {
-    "@tempots/dom": "^32.0.0",
+    "@tempots/dom": "^33.0.0",
     "@tempots/std": "^0.24.0"
   },
   "devDependencies": {
