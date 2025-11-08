@@ -8,6 +8,7 @@ export interface TempoTSPlugin extends ESLint.Plugin {
     'require-async-signal-disposal': Linter.RuleModule
     'no-signal-reassignment': Linter.RuleModule
     'prefer-const-signals': Linter.RuleModule
+    'no-redundant-listener-disposal': Linter.RuleModule
   }
   configs: {
     recommended: Linter.RulesRecord

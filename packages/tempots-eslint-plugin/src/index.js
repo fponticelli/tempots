@@ -4,6 +4,7 @@ import requireUntrackedDisposal from './rules/require-untracked-disposal.js'
 import requireAsyncSignalDisposal from './rules/require-async-signal-disposal.js'
 import noSignalReassignment from './rules/no-signal-reassignment.js'
 import preferConstSignals from './rules/prefer-const-signals.js'
+import noRedundantListenerDisposal from './rules/no-redundant-listener-disposal.js'
 
 // Default recommended rules configuration
 const recommendedRules = {
@@ -19,6 +20,8 @@ const recommendedRules = {
   'tempots/no-signal-reassignment': 'error',
   // Warn about using let/var instead of const for signals
   'tempots/prefer-const-signals': 'warn',
+  // Warn about redundant OnDispose for signal listeners
+  'tempots/no-redundant-listener-disposal': 'warn',
 }
 
 const plugin = {
@@ -29,6 +32,7 @@ const plugin = {
     'require-async-signal-disposal': requireAsyncSignalDisposal,
     'no-signal-reassignment': noSignalReassignment,
     'prefer-const-signals': preferConstSignals,
+    'no-redundant-listener-disposal': noRedundantListenerDisposal,
   },
   configs: {
     recommended: recommendedRules,
@@ -56,6 +60,7 @@ export default {
         'tempots/require-async-signal-disposal': 'error',
         'tempots/no-signal-reassignment': 'error',
         'tempots/prefer-const-signals': 'error',
+        'tempots/no-redundant-listener-disposal': 'error',
       },
     },
   },

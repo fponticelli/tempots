@@ -676,13 +676,13 @@ describe('Attribute Renderables', () => {
       const valueSignal = prop('initial')
       const mockOnChange = vi.fn()
 
-      // Listen to signal changes to verify cleanup
-      const signalCleanup = valueSignal.on(mockOnChange)
-
       const clear = render(
         html.div(attr.title(valueSignal), 'Content'),
         document.body
       )
+
+      // Listen to signal changes AFTER render to avoid auto-disposal
+      const signalCleanup = valueSignal.on(mockOnChange)
 
       expect(mockOnChange).toHaveBeenCalledWith('initial', undefined)
       mockOnChange.mockClear()
@@ -692,7 +692,7 @@ describe('Attribute Renderables', () => {
       valueSignal.set('after-cleanup')
       await waitForUpdate()
 
-      // The signal should still fire (our listener is still active)
+      // The signal should still fire (our listener is still active because it was registered outside the render scope)
       expect(mockOnChange).toHaveBeenCalledWith('after-cleanup', 'initial')
 
       signalCleanup()

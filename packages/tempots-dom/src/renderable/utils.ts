@@ -52,17 +52,21 @@ export const createReactiveRenderable = <T>(
   let clear: Clear = () => {}
   let currentScope: DisposalScope | null = null
 
-  const disposeHandler = signal.on(value => {
-    // Dispose the old scope before rendering the new branch
-    currentScope?.dispose()
-    clear(true)
+  // Use noAutoDispose because we're explicitly managing the lifecycle in the returned clear function
+  const disposeHandler = signal.on(
+    value => {
+      // Dispose the old scope before rendering the new branch
+      currentScope?.dispose()
+      clear(true)
 
-    // Create a new scope for the new branch
-    currentScope = new DisposalScope()
-    clear = withScope(currentScope, () =>
-      renderableOfTNode(render(value))(newCtx)
-    )
-  })
+      // Create a new scope for the new branch
+      currentScope = new DisposalScope()
+      clear = withScope(currentScope, () =>
+        renderableOfTNode(render(value))(newCtx)
+      )
+    },
+    { noAutoDispose: true }
+  )
 
   return (removeTree: boolean) => {
     currentScope?.dispose()

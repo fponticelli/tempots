@@ -599,16 +599,20 @@ export const delaySignal = <T>(
 ): Signal<T> => {
   const newSignal = prop(signal.get())
   let timeout: ReturnType<typeof setTimeout> | null = null
-  const dispose = signal.on(value => {
-    if (timeout != null) clearTimeout(timeout)
-    timeout = setTimeout(
-      () => {
-        timeout = null
-        newSignal.set(value)
-      },
-      typeof ms === 'function' ? ms(value) : ms
-    )
-  })
+  // Use noAutoDispose because we're explicitly managing the lifecycle via newSignal.onDispose
+  const dispose = signal.on(
+    value => {
+      if (timeout != null) clearTimeout(timeout)
+      timeout = setTimeout(
+        () => {
+          timeout = null
+          newSignal.set(value)
+        },
+        typeof ms === 'function' ? ms(value) : ms
+      )
+    },
+    { noAutoDispose: true }
+  )
   newSignal.onDispose(() => {
     dispose()
     /* c8 ignore next 2 */

@@ -23,6 +23,12 @@ export type ListenerOptions = {
   skipInitial?: boolean
   once?: boolean
   abortSignal?: AbortSignal
+  /**
+   * If true, the listener will not be automatically disposed when the current scope ends.
+   * Use this when you need explicit control over the listener lifecycle.
+   * @internal
+   */
+  noAutoDispose?: boolean
 }
 
 /**
@@ -196,8 +202,28 @@ export class Signal<T> {
    * The listener function will be immediately called with the current value of the signal.
    * Returns a function that can be called to unregister the listener.
    *
+   * When called within a DisposalScope (e.g., inside a renderable), the listener is
+   * automatically cleaned up when the scope is disposed. This prevents memory leaks
+   * when listening to outer-scope signals from inner scopes.
+   *
    * @param listener - The listener function to be called when the value of the signal changes.
    * @param options - Options for the listener.
+   *
+   * @example
+   * ```typescript
+   * // Automatic cleanup when scope disposes
+   * const MyComponent = () => {
+   *   const outerSignal = prop(0)
+   *
+   *   return html.div(
+   *     When(someCondition, () => {
+   *       // This listener is automatically cleaned up when the When() disposes
+   *       outerSignal.on(value => console.log(value))
+   *       return html.span('Inner content')
+   *     })
+   *   )
+   * }
+   * ```
    */
   readonly on = (
     listener: (value: T, previousValue: T | undefined) => void,
@@ -225,6 +251,15 @@ export class Signal<T> {
     if (options.abortSignal != null) {
       options.abortSignal.addEventListener('abort', clear)
     }
+
+    // Auto-register cleanup with current scope if one exists (unless disabled)
+    if (!options.noAutoDispose) {
+      const currentScope = getCurrentScope()
+      if (currentScope != null) {
+        currentScope.onDispose(clear)
+      }
+    }
+
     return clear
   }
 
@@ -284,6 +319,7 @@ export class Signal<T> {
 
   /**
    * Disposes the signal, releasing any resources associated with it.
+   * This clears all listeners, derivatives, and disposal callbacks.
    */
   readonly dispose = () => {
     if (this._disposed) return
@@ -291,6 +327,7 @@ export class Signal<T> {
     this._onDisposeListeners.forEach(l => l())
     this._onDisposeListeners.length = 0
     this._derivatives.length = 0
+    this._onValueListeners.length = 0
   }
 
   /**
@@ -600,7 +637,8 @@ export class Signal<T> {
         1
       )
     })
-    computed.onDispose(this.on(computed.setDirty))
+    // Use noAutoDispose because we're explicitly managing the lifecycle
+    computed.onDispose(this.on(computed.setDirty, { noAutoDispose: true }))
     this.onDispose(computed.dispose)
   }
 }

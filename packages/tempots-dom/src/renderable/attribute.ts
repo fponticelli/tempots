@@ -22,11 +22,15 @@ const signalClassName =
   (signal: Signal<string>): Renderable =>
   (ctx: DOMContext) => {
     let previous: string[] = []
-    const clear = signal.on(v => {
-      ctx.removeClasses(previous)
-      previous = (v ?? '').split(' ').filter(v => v.length > 0)
-      ctx.addClasses(previous)
-    })
+    // Use noAutoDispose because we're explicitly managing the lifecycle in the returned clear function
+    const clear = signal.on(
+      v => {
+        ctx.removeClasses(previous)
+        previous = (v ?? '').split(' ').filter(v => v.length > 0)
+        ctx.addClasses(previous)
+      },
+      { noAutoDispose: true }
+    )
     return (removeTree: boolean) => {
       clear()
       if (removeTree) {
@@ -53,7 +57,8 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
   return (ctx: DOMContext) => {
     const { get, set } = ctx.makeAccessors(name)
     const original = get()
-    const clear = signal.on(set)
+    // Use noAutoDispose because we're explicitly managing the lifecycle in the returned clear function
+    const clear = signal.on(set, { noAutoDispose: true })
     return (removeTree: boolean) => {
       clear()
       if (removeTree) {
