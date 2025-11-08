@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { render, html, input } from '../src'
+import { render, html, input, SVGEl, MathEl, prop } from '../src'
 
 describe('Element', () => {
   test('should handle null child (line 23)', () => {
@@ -144,5 +144,104 @@ describe('Element', () => {
     expect(element.innerHTML).toBe('<div></div>')
     clear()
     document.body.removeChild(element)
+  })
+
+  describe('SVGEl functional constructor', () => {
+    test('should create SVG element with static children', () => {
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+
+      const clear = render(
+        SVGEl('svg', SVGEl('circle', 'Circle content'), SVGEl('rect')),
+        element
+      )
+
+      const svgEl = element.querySelector('svg')!
+      expect(svgEl).toBeTruthy()
+      expect(svgEl.namespaceURI).toBe('http://www.w3.org/2000/svg')
+
+      const circle = svgEl.querySelector('circle')!
+      expect(circle).toBeTruthy()
+      expect(circle.namespaceURI).toBe('http://www.w3.org/2000/svg')
+      expect(circle.textContent).toBe('Circle content')
+
+      const rect = svgEl.querySelector('rect')!
+      expect(rect).toBeTruthy()
+      expect(rect.namespaceURI).toBe('http://www.w3.org/2000/svg')
+
+      clear()
+      document.body.removeChild(element)
+    })
+
+    test('should create SVG element with signal children', () => {
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+
+      const textSignal = prop('Initial text')
+
+      const clear = render(SVGEl('svg', SVGEl('text', textSignal)), element)
+
+      const svgEl = element.querySelector('svg')!
+      const textEl = svgEl.querySelector('text')!
+      expect(textEl.textContent).toBe('Initial text')
+
+      textSignal.set('Updated text')
+      expect(textEl.textContent).toBe('Updated text')
+
+      clear()
+      document.body.removeChild(element)
+    })
+  })
+
+  describe('MathEl functional constructor', () => {
+    test('should create MathML element with static children', () => {
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+
+      const clear = render(
+        MathEl('math', MathEl('mi', 'x'), MathEl('mo', '+'), MathEl('mn', '1')),
+        element
+      )
+
+      const mathEl = element.querySelector('math')!
+      expect(mathEl).toBeTruthy()
+      expect(mathEl.namespaceURI).toBe('http://www.w3.org/1998/Math/MathML')
+
+      const mi = mathEl.querySelector('mi')!
+      expect(mi).toBeTruthy()
+      expect(mi.namespaceURI).toBe('http://www.w3.org/1998/Math/MathML')
+      expect(mi.textContent).toBe('x')
+
+      const mo = mathEl.querySelector('mo')!
+      expect(mo.textContent).toBe('+')
+
+      const mn = mathEl.querySelector('mn')!
+      expect(mn.textContent).toBe('1')
+
+      clear()
+      document.body.removeChild(element)
+    })
+
+    test('should create MathML element with signal children', () => {
+      const element = document.createElement('div')
+      document.body.appendChild(element)
+
+      const variableSignal = prop('x')
+
+      const clear = render(
+        MathEl('math', MathEl('mi', variableSignal)),
+        element
+      )
+
+      const mathEl = element.querySelector('math')!
+      const mi = mathEl.querySelector('mi')!
+      expect(mi.textContent).toBe('x')
+
+      variableSignal.set('y')
+      expect(mi.textContent).toBe('y')
+
+      clear()
+      document.body.removeChild(element)
+    })
   })
 })

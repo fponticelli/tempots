@@ -79,14 +79,42 @@ const createAttributeRenderable = (
 }
 
 /**
- * Helper function to create a 'set' handler for proxy objects.
- * Returns a function that accepts a name and value and creates the appropriate renderable.
+ * Creates a renderable for an HTML attribute with the specified name and value.
+ *
+ * This is the functional equivalent of using `attr[name](value)` with a dynamic attribute name.
+ *
+ * The `class` attribute is special and can be used multiple times on the same element.
+ * Multiple class values will be merged together.
+ *
+ * @param name - The name of the attribute.
+ * @param value - The value of the attribute (can be a literal or Signal).
+ * @returns A renderable that sets the attribute.
+ * @example
+ * ```ts
+ * const button = html.button(
+ *   Attr('type', 'button'),
+ *   Attr('disabled', disabledSignal),
+ *   // Multiple class attributes
+ *   Attr('class', 'btn btn-primary'),
+ *   Attr('class', 'active'),  // Both classes will be applied
+ *   // ...
+ * )
+ * ```
+ * @public
  */
-const createSetHandler = (prefix = '') => {
-  return (name: string, value: Value<string>) => {
-    const attrName = prefix ? `${prefix}${name}` : name
-    return createAttributeRenderable(attrName, value)
+export const Attr = (name: string, value: unknown): Renderable => {
+  // Special handling for class attribute
+  if (name === 'class') {
+    if (Signal.is(value as Value<string>)) {
+      return signalClassName(value as Signal<string>)
+    } else {
+      return staticClassName(
+        /* c8 ignore next */
+        ((value ?? '') as string).split(' ').filter(v => v.length > 0)
+      )
+    }
   }
+  return createAttributeRenderable(name, value)
 }
 
 /**
@@ -109,8 +137,6 @@ export const attr = new Proxy(
     [A in keyof HTMLAttributes]: (
       value: SplitNValue<HTMLAttributes[A]>
     ) => Renderable
-  } & {
-    set: (name: string, value: SplitNValue<string>) => Renderable
   },
   {
     /**
@@ -124,27 +150,31 @@ export const attr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof HTMLAttributes | 'set') => {
-      if (name === 'class') {
-        return (value: SplitNValue<HTMLAttributes[typeof name]>) => {
-          if (Signal.is(value as Value<string>)) {
-            return signalClassName(value as Signal<string>)
-          } else {
-            return staticClassName(
-              /* c8 ignore next */
-              ((value ?? '') as string).split(' ').filter(v => v.length > 0)
-            )
-          }
-        }
-      } else if (name === 'set') {
-        return createSetHandler()
-      } else {
-        return (value: SplitNValue<HTMLAttributes[typeof name]>) =>
-          createAttributeRenderable(name, value)
-      }
-    },
+    get:
+      (_, name: keyof HTMLAttributes) =>
+      (value: SplitNValue<HTMLAttributes[typeof name]>) =>
+        Attr(name, value),
   }
 )
+
+/**
+ * Creates a renderable for a data attribute with the specified name and value.
+ *
+ * This is the functional equivalent of using `dataAttr[name](value)` with a dynamic attribute name.
+ *
+ * @param name - The name of the data attribute (without the 'data-' prefix).
+ * @param value - The value of the attribute (can be a literal or Signal).
+ * @returns A renderable that sets the data attribute.
+ * @example
+ * ```ts
+ * const button = html.button(
+ *   DataAttr('myinfo', 'something'), // maps to the `data-myinfo` attribute
+ * )
+ * ```
+ * @public
+ */
+export const DataAttr = (name: string, value: unknown): Renderable =>
+  createAttributeRenderable(`data-${name}`, value)
 
 /**
  * The `data` object allows to create any `data-` attributes. Either a literal value
@@ -161,8 +191,6 @@ export const attr = new Proxy(
 export const dataAttr = new Proxy(
   {} as {
     [A in string]: (value: Value<string>) => Renderable
-  } & {
-    set: (name: string, value: Value<string>) => Renderable
   },
   {
     /**
@@ -173,15 +201,29 @@ export const dataAttr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: string) => {
-      if (name === 'set') {
-        return createSetHandler('data-')
-      }
-      return (value: Value<string>) =>
-        createAttributeRenderable(`data-${name}`, value)
-    },
+    get: (_, name: string) => (value: Value<string>) => DataAttr(name, value),
   }
 )
+
+/**
+ * Creates a renderable for an ARIA attribute with the specified name and value.
+ *
+ * This is the functional equivalent of using `aria[name](value)` with a dynamic attribute name.
+ *
+ * @param name - The name of the ARIA attribute (without the 'aria-' prefix).
+ * @param value - The value of the attribute (can be a literal or Signal).
+ * @returns A renderable that sets the ARIA attribute.
+ * @example
+ * ```ts
+ * const button = html.button(
+ *   Aria('label', 'Click me!'), // maps to the `aria-label` attribute
+ *   Aria('pressed', pressedSignal), // maps to the `aria-pressed` attribute
+ * )
+ * ```
+ * @public
+ */
+export const Aria = (name: string, value: unknown): Renderable =>
+  createAttributeRenderable(`aria-${name}`, value)
 
 /**
  * An object that provides a convenient way to create mountable attributes for ARIA properties.
@@ -203,8 +245,6 @@ export const aria = new Proxy(
     [A in keyof AriaAttributes]: (
       value: SplitNValue<AriaAttributes[A]>
     ) => Renderable
-  } & {
-    set: (name: string, value: Value<string>) => Renderable
   },
   {
     /**
@@ -215,15 +255,33 @@ export const aria = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof AriaAttributes | 'set') => {
-      if (name === 'set') {
-        return createSetHandler('aria-')
-      }
-      return (value: SplitNValue<AriaAttributes[typeof name]>) =>
-        createAttributeRenderable(`aria-${name}`, value)
-    },
+    get:
+      (_, name: keyof AriaAttributes) =>
+      (value: SplitNValue<AriaAttributes[typeof name]>) =>
+        Aria(name, value),
   }
 )
+
+/**
+ * Creates a renderable for an SVG attribute with the specified name and value.
+ *
+ * This is the functional equivalent of using `svgAttr[name](value)` with a dynamic attribute name.
+ *
+ * @param name - The name of the SVG attribute.
+ * @param value - The value of the attribute (can be a literal or Signal).
+ * @returns A renderable that sets the SVG attribute.
+ * @example
+ * ```ts
+ * const circle = svg.circle(
+ *   SVGAttr('cx', 50),
+ *   SVGAttr('cy', 50),
+ *   SVGAttr('r', radiusSignal),
+ * )
+ * ```
+ * @public
+ */
+export const SVGAttr = (name: string, value: unknown): Renderable =>
+  createAttributeRenderable(name, value)
 
 /**
  * An object that provides a convenient way to create mountable attributes for
@@ -244,8 +302,6 @@ export const svgAttr = new Proxy(
     [S in keyof SVGAttributes]: (
       value: SplitNValue<SVGAttributes[S]>
     ) => Renderable
-  } & {
-    set: (name: string, value: Value<string>) => Renderable
   },
   {
     /**
@@ -256,15 +312,32 @@ export const svgAttr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof SVGAttributes | 'set') => {
-      if (name === 'set') {
-        return createSetHandler()
-      }
-      return (value: SplitNValue<SVGAttributes[typeof name]>) =>
-        createAttributeRenderable(name, value)
-    },
+    get:
+      (_, name: keyof SVGAttributes) =>
+      (value: SplitNValue<SVGAttributes[typeof name]>) =>
+        SVGAttr(name, value),
   }
 )
+
+/**
+ * Creates a renderable for a MathML attribute with the specified name and value.
+ *
+ * This is the functional equivalent of using `mathAttr[name](value)`.
+ *
+ * @param name - The name of the MathML attribute.
+ * @param value - The value of the attribute (can be a literal or Signal).
+ * @returns A renderable that sets the MathML attribute.
+ * @example
+ * ```ts
+ * const mi = math.mi(
+ *   MathAttr('mathvariant', 'bold'),
+ *   MathAttr('mathsize', sizeSignal),
+ * )
+ * ```
+ * @public
+ */
+export const MathAttr = (name: string, value: unknown): Renderable =>
+  createAttributeRenderable(name, value)
 
 /**
  * An object that provides attribute functions for MathML tags.
@@ -293,9 +366,9 @@ export const mathAttr = new Proxy(
      * @returns The renderable component for the specified attribute.
      *
      */
-    get: (_, name: keyof MathMLAttributes) => {
-      return (value: SplitNValue<MathMLAttributes[typeof name]>) =>
-        createAttributeRenderable(name, value)
-    },
+    get:
+      (_, name: keyof MathMLAttributes) =>
+      (value: SplitNValue<MathMLAttributes[typeof name]>) =>
+        MathAttr(name, value),
   }
 )

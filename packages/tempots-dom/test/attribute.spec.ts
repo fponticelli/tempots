@@ -1,5 +1,16 @@
 import { describe, expect, test, beforeEach, vi } from 'vitest'
-import { attr, dataAttr, aria, svgAttr, mathAttr } from '../src/renderable/attribute'
+import {
+  attr,
+  dataAttr,
+  aria,
+  svgAttr,
+  mathAttr,
+  Attr,
+  DataAttr,
+  Aria,
+  SVGAttr,
+  MathAttr,
+} from '../src/renderable/attribute'
 import { render, html, svg, math, runHeadless, prop } from '../src'
 
 // Helper function to wait for DOM updates
@@ -13,11 +24,7 @@ describe('Attribute Renderables', () => {
   describe('attr proxy object', () => {
     test('should create static attribute renderable', () => {
       const clear = render(
-        html.div(
-          attr.id('test-id'),
-          attr.title('Test Title'),
-          'Content'
-        ),
+        html.div(attr.id('test-id'), attr.title('Test Title'), 'Content'),
         document.body
       )
 
@@ -32,11 +39,7 @@ describe('Attribute Renderables', () => {
       const titleSignal = prop('Initial Title')
 
       const clear = render(
-        html.div(
-          attr.id(idSignal),
-          attr.title(titleSignal),
-          'Content'
-        ),
+        html.div(attr.id(idSignal), attr.title(titleSignal), 'Content'),
         document.body
       )
 
@@ -98,11 +101,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle null and undefined values', () => {
       const clear = render(
-        html.div(
-          attr.title(null),
-          attr.id(undefined),
-          'Content'
-        ),
+        html.div(attr.title(null), attr.id(undefined), 'Content'),
         document.body
       )
 
@@ -120,10 +119,12 @@ describe('Attribute Renderables', () => {
       const renderable = attr.id('new-id')
       const dispose = renderable({
         element: div,
-        makeAccessors: (name) => ({
+        makeAccessors: name => ({
           get: () => (div as any)[name],
-          set: (value) => { (div as any)[name] = value }
-        })
+          set: value => {
+            ;(div as any)[name] = value
+          },
+        }),
       } as any)
 
       expect(div.id).toBe('new-id')
@@ -140,10 +141,12 @@ describe('Attribute Renderables', () => {
       const renderable = attr.id('new-id')
       const dispose = renderable({
         element: div,
-        makeAccessors: (name) => ({
+        makeAccessors: name => ({
           get: () => (div as any)[name],
-          set: (value) => { (div as any)[name] = value }
-        })
+          set: value => {
+            ;(div as any)[name] = value
+          },
+        }),
       } as any)
 
       expect(div.id).toBe('new-id')
@@ -164,7 +167,7 @@ describe('Attribute Renderables', () => {
         },
         removeClasses: (classes: string[]) => {
           classes.forEach((cls: string) => div.classList.remove(cls))
-        }
+        },
       } as any)
 
       expect(div.className).toBe('original-class new-class additional-class')
@@ -185,11 +188,15 @@ describe('Attribute Renderables', () => {
 
       const dispose = renderable({
         getAttribute: () => 'original-title',
-        setAttribute: (value: string) => { div.title = value },
+        setAttribute: (value: string) => {
+          div.title = value
+        },
         makeAccessors: (name: string) => ({
           get: () => div.getAttribute(name) || 'original-title',
-          set: (value: string) => { div.title = value }
-        })
+          set: (value: string) => {
+            div.title = value
+          },
+        }),
       } as any)
 
       expect(div.title).toBe('new-title')
@@ -208,10 +215,7 @@ describe('Attribute Renderables', () => {
   describe('class attribute special handling', () => {
     test('should handle static class attribute', () => {
       const clear = render(
-        html.div(
-          attr.class('class1 class2 class3'),
-          'Content'
-        ),
+        html.div(attr.class('class1 class2 class3'), 'Content'),
         document.body
       )
 
@@ -226,10 +230,7 @@ describe('Attribute Renderables', () => {
       const classSignal = prop('initial-class')
 
       const clear = render(
-        html.div(
-          attr.class(classSignal),
-          'Content'
-        ),
+        html.div(attr.class(classSignal), 'Content'),
         document.body
       )
 
@@ -246,13 +247,7 @@ describe('Attribute Renderables', () => {
     })
 
     test('should handle empty class strings', () => {
-      const clear = render(
-        html.div(
-          attr.class(''),
-          'Content'
-        ),
-        document.body
-      )
+      const clear = render(html.div(attr.class(''), 'Content'), document.body)
 
       const div = document.querySelector('div')!
       expect(div.className).toBe('')
@@ -261,10 +256,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle class strings with extra spaces', () => {
       const clear = render(
-        html.div(
-          attr.class('  class1   class2  '),
-          'Content'
-        ),
+        html.div(attr.class('  class1   class2  '), 'Content'),
         document.body
       )
 
@@ -279,10 +271,7 @@ describe('Attribute Renderables', () => {
       const classSignal = prop<string | null>('initial-class')
 
       const clear = render(
-        html.div(
-          attr.class(classSignal),
-          'Content'
-        ),
+        html.div(attr.class(classSignal), 'Content'),
         document.body
       )
 
@@ -301,10 +290,7 @@ describe('Attribute Renderables', () => {
       const classSignal = prop('test-class')
 
       const clear = render(
-        html.div(
-          attr.class(classSignal),
-          'Content'
-        ),
+        html.div(attr.class(classSignal), 'Content'),
         document.body
       )
 
@@ -368,10 +354,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle kebab-case data attributes', () => {
       const clear = render(
-        html.div(
-          dataAttr['my-custom-attr']('custom-value'),
-          'Content'
-        ),
+        html.div(dataAttr['my-custom-attr']('custom-value'), 'Content'),
         document.body
       )
 
@@ -402,7 +385,7 @@ describe('Attribute Renderables', () => {
 
     test('should create signal aria attributes', async () => {
       const labelSignal = prop('Initial label')
-      const pressedSignal = prop(false as boolean | "true" | "false" | "mixed")
+      const pressedSignal = prop(false as boolean | 'true' | 'false' | 'mixed')
 
       const clear = render(
         html.button(
@@ -428,11 +411,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle aria attributes with null values', () => {
       const clear = render(
-        html.div(
-          aria.label(null),
-          aria.describedby(undefined),
-          'Content'
-        ),
+        html.div(aria.label(null), aria.describedby(undefined), 'Content'),
         document.body
       )
 
@@ -476,10 +455,7 @@ describe('Attribute Renderables', () => {
       const heightSignal = prop(200)
 
       const clear = render(
-        svg.svg(
-          svgAttr.width(widthSignal),
-          svgAttr.height(heightSignal)
-        ),
+        svg.svg(svgAttr.width(widthSignal), svgAttr.height(heightSignal)),
         document.body
       )
 
@@ -573,11 +549,7 @@ describe('Attribute Renderables', () => {
 
     test('should work with aria in headless mode', () => {
       const { root, clear } = runHeadless(() =>
-        html.button(
-          aria.label('Headless button'),
-          aria.pressed(true),
-          'Button'
-        )
+        html.button(aria.label('Headless button'), aria.pressed(true), 'Button')
       )
 
       expect(root.contentToHTML()).toContain('aria-label="Headless button"')
@@ -602,10 +574,7 @@ describe('Attribute Renderables', () => {
 
     test('should work with mathAttr in headless mode', () => {
       const { root, clear } = runHeadless(() =>
-        math.math(
-          mathAttr.mathvariant('bold'),
-          mathAttr.mathsize('large')
-        )
+        math.math(mathAttr.mathvariant('bold'), mathAttr.mathsize('large'))
       )
 
       expect(root.contentToHTML()).toContain('mathvariant="bold"')
@@ -617,10 +586,7 @@ describe('Attribute Renderables', () => {
       const idSignal = prop('initial-id')
 
       const { root, clear } = runHeadless(() =>
-        html.div(
-          attr.id(idSignal),
-          'Content'
-        )
+        html.div(attr.id(idSignal), 'Content')
       )
 
       expect(root.contentToHTML()).toContain('id="initial-id"')
@@ -629,198 +595,6 @@ describe('Attribute Renderables', () => {
       await waitForUpdate()
 
       expect(root.contentToHTML()).toContain('id="updated-id"')
-      clear()
-    })
-  })
-
-  describe('attr.set() method', () => {
-    test('should set static attribute with dynamic name', () => {
-      const clear = render(
-        html.div(
-          attr.set('data-custom-id', 'test-123'),
-          attr.set('role', 'button'),
-          'Content'
-        ),
-        document.body
-      )
-
-      const div = document.querySelector('div')!
-      expect(div.getAttribute('data-custom-id')).toBe('test-123')
-      expect(div.getAttribute('role')).toBe('button')
-      clear()
-    })
-
-    test('should set signal attribute with dynamic name', async () => {
-      const customId = prop('initial-id')
-      const role = prop('button')
-
-      const clear = render(
-        html.div(
-          attr.set('data-custom-id', customId),
-          attr.set('role', role),
-          'Content'
-        ),
-        document.body
-      )
-
-      const div = document.querySelector('div')!
-      expect(div.getAttribute('data-custom-id')).toBe('initial-id')
-      expect(div.getAttribute('role')).toBe('button')
-
-      customId.set('updated-id')
-      role.set('link')
-      await waitForUpdate()
-
-      expect(div.getAttribute('data-custom-id')).toBe('updated-id')
-      expect(div.getAttribute('role')).toBe('link')
-      clear()
-    })
-
-    test('should restore original attribute on cleanup with removeTree=true', () => {
-      const div = document.createElement('div')
-      div.setAttribute('custom-attr', 'original-value')
-      document.body.appendChild(div)
-
-      const renderable = attr.set('custom-attr', 'new-value')
-      const dispose = renderable({
-        element: div,
-        makeAccessors: name => ({
-          get: () => div.getAttribute(name),
-          set: value => div.setAttribute(name, value),
-        }),
-      } as any)
-
-      expect(div.getAttribute('custom-attr')).toBe('new-value')
-
-      dispose(true) // removeTree = true
-      expect(div.getAttribute('custom-attr')).toBe('original-value')
-
-      document.body.removeChild(div)
-    })
-  })
-
-  describe('dataAttr.set() method', () => {
-    test('should set static data attribute with dynamic name', () => {
-      const clear = render(
-        html.div(
-          dataAttr.set('custom-field', 'value-123'),
-          dataAttr.set('another', 'test'),
-          'Content'
-        ),
-        document.body
-      )
-
-      const div = document.querySelector('div')!
-      expect(div.getAttribute('data-custom-field')).toBe('value-123')
-      expect(div.getAttribute('data-another')).toBe('test')
-      clear()
-    })
-
-    test('should set signal data attribute with dynamic name', async () => {
-      const customField = prop('initial-value')
-      const another = prop('test')
-
-      const clear = render(
-        html.div(
-          dataAttr.set('custom-field', customField),
-          dataAttr.set('another', another),
-          'Content'
-        ),
-        document.body
-      )
-
-      const div = document.querySelector('div')!
-      expect(div.getAttribute('data-custom-field')).toBe('initial-value')
-      expect(div.getAttribute('data-another')).toBe('test')
-
-      customField.set('updated-value')
-      another.set('changed')
-      await waitForUpdate()
-
-      expect(div.getAttribute('data-custom-field')).toBe('updated-value')
-      expect(div.getAttribute('data-another')).toBe('changed')
-      clear()
-    })
-  })
-
-  describe('aria.set() method', () => {
-    test('should set static aria attribute with dynamic name', () => {
-      const clear = render(
-        html.div(
-          aria.set('custom', 'custom-value'),
-          aria.set('live', 'polite'),
-          'Content'
-        ),
-        document.body
-      )
-
-      const div = document.querySelector('div')!
-      expect(div.getAttribute('aria-custom')).toBe('custom-value')
-      expect(div.getAttribute('aria-live')).toBe('polite')
-      clear()
-    })
-
-    test('should set signal aria attribute with dynamic name', async () => {
-      const custom = prop('initial')
-      const live = prop('polite')
-
-      const clear = render(
-        html.div(aria.set('custom', custom), aria.set('live', live), 'Content'),
-        document.body
-      )
-
-      const div = document.querySelector('div')!
-      expect(div.getAttribute('aria-custom')).toBe('initial')
-      expect(div.getAttribute('aria-live')).toBe('polite')
-
-      custom.set('updated')
-      live.set('assertive')
-      await waitForUpdate()
-
-      expect(div.getAttribute('aria-custom')).toBe('updated')
-      expect(div.getAttribute('aria-live')).toBe('assertive')
-      clear()
-    })
-  })
-
-  describe('svgAttr.set() method', () => {
-    test('should set static SVG attribute with dynamic name', () => {
-      const clear = render(
-        svg.svg(
-          svgAttr.set('custom-attr', 'custom-value'),
-          svgAttr.set('data-test', 'test-value')
-        ),
-        document.body
-      )
-
-      const svgEl = document.querySelector('svg')!
-      expect(svgEl.getAttribute('custom-attr')).toBe('custom-value')
-      expect(svgEl.getAttribute('data-test')).toBe('test-value')
-      clear()
-    })
-
-    test('should set signal SVG attribute with dynamic name', async () => {
-      const customAttr = prop('initial')
-      const dataTest = prop('test')
-
-      const clear = render(
-        svg.svg(
-          svgAttr.set('custom-attr', customAttr),
-          svgAttr.set('data-test', dataTest)
-        ),
-        document.body
-      )
-
-      const svgEl = document.querySelector('svg')!
-      expect(svgEl.getAttribute('custom-attr')).toBe('initial')
-      expect(svgEl.getAttribute('data-test')).toBe('test')
-
-      customAttr.set('updated')
-      dataTest.set('changed')
-      await waitForUpdate()
-
-      expect(svgEl.getAttribute('custom-attr')).toBe('updated')
-      expect(svgEl.getAttribute('data-test')).toBe('changed')
       clear()
     })
   })
@@ -848,10 +622,7 @@ describe('Attribute Renderables', () => {
       const valueSignal = prop('initial')
 
       const clear = render(
-        html.div(
-          attr.title(valueSignal),
-          'Content'
-        ),
+        html.div(attr.title(valueSignal), 'Content'),
         document.body
       )
 
@@ -870,7 +641,8 @@ describe('Attribute Renderables', () => {
     })
 
     test('should handle complex attribute values', () => {
-      const complexValue = 'value with spaces, symbols: !@#$%^&*()_+-=[]{}|;:,.<>?'
+      const complexValue =
+        'value with spaces, symbols: !@#$%^&*()_+-=[]{}|;:,.<>?'
 
       const clear = render(
         html.div(
@@ -889,11 +661,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle numeric attribute values', () => {
       const clear = render(
-        html.input(
-          attr.tabindex(5),
-          attr.maxlength(100),
-          svgAttr.width(150)
-        ),
+        html.input(attr.tabindex(5), attr.maxlength(100), svgAttr.width(150)),
         document.body
       )
 
@@ -912,10 +680,7 @@ describe('Attribute Renderables', () => {
       const signalCleanup = valueSignal.on(mockOnChange)
 
       const clear = render(
-        html.div(
-          attr.title(valueSignal),
-          'Content'
-        ),
+        html.div(attr.title(valueSignal), 'Content'),
         document.body
       )
 
@@ -935,10 +700,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle empty string data attribute names', () => {
       const clear = render(
-        html.div(
-          dataAttr['']('empty-name'),
-          'Content'
-        ),
+        html.div(dataAttr['']('empty-name'), 'Content'),
         document.body
       )
 
@@ -961,6 +723,254 @@ describe('Attribute Renderables', () => {
       expect(div.getAttribute('data-test-123')).toBe('value1')
       expect(div.getAttribute('data-test_456')).toBe('value2')
       clear()
+    })
+  })
+
+  describe('Functional attribute constructors', () => {
+    describe('Attr', () => {
+      test('should create static attribute', () => {
+        const clear = render(
+          html.div(
+            Attr('id', 'test-id'),
+            Attr('title', 'Test Title'),
+            'Content'
+          ),
+          document.body
+        )
+
+        const div = document.querySelector('div')!
+        expect(div.id).toBe('test-id')
+        expect(div.title).toBe('Test Title')
+        clear()
+      })
+
+      test('should create signal attribute', async () => {
+        const idSignal = prop('initial-id')
+        const titleSignal = prop('Initial Title')
+
+        const clear = render(
+          html.div(Attr('id', idSignal), Attr('title', titleSignal), 'Content'),
+          document.body
+        )
+
+        const div = document.querySelector('div')!
+        expect(div.id).toBe('initial-id')
+        expect(div.title).toBe('Initial Title')
+
+        idSignal.set('updated-id')
+        titleSignal.set('Updated Title')
+        await waitForUpdate()
+
+        expect(div.id).toBe('updated-id')
+        expect(div.title).toBe('Updated Title')
+        clear()
+      })
+
+      test('should handle multiple class attributes', () => {
+        const clear = render(
+          html.div(
+            Attr('class', 'class1 class2'),
+            Attr('class', 'class3 class4'),
+            'Content'
+          ),
+          document.body
+        )
+
+        const div = document.querySelector('div')!
+        expect(div.classList.contains('class1')).toBe(true)
+        expect(div.classList.contains('class2')).toBe(true)
+        expect(div.classList.contains('class3')).toBe(true)
+        expect(div.classList.contains('class4')).toBe(true)
+        clear()
+      })
+
+      test('should handle signal class attribute', async () => {
+        const classSignal = prop('initial-class')
+
+        const clear = render(
+          html.div(Attr('class', classSignal), 'Content'),
+          document.body
+        )
+
+        const div = document.querySelector('div')!
+        expect(div.classList.contains('initial-class')).toBe(true)
+
+        classSignal.set('updated-class another-class')
+        await waitForUpdate()
+
+        expect(div.classList.contains('initial-class')).toBe(false)
+        expect(div.classList.contains('updated-class')).toBe(true)
+        expect(div.classList.contains('another-class')).toBe(true)
+        clear()
+      })
+    })
+
+    describe('DataAttr', () => {
+      test('should create static data attribute', () => {
+        const clear = render(
+          html.div(
+            DataAttr('testid', 'my-test-id'),
+            DataAttr('value', 'my-value'),
+            'Content'
+          ),
+          document.body
+        )
+
+        const div = document.querySelector('div')!
+        expect(div.getAttribute('data-testid')).toBe('my-test-id')
+        expect(div.getAttribute('data-value')).toBe('my-value')
+        clear()
+      })
+
+      test('should create signal data attribute', async () => {
+        const testidSignal = prop('initial-id')
+
+        const clear = render(
+          html.div(DataAttr('testid', testidSignal), 'Content'),
+          document.body
+        )
+
+        const div = document.querySelector('div')!
+        expect(div.getAttribute('data-testid')).toBe('initial-id')
+
+        testidSignal.set('updated-id')
+        await waitForUpdate()
+
+        expect(div.getAttribute('data-testid')).toBe('updated-id')
+        clear()
+      })
+    })
+
+    describe('Aria', () => {
+      test('should create static aria attribute', () => {
+        const clear = render(
+          html.button(
+            Aria('label', 'Click me'),
+            Aria('pressed', 'true'),
+            'Button'
+          ),
+          document.body
+        )
+
+        const button = document.querySelector('button')!
+        expect(button.getAttribute('aria-label')).toBe('Click me')
+        expect(button.getAttribute('aria-pressed')).toBe('true')
+        clear()
+      })
+
+      test('should create signal aria attribute', async () => {
+        const labelSignal = prop('Initial label')
+        const pressedSignal = prop('false')
+
+        const clear = render(
+          html.button(
+            Aria('label', labelSignal),
+            Aria('pressed', pressedSignal),
+            'Button'
+          ),
+          document.body
+        )
+
+        const button = document.querySelector('button')!
+        expect(button.getAttribute('aria-label')).toBe('Initial label')
+        expect(button.getAttribute('aria-pressed')).toBe('false')
+
+        labelSignal.set('Updated label')
+        pressedSignal.set('true')
+        await waitForUpdate()
+
+        expect(button.getAttribute('aria-label')).toBe('Updated label')
+        expect(button.getAttribute('aria-pressed')).toBe('true')
+        clear()
+      })
+    })
+
+    describe('SVGAttr', () => {
+      test('should create static SVG attribute', () => {
+        const clear = render(
+          svg.svg(
+            SVGAttr('width', '100'),
+            SVGAttr('height', '200'),
+            SVGAttr('viewBox', '0 0 100 200')
+          ),
+          document.body
+        )
+
+        const svgEl = document.querySelector('svg')!
+        expect(svgEl.getAttribute('width')).toBe('100')
+        expect(svgEl.getAttribute('height')).toBe('200')
+        expect(svgEl.getAttribute('viewBox')).toBe('0 0 100 200')
+        clear()
+      })
+
+      test('should create signal SVG attribute', async () => {
+        const widthSignal = prop('100')
+        const heightSignal = prop('200')
+
+        const clear = render(
+          svg.svg(
+            SVGAttr('width', widthSignal),
+            SVGAttr('height', heightSignal)
+          ),
+          document.body
+        )
+
+        const svgEl = document.querySelector('svg')!
+        expect(svgEl.getAttribute('width')).toBe('100')
+        expect(svgEl.getAttribute('height')).toBe('200')
+
+        widthSignal.set('150')
+        heightSignal.set('250')
+        await waitForUpdate()
+
+        expect(svgEl.getAttribute('width')).toBe('150')
+        expect(svgEl.getAttribute('height')).toBe('250')
+        clear()
+      })
+    })
+
+    describe('MathAttr', () => {
+      test('should create static MathML attribute', () => {
+        const clear = render(
+          math.math(
+            MathAttr('mathvariant', 'bold'),
+            MathAttr('mathsize', 'large'),
+            math.mi('x')
+          ),
+          document.body
+        )
+
+        const mathEl = document.querySelector('math')!
+        expect(mathEl.getAttribute('mathvariant')).toBe('bold')
+        expect(mathEl.getAttribute('mathsize')).toBe('large')
+        clear()
+      })
+
+      test('should create signal MathML attribute', async () => {
+        const variantSignal = prop('normal')
+        const sizeSignal = prop('small')
+
+        const clear = render(
+          math.math(
+            MathAttr('mathvariant', variantSignal),
+            MathAttr('mathsize', sizeSignal),
+            math.mi('x')
+          ),
+          document.body
+        )
+
+        const mathEl = document.querySelector('math')!
+        expect(mathEl.getAttribute('mathvariant')).toBe('normal')
+        expect(mathEl.getAttribute('mathsize')).toBe('small')
+
+        variantSignal.set('bold')
+        sizeSignal.set('large')
+        await waitForUpdate()
+
+        expect(mathEl.getAttribute('mathvariant')).toBe('bold')
+        expect(mathEl.getAttribute('mathsize')).toBe('large')
+        clear()
+      })
     })
   })
 })

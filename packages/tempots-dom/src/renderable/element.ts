@@ -128,6 +128,17 @@ export const input = new Proxy(
 const NS_SVG = 'http://www.w3.org/2000/svg'
 
 /**
+ * Creates a Renderable that represents an SVG element.
+ *
+ * @param tagName - The tag name of the SVG element.
+ * @param children - The child nodes of the SVG element.
+ * @returns A renderable function that creates and appends the SVG element to the DOM.
+ * @public
+ */
+export const SVGEl = (tagName: string, ...children: TNode[]): Renderable =>
+  ElNS(tagName, NS_SVG, ...children)
+
+/**
  * A convenience object to create Renderables for SVG elements.
  * @public
  */
@@ -150,6 +161,17 @@ export const svg = new Proxy(
 )
 
 const NS_MATH = 'http://www.w3.org/1998/Math/MathML'
+
+/**
+ * Creates a Renderable that represents a MathML element.
+ *
+ * @param tagName - The tag name of the MathML element.
+ * @param children - The child nodes of the MathML element.
+ * @returns A renderable function that creates and appends the MathML element to the DOM.
+ * @public
+ */
+export const MathEl = (tagName: string, ...children: TNode[]): Renderable =>
+  ElNS(tagName, NS_MATH, ...children)
 
 /**
  * A convenience object to create Renderables for MATH elements.
