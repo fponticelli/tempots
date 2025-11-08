@@ -1,10 +1,21 @@
-import { RuleTester } from 'eslint'
+import { RuleTester } from '@typescript-eslint/rule-tester'
 import rule from '../src/rules/no-unnecessary-disposal.js'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts*', '*.js*'],
+      },
+      tsconfigRootDir: __dirname,
+    },
   },
 })
 
@@ -59,6 +70,16 @@ ruleTester.run('no-unnecessary-disposal', rule, {
         function regularFunction() {
           const signal = prop(0)
           return OnDispose(signal.dispose)
+        }
+      `,
+    },
+    // Factory function returning style.* - should be caught by heuristic
+    // This is valid because the signal is passed directly to style.color, not to OnDispose
+    {
+      code: `
+        const MyStyle = () => {
+          const signal = prop('red')
+          return style.color(signal)
         }
       `,
     },
@@ -164,6 +185,67 @@ ruleTester.run('no-unnecessary-disposal', rule, {
           return html.div(
             OnDispose(sizeActiveTab),
             'content'
+          )
+        }
+      `,
+      errors: [{ messageId: 'unnecessaryDisposalDirect' }],
+    },
+    // Factory function without ctx parameter - should be caught by type-aware detection
+    // This reproduces the user's issue where the rule doesn't warn
+    {
+      code: `
+        const MyComponent = () => {
+          const sizeActiveTab = prop('overview')
+          return html.div(
+            OnDispose(sizeActiveTab)
+          )
+        }
+      `,
+      errors: [{ messageId: 'unnecessaryDisposalDirect' }],
+    },
+    // Factory function with Pattern 1 (signal.dispose)
+    {
+      code: `
+        const MyComponent = () => {
+          const signal = prop(0)
+          return html.div(
+            OnDispose(signal.dispose)
+          )
+        }
+      `,
+      errors: [{ messageId: 'unnecessaryDisposal' }],
+    },
+    // Factory function with Pattern 3 (arrow function)
+    {
+      code: `
+        const MyComponent = () => {
+          const signal = prop(0)
+          return html.div(
+            OnDispose(() => signal.dispose())
+          )
+        }
+      `,
+      errors: [{ messageId: 'unnecessaryDisposal' }],
+    },
+    // Factory function returning svg.* - should be caught by heuristic
+    {
+      code: `
+        const MyIcon = () => {
+          const signal = prop(0)
+          return svg.circle(
+            OnDispose(signal)
+          )
+        }
+      `,
+      errors: [{ messageId: 'unnecessaryDisposalDirect' }],
+    },
+    // Factory function returning math.* - should be caught by heuristic
+    {
+      code: `
+        const MyFormula = () => {
+          const signal = prop(0)
+          return math.mrow(
+            OnDispose(signal)
           )
         }
       `,

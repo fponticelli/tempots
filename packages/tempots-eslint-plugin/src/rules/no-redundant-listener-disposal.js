@@ -23,7 +23,7 @@ export default {
     },
     messages: {
       redundantListenerDisposal:
-        'signal.{{method}}() listeners are automatically disposed when the scope ends. Remove OnDispose wrapper - it\'s unnecessary.',
+        "signal.{{method}}() listeners are automatically disposed when the scope ends. Remove OnDispose wrapper - it's unnecessary.",
     },
     fixable: 'code',
     schema: [],
@@ -81,4 +81,3 @@ export default {
     }
   },
 }
-

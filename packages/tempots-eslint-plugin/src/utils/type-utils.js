@@ -200,22 +200,150 @@ export function isRenderable(node, context) {
 }
 
 /**
+ * Check if a node looks like a renderable return value based on common patterns.
+ *
+ * @param {import('eslint').Rule.Node} node - The node to check
+ * @returns {boolean}
+ */
+function looksLikeRenderableReturn(node) {
+  if (!node) return false
+
+  // Check for html.*, attr.*, on.*, etc. (common Tempo helpers)
+  if (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    node.callee.object.type === 'Identifier'
+  ) {
+    const objectName = node.callee.object.name
+    const renderableHelpers = ['html', 'attr', 'on', 'svg', 'math', 'style']
+    if (renderableHelpers.includes(objectName)) {
+      return true
+    }
+  }
+
+  // Check for capitalized function calls (component convention)
+  // e.g., Fragment(), When(), Portal(), MyComponent()
+  // But exclude OnDispose and other disposal-related functions
+  if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
+    const name = node.callee.name
+    // Exclude disposal-related functions
+    const excludedFunctions = ['OnDispose', 'OnMount', 'OnUnmount']
+    if (excludedFunctions.includes(name)) {
+      return false
+    }
+    // Check if first character is uppercase
+    if (name.length > 0 && name[0] === name[0].toUpperCase()) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
+ * Find all return statements in a function body.
+ *
+ * @param {import('eslint').Rule.Node} body - The function body
+ * @returns {import('eslint').Rule.Node[]}
+ */
+function findReturnStatements(body) {
+  const returns = []
+  const visited = new Set()
+
+  // Properties to skip when traversing (to avoid circular references and non-AST data)
+  const skipProps = new Set([
+    'parent',
+    'loc',
+    'range',
+    'start',
+    'end',
+    'comments',
+    'tokens',
+    'leadingComments',
+    'trailingComments',
+  ])
+
+  function visit(node) {
+    if (!node || typeof node !== 'object') return
+    if (!node.type) return // Not an AST node
+
+    // Avoid infinite loops
+    if (visited.has(node)) return
+    visited.add(node)
+
+    if (node.type === 'ReturnStatement') {
+      returns.push(node)
+      return // Don't traverse into nested functions
+    }
+
+    // Don't traverse into nested functions
+    if (
+      node.type === 'FunctionDeclaration' ||
+      node.type === 'FunctionExpression' ||
+      node.type === 'ArrowFunctionExpression'
+    ) {
+      return
+    }
+
+    // Traverse child nodes
+    for (const key in node) {
+      if (skipProps.has(key)) continue
+
+      const child = node[key]
+      if (Array.isArray(child)) {
+        child.forEach(visit)
+      } else if (child && typeof child === 'object') {
+        visit(child)
+      }
+    }
+  }
+
+  visit(body)
+  return returns
+}
+
+/**
  * Fallback heuristic for detecting renderables when TypeScript type information
- * is not available. Checks if the function has exactly 1 parameter named 'ctx' or 'context'.
+ * is not available. Checks multiple patterns:
+ * 1. Function has exactly 1 parameter named 'ctx' or 'context'
+ * 2. Function returns html.*, attr.*, or other common renderable patterns
+ * 3. Function returns a capitalized function call (component convention)
  *
  * @param {import('eslint').Rule.Node} node - The function node
  * @returns {boolean}
  */
 function fallbackHeuristicCheck(node) {
-  if (node.params.length !== 1) {
-    return false
+  // Pattern 1: Check for ctx/context parameter
+  if (node.params.length === 1) {
+    const param = node.params[0]
+    if (param.type === 'Identifier') {
+      const name = param.name.toLowerCase()
+      if (name === 'ctx' || name === 'context') {
+        return true
+      }
+    }
   }
 
-  const param = node.params[0]
-  if (param.type !== 'Identifier') {
-    return false
+  // Pattern 2 & 3: Check return value patterns
+  // For arrow functions with expression body
+  if (
+    node.type === 'ArrowFunctionExpression' &&
+    node.body.type !== 'BlockStatement'
+  ) {
+    if (looksLikeRenderableReturn(node.body)) {
+      return true
+    }
   }
 
-  const name = param.name.toLowerCase()
-  return name === 'ctx' || name === 'context'
+  // For functions with block statement body
+  if (node.body && node.body.type === 'BlockStatement') {
+    const returnStatements = findReturnStatements(node.body)
+    for (const returnStmt of returnStatements) {
+      if (looksLikeRenderableReturn(returnStmt.argument)) {
+        return true
+      }
+    }
+  }
+
+  return false
 }
