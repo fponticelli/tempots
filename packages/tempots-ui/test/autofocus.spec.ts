@@ -100,7 +100,7 @@ describe('autofocus.ts', () => {
 
     it('should return a renderable function', () => {
       const autofocus = AutoFocus()
-      expect(typeof autofocus).toBe('function')
+      expect(autofocus).toHaveProperty('render')
     })
 
     it('should work with different delay values', async () => {

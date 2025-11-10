@@ -117,7 +117,7 @@ describe('Attribute Renderables', () => {
       document.body.appendChild(div)
 
       const renderable = attr.id('new-id')
-      const dispose = renderable({
+      const dispose = renderable.render({
         element: div,
         makeAccessors: name => ({
           get: () => (div as any)[name],
@@ -139,7 +139,7 @@ describe('Attribute Renderables', () => {
       document.body.appendChild(div)
 
       const renderable = attr.id('new-id')
-      const dispose = renderable({
+      const dispose = renderable.render({
         element: div,
         makeAccessors: name => ({
           get: () => (div as any)[name],
@@ -161,7 +161,7 @@ describe('Attribute Renderables', () => {
       document.body.appendChild(div)
 
       const renderable = attr.class('new-class additional-class')
-      const dispose = renderable({
+      const dispose = renderable.render({
         addClasses: (classes: string[]) => {
           classes.forEach((cls: string) => div.classList.add(cls))
         },
@@ -186,7 +186,7 @@ describe('Attribute Renderables', () => {
       const titleSignal = prop('new-title')
       const renderable = attr.title(titleSignal)
 
-      const dispose = renderable({
+      const dispose = renderable.render({
         getAttribute: () => 'original-title',
         setAttribute: (value: string) => {
           div.title = value

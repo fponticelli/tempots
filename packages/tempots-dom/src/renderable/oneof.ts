@@ -3,6 +3,7 @@ import { Computed, signal, Signal, Value } from '@tempots/core'
 import type { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { handleValueOrSignal } from './utils'
+import { domRenderable } from '../types/domain'
 
 /**
  * Represents a set of options for a one-of type.
@@ -37,8 +38,8 @@ export const OneOf = <T extends Record<string, unknown>>(
   match: Value<T>,
   cases: OneOfOptions<T>
 ): Renderable => {
-  function onSignal(matchSignal: Signal<T>) {
-    return (ctx: DOMContext) => {
+  function onSignal(matchSignal: Signal<T>): Renderable {
+    return domRenderable((ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       let clearRenderable: Clear | undefined
       let matched: Computed<T[keyof T]> | undefined
@@ -53,7 +54,7 @@ export const OneOf = <T extends Record<string, unknown>>(
           clearRenderable?.(true)
           matched = matchSignal.map(value => value[newKey])
           const child = cases[newKey](matched)
-          clearRenderable = renderableOfTNode(child)(newCtx)
+          clearRenderable = renderableOfTNode(child).render(newCtx)
         }
       })
       return (removeTree: boolean) => {
@@ -62,9 +63,9 @@ export const OneOf = <T extends Record<string, unknown>>(
         newCtx.clear(removeTree)
         clearRenderable?.(removeTree)
       }
-    }
+    })
   }
-  function onLiteral(literal: T) {
+  function onLiteral(literal: T): Renderable {
     const key = Object.keys(literal)[0] as keyof T
     return renderableOfTNode(cases[key](signal(literal[key])))
   }

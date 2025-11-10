@@ -1,8 +1,8 @@
-import { Renderable } from '../types/domain'
+import { Renderable, domRenderable } from '../types/domain'
 
 /**
- * Represents an empty renderable function.
- * @returns A renderable function that does nothing.
+ * Represents an empty renderable object.
+ * @returns A renderable object that does nothing.
  * @public
  */
-export const Empty: Renderable = () => () => {}
+export const Empty: Renderable = domRenderable(() => () => {})

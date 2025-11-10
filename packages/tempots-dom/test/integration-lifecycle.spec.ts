@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { prop, computed, effect, render, html } from '../src'
 import type { Prop, Computed } from '../src'
+import { domRenderable } from '../src/types/domain'
 import { sleep } from './helper'
 
 describe('Integration - Component Lifecycle', () => {
@@ -11,10 +12,10 @@ describe('Integration - Component Lifecycle', () => {
   test('should create scope when mounting component', () => {
     let signal: Prop<number> | null = null
 
-    const component = (ctx: any) => {
+    const component = domRenderable((ctx: any) => {
       signal = prop(10)
-      return html.div('test')(ctx)
-    }
+      return html.div('test').render(ctx)
+    })
 
     const clear = render(component, document.body)
 
@@ -29,15 +30,15 @@ describe('Integration - Component Lifecycle', () => {
     let computedSignal: Computed<number> | null = null
     let effectCount = 0
 
-    const component = (ctx: any) => {
+    const component = domRenderable((ctx: any) => {
       signal = prop(10)
       computedSignal = computed(() => signal!.value * 2, [signal!])
       effect(() => {
         effectCount++
         signal!.value
       }, [signal!])
-      return html.div(computedSignal.map(String))(ctx)
-    }
+      return html.div(computedSignal.map(String)).render(ctx)
+    })
 
     const clear = render(component, document.body)
     await sleep()
@@ -63,15 +64,15 @@ describe('Integration - Component Lifecycle', () => {
     let firstSignal: Prop<number> | null = null
     let secondSignal: Prop<number> | null = null
 
-    const component = (ctx: any) => {
+    const component = domRenderable((ctx: any) => {
       const signal = prop(10)
       if (firstSignal === null) {
         firstSignal = signal
       } else {
         secondSignal = signal
       }
-      return html.div(signal.map(String))(ctx)
-    }
+      return html.div(signal.map(String)).render(ctx)
+    })
 
     // First mount
     const clear1 = render(component, document.body)
@@ -94,11 +95,11 @@ describe('Integration - Component Lifecycle', () => {
   test('should have separate scopes for multiple instances', () => {
     const signals: Prop<number>[] = []
 
-    const component = (ctx: any) => {
+    const component = domRenderable((ctx: any) => {
       const signal = prop(10)
       signals.push(signal)
-      return html.div(signal.map(String))(ctx)
-    }
+      return html.div(signal.map(String)).render(ctx)
+    })
 
     const container1 = document.createElement('div')
     const container2 = document.createElement('div')
@@ -130,7 +131,7 @@ describe('Integration - Component Lifecycle', () => {
     let computed2: Computed<string> | null = null
     let effectCount = 0
 
-    const component = (ctx: any) => {
+    const component = domRenderable((ctx: any) => {
       prop1 = prop(10)
       prop2 = prop('hello')
       computed1 = computed(() => prop1!.value * 2, [prop1!])
@@ -142,11 +143,10 @@ describe('Integration - Component Lifecycle', () => {
         prop2!.value
       }, [prop1!, prop2!])
 
-      return html.div(
-        html.span(computed1.map(String)),
-        html.span(computed2)
-      )(ctx)
-    }
+      return html
+        .div(html.span(computed1.map(String)), html.span(computed2))
+        .render(ctx)
+    })
 
     const clear = render(component, document.body)
     await sleep()
@@ -176,15 +176,15 @@ describe('Integration - Component Lifecycle', () => {
     let outerSignal: Prop<number> | null = null
     let innerSignal: Prop<number> | null = null
 
-    const innerComponent = (ctx: any) => {
+    const innerComponent = domRenderable((ctx: any) => {
       innerSignal = prop(20)
-      return html.span(innerSignal.map(String))(ctx)
-    }
+      return html.span(innerSignal.map(String)).render(ctx)
+    })
 
-    const outerComponent = (ctx: any) => {
+    const outerComponent = domRenderable((ctx: any) => {
       outerSignal = prop(10)
-      return html.div(innerComponent)(ctx)
-    }
+      return html.div(innerComponent).render(ctx)
+    })
 
     const clear = render(outerComponent, document.body)
 
@@ -204,15 +204,15 @@ describe('Integration - Component Lifecycle', () => {
     let parentSignal: Prop<number> | null = null
     let childSignal: Prop<number> | null = null
 
-    const childComponent = (ctx: any) => {
+    const childComponent = domRenderable((ctx: any) => {
       childSignal = prop(20)
-      return html.div('child')(ctx)
-    }
+      return html.div('child').render(ctx)
+    })
 
-    const parentComponent = (ctx: any) => {
+    const parentComponent = domRenderable((ctx: any) => {
       parentSignal = prop(10)
-      return html.div(childComponent)(ctx)
-    }
+      return html.div(childComponent).render(ctx)
+    })
 
     const clear = render(parentComponent, document.body)
 

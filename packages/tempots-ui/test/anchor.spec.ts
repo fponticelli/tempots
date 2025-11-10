@@ -30,13 +30,13 @@ describe('anchor.ts', () => {
   describe('Anchor function', () => {
     it('should create anchor with string href', () => {
       const anchor = Anchor('/test', 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should create anchor with Signal href', () => {
       const href = prop('/test')
       const anchor = Anchor(href, 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should create anchor with AnchorOptions', () => {
@@ -46,18 +46,18 @@ describe('anchor.ts', () => {
         ignoreUrlWithExtension: false
       }
       const anchor = Anchor(options, 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle string href by converting to options', () => {
       const anchor = Anchor('/test', 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle Signal href by converting to options', () => {
       const href = prop('/test')
       const anchor = Anchor(href, 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should pass through anchor click options', () => {
@@ -68,12 +68,12 @@ describe('anchor.ts', () => {
         ignoreExternalUrl: false
       }
       const anchor = Anchor(options, 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle multiple children', () => {
       const anchor = Anchor('/test', 'Link ', 'Text', ' Here')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
   })
 
@@ -81,7 +81,7 @@ describe('anchor.ts', () => {
     it('should correctly identify string href input', () => {
       // Test the type checking logic by calling Anchor and checking the recursive call
       const anchor = Anchor('/test', 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
 
       // The function should be created successfully
       expect(anchor).toBeDefined()
@@ -90,7 +90,7 @@ describe('anchor.ts', () => {
     it('should correctly identify Signal href input', () => {
       const href = prop('/test')
       const anchor = Anchor(href, 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
       expect(anchor).toBeDefined()
     })
 
@@ -101,7 +101,7 @@ describe('anchor.ts', () => {
         ignoreUrlWithExtension: false
       }
       const anchor = Anchor(options, 'Link Text')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
       expect(anchor).toBeDefined()
     })
 
@@ -113,8 +113,8 @@ describe('anchor.ts', () => {
       const stringAnchor = Anchor(stringHref, 'String Link')
       const signalAnchor = Anchor(signalHref, 'Signal Link')
 
-      expect(typeof stringAnchor).toBe('function')
-      expect(typeof signalAnchor).toBe('function')
+      expect(stringAnchor).toHaveProperty('render')
+      expect(signalAnchor).toHaveProperty('render')
     })
 
     it('should properly destructure AnchorOptions', () => {
@@ -128,7 +128,7 @@ describe('anchor.ts', () => {
 
       // This tests the destructuring logic in the function
       const anchor = Anchor(options, 'Test Link')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle viewTransition values', () => {
@@ -136,31 +136,31 @@ describe('anchor.ts', () => {
       const withoutTransition = Anchor({ href: '/test', viewTransition: false }, 'Without Transition')
       const undefinedTransition = Anchor({ href: '/test' }, 'Undefined Transition')
 
-      expect(typeof withTransition).toBe('function')
-      expect(typeof withoutTransition).toBe('function')
-      expect(typeof undefinedTransition).toBe('function')
+      expect(withTransition).toHaveProperty('render')
+      expect(withoutTransition).toHaveProperty('render')
+      expect(undefinedTransition).toHaveProperty('render')
     })
 
     it('should handle multiple children arguments', () => {
       const anchor = Anchor('/test', 'Child 1', 'Child 2', 'Child 3')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle empty children', () => {
       const anchor = Anchor('/test')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle complex href values', () => {
       const complexHref = '/users/123/posts/456?sort=date&order=desc#comments'
       const anchor = Anchor(complexHref, 'Complex Link')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle Signal href with complex values', () => {
       const href = prop('/dynamic/path')
       const anchor = Anchor(href, 'Dynamic Link')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
 
       // Test that the Signal can be updated
       href.set('/new/path')
@@ -172,20 +172,20 @@ describe('anchor.ts', () => {
     it('should handle all possible href input types', () => {
       // Test string href
       const stringAnchor = Anchor('/string-href', 'String Link')
-      expect(typeof stringAnchor).toBe('function')
+      expect(stringAnchor).toHaveProperty('render')
 
       // Test Signal href
       const signalHref = prop('/signal-href')
       const signalAnchor = Anchor(signalHref, 'Signal Link')
-      expect(typeof signalAnchor).toBe('function')
+      expect(signalAnchor).toHaveProperty('render')
 
       // Test AnchorOptions with string href
       const optionsAnchor = Anchor({ href: '/options-href' }, 'Options Link')
-      expect(typeof optionsAnchor).toBe('function')
+      expect(optionsAnchor).toHaveProperty('render')
 
       // Test AnchorOptions with Signal href
       const signalOptionsAnchor = Anchor({ href: signalHref }, 'Signal Options Link')
-      expect(typeof signalOptionsAnchor).toBe('function')
+      expect(signalOptionsAnchor).toHaveProperty('render')
     })
 
     it('should handle navigation options combinations', () => {
@@ -199,13 +199,13 @@ describe('anchor.ts', () => {
         },
         'Full Navigation Options'
       )
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
 
       const minimal = Anchor({ href: '/test', viewTransition: false }, 'Minimal')
-      expect(typeof minimal).toBe('function')
+      expect(minimal).toHaveProperty('render')
 
       const none = Anchor({ href: '/test' }, 'No Navigation Options')
-      expect(typeof none).toBe('function')
+      expect(none).toHaveProperty('render')
     })
 
     it('should handle all anchor click options', () => {
@@ -222,14 +222,14 @@ describe('anchor.ts', () => {
       }
 
       const anchor = Anchor(fullOptions, 'Full Options')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
     })
 
     it('should handle edge cases in option destructuring', () => {
       // Test with minimal options
       const minimalOptions: AnchorOptions = { href: '/minimal' }
       const minimalAnchor = Anchor(minimalOptions, 'Minimal')
-      expect(typeof minimalAnchor).toBe('function')
+      expect(minimalAnchor).toHaveProperty('render')
 
       // Test with empty allowed extensions
       const emptyExtensions: AnchorOptions = {
@@ -237,7 +237,7 @@ describe('anchor.ts', () => {
         allowedExtensions: []
       }
       const emptyExtAnchor = Anchor(emptyExtensions, 'Empty Extensions')
-      expect(typeof emptyExtAnchor).toBe('function')
+      expect(emptyExtAnchor).toHaveProperty('render')
 
       // Test with undefined values
       const undefinedOptions: AnchorOptions = {
@@ -250,7 +250,7 @@ describe('anchor.ts', () => {
         ignoreExternalUrl: undefined
       }
       const undefinedAnchor = Anchor(undefinedOptions, 'Undefined Options')
-      expect(typeof undefinedAnchor).toBe('function')
+      expect(undefinedAnchor).toHaveProperty('render')
     })
 
     it('should handle complex href patterns', () => {
@@ -269,32 +269,32 @@ describe('anchor.ts', () => {
 
       complexHrefs.forEach(href => {
         const anchor = Anchor(href, `Link to ${href}`)
-        expect(typeof anchor).toBe('function')
+        expect(anchor).toHaveProperty('render')
       })
     })
 
     it('should handle various children combinations', () => {
       // No children
       const noChildren = Anchor('/test')
-      expect(typeof noChildren).toBe('function')
+      expect(noChildren).toHaveProperty('render')
 
       // Single string child
       const singleChild = Anchor('/test', 'Single Child')
-      expect(typeof singleChild).toBe('function')
+      expect(singleChild).toHaveProperty('render')
 
       // Multiple string children
       const multipleChildren = Anchor('/test', 'Child 1', ' ', 'Child 2', ' ', 'Child 3')
-      expect(typeof multipleChildren).toBe('function')
+      expect(multipleChildren).toHaveProperty('render')
 
       // Mixed children types (strings, numbers, etc.)
       const mixedChildren = Anchor('/test', 'Text', 123, ' more text')
-      expect(typeof mixedChildren).toBe('function')
+      expect(mixedChildren).toHaveProperty('render')
     })
 
     it('should handle Signal href updates', () => {
       const dynamicHref = prop('/initial')
       const anchor = Anchor(dynamicHref, 'Dynamic Link')
-      expect(typeof anchor).toBe('function')
+      expect(anchor).toHaveProperty('render')
 
       // Test that the Signal can be updated
       dynamicHref.set('/updated')

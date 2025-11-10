@@ -2,6 +2,7 @@ import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
+import { domRenderable } from '../types/domain'
 
 /**
  * Represents the options for a task.
@@ -21,7 +22,7 @@ export type TaskOptions<T> = {
  * @typeParam T - The type of the value returned by the task.
  * @param task - The asynchronous task to be executed.
  * @param options - The options for the task or a function that transforms the task result into a renderable node.
- * @returns - A function that renders the task and returns a cleanup function.
+ * @returns - A renderable object that renders the task and returns a cleanup function.
  * @public
  */
 export const Task = <T>(
@@ -38,21 +39,21 @@ export const Task = <T>(
     options.error != null
       ? (e: unknown) => renderableOfTNode(options.error!(e))
       : () => Empty
-  return (ctx: DOMContext) => {
+  return domRenderable((ctx: DOMContext) => {
     let active = true
     const promise = task()
     const newCtx = ctx.makeRef()
-    let clear = renderableOfTNode(pending)(newCtx)
+    let clear = renderableOfTNode(pending).render(newCtx)
     promise.then(
       value => {
         if (!active) return
         clear(true)
-        clear = renderableOfTNode(then(value))(newCtx)
+        clear = renderableOfTNode(then(value)).render(newCtx)
       },
       e => {
         if (!active) return
         clear(true)
-        clear = renderableOfTNode(error(e))(newCtx)
+        clear = renderableOfTNode(error(e)).render(newCtx)
       }
     )
     return (removeTree: boolean) => {
@@ -60,5 +61,5 @@ export const Task = <T>(
       clear(removeTree)
       newCtx.clear(removeTree)
     }
-  }
+  })
 }

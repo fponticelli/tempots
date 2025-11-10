@@ -3,6 +3,7 @@ import { Value } from '@tempots/core'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { handleValueOrSignal, createReactiveRenderable } from './utils'
+import { domRenderable } from '../types/domain'
 
 /**
  * Lazily renders content based on a boolean condition.
@@ -19,9 +20,11 @@ export const When = (
 ): Renderable =>
   handleValueOrSignal(
     condition,
-    signal => ctx =>
-      createReactiveRenderable(ctx, signal, isTrue =>
-        isTrue ? then() : otherwise?.()
+    signal =>
+      domRenderable(ctx =>
+        createReactiveRenderable(ctx, signal, isTrue =>
+          isTrue ? then() : otherwise?.()
+        )
       ),
     literal => {
       if (literal) {

@@ -9,8 +9,8 @@ describe('hidden-when-empty.ts', () => {
   })
 
   describe('HiddenWhenEmpty', () => {
-    it('should be a renderable function', () => {
-      expect(typeof HiddenWhenEmpty).toBe('function')
+    it('should be a renderable', () => {
+      expect(HiddenWhenEmpty).toHaveProperty('render')
     })
 
     it('should set :empty CSS property to display:none', () => {

@@ -12,6 +12,7 @@ import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
 import { When } from './when'
+import { domRenderable } from '../types/domain'
 
 /**
  * Renders content a specified number of times, with each iteration receiving position information.
@@ -102,7 +103,7 @@ export const Repeat = (
     })
   } else {
     if (Signal.is(times)) {
-      return (ctx: DOMContext) => {
+      return domRenderable((ctx: DOMContext) => {
         const length = times.derive()
         const newCtx = ctx.makeRef()
         const clears: Clear[] = []
@@ -130,7 +131,9 @@ export const Repeat = (
             scopes.push(scope)
 
             clears.push(
-              withScope(scope, () => renderableOfTNode(element(pos))(newCtx))
+              withScope(scope, () =>
+                renderableOfTNode(element(pos)).render(newCtx)
+              )
             )
           }
         })
@@ -149,7 +152,7 @@ export const Repeat = (
           clears.length = 0
           newCtx.clear(removeTree)
         }
-      }
+      })
     } else {
       const length = signal(times)
       return Fragment(

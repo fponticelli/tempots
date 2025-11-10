@@ -62,7 +62,7 @@ export const createReactiveRenderable = <T>(
       // Create a new scope for the new branch
       currentScope = new DisposalScope()
       clear = withScope(currentScope, () =>
-        renderableOfTNode(render(value))(newCtx)
+        renderableOfTNode(render(value)).render(newCtx)
       )
     },
     { noAutoDispose: true }

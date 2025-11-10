@@ -116,7 +116,7 @@ describe('autoselect.ts', () => {
 
     it('should return a renderable function', () => {
       const autoselect = AutoSelect()
-      expect(typeof autoselect).toBe('function')
+      expect(autoselect).toHaveProperty('render')
     })
 
     it('should work with different delay values', async () => {

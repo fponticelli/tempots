@@ -14,6 +14,8 @@ import {
   Clear,
   ProviderMark,
   makeProviderMark,
+  Renderable as CoreRenderable,
+  createRenderable,
 } from '@tempots/core'
 
 // Re-export core types that are used in DOM-specific types
@@ -35,26 +37,34 @@ export type {
 export { makeProviderMark }
 
 /**
- * A function that renders content into the DOM and returns a cleanup function.
+ * Symbol to brand DOM renderables and prevent mixing with other contexts
+ * @public
+ */
+export const DOM_RENDERABLE_TYPE = Symbol('DOM_RENDERABLE')
+
+/**
+ * A renderable object that can render content into the DOM.
  *
- * Renderables are the fundamental building blocks of Tempo applications. They receive
- * a DOMContext and use it to create DOM elements, text nodes, or other content.
- * The returned Clear function is called when the renderable needs to be removed
- * from the DOM.
+ * Renderables are the fundamental building blocks of Tempo applications. They are
+ * objects with a `render()` method that receives a DOMContext and returns a cleanup
+ * function, and a `type` symbol for runtime type checking.
  *
  * This is a specialized version of the core Renderable type for DOM contexts.
  *
  * @example
  * ```typescript
  * // Simple renderable that creates a div
- * const MyComponent: Renderable = (ctx) => {
- *   const divCtx = ctx.makeChildElement('div', undefined)
- *   divCtx.makeChildText('Hello, World!')
+ * const MyComponent: Renderable = {
+ *   type: DOM_RENDERABLE_TYPE,
+ *   render: (ctx) => {
+ *     const divCtx = ctx.makeChildElement('div', undefined)
+ *     divCtx.makeChildText('Hello, World!')
  *
- *   // Return cleanup function
- *   return (removeTree) => {
- *     if (removeTree) {
- *       // Cleanup logic here
+ *     // Return cleanup function
+ *     return (removeTree) => {
+ *       if (removeTree) {
+ *         // Cleanup logic here
+ *       }
  *     }
  *   }
  * }
@@ -63,28 +73,39 @@ export { makeProviderMark }
  * @example
  * ```typescript
  * // Renderable with event listeners
- * const Button: Renderable = (ctx) => {
- *   const buttonCtx = ctx.makeChildElement('button', undefined)
- *   buttonCtx.makeChildText('Click me')
+ * const Button: Renderable = {
+ *   type: DOM_RENDERABLE_TYPE,
+ *   render: (ctx) => {
+ *     const buttonCtx = ctx.makeChildElement('button', undefined)
+ *     buttonCtx.makeChildText('Click me')
  *
- *   const clearClick = buttonCtx.on('click', () => {
- *     console.log('Button clicked!')
- *   })
+ *     const clearClick = buttonCtx.on('click', () => {
+ *       console.log('Button clicked!')
+ *     })
  *
- *   return (removeTree) => {
- *     clearClick(removeTree)
+ *     return (removeTree) => {
+ *       clearClick(removeTree)
+ *     }
  *   }
  * }
  * ```
  *
  * @template CTX - The type of DOMContext (defaults to DOMContext)
- * @param ctx - The DOM context for rendering
- * @returns A cleanup function that removes the rendered content when called
  * @public
  */
-export type Renderable<CTX extends DOMContext = DOMContext> = (
-  ctx: CTX
-) => Clear
+export type Renderable<CTX extends DOMContext = DOMContext> = CoreRenderable<
+  CTX,
+  typeof DOM_RENDERABLE_TYPE
+>
+
+/**
+ * Helper to create DOM renderables (internal use)
+ * @internal
+ */
+export const domRenderable = <CTX extends DOMContext = DOMContext>(
+  renderFn: (ctx: CTX) => Clear
+): Renderable<CTX> =>
+  createRenderable(DOM_RENDERABLE_TYPE, renderFn) as Renderable<CTX>
 
 /**
  * A flexible type representing any content that can be rendered in Tempo.

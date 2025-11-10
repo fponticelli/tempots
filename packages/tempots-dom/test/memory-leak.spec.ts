@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { html, render, prop, computed, effect, When, Repeat } from '../src'
 import { DisposalScope } from '@tempots/core'
+import { domRenderable } from '../src/types/domain'
 import { sleep } from './helper'
 
 describe('Memory Leak Tests', () => {
@@ -118,11 +119,11 @@ describe('Memory Leak Tests', () => {
     const createdSignals: any[] = []
 
     for (let i = 0; i < 1000; i++) {
-      const component = (ctx: any) => {
+      const component = domRenderable((ctx: any) => {
         const signal = prop(i)
         createdSignals.push(signal)
-        return html.div(signal.map(String))(ctx)
-      }
+        return html.div(signal.map(String)).render(ctx)
+      })
 
       const clear = render(component, document.body)
       clear()
@@ -161,13 +162,10 @@ describe('Memory Leak Tests', () => {
 
     // Create 1000 effects
     for (let i = 0; i < 1000; i++) {
-      scope.effect(
-        () => {
-          totalCalls++
-          source.value
-        },
-        [source]
-      )
+      scope.effect(() => {
+        totalCalls++
+        source.value
+      }, [source])
     }
 
     await sleep()
@@ -217,7 +215,7 @@ describe('Memory Leak Tests', () => {
     const createdSignals: any[] = []
 
     for (let i = 0; i < 100; i++) {
-      const component = (ctx: any) => {
+      const component = domRenderable((ctx: any) => {
         const p1 = prop(i)
         const p2 = prop(`value-${i}`)
         const c1 = computed(() => p1.value * 2, [p1])
@@ -225,11 +223,8 @@ describe('Memory Leak Tests', () => {
 
         createdSignals.push(p1, p2, c1, c2)
 
-        return html.div(
-          html.span(c1.map(String)),
-          html.span(c2)
-        )(ctx)
-      }
+        return html.div(html.span(c1.map(String)), html.span(c2)).render(ctx)
+      })
 
       const clear = render(component, document.body)
       clear()
@@ -259,13 +254,10 @@ describe('Memory Leak Tests', () => {
     const c2 = scope.computedOf(p2)(v => v.toUpperCase())
 
     let effectCount = 0
-    scope.effect(
-      () => {
-        effectCount++
-        source.value
-      },
-      [source]
-    )
+    scope.effect(() => {
+      effectCount++
+      source.value
+    }, [source])
 
     expect(p1.isDisposed()).toBe(false)
     expect(p2.isDisposed()).toBe(false)

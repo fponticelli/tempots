@@ -38,7 +38,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should create router with parameterized routes', () => {
@@ -49,7 +49,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should create router with complex nested routes', () => {
@@ -63,7 +63,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should create router with catch-all route', () => {
@@ -74,14 +74,14 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle empty routes object', () => {
       const routes = {}
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with string return types', () => {
@@ -92,7 +92,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with complex route patterns', () => {
@@ -109,7 +109,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with query parameters and hash', () => {
@@ -127,7 +127,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with sync handlers', () => {
@@ -139,7 +139,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with Signal-based content', () => {
@@ -152,7 +152,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
   })
 
@@ -174,7 +174,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle route patterns with special characters', () => {
@@ -186,7 +186,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle Unicode route patterns', () => {
@@ -198,7 +198,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
   })
 
@@ -211,7 +211,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with numeric keys', () => {
@@ -222,7 +222,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
 
     it('should handle routes with boolean-like patterns', () => {
@@ -235,7 +235,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
     })
   })
 
@@ -252,7 +252,7 @@ describe('router.ts', () => {
       }
 
       const childRouter = ChildRouter(routes)
-      expect(typeof childRouter).toBe('function')
+      expect(childRouter).toHaveProperty('render')
     })
 
     it('should create nested router with parameterized routes', () => {
@@ -266,7 +266,7 @@ describe('router.ts', () => {
       }
 
       const childRouter = ChildRouter(routes)
-      expect(typeof childRouter).toBe('function')
+      expect(childRouter).toHaveProperty('render')
     })
 
     it('should create nested router with catch-all routes', () => {
@@ -277,14 +277,14 @@ describe('router.ts', () => {
       }
 
       const childRouter = ChildRouter(routes)
-      expect(typeof childRouter).toBe('function')
+      expect(childRouter).toHaveProperty('render')
     })
 
     it('should handle empty routes object', () => {
       const routes = {}
 
       const childRouter = ChildRouter(routes)
-      expect(typeof childRouter).toBe('function')
+      expect(childRouter).toHaveProperty('render')
     })
   })
 
@@ -308,8 +308,8 @@ describe('router.ts', () => {
       const rootRouter = RootRouter(appRoutes)
       const adminChildRouter = ChildRouter(adminRoutes)
 
-      expect(typeof rootRouter).toBe('function')
-      expect(typeof adminChildRouter).toBe('function')
+      expect(rootRouter).toHaveProperty('render')
+      expect(adminChildRouter).toHaveProperty('render')
     })
 
     it('should support multi-level nesting concept', () => {
@@ -337,9 +337,9 @@ describe('router.ts', () => {
       const adminChildRouter = ChildRouter(adminRoutes)
       const userChildRouter = ChildRouter(userRoutes)
 
-      expect(typeof rootRouter).toBe('function')
-      expect(typeof adminChildRouter).toBe('function')
-      expect(typeof userChildRouter).toBe('function')
+      expect(rootRouter).toHaveProperty('render')
+      expect(adminChildRouter).toHaveProperty('render')
+      expect(userChildRouter).toHaveProperty('render')
     })
 
     it('should handle parameter accumulation concept', () => {
@@ -365,9 +365,9 @@ describe('router.ts', () => {
       const postChildRouter = ChildRouter(postRoutes)
       const commentChildRouter = ChildRouter(commentRoutes)
 
-      expect(typeof blogChildRouter).toBe('function')
-      expect(typeof postChildRouter).toBe('function')
-      expect(typeof commentChildRouter).toBe('function')
+      expect(blogChildRouter).toHaveProperty('render')
+      expect(postChildRouter).toHaveProperty('render')
+      expect(commentChildRouter).toHaveProperty('render')
     })
   })
 
@@ -413,7 +413,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
 
       // The issue: This structure should work for URL '/123/edit' but doesn't
       // - RootRouter should match '/:id/*' with params { id: '123' } and remainingPath '/edit'
@@ -475,7 +475,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(routes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
 
       // Expected parameter isolation:
       // - info.$.params should contain ONLY { orgId: "acme" }
@@ -510,7 +510,7 @@ describe('router.ts', () => {
       }
 
       const router = RootRouter(problematicRoutes)
-      expect(typeof router).toBe('function')
+      expect(router).toHaveProperty('render')
 
       // When navigating to '/123/edit':
       // Expected: RootRouter matches '/:id/*', ChildRouter matches '/edit'

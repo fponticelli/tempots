@@ -4,10 +4,13 @@ import { DOMContext } from '../dom/dom-context'
 import { Signal } from '@tempots/core'
 import { Value } from '@tempots/core'
 import { Merge } from './ensure'
+import { domRenderable } from '../types/domain'
 
-const staticStyle =
-  (name: keyof CSSStyles | `--${string}`, value: string) =>
-  (ctx: DOMContext) => {
+const staticStyle = (
+  name: keyof CSSStyles | `--${string}`,
+  value: string
+): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const original = ctx.getStyle(name as string)
     ctx.setStyle(name as string, value)
     return (removeTree: boolean) => {
@@ -15,11 +18,13 @@ const staticStyle =
         ctx.setStyle(name as string, original)
       }
     }
-  }
+  })
 
-const signalStyle =
-  (name: keyof CSSStyles | `--${string}`, signal: Signal<string>) =>
-  (ctx: DOMContext) => {
+const signalStyle = (
+  name: keyof CSSStyles | `--${string}`,
+  signal: Signal<string>
+): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const original = ctx.getStyle(name as string)
     const dispose = signal.on(v => ctx.setStyle(name as string, v))
     return (removeTree: boolean) => {
@@ -28,7 +33,7 @@ const signalStyle =
         ctx.setStyle(name as string, original)
       }
     }
-  }
+  })
 
 /**
  * Helper function to create a style renderable from a value that could be static or a Signal.

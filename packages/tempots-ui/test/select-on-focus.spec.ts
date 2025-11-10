@@ -256,7 +256,7 @@ describe('select-on-focus.ts', () => {
 
     it('should return a renderable function', () => {
       const selectOnFocus = SelectOnFocus()
-      expect(typeof selectOnFocus).toBe('function')
+      expect(selectOnFocus).toHaveProperty('render')
     })
   })
 })

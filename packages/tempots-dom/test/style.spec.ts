@@ -15,7 +15,7 @@ describe('Style', () => {
       setStyle: vi.fn(),
     }
 
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     expect(mockContext.getStyle).toHaveBeenCalledWith('color')
     expect(mockContext.setStyle).toHaveBeenCalledWith('color', 'red')
@@ -34,7 +34,7 @@ describe('Style', () => {
     }
 
     const styleRenderable = style.variable('--primary-color', 'red')
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     expect(mockContext.getStyle).toHaveBeenCalledWith('--primary-color')
     expect(mockContext.setStyle).toHaveBeenCalledWith('--primary-color', 'red')
@@ -59,17 +59,23 @@ describe('Style', () => {
       setStyle: vi.fn(),
     }
 
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     expect(mockContext.getStyle).toHaveBeenCalledWith('backgroundColor')
 
     // Signal should trigger style update
     colorSignal.set('green')
-    expect(mockContext.setStyle).toHaveBeenCalledWith('backgroundColor', 'green')
+    expect(mockContext.setStyle).toHaveBeenCalledWith(
+      'backgroundColor',
+      'green'
+    )
 
     // Test disposal with removeTree = true
     dispose(true)
-    expect(mockContext.setStyle).toHaveBeenCalledWith('backgroundColor', 'white')
+    expect(mockContext.setStyle).toHaveBeenCalledWith(
+      'backgroundColor',
+      'white'
+    )
 
     document.body.removeChild(element)
   })
@@ -82,7 +88,7 @@ describe('Style', () => {
     }
 
     const styleRenderable = style.variable('--gap', valueSignal)
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     expect(mockContext.getStyle).toHaveBeenCalledWith('--gap')
 
@@ -104,7 +110,7 @@ describe('Style', () => {
     }
 
     const styleRenderable = style.fontSize('16px')
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     // Test disposal with removeTree = false
     dispose(false)
@@ -122,7 +128,7 @@ describe('Style', () => {
     }
 
     const styleRenderable = style.color(colorSignal)
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     // Trigger signal update
     colorSignal.set('blue')
@@ -146,9 +152,9 @@ describe('Style', () => {
     const paddingStyle = style.padding('5px')
     const displayStyle = style.display('flex')
 
-    marginStyle(mockContext as any)
-    paddingStyle(mockContext as any)
-    displayStyle(mockContext as any)
+    marginStyle.render(mockContext as any)
+    paddingStyle.render(mockContext as any)
+    displayStyle.render(mockContext as any)
 
     expect(mockContext.setStyle).toHaveBeenCalledWith('margin', '10px')
     expect(mockContext.setStyle).toHaveBeenCalledWith('padding', '5px')
@@ -193,7 +199,7 @@ describe('Style', () => {
     }
 
     const styleRenderable = style.color('new-color')
-    const dispose = styleRenderable(mockContext as any)
+    const dispose = styleRenderable.render(mockContext as any)
 
     expect(mockContext.getStyle).toHaveBeenCalledWith('color')
     expect(mockContext.setStyle).toHaveBeenCalledWith('color', 'new-color')
@@ -214,7 +220,7 @@ describe('Style', () => {
       }
 
       const styleRenderable = style.color(colorSignal)
-      const dispose = styleRenderable(mockContext as any)
+      const dispose = styleRenderable.render(mockContext as any)
 
       // Initial setup should work
       expect(mockContext.setStyle).toHaveBeenCalledWith('color', 'red')
@@ -239,7 +245,7 @@ describe('Style', () => {
       }
 
       const styleRenderable = style.color(colorSignal)
-      const dispose = styleRenderable(mockContext as any)
+      const dispose = styleRenderable.render(mockContext as any)
 
       // Initial setup should work
       expect(mockContext.setStyle).toHaveBeenCalledWith('color', 'red')
@@ -266,7 +272,7 @@ describe('Style', () => {
       const renderables = [] as Clear[]
       for (let i = 0; i < 5; i++) {
         const styleRenderable = style.color(colorSignal)
-        const dispose = styleRenderable(mockContext as any)
+        const dispose = styleRenderable.render(mockContext as any)
         renderables.push(dispose)
       }
 
@@ -292,7 +298,7 @@ describe('Style', () => {
       }
 
       const styleRenderable = style.color(colorSignal)
-      const dispose = styleRenderable(mockContext as any)
+      const dispose = styleRenderable.render(mockContext as any)
 
       // Dispose immediately
       dispose(true)
@@ -321,10 +327,10 @@ describe('Style', () => {
 
       // Create two style renderables with the same signal
       const styleRenderable1 = style.color(colorSignal)
-      const dispose1 = styleRenderable1(mockContext1 as any)
+      const dispose1 = styleRenderable1.render(mockContext1 as any)
 
       const styleRenderable2 = style.color(colorSignal)
-      const dispose2 = styleRenderable2(mockContext2 as any)
+      const dispose2 = styleRenderable2.render(mockContext2 as any)
 
       // Both should receive initial value
       expect(mockContext1.setStyle).toHaveBeenCalledWith('color', 'red')

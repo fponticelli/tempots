@@ -26,7 +26,7 @@ export const renderWithContext = (renderable: Renderable, ctx: DOMContext) => {
   const scope = new DisposalScope()
 
   // Execute the renderable within the scope context
-  const clear = withScope(scope, () => renderable(ctx))
+  const clear = withScope(scope, () => renderable.render(ctx))
 
   return (removeTree: boolean = true) => {
     // Dispose all tracked signals before clearing the DOM
