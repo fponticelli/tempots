@@ -1,7 +1,7 @@
 import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Signal } from '../std/signal'
-import { Value } from '../std/value'
+import { Signal } from '@tempots/core'
+import { Value } from '@tempots/core'
 
 /**
  * @internal

@@ -1,0 +1,46 @@
+{
+  "name": "@tempots/core",
+  "version": "0.1.0",
+  "priority": 1,
+  "description": "Core types and utilities for multi-context Tempo framework",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "framework",
+    "core",
+    "reactive",
+    "signals"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./core.js",
+      "require": "./core.cjs"
+    }
+  },
+  "main": "./core.cjs",
+  "module": "./core.js",
+  "types": "./index.d.ts",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./index.d.ts"
+      ]
+    }
+  }
+}

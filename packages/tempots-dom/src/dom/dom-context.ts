@@ -1,6 +1,10 @@
 import type { Clear, ProviderMark } from '../types/domain'
+import { makeProviderMark } from '@tempots/core'
 import { BrowserContext } from './browser-context'
 import { HeadlessContext } from './headless-context'
+
+// Re-export makeProviderMark for convenience
+export { makeProviderMark }
 
 /**
  * Options for event listeners.
@@ -13,17 +17,6 @@ export type HandlerOptions = {
   passive?: boolean
   capture?: boolean
 }
-
-/**
- * Creates a unique symbol that can be used as a provider mark for a specific type `T`.
- * The provider mark is used to identify the provider of a value of type `T` in a dependency injection system.
- *
- * @param identifier - A string that uniquely identifies the provider.
- * @returns A unique symbol that can be used as a provider mark.
- * @public
- */
-export const makeProviderMark = <T>(identifier: string): ProviderMark<T> =>
-  Symbol(identifier) as ProviderMark<T>
 
 /**
  * `DOMContext` is an immutable class that represents the context of a DOM element.

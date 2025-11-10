@@ -1,6 +1,6 @@
 import { DOMContext } from '../dom/dom-context'
-import { DisposalScope } from '../std/disposal-scope'
-import { withScope } from '../std/scope-stack'
+import { DisposalScope } from '@tempots/core'
+import { withScope } from '@tempots/core'
 import { Renderable, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 

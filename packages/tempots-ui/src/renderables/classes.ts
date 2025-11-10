@@ -10,7 +10,7 @@ export function classes(obj: Record<string, Value<boolean>>) {
   const entries = Object.entries(obj) as [string, Value<boolean>][]
   return Fragment(
     ...entries.map(([name, value]) =>
-      attr.class(Value.map(value, v => (v ? name : undefined)))
+      attr.class(Value.map(value, (v: boolean) => (v ? name : undefined)))
     )
   )
 }

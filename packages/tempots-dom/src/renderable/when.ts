@@ -1,5 +1,5 @@
-import { Renderable, TNode } from '../types/domain'
-import { Value } from '../std/value'
+import type { Renderable, TNode } from '../types/domain'
+import { Value } from '@tempots/core'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { handleValueOrSignal, createReactiveRenderable } from './utils'

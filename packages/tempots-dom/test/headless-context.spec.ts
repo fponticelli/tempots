@@ -2,7 +2,7 @@ import { describe, expect, test, beforeEach, vi } from 'vitest'
 import { HeadlessContext, HeadlessElement, HeadlessNode, HeadlessPortal, HeadlessText } from '../src/dom/headless-context'
 import { ProviderNotFoundError } from '../src/dom/errors'
 import { ProviderMark } from '../src/types/domain'
-import { prop } from '../src/std/signal'
+import { prop } from '@tempots/core'
 import { makeProviderMark } from '../src'
 
 describe('HeadlessContext', () => {

@@ -1,5 +1,5 @@
 import { _NODE_PLACEHOLDER_ATTR } from '../renderable/render'
-import { Prop } from '../std/signal'
+import { Prop } from '@tempots/core'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
 import { DOMContext, HandlerOptions } from './dom-context'

@@ -1,13 +1,4 @@
-import {
-  attr,
-  TNode,
-  html,
-  prop,
-  Signal,
-  When,
-  Fragment,
-  OnDispose,
-} from '@tempots/dom'
+import { attr, TNode, html, prop, Signal, When, Fragment } from '@tempots/dom'
 import { Logo } from '../element/logo'
 import { Styles } from '../styles'
 import { Toc } from '../../model/domain'
@@ -35,7 +26,6 @@ export function MenuLink({
 }) {
   const isActive = active.map(a => a === href)
   return Fragment(
-    OnDispose(isActive),
     When(
       isActive,
       () =>
@@ -78,7 +68,6 @@ export function SectionLink({
 }) {
   const isActive = active.map(a => a === href)
   return Fragment(
-    OnDispose(isActive),
     When(
       isActive,
       () =>
@@ -106,7 +95,6 @@ export function SectionLink({
 export function SideBar({ libraries, demos, pages }: Toc) {
   const active = prop('/')
   return html.div(
-    OnDispose(active),
     attr.class(
       'flex grow flex-col gap-y-5 overflow-y-auto bg-gray-100 px-6 pb-4 border-r'
     ),

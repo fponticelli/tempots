@@ -1,9 +1,9 @@
 import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Prop, Signal, prop, signal } from '../std/signal'
+import { Prop, Signal, prop, signal } from '@tempots/core'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
-import { Value } from '../std/value'
+import { Value } from '@tempots/core'
 import { handleValueOrSignal } from './utils'
 
 export type NillifyValue<T> =

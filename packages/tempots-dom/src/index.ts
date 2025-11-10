@@ -1,6 +1,5 @@
 export type * from './types/aria-attributes'
 export type * from './types/css-styles'
-export type * from './types/domain'
 export type * from './types/html-attributes'
 export type * from './types/html-events'
 export type * from './types/html-tags'
@@ -8,13 +7,60 @@ export type * from './types/mathml-attributes'
 export type * from './types/mathml-tags'
 export type * from './types/svg-attributes'
 export type * from './types/svg-tags'
-export * from './std/disposal-scope'
-export * from './std/scope-stack'
-export * from './std/interpolate'
-export * from './std/element-position'
-export * from './std/signal'
-export * from './std/signal-utils'
-export * from './std/value'
+// Re-export from @tempots/core (signals, disposal, scope, etc.)
+// Exclude Renderable, TNode which are re-exported from domain.ts with DOM-specific defaults
+export {
+  Signal,
+  Prop,
+  Computed,
+  signal,
+  prop,
+  computed,
+  effect,
+  computedOf,
+  effectOf,
+  joinSignals,
+  Value,
+  DisposalScope,
+  getCurrentScope,
+  getScopeStack,
+  getParentScope,
+  withScope,
+  scoped,
+  untracked,
+  pushScope,
+  popScope,
+  MemoryStore,
+  storedProp,
+  localStorageProp,
+  sessionStorageProp,
+  animateSignal,
+  animateSignals,
+  computedRecord,
+  merge,
+  delaySignal,
+  previousSignal,
+  slidingWindowSignal,
+  bind,
+  coalesce,
+  interpolateNumber,
+  interpolateString,
+  interpolateDate,
+  endInterpolate,
+  guessInterpolate,
+  createRenderable,
+  ElementPosition,
+} from '@tempots/core'
+export type {
+  AnySignal,
+  AtGetter,
+  ListenerOptions,
+  StoredPropOptions,
+  RenderContext,
+  HierarchicalContext,
+} from '@tempots/core'
+// Export DOM-specific types (Renderable, TNode, etc. specialized for DOMContext)
+export type * from './types/domain'
 export * from './dom/attr'
 export * from './dom/browser-context'
 export * from './dom/dom-context'

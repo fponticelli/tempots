@@ -1,6 +1,38 @@
 import { DOMContext } from '../dom/dom-context'
-import { AnySignal, Computed, Prop, Signal } from '../std/signal'
-import { Value } from '../std/value'
+import {
+  AnySignal,
+  Computed,
+  Prop,
+  Signal,
+  Value,
+  ValueType,
+  BaseValueType,
+  ValueTypes,
+  Values,
+  RemoveSignals,
+  Nil,
+  Clear,
+  ProviderMark,
+  makeProviderMark,
+} from '@tempots/core'
+
+// Re-export core types that are used in DOM-specific types
+export type {
+  Clear,
+  ProviderMark,
+  Value,
+  ValueType,
+  BaseValueType,
+  ValueTypes,
+  Values,
+  RemoveSignals,
+  Nil,
+  AnySignal,
+  Signal,
+  Prop,
+  Computed,
+}
+export { makeProviderMark }
 
 /**
  * A function that renders content into the DOM and returns a cleanup function.
@@ -9,6 +41,8 @@ import { Value } from '../std/value'
  * a DOMContext and use it to create DOM elements, text nodes, or other content.
  * The returned Clear function is called when the renderable needs to be removed
  * from the DOM.
+ *
+ * This is a specialized version of the core Renderable type for DOM contexts.
  *
  * @example
  * ```typescript
@@ -121,19 +155,7 @@ export type TNode<CTX extends DOMContext = DOMContext> =
   | undefined
   | null
   | Renderable<CTX>[]
-/**
- * Represents a function that clears a resource.
- * @param removeTree - A boolean value indicating whether to remove the tree associated with the resource.
- * @public
- */
-export type Clear = (removeTree: boolean) => void
-
-/**
- * Represents a provider mark.
- * @typeParam T - The type of the mark.
- * @public
- */
-export type ProviderMark<T> = symbol & { readonly __type: T }
+// Clear and ProviderMark are re-exported from @tempots/core
 /**
  * Represents a collection of providers.
  * The keys of the record are ProviderMark types, and the values are of unknown type.
@@ -179,65 +201,4 @@ export type SplitNValue<T> =
   | (T extends unknown ? TupleToUnion<NValue<T>[]> : never)
   | NValue<T>
 
-/**
- * Gets the value type of a given Value type.
- * If the type is a `Signal`, it returns the inferred value type.
- * Otherwise, it returns the type itself.
- * @public
- */
-export type ValueType<T> =
-  T extends Computed<infer V>
-    ? V
-    : T extends Prop<infer V>
-      ? V
-      : T extends Signal<infer V>
-        ? V
-        : T
-
-/**
- * Gets the base value type of a given Value type.
- * @public
- */
-export type BaseValueType<T> = NonNullable<ValueType<T>>
-
-/**
- * Gets the value types of a given array of Value types.
- * @public
- */
-export type ValueTypes<T extends Value<unknown>[]> = {
-  [K in keyof T]: ValueType<T[K]>
-}
-
-/**
- * Wraps all non-`Value` types in the array in `Value`.
- * @public
- */
-export type Values<T extends unknown[]> = {
-  [K in keyof T]: T[K] extends
-    | Signal<unknown>
-    | Computed<unknown>
-    | Prop<unknown>
-    ? T[K]
-    : Value<T[K]>
-}
-
-/**
- * Removes signals from a given object type and returns a new object type
- * with only the non-signal properties.
- *
- * @typeParam T - The input object type.
- * @typeParam K - The keys of the input object type to keep (optional).
- * @public
- */
-export type RemoveSignals<
-  T extends Record<string | number | symbol, Value<unknown>>,
-  K extends (string | number | symbol) & keyof T = keyof T,
-> = {
-  [k in K]: ValueType<T[k]>
-}
-
-/**
- * Represents a value that can be null or undefined.
- * @public
- */
-export type Nil = null | undefined
+// ValueType, BaseValueType, ValueTypes, Values, RemoveSignals, and Nil are re-exported from @tempots/core

@@ -5,7 +5,6 @@ import {
   ForEach,
   Fragment,
   html,
-  OnDispose,
   Signal,
   Use,
   Value,
@@ -63,7 +62,6 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
         : `/api/${library.value.name}/${prefix}.${path.value}.html`
     }, [data, location.location])
     return html.div(
-      OnDispose(path, apiUrl),
       attr.class('overflow-auto h-full flex flex-col gap-1 p-4'),
       HTMLTitle(library.map(({ title }) => `Tempo • ${title}`)),
       OpenGraph({

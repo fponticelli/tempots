@@ -1,8 +1,8 @@
 import type { NValue, Renderable } from '../types/domain'
 import type { CSSStyles } from '../types/css-styles'
 import { DOMContext } from '../dom/dom-context'
-import { Signal } from '../std/signal'
-import { Value } from '../std/value'
+import { Signal } from '@tempots/core'
+import { Value } from '@tempots/core'
 import { Merge } from './ensure'
 
 const staticStyle =

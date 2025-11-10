@@ -1,4 +1,4 @@
-import { Signal } from './signal'
+import { Signal } from '@tempots/core'
 
 /**
  * Represents the position of an element in a collection.

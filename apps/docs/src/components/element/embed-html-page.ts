@@ -9,7 +9,6 @@ import {
   on,
   Use,
   WithElement,
-  OnDispose,
 } from '@tempots/dom'
 import { Location, type LocationHandle, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
@@ -121,24 +120,28 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
 export function EmbedHTMLPage(content: Value<string>) {
   const htmlSignal = Value.toSignal(content)
   const toc = prop<TOCItem[]>([])
-  return Use(Location, location =>
-    html.div(
+  return Use(Location, location => {
+    let element: HTMLElement | null = null
+    htmlSignal.on(() => {
+      if (element) {
+        updateAnchors(location, element)
+        toc.set(makeTOC(element))
+      }
+    })
+    return html.div(
       attr.class(
         'flex flex-col flex-col-reverse xl:flex-row gap-4 xl:justify-between'
       ),
       html.div(
         attr.class(Styles.prose),
         attr.innerHTML(htmlSignal),
-        WithElement(el =>
-          OnDispose(
-            htmlSignal.on(() => {
-              updateAnchors(location, el)
-              toc.set(makeTOC(el))
-            })
-          )
-        )
+        WithElement(el => {
+          element = el as HTMLElement
+          updateAnchors(location, element)
+          toc.set(makeTOC(element))
+        })
       ),
       TOCView(location, toc)
     )
-  )
+  })
 }

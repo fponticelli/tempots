@@ -1,8 +1,8 @@
 import type { Clear, Renderable, TNode } from '../types/domain'
-import { Signal } from '../std/signal'
+import { Signal } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
-import { Value } from '../std/value'
+import { Value } from '@tempots/core'
 
 /**
  * Maps the values emitted by a signal to a renderable function and returns a new renderable function.

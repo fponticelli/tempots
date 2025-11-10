@@ -1,7 +1,6 @@
 import { DOMContext } from '../dom/dom-context'
-import { Computed, signal, Signal } from '../std/signal'
-import { Value } from '../std/value'
-import { Renderable, Clear, TNode } from '../types/domain'
+import { Computed, signal, Signal, Value } from '@tempots/core'
+import type { Renderable, Clear, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { handleValueOrSignal } from './utils'
 
@@ -182,7 +181,9 @@ export const OneOfTuple = <T extends string, V>(
   match: Value<[T, V]>,
   cases: OneOfTupleOptions<T, V>
 ) => {
-  const matchRecord = Value.map(match, ([key, value]) => ({ [key]: value }))
+  const matchRecord = Value.map(match, ([key, value]) => ({
+    [key]: value,
+  }))
   return OneOf(matchRecord, cases)
 }
 

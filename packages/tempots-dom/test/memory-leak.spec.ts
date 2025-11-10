@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { html, render, prop, computed, effect, When, Repeat } from '../src'
-import { DisposalScope } from '../src/std/disposal-scope'
+import { DisposalScope } from '@tempots/core'
 import { sleep } from './helper'
 
 describe('Memory Leak Tests', () => {

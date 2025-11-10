@@ -1,10 +1,10 @@
 import type { HTMLAttributes } from '../types/html-attributes'
 import type { Renderable, SplitNValue } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
-import { Signal } from '../std/signal'
+import { Signal } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
-import { Value } from '../std/value'
+import { Value } from '@tempots/core'
 import { MathMLAttributes } from '../types/mathml-attributes'
 
 const staticClassName =

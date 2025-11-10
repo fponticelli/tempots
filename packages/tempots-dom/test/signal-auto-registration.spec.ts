@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach } from 'vitest'
-import { prop, computed, effect, Prop, Computed } from '../src/std/signal'
-import { DisposalScope } from '../src/std/disposal-scope'
-import { scopeStack, pushScope, popScope, scoped } from '../src/std/scope-stack'
+import { prop, computed, effect, Prop, Computed } from '@tempots/core'
+import { DisposalScope } from '@tempots/core'
+import { scopeStack, pushScope, popScope, scoped } from '@tempots/core'
 
 describe('signal-auto-registration', () => {
   // Clear the stack before each test
