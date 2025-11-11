@@ -1,15 +1,14 @@
 import type { Renderable } from '../types/domain'
 import type { HTMLEvents } from '../types/html-events'
 import { DOMContext, HandlerOptions } from '../dom/dom-context'
+import { domRenderable } from '../types/domain'
 
-const handler =
-  <T extends Event>(
-    name: string,
-    handler: (event: T, ctx: DOMContext) => void,
-    options?: HandlerOptions
-  ): Renderable =>
-  (ctx: DOMContext) =>
-    ctx.on(name, handler, options)
+const handler = <T extends Event>(
+  name: string,
+  handler: (event: T, ctx: DOMContext) => void,
+  options?: HandlerOptions
+): Renderable =>
+  domRenderable((ctx: DOMContext) => ctx.on(name, handler, options))
 
 /**
  * Attaches an event handler to the 'click' event that triggers when a checkbox is checked or unchecked.

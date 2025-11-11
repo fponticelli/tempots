@@ -1,5 +1,4 @@
 import {
-  DOMContext,
   Signal,
   prop,
   TNode,
@@ -9,6 +8,8 @@ import {
   BrowserContext,
   getWindow,
   OnDispose,
+  WithCtx,
+  Fragment,
 } from '@tempots/dom'
 import { nearEqual } from '@tempots/std'
 
@@ -308,7 +309,7 @@ export const ElementRect = (fn: (rect: Signal<Rect>) => TNode) =>
   WithBrowserCtx((ctx: BrowserContext) => {
     const { element } = ctx
     const rect = prop(getAbsoluteRect(element), (a, b) => a.equals(b))
-    const clear = renderableOfTNode(fn(rect))(ctx)
+    const clear = renderableOfTNode(fn(rect)).render(ctx)
     const onResize = () => rect.set(Rect.of(getAbsoluteRect(element)))
     let observer: ResizeObserver | null = null
     if (typeof ResizeObserver !== 'undefined') {
@@ -335,19 +336,20 @@ function getWinSize(win: Window | undefined) {
  * @returns A renderable function that monitors the window size.
  * @public
  */
-export const WindowSize =
-  (fn: (size: Signal<Size>) => TNode) => (ctx: DOMContext) => {
+export const WindowSize = (fn: (size: Signal<Size>) => TNode) =>
+  WithCtx(() => {
     const win = getWindow()
     const size = prop(
       getWinSize(win),
       (a, b) => a.width === b.width && a.height === b.height
     )
-    const clear = renderableOfTNode(fn(size))(ctx)
     const onResize = () => size.set(getWinSize(win))
 
     win?.addEventListener('resize', onResize)
-    return (removeTree: boolean) => {
-      win?.removeEventListener('resize', onResize)
-      clear(removeTree)
-    }
-  }
+    return Fragment(
+      OnDispose(() => {
+        win?.removeEventListener('resize', onResize)
+      }),
+      fn(size)
+    )
+  })

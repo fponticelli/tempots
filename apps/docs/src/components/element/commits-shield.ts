@@ -1,4 +1,4 @@
-import { attr, computed, html, OnDispose, Value } from '@tempots/dom'
+import { attr, computed, html, Value } from '@tempots/dom'
 
 export function CommitsShield(user: Value<string>, repo: Value<string>) {
   const userSignal = Value.toSignal(user)
@@ -8,7 +8,6 @@ export function CommitsShield(user: Value<string>, repo: Value<string>) {
     [userSignal, repoSignal]
   )
   return html.a(
-    OnDispose(fullRepo),
     attr.target('_blank'),
     attr.href(fullRepo.map(n => `https://github.com/${n}`)),
     html.img(

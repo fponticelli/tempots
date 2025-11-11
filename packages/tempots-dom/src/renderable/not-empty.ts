@@ -1,6 +1,5 @@
-import { Signal } from '../std/signal'
-import { Value } from '../std/value'
-import { Renderable } from '../types/domain'
+import { Signal, Value } from '@tempots/core'
+import type { Renderable } from '../types/domain'
 import { Empty } from './empty'
 import { OneOf } from './oneof'
 

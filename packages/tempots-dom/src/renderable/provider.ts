@@ -3,6 +3,7 @@ import { Clear, ProviderMark, Renderable, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Fragment } from './fragment'
 import { OnDispose } from './on-dispose'
+import { domRenderable } from '../types/domain'
 
 /**
  * Converts an array of `Provider` types `T` into an array of their corresponding types.
@@ -49,7 +50,7 @@ export type ProviderOptions = {
 }
 
 /**
- * Returns a renderable function that executes the given function with the
+ * Returns a renderable object that executes the given function with the
  * current DOMContext as argument.
  * The given function can return a TNode or void. If you need to perform some
  * actions when the Renderable is disposed, you can use `OnDispose` as the
@@ -59,9 +60,10 @@ export type ProviderOptions = {
  * @returns A Clear function that can be used to clean up any resources associated with the execution.
  * @public
  */
-export const WithProvider =
-  (fn: (opts: ProviderOptions) => TNode | void): Renderable =>
-  (ctx: DOMContext): Clear => {
+export const WithProvider = (
+  fn: (opts: ProviderOptions) => TNode | void
+): Renderable =>
+  domRenderable((ctx: DOMContext): Clear => {
     let newCtx = ctx
     function getCtx() {
       return newCtx
@@ -88,8 +90,8 @@ export const WithProvider =
     return Fragment(
       renderableOfTNode(result),
       OnDispose(() => disposers.forEach(fn => fn()))
-    )(getCtx())
-  }
+    ).render(getCtx())
+  })
 
 /**
  * Makes a provider available to all child components in the component tree.

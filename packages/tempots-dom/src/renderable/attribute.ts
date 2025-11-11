@@ -1,26 +1,25 @@
 import type { HTMLAttributes } from '../types/html-attributes'
 import type { Renderable, SplitNValue } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
-import { Signal } from '../std/signal'
+import { Signal } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
-import { Value } from '../std/value'
+import { Value } from '@tempots/core'
 import { MathMLAttributes } from '../types/mathml-attributes'
+import { domRenderable } from '../types/domain'
 
-const staticClassName =
-  (value: string[]): Renderable =>
-  (ctx: DOMContext) => {
+const staticClassName = (value: string[]): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     ctx.addClasses(value)
     return (removeTree: boolean) => {
       if (removeTree) {
         ctx.removeClasses(value)
       }
     }
-  }
+  })
 
-const signalClassName =
-  (signal: Signal<string>): Renderable =>
-  (ctx: DOMContext) => {
+const signalClassName = (signal: Signal<string>): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     let previous: string[] = []
     // Use noAutoDispose because we're explicitly managing the lifecycle in the returned clear function
     const clear = signal.on(
@@ -38,10 +37,10 @@ const signalClassName =
       }
       previous.length = 0
     }
-  }
+  })
 
-const staticAttributeRenderable = <T>(name: string, value: T) => {
-  return (ctx: DOMContext) => {
+const staticAttributeRenderable = <T>(name: string, value: T): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const { get, set } = ctx.makeAccessors(name)
     const original = get()
     set(value)
@@ -50,11 +49,13 @@ const staticAttributeRenderable = <T>(name: string, value: T) => {
         set(original)
       }
     }
-  }
-}
+  })
 
-const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
-  return (ctx: DOMContext) => {
+const signalAttributeRenderable = <T>(
+  name: string,
+  signal: Signal<T>
+): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const { get, set } = ctx.makeAccessors(name)
     const original = get()
     // Use noAutoDispose because we're explicitly managing the lifecycle in the returned clear function
@@ -65,8 +66,7 @@ const signalAttributeRenderable = <T>(name: string, signal: Signal<T>) => {
         set(original)
       }
     }
-  }
-}
+  })
 
 /**
  * Helper function to create an attribute renderable from a value that could be static or a Signal.

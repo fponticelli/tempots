@@ -1,8 +1,9 @@
 import { DOMContext } from '../dom/dom-context'
-import { DisposalScope } from '../std/disposal-scope'
-import { withScope } from '../std/scope-stack'
+import { DisposalScope } from '@tempots/core'
+import { withScope } from '@tempots/core'
 import { Renderable, TNode } from '../types/domain'
 import { renderableOfTNode } from './element'
+import { domRenderable } from '../types/domain'
 
 /**
  * Creates a renderable that provides explicit access to a DisposalScope.
@@ -40,14 +41,15 @@ import { renderableOfTNode } from './element'
  * @returns A renderable that manages the scope lifecycle
  * @public
  */
-export const WithScope = (fn: (scope: DisposalScope) => TNode): Renderable => {
-  return (ctx: DOMContext) => {
+export const WithScope = (fn: (scope: DisposalScope) => TNode): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const scope = new DisposalScope()
-    const clear = withScope(scope, () => renderableOfTNode(fn(scope))(ctx))
+    const clear = withScope(scope, () =>
+      renderableOfTNode(fn(scope)).render(ctx)
+    )
 
     return (removeTree: boolean) => {
       scope.dispose()
       clear(removeTree)
     }
-  }
-}
+  })

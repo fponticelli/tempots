@@ -1,4 +1,4 @@
-import { attr, html, OnDispose, prop, TNode, Value } from '@tempots/dom'
+import { attr, html, prop, TNode, Value } from '@tempots/dom'
 import { htmlToTempo } from './process-html'
 import { Styles } from '../styles'
 import { MonacoEditor } from '../element/monaco-editor'
@@ -23,8 +23,15 @@ export function HtmlToTempo() {
     '<div class="message">\n  Hello World!\n  <br/>\n  How are <b>you</b>?\n</div>'
   )
   const tempo = prop('')
+  content.on(html => {
+    try {
+      const tempoStr = htmlToTempo(html)
+      tempo.set(tempoStr)
+    } catch (e) {
+      console.warn('Failed to parse HTML', e)
+    }
+  })
   return html.div(
-    OnDispose(content, tempo),
     attr.class('h-full p-4 flex flex-col gap-2'),
     HTMLTitle('Tempo • HTML to Tempo'),
     OpenGraph({
@@ -33,16 +40,6 @@ export function HtmlToTempo() {
     }),
     attr.class(
       'grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 h-[calc(100dvh-6rem)] overflow-hidden gap-2'
-    ),
-    OnDispose(
-      content.on(html => {
-        try {
-          const tempoStr = htmlToTempo(html)
-          tempo.set(tempoStr)
-        } catch (e) {
-          console.warn('Failed to parse HTML', e)
-        }
-      })
     ),
     EditorContainer(
       'HTML',

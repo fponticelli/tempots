@@ -1,9 +1,7 @@
 import type { TNode, Renderable } from '../types/domain'
-import { Signal } from '../std/signal'
-import { ElementPosition } from '../std/element-position'
+import { Signal, Value, ElementPosition } from '@tempots/core'
 import { Repeat } from './repeat'
 import { renderableOfTNode } from './element'
-import { Value } from '../std/value'
 
 /**
  * Efficiently renders a dynamic list of items from an array signal.

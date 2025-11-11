@@ -2,13 +2,14 @@ import type { TNode, Renderable } from '../types/domain'
 import type { HTMLTags } from '../types/html-tags'
 import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
-import { Signal } from '../std/signal'
+import { Signal } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
 import { _signalText, _staticText } from './text'
 import { Fragment } from './fragment'
 import { Empty } from './empty'
 import { attr } from './attribute'
 import { InputTypes } from '../types/html-attributes'
+import { domRenderable } from '../types/domain'
 
 /**
  * Converts a TNode into a Renderable.
@@ -27,7 +28,11 @@ export const renderableOfTNode = <T extends DOMContext>(
     return _staticText(child)
   } else if (Signal.is(child as Signal<string>)) {
     return _signalText(child as Signal<string>)
-  } else if (typeof child === 'function') {
+  } else if (
+    typeof child === 'object' &&
+    'render' in child &&
+    'type' in child
+  ) {
     return child as Renderable
   } else {
     throw new Error(`Unknown type: '${typeof child}' for child: ${child}`)
@@ -39,39 +44,41 @@ export const renderableOfTNode = <T extends DOMContext>(
  *
  * @param tagName - The tag name of the HTML element.
  * @param children - The child nodes of the HTML element.
- * @returns A renderable function that creates and appends the HTML element to the DOM.
+ * @returns A renderable object that creates and appends the HTML element to the DOM.
  * @public
  */
-export const El = (tagName: string, ...children: TNode[]): Renderable => {
-  return (ctx: DOMContext) => {
+export const El = (tagName: string, ...children: TNode[]): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, undefined)
-    const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
+    const clears = children.map(fn => renderableOfTNode(fn).render(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       newCtx.clear(removeTree)
     }
-  }
-}
+  })
 
 /**
- * Creates a renderable function that represents an element in the DOM with a specified namespace.
+ * Creates a renderable object that represents an element in the DOM with a specified namespace.
  *
  * @param tagName - The name of the HTML tag for the element.
  * @param namespace - The namespace of the element.
  * @param children - The child nodes of the element.
- * @returns A renderable function that creates and appends the element to the DOM.
+ * @returns A renderable object that creates and appends the element to the DOM.
  * @public
  */
-export const ElNS =
-  (tagName: string, namespace: string, ...children: TNode[]): Renderable =>
-  (ctx: DOMContext) => {
+export const ElNS = (
+  tagName: string,
+  namespace: string,
+  ...children: TNode[]
+): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, namespace)
-    const clears = children.map(fn => renderableOfTNode(fn)(newCtx))
+    const clears = children.map(fn => renderableOfTNode(fn).render(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       newCtx.clear(removeTree)
     }
-  }
+  })
 
 /**
  * A convenience object to create Renderables for HTML elements.

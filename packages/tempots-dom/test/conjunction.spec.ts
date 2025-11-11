@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach } from 'vitest'
 import { Conjunction, render, html, runHeadless, prop } from '../src'
-import { ElementPosition } from '../src/std/element-position'
+import { ElementPosition } from '@tempots/core'
 
 describe('Conjunction', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@ import { computed, effect, prop } from './signal'
 import { untracked, withScope } from './scope-stack'
 import type { Value } from './value'
 import { computedOf, effectOf } from './value'
-import { ValueTypes } from '../types/domain'
+import { ValueTypes } from './types'
 
 /**
  * A DisposalScope tracks signals created during its lifetime and disposes them when the scope ends.

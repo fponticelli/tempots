@@ -1,6 +1,5 @@
-import { Signal } from '../std/signal'
+import { Signal, ElementPosition } from '@tempots/core'
 import { Renderable, TNode } from '../types/domain'
-import { ElementPosition } from '../std/element-position'
 import { OneOfValue } from './oneof'
 
 /**

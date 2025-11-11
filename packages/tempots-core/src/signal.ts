@@ -948,9 +948,6 @@ export const computed = <T>(
 ): Computed<T> => {
   const computed = new Computed(fn, equals)
   dependencies.forEach(signal => signal.setDerivative(computed))
-
-  // Note: Auto-registration is now handled by the Computed constructor
-
   return computed
 }
 /**

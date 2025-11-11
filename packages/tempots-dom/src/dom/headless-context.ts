@@ -1,5 +1,5 @@
 import { _NODE_PLACEHOLDER_ATTR } from '../renderable/render'
-import { Prop } from '../std/signal'
+import { Prop } from '@tempots/core'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
 import { DOMContext, HandlerOptions } from './dom-context'
@@ -351,7 +351,9 @@ export class HeadlessContext implements DOMContext {
   readonly appendOrInsert = (element: HeadlessNode): void => {
     if (this.reference != null) {
       const index = this.element.children.indexOf(this.reference)
-      this.element.children.splice(index, 0, element)
+      if (index >= 0) {
+        this.element.children.splice(index, 0, element)
+      }
     } else {
       this.element.children.push(element)
     }

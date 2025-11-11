@@ -54,7 +54,7 @@ function demoButton(demo: Demo, currentDemo: Prop<Demo>): Renderable {
 }
 
 export function App(): Renderable {
-  const currentDemo = prop<Demo>('Temperature')
+  const currentDemo = prop<Demo>('Cells')
   return Fragment(
     Portal(
       'body',

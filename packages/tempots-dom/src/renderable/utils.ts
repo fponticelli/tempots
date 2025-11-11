@@ -1,10 +1,10 @@
 import { Clear, TNode } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Signal } from '../std/signal'
-import { Value } from '../std/value'
+import { Signal } from '@tempots/core'
+import { Value } from '@tempots/core'
 import { renderableOfTNode } from './element'
-import { DisposalScope } from '../std/disposal-scope'
-import { withScope } from '../std/scope-stack'
+import { DisposalScope } from '@tempots/core'
+import { withScope } from '@tempots/core'
 
 /**
  * Helper function to handle a value that could be either a Signal or a static value.
@@ -62,7 +62,7 @@ export const createReactiveRenderable = <T>(
       // Create a new scope for the new branch
       currentScope = new DisposalScope()
       clear = withScope(currentScope, () =>
-        renderableOfTNode(render(value))(newCtx)
+        renderableOfTNode(render(value)).render(newCtx)
       )
     },
     { noAutoDispose: true }

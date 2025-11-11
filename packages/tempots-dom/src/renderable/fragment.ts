@@ -1,6 +1,7 @@
 import type { TNode, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
+import { domRenderable } from '../types/domain'
 
 /**
  * Creates a fragment renderable that represents a collection of child renderables.
@@ -10,14 +11,15 @@ import { renderableOfTNode } from './element'
  * It can be used any time a single Renderable/TNode is expected, but multiple renderables are needed.
  *
  * @param children - The child renderables to include in the fragment.
- * @returns A renderable function that renders the child renderables in the given DOM context.
+ * @returns A renderable object that renders the child renderables in the given DOM context.
  * @public
  */
-export const Fragment =
-  <T extends DOMContext>(...children: TNode<T>[]): Renderable<T> =>
-  (ctx: T) => {
-    const clears = children.map(child => renderableOfTNode(child)(ctx))
+export const Fragment = <T extends DOMContext>(
+  ...children: TNode<T>[]
+): Renderable<T> =>
+  domRenderable((ctx: T) => {
+    const clears = children.map(child => renderableOfTNode(child).render(ctx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(removeTree))
     }
-  }
+  }) as Renderable<T>

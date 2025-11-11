@@ -1,4 +1,4 @@
-import { attr, html, Value, WithElement, OnDispose, Use } from '@tempots/dom'
+import { attr, html, Value, WithElement, Use } from '@tempots/dom'
 import { Location, type LocationHandle, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
@@ -33,13 +33,18 @@ export function EmbedHTMLFragment(content: Value<string>) {
     html.div(
       attr.class(Styles.prose),
       attr.innerHTML(htmlSignal),
-      Use(Location, location =>
-        WithElement(el =>
-          OnDispose(
-            htmlSignal.on(() => updateAnchors(location, el as HTMLElement))
-          )
-        )
-      )
+      Use(Location, location => {
+        let element: HTMLElement | null = null
+        htmlSignal.on(() => {
+          if (element) updateAnchors(location, element)
+        })
+        return [
+          WithElement(el => {
+            element = el as HTMLElement
+            updateAnchors(location, element)
+          }),
+        ]
+      })
     )
   )
 }

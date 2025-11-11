@@ -1,4 +1,3 @@
-import { ValueTypes } from '../types/domain'
 import {
   ListenerOptions,
   computed,
@@ -8,6 +7,7 @@ import {
   Prop,
   Signal,
 } from './signal'
+import { ValueTypes } from './types'
 
 /**
  * Represents a value that can either be a `Signal<T>` or a generic type `T`.

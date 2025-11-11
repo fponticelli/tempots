@@ -141,22 +141,19 @@ class CellValue {
     readonly formula: Prop<string> = prop('')
   ) {
     const value = prop('')
-    // Timeout is needed because ctx is not fully populated yet
-    setTimeout(() => {
-      this.formula.on(formula => {
-        this._value.dispose()
-        // eslint-disable-next-line tempots/require-async-signal-disposal
-        const references = extractCellReferences(formula)
-          .map(ref => ctx.get(ref)?.value)
-          .filter(v => v != null) as Signal<string>[]
-        // eslint-disable-next-line tempots/require-async-signal-disposal
-        this._value = computed(
-          () => evalFormula(formula, this.ctx),
-          [...references]
-        )
-        this._value.feedProp(value)
-      })
-    }, 0)
+    this.formula.on(formula => {
+      this._value.dispose()
+
+      const references = extractCellReferences(formula)
+        .map(ref => ctx.get(ref)?.value)
+        .filter(v => v != null) as Signal<string>[]
+
+      this._value = computed(
+        () => evalFormula(formula, this.ctx),
+        [...references]
+      )
+      this._value.feedProp(value)
+    })
     this.value = value
   }
 }
@@ -204,9 +201,9 @@ export function Cells(): Renderable {
                     () =>
                       InputText(
                         AutoSelect(),
-                        attr.class('w-full min-w-20 h-7'),
+                        attr.class('min-w-8 max-w-full h-7'),
                         attr.value(cellValue.formula),
-                        on.blur(
+                        on.change(
                           emitValue(text => {
                             if (text !== cellValue.formula.value) {
                               cellValue.formula.set(text)
@@ -214,10 +211,8 @@ export function Cells(): Renderable {
                             editing.set(null)
                           })
                         ),
-                        on.keydown((e: KeyboardEvent) => {
-                          if (e.key === 'Enter') {
-                            editing.set(null)
-                          }
+                        on.blur(() => {
+                          editing.set(null)
                         })
                       ),
                     () =>

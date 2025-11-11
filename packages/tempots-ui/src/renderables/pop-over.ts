@@ -260,10 +260,12 @@ export const PopOver = (
                           computedOf(
                             arrowSignal,
                             placement
-                          )((arrow, placement) => ({
-                            ...arrow,
-                            placement,
-                          }))
+                          )(
+                            (arrow, placement): PopOverArrowOptions => ({
+                              ...arrow,
+                              placement,
+                            })
+                          )
                         ),
                         WithElement(el => {
                           arrowEl = el

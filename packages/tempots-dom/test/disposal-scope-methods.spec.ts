@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { DisposalScope } from '../src/std/disposal-scope'
-import { prop, computed, effect, Prop, Computed } from '../src/std/signal'
-import { untracked } from '../src/std/scope-stack'
+import { DisposalScope } from '@tempots/core'
+import { prop, computed, effect, Prop, Computed } from '@tempots/core'
+import { untracked } from '@tempots/core'
 
 describe('DisposalScope helper methods', () => {
   const sleep = () => new Promise(resolve => setTimeout(resolve, 0))

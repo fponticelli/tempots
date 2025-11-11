@@ -1,26 +1,70 @@
 import { DOMContext } from '../dom/dom-context'
-import { AnySignal, Computed, Prop, Signal } from '../std/signal'
-import { Value } from '../std/value'
+import {
+  AnySignal,
+  Computed,
+  Prop,
+  Signal,
+  Value,
+  ValueType,
+  BaseValueType,
+  ValueTypes,
+  Values,
+  RemoveSignals,
+  Nil,
+  Clear,
+  ProviderMark,
+  makeProviderMark,
+  Renderable as CoreRenderable,
+  createRenderable,
+} from '@tempots/core'
+
+// Re-export core types that are used in DOM-specific types
+export type {
+  Clear,
+  ProviderMark,
+  Value,
+  ValueType,
+  BaseValueType,
+  ValueTypes,
+  Values,
+  RemoveSignals,
+  Nil,
+  AnySignal,
+  Signal,
+  Prop,
+  Computed,
+}
+export { makeProviderMark }
 
 /**
- * A function that renders content into the DOM and returns a cleanup function.
+ * Symbol to brand DOM renderables and prevent mixing with other contexts
+ * @public
+ */
+export const DOM_RENDERABLE_TYPE = Symbol('DOM_RENDERABLE')
+
+/**
+ * A renderable object that can render content into the DOM.
  *
- * Renderables are the fundamental building blocks of Tempo applications. They receive
- * a DOMContext and use it to create DOM elements, text nodes, or other content.
- * The returned Clear function is called when the renderable needs to be removed
- * from the DOM.
+ * Renderables are the fundamental building blocks of Tempo applications. They are
+ * objects with a `render()` method that receives a DOMContext and returns a cleanup
+ * function, and a `type` symbol for runtime type checking.
+ *
+ * This is a specialized version of the core Renderable type for DOM contexts.
  *
  * @example
  * ```typescript
  * // Simple renderable that creates a div
- * const MyComponent: Renderable = (ctx) => {
- *   const divCtx = ctx.makeChildElement('div', undefined)
- *   divCtx.makeChildText('Hello, World!')
+ * const MyComponent: Renderable = {
+ *   type: DOM_RENDERABLE_TYPE,
+ *   render: (ctx) => {
+ *     const divCtx = ctx.makeChildElement('div', undefined)
+ *     divCtx.makeChildText('Hello, World!')
  *
- *   // Return cleanup function
- *   return (removeTree) => {
- *     if (removeTree) {
- *       // Cleanup logic here
+ *     // Return cleanup function
+ *     return (removeTree) => {
+ *       if (removeTree) {
+ *         // Cleanup logic here
+ *       }
  *     }
  *   }
  * }
@@ -29,28 +73,39 @@ import { Value } from '../std/value'
  * @example
  * ```typescript
  * // Renderable with event listeners
- * const Button: Renderable = (ctx) => {
- *   const buttonCtx = ctx.makeChildElement('button', undefined)
- *   buttonCtx.makeChildText('Click me')
+ * const Button: Renderable = {
+ *   type: DOM_RENDERABLE_TYPE,
+ *   render: (ctx) => {
+ *     const buttonCtx = ctx.makeChildElement('button', undefined)
+ *     buttonCtx.makeChildText('Click me')
  *
- *   const clearClick = buttonCtx.on('click', () => {
- *     console.log('Button clicked!')
- *   })
+ *     const clearClick = buttonCtx.on('click', () => {
+ *       console.log('Button clicked!')
+ *     })
  *
- *   return (removeTree) => {
- *     clearClick(removeTree)
+ *     return (removeTree) => {
+ *       clearClick(removeTree)
+ *     }
  *   }
  * }
  * ```
  *
  * @template CTX - The type of DOMContext (defaults to DOMContext)
- * @param ctx - The DOM context for rendering
- * @returns A cleanup function that removes the rendered content when called
  * @public
  */
-export type Renderable<CTX extends DOMContext = DOMContext> = (
-  ctx: CTX
-) => Clear
+export type Renderable<CTX extends DOMContext = DOMContext> = CoreRenderable<
+  CTX,
+  typeof DOM_RENDERABLE_TYPE
+>
+
+/**
+ * Helper to create DOM renderables (internal use)
+ * @internal
+ */
+export const domRenderable = <CTX extends DOMContext = DOMContext>(
+  renderFn: (ctx: CTX) => Clear
+): Renderable<CTX> =>
+  createRenderable(DOM_RENDERABLE_TYPE, renderFn) as Renderable<CTX>
 
 /**
  * A flexible type representing any content that can be rendered in Tempo.
@@ -121,19 +176,7 @@ export type TNode<CTX extends DOMContext = DOMContext> =
   | undefined
   | null
   | Renderable<CTX>[]
-/**
- * Represents a function that clears a resource.
- * @param removeTree - A boolean value indicating whether to remove the tree associated with the resource.
- * @public
- */
-export type Clear = (removeTree: boolean) => void
-
-/**
- * Represents a provider mark.
- * @typeParam T - The type of the mark.
- * @public
- */
-export type ProviderMark<T> = symbol & { readonly __type: T }
+// Clear and ProviderMark are re-exported from @tempots/core
 /**
  * Represents a collection of providers.
  * The keys of the record are ProviderMark types, and the values are of unknown type.
@@ -179,65 +222,4 @@ export type SplitNValue<T> =
   | (T extends unknown ? TupleToUnion<NValue<T>[]> : never)
   | NValue<T>
 
-/**
- * Gets the value type of a given Value type.
- * If the type is a `Signal`, it returns the inferred value type.
- * Otherwise, it returns the type itself.
- * @public
- */
-export type ValueType<T> =
-  T extends Computed<infer V>
-    ? V
-    : T extends Prop<infer V>
-      ? V
-      : T extends Signal<infer V>
-        ? V
-        : T
-
-/**
- * Gets the base value type of a given Value type.
- * @public
- */
-export type BaseValueType<T> = NonNullable<ValueType<T>>
-
-/**
- * Gets the value types of a given array of Value types.
- * @public
- */
-export type ValueTypes<T extends Value<unknown>[]> = {
-  [K in keyof T]: ValueType<T[K]>
-}
-
-/**
- * Wraps all non-`Value` types in the array in `Value`.
- * @public
- */
-export type Values<T extends unknown[]> = {
-  [K in keyof T]: T[K] extends
-    | Signal<unknown>
-    | Computed<unknown>
-    | Prop<unknown>
-    ? T[K]
-    : Value<T[K]>
-}
-
-/**
- * Removes signals from a given object type and returns a new object type
- * with only the non-signal properties.
- *
- * @typeParam T - The input object type.
- * @typeParam K - The keys of the input object type to keep (optional).
- * @public
- */
-export type RemoveSignals<
-  T extends Record<string | number | symbol, Value<unknown>>,
-  K extends (string | number | symbol) & keyof T = keyof T,
-> = {
-  [k in K]: ValueType<T[k]>
-}
-
-/**
- * Represents a value that can be null or undefined.
- * @public
- */
-export type Nil = null | undefined
+// ValueType, BaseValueType, ValueTypes, Values, RemoveSignals, and Nil are re-exported from @tempots/core

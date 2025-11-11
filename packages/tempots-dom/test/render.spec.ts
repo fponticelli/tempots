@@ -18,6 +18,7 @@ import {
   CLASS_PLACEHOLDER_ATTR,
 } from '../src'
 import type { Prop, Computed, Renderable } from '../src'
+import { domRenderable } from '../src/types/domain'
 import { sleep } from './helper'
 
 describe('Render', () => {
@@ -199,10 +200,10 @@ describe('Render', () => {
         const ctx = BrowserContext.of(element, undefined, {})
         let signal: Prop<number> | null = null
 
-        const MyComponent: Renderable = () => {
+        const MyComponent: Renderable = domRenderable(() => {
           signal = prop(0)
           return () => {}
-        }
+        })
 
         const clear = renderWithContext(MyComponent, ctx)
 
@@ -220,12 +221,12 @@ describe('Render', () => {
         const ctx = BrowserContext.of(element, undefined, {})
         const signals: Array<Prop<number>> = []
 
-        const MyComponent: Renderable = () => {
+        const MyComponent: Renderable = domRenderable(() => {
           signals.push(prop(1))
           signals.push(prop(2))
           signals.push(prop(3))
           return () => {}
-        }
+        })
 
         const clear = renderWithContext(MyComponent, ctx)
 
@@ -244,11 +245,11 @@ describe('Render', () => {
         let source: Prop<number> | null = null
         let derived: Computed<number> | null = null
 
-        const MyComponent: Renderable = () => {
+        const MyComponent: Renderable = domRenderable(() => {
           source = prop(10)
           derived = computed(() => source!.value * 2, [source])
           return () => {}
-        }
+        })
 
         const clear = renderWithContext(MyComponent, ctx)
 
@@ -269,13 +270,13 @@ describe('Render', () => {
         const source = prop(0)
         let callCount = 0
 
-        const MyComponent: Renderable = () => {
+        const MyComponent: Renderable = domRenderable(() => {
           effect(() => {
             callCount++
             source.value
           }, [source])
           return () => {}
-        }
+        })
 
         const clear = renderWithContext(MyComponent, ctx)
 
@@ -303,18 +304,18 @@ describe('Render', () => {
         let outerSignal: Prop<number> | null = null
         let innerSignal: Prop<number> | null = null
 
-        const InnerComponent: Renderable = () => {
+        const InnerComponent: Renderable = domRenderable(() => {
           innerSignal = prop(20)
           return () => {}
-        }
+        })
 
-        const OuterComponent: Renderable = ctx => {
+        const OuterComponent: Renderable = domRenderable(ctx => {
           outerSignal = prop(10)
           const innerClear = renderWithContext(InnerComponent, ctx)
           return () => {
             innerClear()
           }
-        }
+        })
 
         const clear = renderWithContext(OuterComponent, ctx)
 
@@ -385,12 +386,13 @@ describe('Render', () => {
 
       let capturedValue: string | undefined
       const { clear } = runHeadless(
-        () => ctx => {
-          const provider = ctx.getProvider(testMark)
-          capturedValue = provider.value
-          provider.onUse?.()
-          return () => {}
-        },
+        () =>
+          domRenderable(ctx => {
+            const provider = ctx.getProvider(testMark)
+            capturedValue = provider.value
+            provider.onUse?.()
+            return () => {}
+          }),
         {
           selector: 'body',
           providers,
@@ -915,14 +917,14 @@ describe('Render', () => {
       })
 
       // Create a headless environment with a portal that has innerHTML
-      const { root, clear } = runHeadless(() => {
-        return (ctx: any) => {
+      const { root, clear } = runHeadless(() =>
+        domRenderable((ctx: any) => {
           const portalCtx = ctx.makePortal('#test-portal')
           portalCtx.element.properties.innerHTML =
             '<span>portal innerHTML</span>'
           return () => {}
-        }
-      })
+        })
+      )
 
       // Test setFromRoot with placeholders to cover innerHTML handling (lines 368-376)
       adapter.setFromRoot(root, true)
@@ -976,13 +978,13 @@ describe('Render', () => {
       })
 
       // Create a headless environment with a portal that has innerText
-      const { root, clear } = runHeadless(() => {
-        return (ctx: any) => {
+      const { root, clear } = runHeadless(() =>
+        domRenderable((ctx: any) => {
           const portalCtx = ctx.makePortal('#test-portal')
           portalCtx.element.properties.innerText = 'portal innerText'
           return () => {}
-        }
-      })
+        })
+      )
 
       // Test setFromRoot with placeholders to cover innerText handling (lines 377-385)
       adapter.setFromRoot(root, true)
@@ -1036,14 +1038,14 @@ describe('Render', () => {
       })
 
       // Create a headless environment with a portal that has classes
-      const { root, clear } = runHeadless(() => {
-        return (ctx: any) => {
+      const { root, clear } = runHeadless(() =>
+        domRenderable((ctx: any) => {
           const portalCtx = ctx.makePortal('#test-portal')
           // Use the public method to add classes
           portalCtx.addClasses(['portal-class', 'another-class'])
           return () => {}
-        }
-      })
+        })
+      )
 
       // Test setFromRoot with placeholders to cover classes handling (lines 386-394)
       adapter.setFromRoot(root, true)
@@ -1097,15 +1099,15 @@ describe('Render', () => {
       })
 
       // Create a headless environment with a portal that has styles
-      const { root, clear } = runHeadless(() => {
-        return (ctx: any) => {
+      const { root, clear } = runHeadless(() =>
+        domRenderable((ctx: any) => {
           const portalCtx = ctx.makePortal('#test-portal')
           // Use the public method to set styles
           portalCtx.setStyle('color', 'red')
           portalCtx.setStyle('fontSize', '16px')
           return () => {}
-        }
-      })
+        })
+      )
 
       // Test setFromRoot with placeholders to cover styles handling (lines 395-407)
       adapter.setFromRoot(root, true)
@@ -1162,15 +1164,15 @@ describe('Render', () => {
       })
 
       // Create a headless environment with a portal that has attributes
-      const { root, clear } = runHeadless(() => {
-        return (ctx: any) => {
+      const { root, clear } = runHeadless(() =>
+        domRenderable((ctx: any) => {
           const portalCtx = ctx.makePortal('#test-portal')
           portalCtx.element.properties.id = 'portal-id'
           portalCtx.element.properties.title = 'Portal Title'
           portalCtx.element.properties['data-test'] = 'portal-data'
           return () => {}
-        }
-      })
+        })
+      )
 
       // Test setFromRoot with placeholders to cover attributes handling (lines 408-429)
       adapter.setFromRoot(root, true)
@@ -1234,14 +1236,14 @@ describe('Render', () => {
       })
 
       // Create a headless environment with a portal that uses HTMLElement selector
-      const { root, clear } = runHeadless(() => {
-        return (ctx: any) => {
+      const { root, clear } = runHeadless(() =>
+        domRenderable((ctx: any) => {
           // Use the actual DOM element as the portal selector (this covers line 358)
           const portalCtx = ctx.makePortal(targetElement)
           portalCtx.makeChildText('Portal with HTMLElement selector')
           return () => {}
-        }
-      })
+        })
+      )
 
       // Test setFromRoot to cover HTMLElement selector path (line 358)
       adapter.setFromRoot(root, false)

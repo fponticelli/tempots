@@ -1,10 +1,11 @@
 import type { TNode, Clear, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Prop, Signal, prop, signal } from '../std/signal'
+import { Prop, Signal, prop, signal } from '@tempots/core'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
-import { Value } from '../std/value'
+import { Value } from '@tempots/core'
 import { handleValueOrSignal } from './utils'
+import { domRenderable } from '../types/domain'
 
 export type NillifyValue<T> =
   | Value<T | null | undefined>
@@ -59,7 +60,7 @@ export const Ensure = <T>(
   otherwise?: () => TNode
 ): Renderable => {
   function onSignal(valueSignal: Signal<T | null | undefined>) {
-    return (ctx: DOMContext) => {
+    return domRenderable((ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       let clear: Clear = () => {}
       let isNonNillRendered = false
@@ -67,7 +68,7 @@ export const Ensure = <T>(
       const clearSignal = valueSignal.on(value => {
         if (value == null) {
           clear(true)
-          clear = renderableOfTNode(otherwise?.())(newCtx)
+          clear = renderableOfTNode(otherwise?.()).render(newCtx)
           isNonNillRendered = false
           feed?.dispose()
           feed = null
@@ -75,9 +76,9 @@ export const Ensure = <T>(
           if (!isNonNillRendered) {
             feed = prop<T>(value)
             clear(true)
-            clear = renderableOfTNode(then(feed as Signal<NonNillable<T>>))(
-              newCtx
-            )
+            clear = renderableOfTNode(
+              then(feed as Signal<NonNillable<T>>)
+            ).render(newCtx)
             isNonNillRendered = true
           } else {
             feed!.set(value)
@@ -90,7 +91,7 @@ export const Ensure = <T>(
         clear?.(removeTree)
         newCtx.clear(removeTree)
       }
-    }
+    })
   }
 
   function onLiteral(literal: T | null | undefined) {
@@ -171,8 +172,8 @@ export const EnsureAll =
       }
     ) => TNode,
     otherwise?: () => TNode
-  ): Renderable => {
-    return (ctx: DOMContext) => {
+  ): Renderable =>
+    domRenderable((ctx: DOMContext) => {
       const newCtx = ctx.makeRef()
       // if any of the values is a literal null or undefined, we can skip the signal logic and always use the otherwise function
       const hasNillLiterals = signals.some(
@@ -181,9 +182,9 @@ export const EnsureAll =
 
       if (hasNillLiterals) {
         /* c8 ignore next 3 */
-        return (otherwise != null ? renderableOfTNode(otherwise?.()) : Empty)(
-          newCtx
-        )
+        return (
+          otherwise != null ? renderableOfTNode(otherwise?.()) : Empty
+        ).render(newCtx)
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -233,10 +234,10 @@ export const EnsureAll =
         clear = null
         if (allNonNullable) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          clear = renderableOfTNode(callback(...(feed as any)))(newCtx)
+          clear = renderableOfTNode(callback(...(feed as any))).render(newCtx)
         } else {
           /* c8 ignore next */
-          clear = renderableOfTNode(otherwise?.() ?? Empty)(newCtx)
+          clear = renderableOfTNode(otherwise?.() ?? Empty).render(newCtx)
         }
       })
 
@@ -247,5 +248,4 @@ export const EnsureAll =
         clear?.(removeTree)
         newCtx.clear(removeTree)
       }
-    }
-  }
+    })

@@ -1,5 +1,5 @@
-import { getWindow } from '../dom/window'
-import { ValueType, RemoveSignals, Values } from '../types/domain'
+import { getWindow } from './window'
+import { ValueType, RemoveSignals, Values } from './types'
 import { guessInterpolate } from './interpolate'
 import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
 import { computedOf, Value } from './value'

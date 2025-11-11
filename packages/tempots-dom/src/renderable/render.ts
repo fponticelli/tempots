@@ -7,9 +7,7 @@ import {
 } from '../dom/dom-utils'
 import { BrowserContext } from '../dom/browser-context'
 import { HeadlessContext, HeadlessPortal } from '../dom/headless-context'
-import { Value } from '../std/value'
-import { DisposalScope } from '../std/disposal-scope'
-import { withScope } from '../std/scope-stack'
+import { DisposalScope, withScope, Value } from '@tempots/core'
 
 /**
  * Renders the given `renderable` with the provided `ctx` DOM context.
@@ -28,7 +26,7 @@ export const renderWithContext = (renderable: Renderable, ctx: DOMContext) => {
   const scope = new DisposalScope()
 
   // Execute the renderable within the scope context
-  const clear = withScope(scope, () => renderable(ctx))
+  const clear = withScope(scope, () => renderable.render(ctx))
 
   return (removeTree: boolean = true) => {
     // Dispose all tracked signals before clearing the DOM

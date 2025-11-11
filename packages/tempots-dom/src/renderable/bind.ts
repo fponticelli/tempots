@@ -1,4 +1,4 @@
-import { Prop } from '../std/signal'
+import { Prop } from '@tempots/core'
 import { Renderable } from '../types/domain'
 import { attr } from './attribute'
 import { Fragment } from './fragment'

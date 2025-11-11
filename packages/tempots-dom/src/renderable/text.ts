@@ -1,31 +1,30 @@
 import type { Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
-import { Signal } from '../std/signal'
-import { Value } from '../std/value'
+import { Signal } from '@tempots/core'
+import { Value } from '@tempots/core'
+import { domRenderable } from '../types/domain'
 
 /**
  * @internal
  */
-export const _staticText =
-  (text: string): Renderable =>
-  (ctx: DOMContext) => {
+export const _staticText = (text: string): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(text)
     return newCtx.clear
-  }
+  })
 
 /**
  * @internal
  */
-export const _signalText =
-  (signal: Signal<string>): Renderable =>
-  (ctx: DOMContext) => {
+export const _signalText = (signal: Signal<string>): Renderable =>
+  domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(signal.value)
     const dispose = signal.on(newCtx.setText)
     return (removeTree: boolean) => {
       dispose()
       newCtx.clear(removeTree)
     }
-  }
+  })
 
 /**
  * Creates a renderable text node.

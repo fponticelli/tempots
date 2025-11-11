@@ -1,14 +1,18 @@
 import { DOMContext } from '../dom/dom-context'
-import { ElementPosition } from '../std/element-position'
-import { Signal, signal } from '../std/signal'
-import { Value } from '../std/value'
+import {
+  ElementPosition,
+  Signal,
+  signal,
+  Value,
+  DisposalScope,
+  withScope,
+} from '@tempots/core'
 import { TNode, Clear, Renderable } from '../types/domain'
 import { renderableOfTNode } from './element'
 import { Empty } from './empty'
 import { Fragment } from './fragment'
 import { When } from './when'
-import { DisposalScope } from '../std/disposal-scope'
-import { withScope } from '../std/scope-stack'
+import { domRenderable } from '../types/domain'
 
 /**
  * Renders content a specified number of times, with each iteration receiving position information.
@@ -99,7 +103,7 @@ export const Repeat = (
     })
   } else {
     if (Signal.is(times)) {
-      return (ctx: DOMContext) => {
+      return domRenderable((ctx: DOMContext) => {
         const length = times.derive()
         const newCtx = ctx.makeRef()
         const clears: Clear[] = []
@@ -127,7 +131,9 @@ export const Repeat = (
             scopes.push(scope)
 
             clears.push(
-              withScope(scope, () => renderableOfTNode(element(pos))(newCtx))
+              withScope(scope, () =>
+                renderableOfTNode(element(pos)).render(newCtx)
+              )
             )
           }
         })
@@ -146,7 +152,7 @@ export const Repeat = (
           clears.length = 0
           newCtx.clear(removeTree)
         }
-      }
+      })
     } else {
       const length = signal(times)
       return Fragment(

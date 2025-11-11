@@ -1,7 +1,7 @@
 {
   "name": "@tempots/dom",
   "private": false,
-  "version": "33.1.1",
+  "version": "34.0.0",
   "priority": 2,
   "description": "Fully-typed frontend framework alternative to React and Angular",
   "keywords": [
@@ -41,6 +41,9 @@
     }
   },
   "license": "Apache-2.0",
+  "dependencies": {
+    "@tempots/core": "workspace:*"
+  },
   "scripts": {
     "build": "vite build && cp package.lib.json dist/package.json",
     "build:watch": "vite build --watch",

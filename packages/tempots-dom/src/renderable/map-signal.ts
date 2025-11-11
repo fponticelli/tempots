@@ -1,8 +1,9 @@
 import type { Clear, Renderable, TNode } from '../types/domain'
-import { Signal } from '../std/signal'
+import { Signal } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
 import { renderableOfTNode } from './element'
-import { Value } from '../std/value'
+import { Value } from '@tempots/core'
+import { domRenderable } from '../types/domain'
 
 /**
  * Maps the values emitted by a signal to a renderable function and returns a new renderable function.
@@ -25,19 +26,19 @@ export const MapSignal = <T>(
 ): Renderable => {
   if (Signal.is(value)) {
     const signal = value as Signal<T>
-    return (ctx: DOMContext) => {
+    return domRenderable((ctx: DOMContext) => {
       ctx = ctx.makeRef()
       const mountableSignal = signal.map(v => renderableOfTNode(fn(v)))
       let previousClear: Clear = () => {}
       const clear = mountableSignal.on(child => {
         previousClear(true)
-        previousClear = child(ctx)
+        previousClear = child.render(ctx)
       })
       return removeTree => {
         clear()
         previousClear(removeTree)
       }
-    }
+    })
   }
   return renderableOfTNode(fn(value))
 }

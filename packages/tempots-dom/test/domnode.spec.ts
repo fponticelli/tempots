@@ -160,7 +160,7 @@ describe('DOMNode Component', () => {
       document.body.appendChild(container)
 
       const ctx = BrowserContext.of(container, undefined, {}) as BrowserContext
-      const dispose = DOMNode(element)(ctx)
+      const dispose = DOMNode(element).render(ctx)
 
       expect(element.parentElement).toBe(container)
       expect(container.contains(element)).toBe(true)
@@ -189,7 +189,7 @@ describe('DOMNode Component', () => {
         appendOrInsert: (node: Node) => container.appendChild(node)
       }
 
-      const dispose = renderable(mockContext as any)
+      const dispose = renderable.render(mockContext as any)
 
       expect(container.querySelector('#persistent-element')).toBe(element)
       expect(element.parentElement).toBe(container)
@@ -216,7 +216,7 @@ describe('DOMNode Component', () => {
       document.body.appendChild(container)
 
       const ctx = BrowserContext.of(container, undefined, {}) as BrowserContext
-      const dispose = DOMNode(element)(ctx)
+      const dispose = DOMNode(element).render(ctx)
 
       expect(element.onblur).toBe(onBlurSpy)
       expect(element.parentElement).toBe(container)
@@ -244,7 +244,7 @@ describe('DOMNode Component', () => {
         }
       }
 
-      const dispose = renderable(mockContext as any)
+      const dispose = renderable.render(mockContext as any)
 
       // Element should not have a parent
       expect(element.parentElement).toBe(null)
@@ -272,7 +272,7 @@ describe('DOMNode Component', () => {
         appendOrInsert: (node: Node) => container.appendChild(node)
       }
 
-      const dispose = renderable(mockContext as any)
+      const dispose = renderable.render(mockContext as any)
 
       // Should not throw when trying to remove
       expect(() => dispose(true)).not.toThrow()
