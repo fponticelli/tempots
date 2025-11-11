@@ -3,6 +3,7 @@ import { DOMContext } from '../dom/dom-context'
 import {
   _getSelfOrParentElement,
   _isElement,
+  _isFragment,
   _removeDOMNode,
 } from '../dom/dom-utils'
 import { BrowserContext } from '../dom/browser-context'
@@ -83,14 +84,14 @@ export const render = (
     )
   }
   if (clear !== false && (doc ?? el.ownerDocument) != null) {
-    if (el.nodeType === 1) (el as Element).innerHTML = ''
+    if (el.nodeType === 1 || el.nodeType === 11) (el as Element).innerHTML = ''
   }
   const element = _getSelfOrParentElement(el)
-  const ref = _isElement(el) ? undefined : el
+  const ref = _isElement(el) || _isFragment(el) ? undefined : el
   const ctx = BrowserContext.of(element, ref, providers)
   const clearDOM = renderWithContext(node, ctx)
   let disposeObserver: MutationObserver | undefined
-  if (disposeWithParent) {
+  if (disposeWithParent && el.parentElement != null) {
     disposeObserver = new MutationObserver(e => {
       e[0]?.removedNodes.forEach(node => {
         if (node === el) {

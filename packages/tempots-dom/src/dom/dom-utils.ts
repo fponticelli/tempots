@@ -10,8 +10,8 @@ export const _removeDOMNode = (node: Node) => {
     el.onblur = null
   }
   if (!node || node.ownerDocument === undefined) return
-  if (node.parentElement) {
-    node.parentElement.removeChild(node)
+  if (node.parentNode) {
+    node.parentNode.removeChild(node)
   }
 }
 
@@ -24,7 +24,9 @@ export const _removeDOMNode = (node: Node) => {
  * @internal
  */
 export const _getSelfOrParentElement = (node: Node): HTMLElement =>
-  _isElement(node) ? node : node.parentElement!
+  _isElement(node) || _isFragment(node)
+    ? (node as HTMLElement)
+    : node.parentElement!
 
 /**
  * Determines if the given `Node` is an `Element`.
@@ -35,3 +37,6 @@ export const _getSelfOrParentElement = (node: Node): HTMLElement =>
  */
 export const _isElement = (node: Node): node is HTMLElement =>
   node.nodeType === 1 // Node.ELEMENT_NODE
+
+export const _isFragment = (node: Node): node is DocumentFragment =>
+  node.nodeType === 11 // Node.DOCUMENT_FRAGMENT_NODE
