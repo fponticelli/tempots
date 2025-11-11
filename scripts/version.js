@@ -309,4 +309,12 @@ function getLibDependencies(packagePath) {
   return dependencies
 }
 
-module.exports = { updateLibVersion, updateDependencies, publishToNpm, prepareVersionUpdate, applyVersionUpdate, incrementVersion }
+module.exports = {
+  getVersion,
+  updateLibVersion,
+  updateDependencies,
+  publishToNpm,
+  prepareVersionUpdate,
+  applyVersionUpdate,
+  incrementVersion,
+};

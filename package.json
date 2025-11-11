@@ -17,7 +17,8 @@
     "test": "turbo test",
     "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage",
-    "npm:publish": "turbo npm:publish"
+    "npm:publish": "turbo npm:publish",
+    "publish": "node scripts/publish-all.js"
   },
   "devDependencies": {
     "turbo": "2.5.4"
