@@ -351,7 +351,9 @@ export class HeadlessContext implements DOMContext {
   readonly appendOrInsert = (element: HeadlessNode): void => {
     if (this.reference != null) {
       const index = this.element.children.indexOf(this.reference)
-      this.element.children.splice(index, 0, element)
+      if (index >= 0) {
+        this.element.children.splice(index, 0, element)
+      }
     } else {
       this.element.children.push(element)
     }
