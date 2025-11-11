@@ -240,10 +240,10 @@ export class Signal<T> {
       : listener
     this._onValueListeners.push(actualListener)
     const clear = () => {
-      this._onValueListeners.splice(
-        this._onValueListeners.indexOf(actualListener),
-        1
-      )
+      const index = this._onValueListeners.indexOf(actualListener)
+      if (index !== -1) {
+        this._onValueListeners.splice(index, 1)
+      }
       if (options.abortSignal != null) {
         options.abortSignal.removeEventListener('abort', clear)
       }
@@ -586,7 +586,7 @@ export class Signal<T> {
     // istanbul ignore next
     autoDisposeProp = false
   ) => {
-    const dispose = this.on(prop.set)
+    const dispose = this.on(prop.set, { noAutoDispose: !autoDisposeProp })
     prop.onDispose(dispose)
     if (autoDisposeProp) this.onDispose(prop.dispose)
     else this.onDispose(dispose)
@@ -948,9 +948,6 @@ export const computed = <T>(
 ): Computed<T> => {
   const computed = new Computed(fn, equals)
   dependencies.forEach(signal => signal.setDerivative(computed))
-
-  // Note: Auto-registration is now handled by the Computed constructor
-
   return computed
 }
 /**
