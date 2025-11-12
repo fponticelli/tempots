@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { withViewTransition } from '../src/utils/view-transition'
+import { sleep } from './helper'
 
 describe('view-transition.ts', () => {
   let originalStartViewTransition: typeof document.startViewTransition
@@ -77,7 +78,7 @@ describe('view-transition.ts', () => {
       document.startViewTransition = mockStartViewTransition
 
       const asyncCallback = vi.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await sleep()
         return 'async-result'
       })
 
@@ -90,7 +91,7 @@ describe('view-transition.ts', () => {
       document.startViewTransition = undefined as any
 
       const asyncCallback = vi.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await sleep()
         return 'async-result'
       })
 

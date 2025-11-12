@@ -3,6 +3,7 @@ import { RootRouter, ChildRouter } from '../src/renderables/router/router'
 import { runHeadless, Provide } from '@tempots/dom'
 import { Location } from '../src/renderables/router/location'
 import { _makeRouteMatcher } from '../src/renderables/router/match'
+import { sleep } from './helper'
 
 describe('Router Integration Tests - Actual Behavior', () => {
   beforeEach(() => {
@@ -103,7 +104,7 @@ describe('Router Integration Tests - Actual Behavior', () => {
       })
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await sleep()
 
         // Handle signals properly - extract values
         const parentValue =
@@ -146,7 +147,7 @@ describe('Router Integration Tests - Actual Behavior', () => {
       })
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise(resolve => setTimeout(resolve, 0))
 
         // Handle signals properly - extract values
         const paramsValue = (capturedParams as any)?.value ?? capturedParams
@@ -299,7 +300,7 @@ describe('Router Integration Tests - Actual Behavior', () => {
       })
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise(resolve => setTimeout(resolve, 0))
 
         const renderedValue = (rendered as any)?.value ?? rendered
         expect(renderedValue).toBe('child-not-found')

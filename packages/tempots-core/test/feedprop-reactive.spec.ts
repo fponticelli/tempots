@@ -7,6 +7,7 @@ import {
   signal,
   Signal,
 } from '../src/index.js'
+import { sleep } from './helper.js'
 
 describe('feedProp reactive updates', () => {
   it('should reactively update when computed source changes', async () => {
@@ -44,7 +45,7 @@ describe('feedProp reactive updates', () => {
       expect(target.value).toBe('44')
 
       // Wait for async notification
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       // Now target should have new value
       expect(target.value).toBe('440')
@@ -98,7 +99,7 @@ describe('feedProp reactive updates', () => {
       expect(B7_value.value).toBe('71.6')
 
       // Wait for async notifications
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       // Now both should be updated
       expect(B6_value.value).toBe('220')
@@ -146,7 +147,7 @@ describe('feedProp reactive updates', () => {
 
       // Change B6 to 220
       B6_formula.set('220')
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(B6_value.value).toBe('220')
       expect(B7_value.value).toBe('428')
@@ -164,7 +165,7 @@ describe('feedProp reactive updates', () => {
 
       // Change B6 again
       B6_formula.set('100')
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(B6_value.value).toBe('100')
       expect(B7_value.value).toBe('200')
@@ -208,7 +209,7 @@ describe('feedProp reactive updates', () => {
 
       // Change source
       source.set('changed')
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(notificationCount).toBe(1)
 
@@ -221,7 +222,7 @@ describe('feedProp reactive updates', () => {
 
       // Change source again
       source.set('final')
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       // Should only get ONE more notification, not two
       expect(notificationCount).toBe(3)
@@ -245,9 +246,11 @@ describe('feedProp reactive updates', () => {
 
     const getListenerNames = () =>
       (
-        (base as unknown as {
-          _onValueListeners: Array<(...args: unknown[]) => unknown>
-        })?._onValueListeners ?? []
+        (
+          base as unknown as {
+            _onValueListeners: Array<(...args: unknown[]) => unknown>
+          }
+        )?._onValueListeners ?? []
       ).map(listener => listener.name || 'anonymous')
 
     expect(getListenerNames()).toContain('setDirty')
@@ -333,7 +336,7 @@ describe('feedProp reactive updates', () => {
       }, 0)
 
       // Wait for initial formula.on() to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       // Track updates AFTER initialization
       B6_value.on(

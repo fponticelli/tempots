@@ -209,7 +209,12 @@ export class BrowserContext implements DOMContext {
    * @returns A new `DOMContext` instance with the provided `element`.
    */
   readonly withElement = (element: HTMLElement): BrowserContext =>
-    new BrowserContext(this.document, element, undefined, this.providers)
+    new BrowserContext(
+      element.ownerDocument ?? this.document,
+      element,
+      undefined,
+      this.providers
+    )
 
   /**
    * Creates a portal to render content in a different part of the DOM tree.

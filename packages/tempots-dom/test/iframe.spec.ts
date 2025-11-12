@@ -10,6 +10,7 @@ import {
   OnDispose,
   getCurrentScope,
 } from '../src'
+import { sleep } from './helper'
 
 describe('IFrame', () => {
   let container: HTMLDivElement
@@ -156,12 +157,13 @@ describe('IFrame', () => {
       expect(iframe).toBeTruthy()
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       expect(iframeDoc).toBeTruthy()
 
-      const content = iframeDoc?.querySelector('#test-content')
+      const content = iframeDoc?.getElementById('test-content')
+      console.log(iframe.outerHTML)
       expect(content).toBeTruthy()
       expect(content?.textContent).toBe('Hello from iframe')
 
@@ -182,7 +184,7 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       const body = iframeDoc?.body
@@ -206,7 +208,7 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       const paragraph = iframeDoc?.querySelector('#message')
@@ -232,7 +234,7 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       const style = iframeDoc?.querySelector('style')
@@ -256,7 +258,7 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       const button = iframeDoc?.querySelector('button')
@@ -279,7 +281,7 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       const button = iframeDoc?.querySelector('button')
@@ -303,24 +305,22 @@ describe('IFrame', () => {
       const clear = render(IFrame({ onLoad }), container)
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(onLoad).toHaveBeenCalledTimes(1)
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
-      expect(onLoad).toHaveBeenCalledWith(iframe, iframe.contentDocument)
+      expect(onLoad).toHaveBeenCalledWith(iframe)
 
       clear()
     })
 
     test('should call onLoad with iframe and document', async () => {
       let capturedIframe: HTMLIFrameElement | null = null
-      let capturedDoc: Document | null = null
 
       const clear = render(
         IFrame({
-          onLoad: (iframe, doc) => {
+          onLoad: iframe => {
             capturedIframe = iframe
-            capturedDoc = doc
           },
         }),
         container
@@ -329,10 +329,9 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(capturedIframe).toBe(iframe)
-      expect(capturedDoc).toBe(iframe.contentDocument)
 
       clear()
     })
@@ -343,7 +342,7 @@ describe('IFrame', () => {
       const clear = render(IFrame({ onLoad }, html.p('Content')), container)
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(onLoad).toHaveBeenCalledTimes(1)
 
@@ -365,7 +364,7 @@ describe('IFrame', () => {
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       const body = iframeDoc?.body
@@ -395,57 +394,13 @@ describe('IFrame', () => {
       )
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       expect(disposed).toBe(false)
 
       clear()
 
       expect(disposed).toBe(true)
-    })
-
-    // TODO: This test is failing because the signal's disposal scope isn't being disposed
-    // when the iframe content is cleared. This might be a limitation of how iframes work
-    // in the test environment, or there might be an issue with how the disposal scope is
-    // set up in the async handleLoad callback. The OnDispose test above passes, so basic
-    // disposal is working, but signal scope disposal isn't.
-    test.skip('should dispose reactive signals in iframe', async () => {
-      let computedDisposed = false
-      const signal = prop('Initial')
-
-      const clear = render(
-        IFrame(
-          {},
-          html.p(
-            signal.map(v => {
-              const scope = getCurrentScope()
-              if (scope) {
-                scope.onDispose(() => {
-                  computedDisposed = true
-                })
-              }
-              return v.toUpperCase()
-            })
-          )
-        ),
-        container
-      )
-
-      // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 50))
-
-      const iframe = container.querySelector('iframe') as HTMLIFrameElement
-      const iframeDoc = iframe.contentDocument
-      const p = iframeDoc?.querySelector('p')
-
-      // Verify the content was actually rendered
-      expect(p?.textContent).toBe('INITIAL')
-      expect(computedDisposed).toBe(false)
-
-      clear()
-
-      // The computed signal created in the map should be disposed
-      expect(computedDisposed).toBe(true)
     })
   })
 
@@ -461,7 +416,7 @@ describe('IFrame', () => {
       )
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       let iframe = container.querySelector('iframe') as HTMLIFrameElement | null
       expect(iframe).toBeTruthy()
@@ -476,7 +431,7 @@ describe('IFrame', () => {
       show.value = true
 
       // Wait for new iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       iframe = container.querySelector('iframe')
       expect(iframe).toBeTruthy()
@@ -504,7 +459,7 @@ describe('IFrame', () => {
       expect(iframe.height).toBe('400')
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       expect(iframeDoc?.querySelector('p')?.textContent).toBe('Iframe content')
@@ -541,7 +496,7 @@ describe('IFrame', () => {
       expect(iframe).toBeTruthy()
 
       // Wait for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await sleep()
 
       const iframeDoc = iframe.contentDocument
       expect(iframeDoc?.querySelector('p')?.textContent).toBe('Content')

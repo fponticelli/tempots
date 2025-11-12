@@ -22,7 +22,6 @@ import {
 export type {
   Clear,
   ProviderMark,
-  Value,
   ValueType,
   BaseValueType,
   ValueTypes,
@@ -30,11 +29,8 @@ export type {
   RemoveSignals,
   Nil,
   AnySignal,
-  Signal,
-  Prop,
-  Computed,
 }
-export { makeProviderMark }
+export { makeProviderMark, Computed, Value, Signal, Prop }
 
 /**
  * Symbol to brand DOM renderables and prevent mixing with other contexts
