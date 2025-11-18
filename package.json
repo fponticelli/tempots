@@ -13,7 +13,7 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck",
-    "check": "pnpm lint && pnpm format && pnpm typecheck && pnpm test && pnpm build",
+    "check": "pnpm lint && pnpm format && pnpm typecheck && pnpm build && pnpm test",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage",
@@ -23,5 +23,5 @@
   "devDependencies": {
     "turbo": "2.5.4"
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@9.15.9"
 }
