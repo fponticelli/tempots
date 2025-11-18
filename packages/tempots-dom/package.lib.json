@@ -1,6 +1,6 @@
 {
   "name": "@tempots/dom",
-  "version": "34.3.0",
+  "version": "35.0.0",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -37,6 +37,6 @@
     "url": "git+https://github.com/fponticelli/tempots.git"
   },
   "peerDependencies": {
-    "@tempots/core": "^1.2.0"
+    "@tempots/core": "^2.0.0"
   }
 }
