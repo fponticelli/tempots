@@ -56,6 +56,10 @@ export interface IFrameOptions {
    * Receives the iframe element and its contentDocument.
    */
   onLoad?: (iframe: HTMLIFrameElement) => void
+  /**
+   * Content to attach directly to the iframe's element, not the document body.
+   */
+  iframeChild?: TNode
 }
 
 /**
@@ -113,6 +117,7 @@ export function IFrame(
     allow,
     referrerpolicy,
     loading,
+    iframeChild,
     onLoad,
   }: IFrameOptions = {},
   ...children: TNode[]
@@ -125,6 +130,7 @@ export function IFrame(
     attr.sandbox(sandbox),
     attr.allow(allow),
     attr.referrerpolicy(referrerpolicy),
+    iframeChild,
     WithBrowserCtx(ctx => {
       const iframe = ctx.element as HTMLIFrameElement
       let contentClear: ((removeTree: boolean) => void) | undefined
