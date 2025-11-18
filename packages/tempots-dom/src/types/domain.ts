@@ -1,3 +1,4 @@
+import { ReadSignal } from '../../../tempots-core/dist/signal'
 import { DOMContext } from '../dom/dom-context'
 import {
   AnySignal,
@@ -168,7 +169,8 @@ export const domRenderable = <CTX extends DOMContext = DOMContext>(
  */
 export type TNode<CTX extends DOMContext = DOMContext> =
   | Renderable<CTX>
-  | Value<string>
+  | string
+  | ReadSignal<string>
   | undefined
   | null
   | Renderable<CTX>[]
@@ -205,10 +207,14 @@ export type Size = {
  */
 export type NValue<T> =
   | Value<NonNullable<T>>
-  | AnySignal<T>
-  | AnySignal<T | null>
-  | AnySignal<T | undefined>
-  | AnySignal<T | null | undefined>
+  | ReadSignal<T>
+  | ReadSignal<T | null>
+  | ReadSignal<T | undefined>
+  | ReadSignal<T | null | undefined>
+  // | AnySignal<T>
+  // | AnySignal<T | null>
+  // | AnySignal<T | undefined>
+  // | AnySignal<T | null | undefined>
   | null
   | undefined
 
@@ -217,5 +223,9 @@ type TupleToUnion<T extends unknown[]> = T[number]
 export type SplitNValue<T> =
   | (T extends unknown ? TupleToUnion<NValue<T>[]> : never)
   | NValue<T>
+
+export type SplitValue<T> =
+  | (T extends unknown ? TupleToUnion<Value<T>[]> : never)
+  | Value<T>
 
 // ValueType, BaseValueType, ValueTypes, Values, RemoveSignals, and Nil are re-exported from @tempots/core

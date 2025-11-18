@@ -6,11 +6,10 @@ import {
   DOMContext,
   Provider,
   Signal,
-  Value,
   computedOf,
   makeProviderMark,
 } from '@tempots/dom'
-import type { Prop } from '@tempots/dom'
+import type { Prop, SplitValue } from '@tempots/dom'
 import { LocationData, urlFromLocation } from './location-data'
 import { makeBrowserLocationSource } from './browser-location'
 import { makeHeadlessLocationSource } from './headless-location'
@@ -237,7 +236,9 @@ const buildHandle = (
   ) => evaluateLocationMatch(source.location.value, matcher, matchOptions)
 
   const matchSignal = (
-    matcher: Value<string | RegExp | ((location: LocationData) => boolean)>,
+    matcher: SplitValue<
+      string | RegExp | ((location: LocationData) => boolean)
+    >,
     matchOptions?: LocationMatchOptions
   ) =>
     computedOf(
@@ -515,7 +516,9 @@ export type LocationHandle = {
    * Returns a reactive signal that mirrors the result of `match`.
    */
   matchSignal: (
-    matcher: Value<string | RegExp | ((location: LocationData) => boolean)>,
+    matcher: SplitValue<
+      string | RegExp | ((location: LocationData) => boolean)
+    >,
     options?: LocationMatchOptions
   ) => Signal<boolean>
 }

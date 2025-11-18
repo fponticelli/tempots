@@ -182,13 +182,18 @@ describe("Repeat", () => {
     const length = list.map(v => v.length)
 
     render(
-      Repeat(length, item => {
-        return Fragment(
-          computedOf(item.counter, length)((counter, len) =>
-            `[${counter}:${len}]`
-          ),
-        )
-      }, pos => pos.isLast.map((v): string => v ? '!' : '-') ),
+      Repeat(
+        length,
+        item => {
+          return Fragment(
+            computedOf(
+              item.counter,
+              length
+            )((counter, len) => `[${counter}:${len}]`)
+          )
+        },
+        pos => pos.isLast.map(v => (v ? '!' : '-'))
+      ),
       document.body
     )
     expect(document.body.innerHTML).toStrictEqual('')

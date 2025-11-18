@@ -5,9 +5,7 @@ const { div, button } = html;
 
 export function counter() {
   const count = prop(0);
-  const oddOrEven = count.map(
-    (count): string => (count % 2 === 0 ? "even" : "odd")
-  );
+  const oddOrEven = count.map(count => (count % 2 === 0 ? 'even' : 'odd'))
   const node = div(
     attr.id("counter"),
     div(attr.class(oddOrEven), "Count: ", count.map(String)),

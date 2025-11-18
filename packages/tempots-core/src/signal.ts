@@ -32,6 +32,18 @@ export type ListenerOptions = {
 }
 
 /**
+ * Represents a read-only signal that holds a value of type T.
+ *
+ * @typeParam T - The type of the value held by the signal.
+ * @public
+ */
+export interface ReadSignal<T> {
+  // value access (output only)
+  get(): T
+  readonly value: T
+}
+
+/**
  * A reactive signal that holds a value and notifies listeners when the value changes.
  *
  * Signals are the foundation of Tempo's reactive system. They provide a way to create
@@ -66,7 +78,7 @@ export type ListenerOptions = {
  * @typeParam T - The type of the value held by the signal
  * @public
  */
-export class Signal<T> {
+export class Signal<T> implements ReadSignal<T> {
   /**
    * Creates a Signal that holds the result of a Promise, with proper error handling.
    *
@@ -656,7 +668,7 @@ const queue =
  * @typeParam T - The type of the computed value.
  * @public
  */
-export class Computed<T> extends Signal<T> {
+export class Computed<T> extends Signal<T> implements ReadSignal<T> {
   /**
    * Checks if a value is an instance of `Computed`.
    *
@@ -824,7 +836,7 @@ export type ReducerEffect<S, A> = (data: ReducerEffectData<S, A>) => void
  * @typeParam T - The type of the property value.
  * @public
  */
-export class Prop<T> extends Signal<T> {
+export class Prop<T> extends Signal<T> implements ReadSignal<T> {
   /**
    * Checks if a value is a Prop.
    * @param value - The value to check.

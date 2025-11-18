@@ -13,12 +13,9 @@ export function OpenGraph(props: OpenGraphProps) {
   const imageSignal =
     Value.maybeToSignal<string | undefined>(image) ??
     signal(undefined as string | undefined)
-  const card = Value.map<string | undefined, string>(
-    imageSignal,
-    (image): string => {
-      return image == null ? 'summary' : 'summary_large_image'
-    }
-  )
+  const card = Value.map(imageSignal, image => {
+    return image == null ? 'summary' : 'summary_large_image'
+  })
 
   return Use(Location, location =>
     Fragment(

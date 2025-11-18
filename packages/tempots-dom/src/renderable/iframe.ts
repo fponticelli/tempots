@@ -1,4 +1,4 @@
-import { TNode, Value } from '../types/domain'
+import { SplitValue, TNode, Value } from '../types/domain'
 import { attr } from './attribute'
 import { html } from './element'
 import { Empty } from './empty'
@@ -30,11 +30,11 @@ export interface IFrameOptions {
   /**
    * The width of the iframe.
    */
-  width?: Value<string | number>
+  width?: SplitValue<string | number>
   /**
    * The height of the iframe.
    */
-  height?: Value<string | number>
+  height?: SplitValue<string | number>
   /**
    * The sandbox attribute for the iframe.
    */
@@ -125,8 +125,16 @@ export function IFrame(
   return html.iframe(
     attr.src(src),
     attr.name(name),
-    attr.width(width != null ? Value.map(width, String) : undefined),
-    attr.height(height != null ? Value.map(height, String) : undefined),
+    attr.width(
+      width != null
+        ? Value.map(width as Value<number | string>, String)
+        : undefined
+    ),
+    attr.height(
+      height != null
+        ? Value.map(height as Value<number | string>, String)
+        : undefined
+    ),
     attr.sandbox(sandbox),
     attr.allow(allow),
     attr.referrerpolicy(referrerpolicy),
