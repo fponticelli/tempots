@@ -10,6 +10,7 @@ import {
   signal,
   prop,
   coalesce,
+  syncProp,
 } from '../src'
 import { sleep } from './helper'
 
@@ -34,8 +35,11 @@ class MockBroadcastChannel {
   postMessage(data: unknown) {
     const channels = MockBroadcastChannel.channels.get(this.name)
     if (channels == null) return
+    const sender = this
     const deliver = () => {
       channels.forEach(channel => {
+        // Don't deliver to the sender (matches real BroadcastChannel behavior)
+        if (channel === sender) return
         const event = { data } as MessageEvent<unknown>
         channel.listeners.forEach(listener => listener(event))
         channel.onmessage?.(event)
@@ -994,5 +998,270 @@ describe('coalesce', () => {
     a.value = 'second'
 
     expect(result.value).toBe('second')
+  })
+})
+
+describe('syncProp', () => {
+  let originalBroadcastChannel: typeof BroadcastChannel | undefined
+
+  beforeEach(() => {
+    // Save original BroadcastChannel
+    originalBroadcastChannel = (globalThis as any).BroadcastChannel
+    // Replace with mock
+    ;(globalThis as any).BroadcastChannel = MockBroadcastChannel
+    MockBroadcastChannel.reset()
+  })
+
+  afterEach(() => {
+    // Restore original BroadcastChannel
+    if (originalBroadcastChannel !== undefined) {
+      ;(globalThis as any).BroadcastChannel = originalBroadcastChannel
+    } else {
+      delete (globalThis as any).BroadcastChannel
+    }
+    MockBroadcastChannel.reset()
+  })
+
+  test('should synchronize prop changes across tabs', async () => {
+    const prop1 = prop(0)
+    const prop2 = prop(0)
+
+    const dispose1 = syncProp(prop1, { channel: 'test-counter' })
+    const dispose2 = syncProp(prop2, { channel: 'test-counter' })
+
+    // Change prop1, should sync to prop2
+    prop1.value = 42
+    await sleep(10)
+
+    expect(prop2.value).toBe(42)
+
+    dispose1()
+    dispose2()
+  })
+
+  test('should synchronize in both directions', async () => {
+    const prop1 = prop('hello')
+    const prop2 = prop('hello')
+
+    const dispose1 = syncProp(prop1, { channel: 'test-string' })
+    const dispose2 = syncProp(prop2, { channel: 'test-string' })
+
+    // Change prop1
+    prop1.value = 'world'
+    await sleep(10)
+    expect(prop2.value).toBe('world')
+
+    // Change prop2
+    prop2.value = 'tempo'
+    await sleep(10)
+    expect(prop1.value).toBe('tempo')
+
+    dispose1()
+    dispose2()
+  })
+
+  test('should not sync props with different channels', async () => {
+    const prop1 = prop(0)
+    const prop2 = prop(0)
+
+    const dispose1 = syncProp(prop1, { channel: 'channel-1' })
+    const dispose2 = syncProp(prop2, { channel: 'channel-2' })
+
+    prop1.value = 42
+    await sleep(10)
+
+    expect(prop2.value).toBe(0) // Should not change
+
+    dispose1()
+    dispose2()
+  })
+
+  test('should handle multiple props on same channel', async () => {
+    const prop1 = prop(0)
+    const prop2 = prop(0)
+    const prop3 = prop(0)
+
+    const dispose1 = syncProp(prop1, { channel: 'multi-test' })
+    const dispose2 = syncProp(prop2, { channel: 'multi-test' })
+    const dispose3 = syncProp(prop3, { channel: 'multi-test' })
+
+    prop1.value = 100
+    await sleep(10)
+
+    expect(prop2.value).toBe(100)
+    expect(prop3.value).toBe(100)
+
+    dispose1()
+    dispose2()
+    dispose3()
+  })
+
+  test('should use custom serialize/deserialize', async () => {
+    const prop1 = prop({ count: 0 })
+    const prop2 = prop({ count: 0 })
+
+    const dispose1 = syncProp(prop1, {
+      channel: 'custom-serialize',
+      serialize: v => JSON.stringify(v),
+      deserialize: v => JSON.parse(v),
+      equals: (a, b) => a.count === b.count,
+    })
+    const dispose2 = syncProp(prop2, {
+      channel: 'custom-serialize',
+      serialize: v => JSON.stringify(v),
+      deserialize: v => JSON.parse(v),
+      equals: (a, b) => a.count === b.count,
+    })
+
+    prop1.value = { count: 42 }
+    await sleep(10)
+
+    expect(prop2.value.count).toBe(42)
+
+    dispose1()
+    dispose2()
+  })
+
+  test('should stop syncing after disposal', async () => {
+    const prop1 = prop(0)
+    const prop2 = prop(0)
+
+    const dispose1 = syncProp(prop1, { channel: 'disposal-test' })
+    const dispose2 = syncProp(prop2, { channel: 'disposal-test' })
+
+    prop1.value = 10
+    await sleep(10)
+    expect(prop2.value).toBe(10)
+
+    // Dispose prop1's sync
+    dispose1()
+
+    // Change prop1 again - should not sync
+    prop1.value = 20
+    await sleep(10)
+    expect(prop2.value).toBe(10) // Should still be 10
+
+    // But prop2 can still send
+    prop2.value = 30
+    await sleep(10)
+    expect(prop1.value).toBe(20) // prop1 not listening anymore
+
+    dispose2()
+  })
+
+  test('should not sync initial value', async () => {
+    const prop1 = prop(100)
+    const prop2 = prop(200)
+
+    const dispose1 = syncProp(prop1, { channel: 'initial-test' })
+    const dispose2 = syncProp(prop2, { channel: 'initial-test' })
+
+    await sleep(10)
+
+    // Initial values should not sync
+    expect(prop1.value).toBe(100)
+    expect(prop2.value).toBe(200)
+
+    dispose1()
+    dispose2()
+  })
+
+  test('should handle serialization errors gracefully', async () => {
+    const prop1 = prop({ value: 1 })
+    const prop2 = prop({ value: 2 })
+
+    const consoleWarnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {})
+
+    const dispose1 = syncProp(prop1, {
+      channel: 'error-test',
+      serialize: v => {
+        throw new Error('Serialize error')
+      },
+    })
+    const dispose2 = syncProp(prop2, {
+      channel: 'error-test',
+      deserialize: v => {
+        throw new Error('Deserialize error')
+      },
+    })
+
+    // This should not throw, but log a warning
+    prop1.value = { value: 42 }
+    await sleep(10)
+
+    // prop2 should not have changed due to deserialization error
+    expect(prop2.value).toEqual({ value: 2 })
+    expect(consoleWarnSpy).toHaveBeenCalled()
+
+    consoleWarnSpy.mockRestore()
+    dispose1()
+    dispose2()
+  })
+
+  test('should not sync when value equals previous value', async () => {
+    const prop1 = prop(0)
+    const prop2 = prop(100)
+
+    const dispose1 = syncProp(prop1, { channel: 'equals-test' })
+    const dispose2 = syncProp(prop2, {
+      channel: 'equals-test',
+      equals: (a, b) => a === b,
+    })
+
+    // Set prop1 to a new value
+    prop1.value = 42
+    await sleep(10)
+
+    // prop2 should have synced
+    expect(prop2.value).toBe(42)
+
+    // Set prop1 to the same value again
+    prop1.value = 42
+    await sleep(10)
+
+    // prop2 should still be 42 (no change)
+    expect(prop2.value).toBe(42)
+
+    dispose1()
+    dispose2()
+  })
+
+  test('should return no-op disposal when BroadcastChannel is not available', () => {
+    // Remove BroadcastChannel
+    delete (globalThis as any).BroadcastChannel
+
+    const prop1 = prop(0)
+    const dispose = syncProp(prop1, { channel: 'no-bc-test' })
+
+    // Should not throw
+    expect(dispose).toBeTypeOf('function')
+    dispose()
+  })
+
+  test('should not sync messages from same instance', async () => {
+    const prop1 = prop(0)
+    const prop2 = prop(0)
+
+    const dispose1 = syncProp(prop1, { channel: 'same-instance-test' })
+    const dispose2 = syncProp(prop2, { channel: 'same-instance-test' })
+
+    // Change prop1
+    prop1.value = 42
+    await sleep(10)
+
+    // prop2 should have received the broadcast
+    expect(prop2.value).toBe(42)
+
+    // Change prop2
+    prop2.value = 100
+    await sleep(10)
+
+    // prop1 should have received the broadcast from prop2
+    expect(prop1.value).toBe(100)
+
+    dispose1()
+    dispose2()
   })
 })

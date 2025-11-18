@@ -693,3 +693,146 @@ export function coalesce<L>(
     return undefined
   }) as Computed<ValueType<L>>
 }
+
+/**
+ * Options for synchronizing a prop across browser tabs.
+ *
+ * @typeParam T - The type of the prop value.
+ * @public
+ */
+export type SyncPropOptions<T> = {
+  /**
+   * The channel name to use for synchronization.
+   * Props with the same channel name will be synchronized across tabs.
+   */
+  channel: string
+  /**
+   * A function that serializes a value of type `T` to a string.
+   * The default implementation uses `JSON.stringify`.
+   */
+  serialize?: (v: T) => string
+  /**
+   * A function that deserializes a string to a value of type `T`.
+   * The default implementation uses `JSON.parse`.
+   */
+  deserialize?: (v: string) => T
+  /**
+   * A function that compares two values of type `T` for equality.
+   * The default implementation uses strict equality (`===`).
+   */
+  equals?: (a: T, b: T) => boolean
+}
+
+/**
+ * Synchronizes a prop across browser tabs using BroadcastChannel.
+ * When the prop value changes in one tab, all other tabs with the same channel will be updated.
+ *
+ * @typeParam T - The type of the prop value.
+ * @param propToSync - The prop to synchronize across tabs.
+ * @param options - The synchronization options.
+ * @returns A disposal function to stop synchronization.
+ * @public
+ *
+ * @example
+ * ```ts
+ * const counter = prop(0)
+ * const dispose = syncProp(counter, { channel: 'my-counter' })
+ * // Now when counter changes in this tab, it will update in all other tabs
+ * // and vice versa
+ * ```
+ */
+export const syncProp = <T>(
+  propToSync: Prop<T>,
+  {
+    channel: channelName,
+    serialize = JSON.stringify,
+    deserialize = JSON.parse,
+    equals = (a, b) => a === b,
+  }: SyncPropOptions<T>
+): (() => void) => {
+  const windowRef = getWindow() as Window & {
+    BroadcastChannel?: typeof BroadcastChannel
+  }
+
+  // If BroadcastChannel is not available, return a no-op disposal function
+  if (typeof windowRef?.BroadcastChannel !== 'function') {
+    return () => {}
+  }
+
+  const channel = new windowRef.BroadcastChannel!(
+    `tempo:syncProp:${channelName}`
+  )
+  const instanceId = `${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2)}`
+
+  let syncingFromChannel = false
+
+  // Listen for messages from other tabs
+  const handleMessage = (
+    event: MessageEvent<{
+      value: string
+      sourceId?: string
+    }>
+  ) => {
+    const data = event.data
+    if (
+      data == null ||
+      typeof data !== 'object' ||
+      typeof data.value !== 'string' ||
+      (data.sourceId != null && data.sourceId === instanceId)
+    ) {
+      return
+    }
+
+    try {
+      syncingFromChannel = true
+      const nextValue = deserialize(data.value)
+      if (!equals(propToSync.get(), nextValue)) {
+        propToSync.set(nextValue)
+      }
+    } catch (error) {
+      console.warn(
+        `Failed to sync prop for channel "${channelName}" via BroadcastChannel`,
+        error
+      )
+    } finally {
+      syncingFromChannel = false
+    }
+  }
+
+  channel.addEventListener('message', handleMessage)
+
+  // Broadcast changes to other tabs
+  const disposeListener = propToSync.on((value, previousValue) => {
+    if (
+      !syncingFromChannel &&
+      previousValue !== undefined &&
+      !equals(value, previousValue)
+    ) {
+      try {
+        const serialized = serialize(value)
+        channel.postMessage({
+          value: serialized,
+          sourceId: instanceId,
+        })
+      } catch (error) {
+        console.warn(
+          `Failed to serialize prop for channel "${channelName}" via BroadcastChannel`,
+          error
+        )
+      }
+    }
+  })
+
+  // Return disposal function
+  const dispose = () => {
+    disposeListener()
+    channel.removeEventListener('message', handleMessage)
+    channel.close()
+  }
+
+  propToSync.onDispose(dispose)
+
+  return dispose
+}

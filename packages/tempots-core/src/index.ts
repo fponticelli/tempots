@@ -75,9 +75,10 @@ export {
   slidingWindowSignal,
   bind,
   coalesce,
+  syncProp,
 } from './signal-utils'
 
-export type { StoredPropOptions } from './signal-utils'
+export type { StoredPropOptions, SyncPropOptions } from './signal-utils'
 
 // Interpolation utilities
 export {

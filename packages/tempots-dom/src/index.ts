@@ -43,6 +43,7 @@ export {
   slidingWindowSignal,
   bind,
   coalesce,
+  syncProp,
   interpolateNumber,
   interpolateString,
   interpolateDate,
@@ -56,6 +57,7 @@ export type {
   AtGetter,
   ListenerOptions,
   StoredPropOptions,
+  SyncPropOptions,
   RenderContext,
   HierarchicalContext,
 } from '@tempots/core'
