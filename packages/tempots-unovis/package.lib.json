@@ -1,0 +1,42 @@
+{
+  "name": "@tempots/unovis",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "description": "Tempo renderables for Unovis charts",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "unovis",
+    "charts",
+    "visualization",
+    "dom",
+    "renderables"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "peerDependencies": {
+    "@tempots/dom": "^35.0.0",
+    "@unovis/ts": "^1.6.2"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "name": "@tempots/unovis",
+  "private": false,
+  "version": "0.1.0",
+  "priority": 9,
+  "description": "Tempo renderables for Unovis charts",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "unovis",
+    "charts",
+    "visualization",
+    "dom",
+    "renderables"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "vite build && cp package.lib.json dist/package.json",
+    "build:watch": "vite build --watch",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch --coverage",
+    "test:coverage": "vitest --run --coverage",
+    "lint": "eslint src",
+    "format": "eslint src --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@tempots/dom": "^35.0.0",
+    "@unovis/ts": "^1.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@tempots/core": "workspace:*",
+    "@tempots/dom": "workspace:*",
+    "@types/node": "^24.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "@unovis/ts": "^1.6.2",
+    "@vitest/coverage-v8": "^4.0.10",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.47.0",
+    "vite": "^7.2.2",
+    "vite-plugin-dts": "^4.5.4",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.10"
+  }
+}

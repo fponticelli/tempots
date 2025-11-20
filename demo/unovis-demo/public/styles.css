@@ -1,0 +1,127 @@
+:root {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at 20% 20%, #0f172a 0, rgba(8, 47, 73, 0.6) 35%, #0b1224 70%);
+  color: #e2e8f0;
+  min-height: 100vh;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(94, 234, 212, 0.1);
+  color: #5eead4;
+  font-size: 13px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control button {
+  border: none;
+  background: linear-gradient(135deg, #22d3ee, #6366f1);
+  color: #0b1224;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.control button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.metric-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-label {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.chart {
+  width: 100%;
+  height: 320px;
+}
+
+.chart+.chart {
+  margin-top: 18px;
+}
