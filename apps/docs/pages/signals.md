@@ -49,7 +49,7 @@ This is how tempo monitors changes and updates the DOM.
 
 When you add a callback to a signal, the callback is called immediately with the current value of the signal.
 
-## Modify props
+## Modify a prop
 
 You can update a prop using the `set()` method or using the `value` setter. They both take a new value and update the signal. You can also update a prop using the `update()` method. The method takes a function that receives the current value and returns the new value.
 

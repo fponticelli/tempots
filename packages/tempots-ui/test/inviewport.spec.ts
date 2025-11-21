@@ -333,7 +333,7 @@ describe('inviewport.ts', () => {
         (isVisible: Signal<boolean>) => {
           capturedSignal = isVisible
           return isVisible.map(visible =>
-            visible ? 'Now Visible' : 'Not Visible'
+            visible ? 'Now UVisible' : 'Not UVisible'
           )
         }
       )
@@ -346,7 +346,7 @@ describe('inviewport.ts', () => {
       expect(capturedSignal).toBeTruthy()
 
       // Initially should not be visible
-      expect(document.body.textContent).toBe('Not Visible')
+      expect(document.body.textContent).toBe('Not UVisible')
 
       // Simulate IntersectionObserver callback with entry becoming visible
       if (observerCallback && capturedSignal) {
@@ -361,7 +361,7 @@ describe('inviewport.ts', () => {
 
         // Signal should now be true and content should update
         expect(capturedSignal.get()).toBe(true)
-        expect(document.body.textContent).toBe('Now Visible')
+        expect(document.body.textContent).toBe('Now UVisible')
 
         // Simulate entry becoming not visible
         const mockEntryNotVisible = {
@@ -373,7 +373,7 @@ describe('inviewport.ts', () => {
         await sleep(10)
 
         expect(capturedSignal.get()).toBe(false)
-        expect(document.body.textContent).toBe('Not Visible')
+        expect(document.body.textContent).toBe('Not UVisible')
       }
 
       clear()
@@ -402,7 +402,7 @@ describe('inviewport.ts', () => {
         (isVisible: Signal<boolean>) => {
           capturedSignal = isVisible
           return isVisible.map(visible =>
-            visible ? 'Visible Once' : 'Not Visible Once'
+            visible ? 'Visible Once' : 'Not UVisible Once'
           )
         }
       )
@@ -414,7 +414,7 @@ describe('inviewport.ts', () => {
       expect(capturedSignal).toBeTruthy()
 
       // Initially should not be visible
-      expect(document.body.textContent).toBe('Not Visible Once')
+      expect(document.body.textContent).toBe('Not UVisible Once')
 
       // Simulate IntersectionObserver callback with entry becoming visible
       if (observerCallback && capturedSignal) {
@@ -460,7 +460,7 @@ describe('inviewport.ts', () => {
         (isVisible: Signal<boolean>) => {
           capturedSignal = isVisible
           return isVisible.map(visible =>
-            visible ? 'Multiple Visible' : 'Multiple Not Visible'
+            visible ? 'Multiple UVisible' : 'Multiple Not UVisible'
           )
         }
       )

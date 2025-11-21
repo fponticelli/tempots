@@ -3,12 +3,12 @@ import type { CrosshairConfigInterface } from '@unovis/ts'
 import { Crosshair } from '@unovis/ts'
 import { attachmentRenderable } from '../factory'
 
-export interface UnovisCrosshairOptions<Datum> {
+export interface UVisCrosshairOptions<Datum> {
   config?: Value<Partial<CrosshairConfigInterface<Datum>>>
 }
 
-export const UnovisCrosshair = <Datum>(
-  options: UnovisCrosshairOptions<Datum> = {}
+export const UVisCrosshair = <Datum>(
+  options: UVisCrosshairOptions<Datum> = {}
 ) =>
   attachmentRenderable<
     Datum,

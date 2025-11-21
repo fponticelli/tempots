@@ -14,7 +14,7 @@ pnpm add @tempots/unovis @tempots/dom @unovis/ts
 
 ```ts
 import { signal } from '@tempots/dom'
-import { UnovisXYContainer, UnovisLine, UnovisAxis, UnovisTooltip } from '@tempots/unovis'
+import { UnovisXYContainer, UVisLine, UVisAxis, UVisTooltip } from '@tempots/unovis'
 
 const points = signal([
   { x: 0, y: 2 },
@@ -23,10 +23,10 @@ const points = signal([
 
 const chart = UnovisXYContainer(
   { data: points, config: { margin: { top: 12 } } },
-  UnovisLine({ config: { lineWidth: 3, x: d => d.x, y: d => d.y } }),
-  UnovisAxis({ role: 'x' }),
-  UnovisAxis({ role: 'y' }),
-  UnovisTooltip()
+  UVisLine({ config: { lineWidth: 3, x: d => d.x, y: d => d.y } }),
+  UVisAxis({ role: 'x' }),
+  UVisAxis({ role: 'y' }),
+  UVisTooltip()
 )
 ```
 

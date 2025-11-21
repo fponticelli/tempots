@@ -3,12 +3,12 @@ import type { TooltipConfigInterface } from '@unovis/ts'
 import { Tooltip } from '@unovis/ts'
 import { attachmentRenderable } from '../factory'
 
-export interface UnovisTooltipOptions {
+export interface UVisTooltipOptions {
   config?: Value<Partial<TooltipConfigInterface>>
 }
 
-export const UnovisTooltip = <Datum = unknown>(
-  options: UnovisTooltipOptions = {}
+export const UVisTooltip = <Datum = unknown>(
+  options: UVisTooltipOptions = {}
 ) =>
   attachmentRenderable<Datum, TooltipConfigInterface, Tooltip>(
     'tooltip',

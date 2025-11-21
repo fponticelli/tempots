@@ -29,20 +29,20 @@ const UserView = Async(
 
 The rendered content of the component is dynamic and depends on the result of the `fetchUser()` promise but the promise is executed only once for any instantiation of the component.
 
-## Props
+## Options
 
-More commonly, you'll see components that take a set of props as argument. In this case the component is a function that returns a `Renderable`.
+More commonly, you'll see components that take a set of options as argument. In this case the component is a function that returns a `Renderable`.
 
 ```ts
-const UserView = (user: User) => html.div(user.name)
+const UserView = ({ user }: { user: User }) => html.div(user.name)
 ```
 
-This is a valid component but it is not often what you want in the context of Tempo because it does not allow to update the DOM when the props change. Each application of this component will result in a DOM state that will not change unless the component is re-rendered.
+This is a valid component but it is not often what you want in the context of Tempo because it does not allow to update the DOM when the options change. Each application of this component will result in a DOM state that will not change unless the component is re-rendered.
 
 To address this, you want to use `Signal`s instead.
 
 ```ts
-const UserView = (user: Signal<User>) => html.div(user.$.name)
+const UserView = ({ user }: { user: Signal<User> }) => html.div(user.$.name)
 ```
 
 Now, any time the `user` signal changes, the DOM will be updated. Notice that the `$` property is used to access the value of a field wrapped in the signal. It is convenient and type-safe. The equivalent method is `user.at('name')`.

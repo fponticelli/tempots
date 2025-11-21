@@ -24,19 +24,21 @@ body {
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 20px 50px rgba(148, 163, 184, 0.25);
+  flex-direction: column;
+    gap: 12px;
+    display: flex;
 }
 
 .header {
+  padding: 12px 24px;
   display: flex;
   flex-wrap: wrap;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  background-color: white;
+    border-radius: 12px;
 }
 
 .title {
@@ -58,9 +60,7 @@ body {
 
 .controls {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin: 24px 0 6px 0;
 }
 
 .control {
@@ -70,7 +70,7 @@ body {
   padding: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 24px;
 }
 
 .control button {
@@ -140,24 +140,6 @@ body {
   gap: 24px;
   align-items: start;
   grid-auto-flow: dense;
-}
-
-.single-block {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 6px;
-  min-width: 0;
-}
-
-.single-block .controls {
-  margin: 0 0 6px;
-  width: 100%;
-}
-
-.single-block .control {
-  width: 100%;
-  justify-content: space-between;
 }
 
 .legend-row {

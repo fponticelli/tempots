@@ -23,7 +23,7 @@ Tempo UI bridges the gap between the low-level DOM manipulation of @tempots/dom 
 - **AutoSelect**: Automatically select text in inputs
 - **SelectOnFocus**: Select text when input receives focus
 
-### Layout & Visibility
+### Layout & UVisibility
 - **InViewport**: Detect when elements enter/exit the viewport
 - **HiddenWhenEmpty**: Hide elements when they have no content
 - **PopOver**: Create popup and popover elements

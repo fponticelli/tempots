@@ -3,11 +3,11 @@ import type { AreaConfigInterface } from '@unovis/ts'
 import { Area } from '@unovis/ts'
 import { componentRenderable } from '../factory'
 
-export interface UnovisAreaOptions<Datum> {
+export interface UVisAreaOptions<Datum> {
   config?: Value<Partial<AreaConfigInterface<Datum>>>
 }
 
-export const UnovisArea = <Datum>(options: UnovisAreaOptions<Datum> = {}) =>
+export const UVisArea = <Datum>(options: UVisAreaOptions<Datum> = {}) =>
   componentRenderable<Datum, AreaConfigInterface<Datum>, Area<Datum>>(
     cfg => new Area<Datum>(cfg),
     options

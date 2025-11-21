@@ -3,14 +3,21 @@ import { describe, expect, it, vi } from 'vitest'
 import { render } from '@tempots/dom'
 import {
   UNOVIS_RENDERABLE_TYPE,
-  UnovisAxis,
-  UnovisLine,
-  UnovisTooltip,
+  UVisAxis,
+  UVisLine,
+  UVisTooltip,
   UnovisXYContainer,
-  UnovisArea,
-  UnovisScatter,
-  UnovisCrosshair,
-  UnovisBrush,
+  UVisArea,
+  UVisScatter,
+  UVisCrosshair,
+  UVisBrush,
+  UVisStackedBar,
+  UVisGroupedBar,
+  UnovisXYLabels,
+  UVisPlotBand,
+  UVisPlotLine,
+  UVisAnnotations,
+  UVisFreeBrush,
   createUnovisCollector,
 } from '../src'
 
@@ -21,6 +28,13 @@ const crosshairSetConfig = vi.fn()
 const brushSetConfig = vi.fn()
 const areaSetConfig = vi.fn()
 const scatterSetConfig = vi.fn()
+const stackedSetConfig = vi.fn()
+const groupedSetConfig = vi.fn()
+const labelsSetConfig = vi.fn()
+const plotBandSetConfig = vi.fn()
+const plotLineSetConfig = vi.fn()
+const annotationsSetConfig = vi.fn()
+const freeBrushSetConfig = vi.fn()
 
 const containers: Array<{
   element: HTMLElement
@@ -96,12 +110,89 @@ vi.mock('@unovis/ts', () => {
     destroy() {}
   }
 
+  class FakeStackedBar {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = stackedSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
   class FakeTooltip {
     config: Record<string, unknown>
     constructor(config: Record<string, unknown>) {
       this.config = { ...config }
     }
     setConfig = tooltipSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
+  class FakeGroupedBar {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = groupedSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
+  class FakeXYLabels {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = labelsSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
+  class FakePlotband {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = plotBandSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
+  class FakePlotline {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = plotLineSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
+  class FakeAnnotations {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = annotationsSetConfig.mockImplementation(cfg => {
+      this.config = { ...this.config, ...cfg }
+    })
+    destroy() {}
+  }
+
+  class FakeFreeBrush {
+    config: Record<string, unknown>
+    constructor(config: Record<string, unknown>) {
+      this.config = { ...config }
+    }
+    setConfig = freeBrushSetConfig.mockImplementation(cfg => {
       this.config = { ...this.config, ...cfg }
     })
     destroy() {}
@@ -140,6 +231,13 @@ vi.mock('@unovis/ts', () => {
     Brush: FakeBrush,
     Area: FakeArea,
     Scatter: FakeScatter,
+    StackedBar: FakeStackedBar,
+    GroupedBar: FakeGroupedBar,
+    XYLabels: FakeXYLabels,
+    Plotband: FakePlotband,
+    Plotline: FakePlotline,
+    Annotations: FakeAnnotations,
+    FreeBrush: FakeFreeBrush,
     Tooltip: FakeTooltip,
     XYContainer: FakeXYContainer,
     AxisType: {
@@ -151,19 +249,26 @@ vi.mock('@unovis/ts', () => {
 
 describe('Unovis renderables', () => {
   it('brands unovis renderables', () => {
-    const renderable = UnovisLine()
+    const renderable = UVisLine()
     expect(renderable.type).toBe(UNOVIS_RENDERABLE_TYPE)
   })
 
   it('collects components into a container', () => {
     const collector = createUnovisCollector()
-    const line = UnovisLine({ config: { lineWidth: 2 } })
-    const axis = UnovisAxis()
-    const tooltip = UnovisTooltip()
-    const crosshair = UnovisCrosshair()
-    const brush = UnovisBrush()
-    const area = UnovisArea()
-    const scatter = UnovisScatter()
+    const line = UVisLine({ config: { lineWidth: 2 } })
+    const axis = UVisAxis()
+    const tooltip = UVisTooltip()
+    const crosshair = UVisCrosshair()
+    const brush = UVisBrush()
+    const area = UVisArea()
+    const scatter = UVisScatter()
+    const stacked = UVisStackedBar()
+    const grouped = UVisGroupedBar()
+    const labels = UnovisXYLabels()
+    const band = UVisPlotBand()
+    const plotline = UVisPlotLine()
+    const annotations = UVisAnnotations()
+    const freeBrush = UVisFreeBrush()
 
     const lineClear = line.render(collector.ctx)
     const axisClear = axis.render(collector.ctx)
@@ -172,14 +277,21 @@ describe('Unovis renderables', () => {
     const brushClear = brush.render(collector.ctx)
     const areaClear = area.render(collector.ctx)
     const scatterClear = scatter.render(collector.ctx)
+    const stackedClear = stacked.render(collector.ctx)
+    const groupedClear = grouped.render(collector.ctx)
+    const labelsClear = labels.render(collector.ctx)
+    const bandClear = band.render(collector.ctx)
+    const plotlineClear = plotline.render(collector.ctx)
+    const annotationsClear = annotations.render(collector.ctx)
+    const freeBrushClear = freeBrush.render(collector.ctx)
 
     const { components, attachments } = collector.finish()
 
-    expect(components).toHaveLength(4)
+    expect(components).toHaveLength(10)
     expect(attachments.tooltip).toBeDefined()
     expect(attachments.xAxis).toBeDefined()
     expect(attachments.crosshair).toBeDefined()
-    expect(attachments.annotations).toBeUndefined()
+    expect(attachments.annotations).toBeDefined()
 
     lineClear(true)
     axisClear(true)
@@ -188,6 +300,13 @@ describe('Unovis renderables', () => {
     brushClear(true)
     areaClear(true)
     scatterClear(true)
+    stackedClear(true)
+    groupedClear(true)
+    labelsClear(true)
+    bandClear(true)
+    plotlineClear(true)
+    annotationsClear(true)
+    freeBrushClear(true)
   })
 
   it('bridges to DOM with reactive data and config', () => {
@@ -201,10 +320,10 @@ describe('Unovis renderables', () => {
           data,
           config: margin,
         },
-        UnovisLine(),
-        UnovisAxis({ role: 'y' }),
-        UnovisTooltip(),
-        UnovisCrosshair()
+        UVisLine(),
+        UVisAxis({ role: 'y' }),
+        UVisTooltip(),
+        UVisCrosshair()
       ),
       document.body
     )

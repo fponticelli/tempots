@@ -1,19 +1,9 @@
-import type { Renderable, Value as DomValue } from '@tempots/dom'
-import {
-  OnDispose,
-  Value as ValueUtil,
-  WithElement,
-  attr,
-  html,
-} from '@tempots/dom'
+import type { Renderable } from '@tempots/dom'
+import { OnDispose, Value, WithElement } from '@tempots/dom'
 
-type Cleanup = () => void
-
-export interface DomComponentProps<Config, Data = undefined> {
-  config?: DomValue<Partial<Config>>
-  data?: DomValue<Data>
-  className?: DomValue<string | null | undefined>
-  style?: DomValue<string | null | undefined>
+export interface UnovisComponentOptions<Config, Data = undefined> {
+  config?: Value<Partial<Config>>
+  data?: Value<Data>
 }
 
 export interface DomComponentLifecycle<Config, Data = undefined> {
@@ -23,49 +13,38 @@ export interface DomComponentLifecycle<Config, Data = undefined> {
 }
 
 export const createDomComponent = <Config, Data = undefined>(
-  props: DomComponentProps<Config, Data>,
+  options: UnovisComponentOptions<Config, Data>,
   init: (
     element: HTMLDivElement,
     initial: { config: Partial<Config>; data?: Data }
   ) => DomComponentLifecycle<Config, Data>
 ): Renderable => {
-  return html.div(
-    attr.class(props.className),
-    attr.style(props.style),
-    WithElement<HTMLDivElement>(element => {
-      const cleanupFns: Cleanup[] = []
+  return WithElement<HTMLDivElement>(element => {
+    const initialConfig =
+      options.config !== undefined
+        ? (Value.get(options.config as Value<Partial<Config>>) ?? {})
+        : {}
+    const initialData =
+      options.data !== undefined
+        ? (Value.get(options.data as Value<Data>) as Data)
+        : undefined
 
-      const initialConfig =
-        props.config !== undefined
-          ? (ValueUtil.get(props.config as DomValue<Partial<Config>>) ?? {})
-          : {}
-      const initialData =
-        props.data !== undefined
-          ? (ValueUtil.get(props.data as DomValue<Data>) as Data)
-          : undefined
+    const api = init(element, { config: initialConfig, data: initialData })
 
-      const api = init(element, { config: initialConfig, data: initialData })
+    if (options.config && api.updateConfig) {
+      Value.on(options.config as Value<Partial<Config>>, cfg =>
+        api.updateConfig?.((cfg ?? {}) as Partial<Config>)
+      )
+    }
 
-      if (props.config && api.updateConfig) {
-        cleanupFns.push(
-          ValueUtil.on(props.config as DomValue<Partial<Config>>, cfg =>
-            api.updateConfig?.((cfg ?? {}) as Partial<Config>)
-          )
-        )
-      }
+    if (options.data && api.updateData) {
+      Value.on(options.data as Value<Data>, data =>
+        api.updateData?.(data as Data)
+      )
+    }
 
-      if (props.data && api.updateData) {
-        cleanupFns.push(
-          ValueUtil.on(props.data as DomValue<Data>, data =>
-            api.updateData?.(data as Data)
-          )
-        )
-      }
-
-      return OnDispose(() => {
-        cleanupFns.forEach(fn => fn())
-        api.destroy?.()
-      })
+    return OnDispose(() => {
+      api.destroy?.()
     })
-  )
+  })
 }

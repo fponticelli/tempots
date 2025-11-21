@@ -26,26 +26,22 @@ function App() {
     ),
     html.div(
       attr.class('panel'),
-      ...RandomWalkChart(),
-      ...SineWaveChart(),
-      ...ScatterClustersChart(),
-      ...StackedBarsChart(),
-      ...GroupedBarsChart(),
-      ...TimelineChart(),
-      html.div(attr.class('section-title'), 'Single container demos'),
-      html.div(
-        attr.class('layout-rows'),
-        DonutBlock(),
-        TreemapBlock(),
-        NestedDonutBlock(),
-        SankeyBlock(),
-        ChordBlock(),
-        GraphBlock(),
-        LegendsSection(),
-        RegionalMapBlock(),
-        LeafletMapBlock(),
-        LeafletFlowMapBlock()
-      )
+      RandomWalkChart(),
+      SineWaveChart(),
+      ScatterClustersChart(),
+      StackedBarsChart(),
+      GroupedBarsChart(),
+      TimelineChart(),
+      DonutBlock(),
+      TreemapBlock(),
+      NestedDonutBlock(),
+      SankeyBlock(),
+      ChordBlock(),
+      GraphBlock(),
+      LegendsSection(),
+      RegionalMapBlock(),
+      LeafletMapBlock(),
+      LeafletFlowMapBlock()
     )
   )
 }

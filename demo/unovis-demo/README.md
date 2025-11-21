@@ -10,5 +10,5 @@ pnpm --filter unovis-demo dev
 
 ## What to look for
 - DOM bridge renderable: `UnovisXYContainer` hosts Unovis visuals inside the DOM tree.
-- Primitive renderables: `UnovisLine`, `UnovisAxis`, `UnovisTooltip` map directly to Unovis components.
+- Primitive renderables: `VisLine`, `VisAxis`, `VisTooltip` map directly to Unovis components.
 - Reactivity: Dataset signals update charts and metric cards.

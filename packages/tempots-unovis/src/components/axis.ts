@@ -4,12 +4,12 @@ import type { AxisConfigInterface } from '@unovis/ts'
 import { Axis, AxisType } from '@unovis/ts'
 import { unovisRenderable } from '../types'
 
-export interface UnovisAxisOptions<Datum> {
+export interface UVisAxisOptions<Datum> {
   role?: 'x' | 'y'
   config?: Value<Partial<AxisConfigInterface<Datum>>>
 }
 
-export const UnovisAxis = <Datum>(options: UnovisAxisOptions<Datum> = {}) =>
+export const UVisAxis = <Datum>(options: UVisAxisOptions<Datum> = {}) =>
   unovisRenderable<Datum>(ctx => {
     const role = options.role ?? 'x'
     const configSignal = ValueUtil.toSignal(
