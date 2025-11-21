@@ -13,7 +13,7 @@ import type { UnovisRenderable } from './types'
 
 type Cleanup = () => void
 
-export interface UnovisXYContainerProps<Datum> {
+export interface UnovisXYContainerOptions<Datum> {
   data: DomValue<Datum[]>
   config?: DomValue<Partial<XYContainerConfigInterface<Datum>>>
   className?: DomValue<string | null | undefined>
@@ -22,7 +22,7 @@ export interface UnovisXYContainerProps<Datum> {
 }
 
 export const UnovisXYContainer = <Datum>(
-  props: UnovisXYContainerProps<Datum>,
+  props: UnovisXYContainerOptions<Datum>,
   ...children: UnovisRenderable<Datum>[]
 ): Renderable => {
   const allChildren: UnovisRenderable<Datum>[] = [
