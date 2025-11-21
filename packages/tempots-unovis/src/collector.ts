@@ -17,21 +17,24 @@ type AttachmentMap<Datum> = Partial<{
 
 type Cleanup = () => void
 
-export interface UnovisCollected<Datum = unknown> {
-  components: UnovisComponent<Datum>[]
+export interface UnovisCollected<Datum = unknown, Data = Datum[]> {
+  components: UnovisComponent<Data>[]
   attachments: AttachmentMap<Datum>
   dispose(removeTree: boolean): void
 }
 
-class UnovisCollector<Datum = unknown> implements UnovisContext<Datum> {
-  private readonly componentsList: UnovisCollected<Datum>['components'] = []
+class UnovisCollector<Datum = unknown, Data = Datum[]>
+  implements UnovisContext<Datum, Data>
+{
+  private readonly componentsList: UnovisCollected<Datum, Data>['components'] =
+    []
   private readonly attachments: AttachmentMap<Datum> = {}
   private readonly componentCleanups: Cleanup[] = []
   private readonly attachmentCleanups: Partial<
     Record<AttachmentRole, Cleanup>
   > = {}
 
-  addComponent(component: UnovisComponent<Datum>): Clear {
+  addComponent(component: UnovisComponent<Data>): Clear {
     this.componentsList.push(component)
 
     const cleanup: Clear = (removeTree: boolean) => {
@@ -71,7 +74,7 @@ class UnovisCollector<Datum = unknown> implements UnovisContext<Datum> {
     // No-op: collector itself does not render into a host context.
   }
 
-  finish(): UnovisCollected<Datum> {
+  finish(): UnovisCollected<Datum, Data> {
     const components = [...this.componentsList]
     const attachments = { ...this.attachments }
     const dispose = (removeTree: boolean) => {
@@ -86,10 +89,10 @@ class UnovisCollector<Datum = unknown> implements UnovisContext<Datum> {
   }
 }
 
-export const createUnovisCollector = <Datum = unknown>() => {
-  const collector = new UnovisCollector<Datum>()
+export const createUnovisCollector = <Datum = unknown, Data = Datum[]>() => {
+  const collector = new UnovisCollector<Datum, Data>()
   return {
-    ctx: collector as UnovisContext<Datum>,
+    ctx: collector as UnovisContext<Datum, Data>,
     finish: () => collector.finish(),
   }
 }

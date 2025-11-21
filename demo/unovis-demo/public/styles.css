@@ -1,7 +1,7 @@
 :root {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at 20% 20%, #0f172a 0, rgba(8, 47, 73, 0.6) 35%, #0b1224 70%);
-  color: #e2e8f0;
+  background: radial-gradient(circle at 20% 20%, #eef2ff 0, #e2e8f0 55%, #dbeafe 85%);
+  color: #0f172a;
   min-height: 100vh;
   margin: 0;
 }
@@ -24,11 +24,11 @@ body {
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 20px 50px rgba(148, 163, 184, 0.25);
 }
 
 .header {
@@ -51,8 +51,8 @@ body {
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(94, 234, 212, 0.1);
-  color: #5eead4;
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
   font-size: 13px;
 }
 
@@ -60,11 +60,12 @@ body {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .control {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -74,8 +75,8 @@ body {
 
 .control button {
   border: none;
-  background: linear-gradient(135deg, #22d3ee, #6366f1);
-  color: #0b1224;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  color: #e2e8f0;
   font-weight: 700;
   border-radius: 10px;
   padding: 10px 14px;
@@ -85,7 +86,7 @@ body {
 
 .control button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 8px 20px rgba(14, 165, 233, 0.35);
 }
 
 .metrics {
@@ -98,8 +99,8 @@ body {
 .metric-card {
   padding: 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -109,7 +110,7 @@ body {
   font-size: 12px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: #475569;
 }
 
 .metric-value {
@@ -119,9 +120,122 @@ body {
 
 .chart {
   width: 100%;
-  height: 320px;
+  height: 340px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 20%, rgba(37, 99, 235, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.12), transparent 40%),
+    #ffffff;
+  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 30px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  position: relative;
 }
 
 .chart+.chart {
   margin-top: 18px;
+}
+
+.layout-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 24px;
+  align-items: start;
+  grid-auto-flow: dense;
+}
+
+.single-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px;
+  min-width: 0;
+}
+
+.single-block .controls {
+  margin: 0 0 6px;
+  width: 100%;
+}
+
+.single-block .control {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.legend-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.legend-card {
+  flex: 1 1 240px;
+  min-width: 220px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.96) 0%, rgba(226, 232, 240, 0.9) 100%);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 26px rgba(15, 23, 42, 0.08);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.legend-text {
+  display: grid;
+  gap: 4px;
+}
+
+.legend-title {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.legend-subtitle {
+  font-size: 13px;
+  color: #475569;
+}
+
+.legend.flow,
+.legend.rolling {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.single.wide {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  height: 420px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 6px 0 2px;
+  color: #0f172a;
+}
+
+.chart.map,
+.chart.tall {
+  height: 430px;
+  min-height: 430px;
+}
+
+.control.ghost {
+  background: rgba(255, 255, 255, 0.65);
+  border-style: dashed;
+  color: #1e293b;
+}
+
+.controls-widget {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
 }

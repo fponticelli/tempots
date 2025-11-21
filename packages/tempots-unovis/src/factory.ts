@@ -14,11 +14,12 @@ export const componentRenderable = <
   Datum,
   Config,
   Instance extends { setConfig: (config: Config) => void },
+  Data = Datum[],
 >(
   create: (config: Config) => Instance,
   options: ConfigOptions<Config> = {}
-): UnovisRenderable<Datum> =>
-  unovisRenderable<Datum>(ctx => {
+): UnovisRenderable<Datum, Data> =>
+  unovisRenderable<Datum, Data>(ctx => {
     const configSignal = ValueUtil.toSignal(
       options.config ?? ({} as Partial<Config>)
     )
@@ -29,7 +30,7 @@ export const componentRenderable = <
       instance.setConfig(cfg as Config)
     })
 
-    return ctx.addComponent(instance as unknown as UnovisComponent<Datum>)
+    return ctx.addComponent(instance as unknown as UnovisComponent<Data>)
   })
 
 export const attachmentRenderable = <
