@@ -61,6 +61,7 @@ body {
 .controls {
   display: flex;
   margin: 24px 0 6px 0;
+  gap: 6px;
 }
 
 .control {
@@ -220,4 +221,12 @@ body {
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  justify-content: space-between;
+  justify-items: center;
 }

@@ -15,6 +15,7 @@ import { LegendsSection } from './visualizations/legends'
 import { RegionalMapBlock } from './visualizations/regional-map'
 import { LeafletMapBlock } from './visualizations/leaflet-map'
 import { LeafletFlowMapBlock } from './visualizations/leaflet-flow-map'
+import { ConditionalChart } from './visualizations/conditional'
 
 function App() {
   return html.div(
@@ -41,7 +42,8 @@ function App() {
       LegendsSection(),
       RegionalMapBlock(),
       LeafletMapBlock(),
-      LeafletFlowMapBlock()
+      LeafletFlowMapBlock(),
+      ConditionalChart()
     )
   )
 }

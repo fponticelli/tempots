@@ -57,6 +57,25 @@ export const UnovisXYContainer = <Datum>(
       ValueUtil.get(options.data)
     )
 
+    collector.setChangeListener(
+      ({ components: comps, attachments: attach }) => {
+        chart.updateContainer({
+          ...(options.config
+            ? ValueUtil.get(
+                options.config as DomValue<
+                  Partial<XYContainerConfigInterface<Datum>>
+                >
+              )
+            : {}),
+          ...attach,
+          components: comps as XYComponentCore<
+            Datum,
+            Partial<XYComponentConfigInterface<Datum>>
+          >[],
+        })
+      }
+    )
+
     if (attachments.tooltip) {
       attachments.tooltip.setContainer?.(element)
       attachments.tooltip.setComponents?.(typedComponents)

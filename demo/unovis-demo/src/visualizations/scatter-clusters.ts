@@ -1,5 +1,5 @@
-import { attr, html, prop } from '@tempots/dom'
-import { CurveType, FreeBrushMode } from '@unovis/ts'
+import { attr, html, on, prop } from '@tempots/dom'
+import { CurveType, FreeBrushMode, AreaConfigInterface } from '@unovis/ts'
 import {
   UVisArea,
   UVisAxis,
@@ -9,6 +9,7 @@ import {
   UVisScatter,
   UVisTooltip,
   UnovisXYContainer,
+  UVisWhen,
 } from '@tempots/unovis'
 import type { Bubble } from '../types'
 import { ChartTrigger } from '../components/chart-trigger'
@@ -33,9 +34,33 @@ const clusters = (size: number): Bubble[] => {
 export const ScatterClustersChart = () => {
   const scatterData = prop<Bubble[]>(clusters(80))
   const refresh = () => scatterData.set(clusters(80))
+  const showArea = prop(true)
+  const showScatter = prop(true)
 
   return html.div(
-    ChartTrigger('Scatter clusters', 'Shuffle', refresh),
+    html.div(
+      attr.class('row'),
+      ChartTrigger('Scatter clusters', 'Shuffle', refresh),
+      html.div(
+        attr.class('controls'),
+        html.div(
+          attr.class('control'),
+          html.span('Area layer'),
+          html.button(
+            on.click(() => showArea.update(v => !v)),
+            showArea.map(v => (v ? 'Hide area' : 'Show area'))
+          )
+        ),
+        html.div(
+          attr.class('control'),
+          html.span('Scatter visibility'),
+          html.button(
+            on.click(() => showScatter.update(v => !v)),
+            showScatter.map(v => (v ? 'Hide scatter' : 'Show scatter'))
+          )
+        )
+      )
+    ),
     html.div(
       attr.class('chart'),
       UnovisXYContainer<Bubble>(
@@ -44,28 +69,30 @@ export const ScatterClustersChart = () => {
           config: { margin: { top: 12, right: 12, bottom: 32, left: 48 } },
         },
         UVisArea<Bubble>({
-          config: {
+          config: showArea.map<Partial<AreaConfigInterface<Bubble>>>(v => ({
             x: d => d.x,
             y: d => d.y,
             curveType: CurveType.MonotoneX,
-            opacity: 0.12,
-          },
+            opacity: v ? 0.4 : 0,
+          })),
         }),
-        UVisScatter<Bubble>({
-          config: {
-            x: d => d.x,
-            y: d => d.y,
-            size: d => d.intensity + 4,
-            color: d =>
-              d.band === 'A'
-                ? '#60a5fa'
-                : d.band === 'B'
-                  ? '#a78bfa'
-                  : '#f97316',
-            strokeColor: () => '#0f172a',
-            strokeWidth: 1,
-          },
-        }),
+        UVisWhen(showScatter, () =>
+          UVisScatter<Bubble>({
+            config: {
+              x: d => d.x,
+              y: d => d.y,
+              size: d => d.intensity + 2,
+              color: d =>
+                d.band === 'A'
+                  ? '#60a5fa'
+                  : d.band === 'B'
+                    ? '#a78bfa'
+                    : '#f97316',
+              strokeColor: () => '#0f172a',
+              strokeWidth: 1,
+            },
+          })
+        ),
         UVisAxis<Bubble>({ role: 'x' }),
         UVisAxis<Bubble>({ role: 'y' }),
         UVisCrosshair<Bubble>({
@@ -75,7 +102,9 @@ export const ScatterClustersChart = () => {
             y: d => d.y,
             template: d =>
               d
-                ? `<strong>Band ${d.band}</strong><br/>x: ${d.x.toFixed(1)} / y: ${d.y.toFixed(1)}<br/>Intensity ${d.intensity.toFixed(0)}`
+                ? `<strong>Band ${d.band}</strong><br/>x: ${d.x.toFixed(
+                    1
+                  )} / y: ${d.y.toFixed(1)}<br/>Intensity ${d.intensity.toFixed(0)}`
                 : '',
           },
         }),

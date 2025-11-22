@@ -24,13 +24,22 @@ export const componentRenderable = <
       options.config ?? ({} as Partial<Config>)
     )
 
-    const instance = create(configSignal.get() as Config)
+    const instance = create(
+      configSignal.get() as Config
+    ) as unknown as UnovisComponent<Data>
 
-    configSignal.onChange(cfg => {
-      instance.setConfig(cfg as Config)
+    const off = configSignal.onChange(cfg => {
+      instance.setConfig(cfg)
+      instance.render()
     })
 
-    return ctx.addComponent(instance as unknown as UnovisComponent<Data>)
+    const detach = ctx.addComponent(instance)
+
+    return removeTree => {
+      instance.destroy()
+      detach(removeTree)
+      off()
+    }
   })
 
 export const attachmentRenderable = <
@@ -49,12 +58,17 @@ export const attachmentRenderable = <
 
     const instance = create(configSignal.get() as Config)
 
-    configSignal.onChange(cfg => {
+    const off = configSignal.onChange(cfg => {
       instance.setConfig(cfg as Config)
     })
 
-    return ctx.attach({
+    const detach = ctx.attach({
       role,
       value: instance,
     } as unknown as UnovisAttachment<Datum>)
+
+    return removeTree => {
+      off()
+      detach(removeTree)
+    }
   })

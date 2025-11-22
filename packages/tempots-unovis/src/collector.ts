@@ -16,6 +16,10 @@ type AttachmentMap<Datum> = Partial<{
 }>
 
 type Cleanup = () => void
+type ChangeListener<Datum, Data> = (data: {
+  components: UnovisComponent<Data>[]
+  attachments: AttachmentMap<Datum>
+}) => void
 
 export interface UnovisCollected<Datum = unknown, Data = Datum[]> {
   components: UnovisComponent<Data>[]
@@ -33,15 +37,34 @@ class UnovisCollector<Datum = unknown, Data = Datum[]>
   private readonly attachmentCleanups: Partial<
     Record<AttachmentRole, Cleanup>
   > = {}
+  private onChange: ChangeListener<Datum, Data> | null = null
+
+  setChangeListener(listener: ChangeListener<Datum, Data>): void {
+    this.onChange = listener
+  }
+
+  private notifyChange(): void {
+    this.onChange?.({
+      components: this.componentsList,
+      attachments: this.attachments,
+    })
+  }
 
   addComponent(component: UnovisComponent<Data>): Clear {
     this.componentsList.push(component)
+    this.notifyChange()
+
+    let destroyed = false
 
     const cleanup: Clear = (removeTree: boolean) => {
-      if (removeTree) {
-        const destroy = (component as unknown as { destroy?: () => void })
-          .destroy
-        destroy?.()
+      const index = this.componentsList.indexOf(component)
+      if (index >= 0) {
+        this.componentsList.splice(index, 1)
+      }
+      this.notifyChange()
+      if (removeTree && !destroyed) {
+        destroyed = true
+        component.destroy()
       }
     }
 
@@ -55,13 +78,20 @@ class UnovisCollector<Datum = unknown, Data = Datum[]>
     previousCleanup?.()
 
     this.attachments[attachment.role] = attachment.value as never
+    this.notifyChange()
 
+    let destroyed = false
     const cleanup: Clear = (removeTree: boolean) => {
       if (removeTree) {
-        const destroy = (
-          attachment.value as unknown as { destroy?: () => void }
-        ).destroy
-        destroy?.()
+        if (!destroyed) {
+          destroyed = true
+          const destroy = (
+            attachment.value as unknown as { destroy?: () => void }
+          ).destroy
+          destroy?.()
+        }
+        delete this.attachments[attachment.role]
+        this.notifyChange()
       }
     }
 
@@ -75,8 +105,8 @@ class UnovisCollector<Datum = unknown, Data = Datum[]>
   }
 
   finish(): UnovisCollected<Datum, Data> {
-    const components = [...this.componentsList]
-    const attachments = { ...this.attachments }
+    const components = this.componentsList
+    const attachments = this.attachments
     const dispose = (removeTree: boolean) => {
       if (!removeTree) return
       for (const cleanup of this.componentCleanups) {
@@ -94,5 +124,7 @@ export const createUnovisCollector = <Datum = unknown, Data = Datum[]>() => {
   return {
     ctx: collector as UnovisContext<Datum, Data>,
     finish: () => collector.finish(),
+    setChangeListener: (listener: ChangeListener<Datum, Data>) =>
+      collector.setChangeListener(listener),
   }
 }
