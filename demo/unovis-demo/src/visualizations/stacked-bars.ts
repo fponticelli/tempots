@@ -1,4 +1,5 @@
 import { attr, html, prop } from '@tempots/dom'
+import { StackedBar } from '@unovis/ts'
 import {
   UVisAxis,
   UVisStackedBar,
@@ -49,7 +50,16 @@ export const StackedBarsChart = () => {
         }),
         UVisAxis<Stack>({ role: 'x' }),
         UVisAxis<Stack>({ role: 'y' }),
-        UVisTooltip<Stack>()
+        UVisTooltip<Stack>({
+          config: {
+            triggers: {
+              [StackedBar.selectors.bar]: d => {
+                const total = d.a + d.b + d.c
+                return `<strong>Day ${d.day}</strong><br/>A: ${d.a}<br/>B: ${d.b}<br/>C: ${d.c}<br/>Total: ${total}`
+              },
+            },
+          },
+        })
       )
     )
   )

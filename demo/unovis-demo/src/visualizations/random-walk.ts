@@ -1,9 +1,10 @@
 import { attr, html, prop } from '@tempots/dom'
 import { ChartTrigger } from '../components/chart-trigger'
-import { AxisType } from '@unovis/ts'
+import { AxisType, Line } from '@unovis/ts'
 import {
   UVisAnnotations,
   UVisAxis,
+  UVisCrosshair,
   UVisLine,
   UVisPlotBand,
   UVisPlotLine,
@@ -43,6 +44,16 @@ export const RandomWalkChart = () => {
             lineWidth: 2.5,
           },
         }),
+        UVisCrosshair<Point>({
+          config: {
+            x: d => d.x,
+            y: d => d.y,
+            template: d =>
+              d && d.y != null
+                ? `<strong>t=${d.x}</strong><br/>value: ${d.y.toFixed(2)}`
+                : '',
+          },
+        }),
         UVisAxis<Point>({ role: 'x' }),
         UVisAxis<Point>({ role: 'y' }),
         UVisAnnotations<Point>({
@@ -76,7 +87,15 @@ export const RandomWalkChart = () => {
             labelText: 'Baseline',
           },
         }),
-        UVisTooltip()
+        UVisTooltip<Point>({
+          config: {
+            triggers: {
+              [Line.selectors.linePath]: () => null,
+              [Line.selectors.lineSelectionHelper]: () => null,
+            },
+            showDelay: 80,
+          },
+        })
       )
     )
   )

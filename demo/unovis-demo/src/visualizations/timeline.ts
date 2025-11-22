@@ -1,4 +1,5 @@
 import { attr, html, prop } from '@tempots/dom'
+import { Timeline as TimelineComponent } from '@unovis/ts'
 import {
   UVisAxis,
   UVisTimeline,
@@ -57,7 +58,14 @@ export const TimelineChart = () => {
             tickFormat: (_, i) => `${i}`,
           },
         }),
-        UVisTooltip<TimelineItem>()
+        UVisTooltip<TimelineItem>({
+          config: {
+            triggers: {
+              [TimelineComponent.selectors.line]: d =>
+                `<strong>${d.label}</strong><br/>Lane: ${d.lane}<br/>Start: ${d.start.toFixed(1)} / Duration: ${d.duration.toFixed(1)}`,
+            },
+          },
+        })
       )
     )
   )

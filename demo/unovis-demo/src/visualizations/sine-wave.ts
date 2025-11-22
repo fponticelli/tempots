@@ -1,7 +1,8 @@
 import { attr, html, prop } from '@tempots/dom'
-import { CurveType } from '@unovis/ts'
+import { CurveType, Line } from '@unovis/ts'
 import {
   UVisAxis,
+  UVisCrosshair,
   UVisLine,
   UVisTooltip,
   UnovisXYContainer,
@@ -44,9 +45,27 @@ export const SineWaveChart = () => {
             color: () => '#22d3ee',
           },
         }),
+        UVisCrosshair<Point>({
+          config: {
+            x: d => d.x,
+            y: d => d.y,
+            template: d =>
+              d && d.y != null
+                ? `<strong>t=${d.x}</strong><br/>amplitude: ${d.y.toFixed(2)}`
+                : '',
+          },
+        }),
         UVisAxis<Point>({ role: 'x' }),
         UVisAxis<Point>({ role: 'y' }),
-        UVisTooltip<Point>()
+        UVisTooltip<Point>({
+          config: {
+            triggers: {
+              [Line.selectors.linePath]: () => '',
+              [Line.selectors.lineSelectionHelper]: () => '',
+            },
+            showDelay: 80,
+          },
+        })
       )
     )
   )

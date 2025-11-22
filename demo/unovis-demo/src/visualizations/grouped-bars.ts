@@ -1,5 +1,5 @@
 import { attr, html, prop } from '@tempots/dom'
-import { AxisType } from '@unovis/ts'
+import { AxisType, GroupedBar } from '@unovis/ts'
 import {
   UVisAxis,
   UVisGroupedBar,
@@ -78,7 +78,14 @@ export const GroupedBarsChart = () => {
           },
         }),
         UVisAxis<Grouped>({ role: 'y' }),
-        UVisTooltip<Grouped>()
+        UVisTooltip<Grouped>({
+          config: {
+            triggers: {
+              [GroupedBar.selectors.bar]: d =>
+                `<strong>${d.quarter}</strong><br/>North: ${d.north}<br/>South: ${d.south}<br/>West: ${d.west}`,
+            },
+          },
+        })
       )
     )
   )

@@ -57,10 +57,26 @@ export const UnovisXYContainer = <Datum>(
       ValueUtil.get(options.data)
     )
 
+    if (attachments.tooltip) {
+      attachments.tooltip.setContainer?.(element)
+      attachments.tooltip.setComponents?.(typedComponents)
+      attachments.tooltip.setConfig({
+        ...attachments.tooltip.config,
+        components: typedComponents,
+      })
+      setTimeout(() => attachments.tooltip?.update?.(), 0)
+    }
+
     if (options.config !== undefined) {
       ValueUtil.on(
         options.config as DomValue<Partial<XYContainerConfigInterface<Datum>>>,
         next => {
+          if (attachments.tooltip) {
+            attachments.tooltip.setConfig({
+              ...attachments.tooltip.config,
+              components: typedComponents,
+            })
+          }
           chart.updateContainer({
             ...(next ?? {}),
             ...attachments,

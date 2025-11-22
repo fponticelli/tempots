@@ -1,4 +1,5 @@
 import { attr, html, prop } from '@tempots/dom'
+import { Donut } from '@unovis/ts'
 import { UVisDonut, UnovisSingleContainer, UVisTooltip } from '@tempots/unovis'
 import type { Renderable } from '@tempots/dom'
 import type { Slice } from '../types'
@@ -44,7 +45,19 @@ export const DonutBlock = (): Renderable => {
             cornerRadius: 8,
           },
         }),
-        UVisTooltip<Slice>()
+        UVisTooltip<Slice>({
+          config: {
+            triggers: {
+              [Donut.selectors.segment]: d => {
+                const total = donutData
+                  .get()
+                  .reduce((sum, s) => sum + s.value, 0)
+                const pct = ((d.value / total) * 100).toFixed(1)
+                return `<strong>${d.label}</strong><br/>Value: ${d.value}<br/>Share: ${pct}%`
+              },
+            },
+          },
+        })
       )
     )
   )

@@ -40,12 +40,28 @@ export const UnovisSingleContainer = <Datum, Data = Datum[]>(
       ValueUtil.get(options.data)
     )
 
+    if (attachments.tooltip && component) {
+      attachments.tooltip.setContainer?.(element)
+      attachments.tooltip.setComponents?.([component])
+      attachments.tooltip.setConfig({
+        ...attachments.tooltip.config,
+        components: [component],
+      })
+      setTimeout(() => attachments.tooltip?.update?.(), 0)
+    }
+
     if (options.config !== undefined) {
       ValueUtil.on(
         options.config as DomValue<
           Partial<SingleContainerConfigInterface<Data>>
         >,
         next => {
+          if (attachments.tooltip && component) {
+            attachments.tooltip.setConfig({
+              ...attachments.tooltip.config,
+              components: [component],
+            })
+          }
           chart.updateContainer({
             ...(next ?? {}),
             component,

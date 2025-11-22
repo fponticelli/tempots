@@ -18,7 +18,7 @@ const clusters = (size: number): Bubble[] => {
   const pick = () => bands[Math.floor(Math.random() * bands.length)]
   const spread = 5 + Math.random() * 6
   const bandShift = () => (Math.random() - 0.5) * 4
-  return Array.from({ length: size }, () => {
+  const unsorted = Array.from({ length: size }, () => {
     const band = pick()
     const centerX = (band === 'A' ? 4 : band === 'B' ? 14 : 24) + bandShift()
     const centerY = (band === 'A' ? 4 : band === 'B' ? 12 : 6) + bandShift()
@@ -27,6 +27,7 @@ const clusters = (size: number): Bubble[] => {
     const intensity = Math.max(1, 12 - Math.abs(y - centerY) * 0.9)
     return { x, y, band, intensity }
   })
+  return unsorted.slice().sort((a: Bubble, b: Bubble) => a.x - b.x)
 }
 
 export const ScatterClustersChart = () => {
@@ -72,6 +73,10 @@ export const ScatterClustersChart = () => {
             snapToData: true,
             x: d => d.x,
             y: d => d.y,
+            template: d =>
+              d
+                ? `<strong>Band ${d.band}</strong><br/>x: ${d.x.toFixed(1)} / y: ${d.y.toFixed(1)}<br/>Intensity ${d.intensity.toFixed(0)}`
+                : '',
           },
         }),
         UVisFreeBrush<Bubble>({
