@@ -28,6 +28,9 @@ jobs:
         run: pnpm run build --filter="@tempots/std" --filter="@tempots/dom"
       - name: Build Demos
         run: pnpm run build:demos
+      - name: Build Slides
+        working-directory: slides
+        run: pnpm run build
       - name: Assemble Docs
         run: pnpm run docs
       - name: Build Docs
@@ -35,6 +38,8 @@ jobs:
       - name: Build Pages
         working-directory: apps/docs
         run: pnpm run docs:static
+      - name: Copy Slides to Docs
+        run: cp -r slides/dist apps/docs/dist/slides
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

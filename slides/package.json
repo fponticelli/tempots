@@ -1,0 +1,20 @@
+{
+  "name": "tempots-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build --base /slides/",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.50.0",
+    "@slidev/theme-default": "latest",
+    "@tempots/dom": "workspace:*",
+    "@tempots/std": "workspace:*",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@slidev/types": "^0.50.0"
+  }
+}
