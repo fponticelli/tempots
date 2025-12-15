@@ -1,6 +1,6 @@
 /**
  * Delays the execution of a function by the given number of milliseconds.
- * @param fn - The function to delay.
+ * @param fn - The function to delay. The function can optionally return a callback that will be invoked when the delay is cancelled.
  * @param ms - The number of milliseconds to delay the function.
  * @returns A function that, when called, will cancel the delay and prevent the original function from being executed.
  * @example
@@ -13,14 +13,23 @@
  * ```
  * @public
  */
-export const delayed = (fn: () => void, ms: number) => {
-  const clear = setTimeout(fn, ms)
-  return () => clearTimeout(clear)
+export const delayed = (fn: () => (() => void) | void, ms: number) => {
+  let clear = () => {}
+  const timeoutId = setTimeout(() => {
+    const clearFn = fn()
+    if (clearFn != null) {
+      clear = clearFn
+    }
+  }, ms)
+  return () => {
+    clearTimeout(timeoutId)
+    clear()
+  }
 }
 
 /**
  * Executes a function repeatedly at a fixed interval.
- * @param fn - The function to execute periodically.
+ * @param fn - The function to execute periodically. The function can optionally return a callback that will be invoked when the delay is cancelled.
  * @param ms - The number of milliseconds between each execution.
  * @returns A function that, when called, will cancel the interval and stop future executions.
  * @example
@@ -34,8 +43,17 @@ export const delayed = (fn: () => void, ms: number) => {
  * @public
  */
 export const interval = (fn: () => void, ms: number) => {
-  const clear = setInterval(fn, ms)
-  return () => clearInterval(clear)
+  let clear = () => {}
+  const intervalId = setInterval(() => {
+    const clearFn = fn()
+    if (clearFn != null) {
+      clear = clearFn
+    }
+  }, ms)
+  return () => {
+    clearInterval(intervalId)
+    clear()
+  }
 }
 
 /**
