@@ -3,7 +3,11 @@ import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
 import fm from 'front-matter'
-import { ManglerOptions, markdownToHTML, markdownWithFM } from './utils/markdown'
+import {
+  ManglerOptions,
+  markdownToHTML,
+  markdownWithFM,
+} from './utils/markdown'
 import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
 
 const rootFolder = '../..'
@@ -120,7 +124,11 @@ function manglePageHref(url: string) {
   return `/${url}`
 }
 
-async function createPages(src: string, dst: string, options: ManglerOptions = {}) {
+async function createPages(
+  src: string,
+  dst: string,
+  options: ManglerOptions = {}
+) {
   const mdFiles = await listAllMDFiles(src)
   const data = await Promise.all(
     mdFiles.map(async file => ({
@@ -183,9 +191,9 @@ async function collectLibrary(
     fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : '',
     library,
     {
-      domMangler: (doc) => {
+      domMangler: doc => {
         addIdToHeaders(doc)
-      }
+      },
     }
   )
   return {
@@ -210,7 +218,9 @@ const tokenize = (text: string): string => {
 }
 
 const addIdToHeaders = (doc: Document) => {
-  for (const header of Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6'))) {
+  for (const header of Array.from(
+    doc.querySelectorAll('h1, h2, h3, h4, h5, h6')
+  )) {
     header.id = tokenize((header as HTMLElement).innerText)
   }
 }
@@ -288,6 +298,36 @@ function stripApiBreadcrumb(content: string) {
 function fileNameToTitle(file: string) {
   const base = path.basename(file, '.md')
   return base.replace(/\./g, ' ').replace(/-/g, ' ')
+}
+
+function prefixApiHeadings(content: string, prefix: string) {
+  const lines = content.split('\n')
+  let inFence = false
+  const normalizedPrefix = prefix.toLowerCase()
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (line.trimStart().startsWith('```')) {
+      inFence = !inFence
+      continue
+    }
+    if (inFence) {
+      continue
+    }
+    const match = /^(#{2,6})\s+(.*)$/.exec(line)
+    if (!match) {
+      continue
+    }
+    const heading = match[2].trim()
+    const normalizedHeading = heading.toLowerCase()
+    if (
+      normalizedHeading.startsWith(`${normalizedPrefix}: `) ||
+      normalizedHeading.startsWith(`${normalizedPrefix} `)
+    ) {
+      continue
+    }
+    lines[i] = `${match[1]} ${prefix}: ${heading}`
+  }
+  return lines.join('\n')
 }
 
 async function collectPageDocs(src: string): Promise<MarkdownDoc[]> {
@@ -372,6 +412,9 @@ async function collectApiDocs(src: string): Promise<MarkdownDoc[]> {
       if (body.length === 0) {
         continue
       }
+      const apiPrefix =
+        file === 'index.md' ? library : path.basename(file, '.md')
+      body = prefixApiHeadings(body, apiPrefix)
       const title = apiFileTitle(library, file)
       const anchorId = slugifyAnchor(title)
       docs.push({
@@ -392,20 +435,20 @@ type LinkMaps = {
 }
 
 function rewriteMarkdownLinks(content: string, maps: LinkMaps) {
-  return content.replace(/(!?)\[([^\]]+)\]\(([^)]+)\)/g, (match, marker, label, url) => {
-    const updated = rewriteMarkdownLink(url, maps)
-    if (updated === url) {
-      return match
+  return content.replace(
+    /(!?)\[([^\]]+)\]\(([^)]+)\)/g,
+    (match, marker, label, url) => {
+      const updated = rewriteMarkdownLink(url, maps)
+      if (updated === url) {
+        return match
+      }
+      return `${marker}[${label}](${updated})`
     }
-    return `${marker}[${label}](${updated})`
-  })
+  )
 }
 
 function rewriteMarkdownLink(url: string, maps: LinkMaps) {
-  if (
-    url.startsWith('#') ||
-    /^[a-z][a-z0-9+.-]*:/.test(url)
-  ) {
+  if (url.startsWith('#') || /^[a-z][a-z0-9+.-]*:/.test(url)) {
     return url
   }
   const [rawPath, rawHash] = url.split('#')
@@ -490,9 +533,9 @@ async function main() {
   // pages
   await prepDir(pagesFolderDst)
   const sections = await createPages(pagesFolderSrc, pagesFolderDst, {
-    domMangler: (doc) => {
+    domMangler: doc => {
       addIdToHeaders(doc)
-    }
+    },
   })
 
   // libraries
@@ -501,7 +544,7 @@ async function main() {
   const outputContent: Toc = {
     libraries: librariesData,
     demos,
-    ...sections
+    ...sections,
   }
 
   // api
@@ -523,17 +566,25 @@ async function main() {
         )
         return content
       },
-      domMangler: (doc) => {
+      domMangler: doc => {
         // find breadcrumbs
-        const breadcrumbs = Array.from( doc.querySelectorAll('p')).filter(p => {
-          return p.firstElementChild?.tagName === 'A' &&
-                 (p.firstElementChild as HTMLElement)?.innerText.indexOf('@tempots/') >= 0
+        const breadcrumbs = Array.from(doc.querySelectorAll('p')).filter(p => {
+          return (
+            p.firstElementChild?.tagName === 'A' &&
+            (p.firstElementChild as HTMLElement)?.innerText.indexOf(
+              '@tempots/'
+            ) >= 0
+          )
         })
         if (breadcrumbs.length > 0) {
           const bc = breadcrumbs[0]
           bc.classList.add('breadcrumbs')
           for (let i = 0; i < bc.childNodes.length; i++) {
-            if (bc.childNodes[i].nodeType === 3 && bc.childNodes[i].nodeValue === ' > ') { // text node
+            if (
+              bc.childNodes[i].nodeType === 3 &&
+              bc.childNodes[i].nodeValue === ' > '
+            ) {
+              // text node
               bc.childNodes[i].nodeValue = ' › '
             }
           }
@@ -557,13 +608,16 @@ async function main() {
         }
         // add ID to headers
         addIdToHeaders(doc)
-      }
+      },
     })
     api[library.name] = pages.pages
-      .map(({path}) => path)
+      .map(({ path }) => path)
       .filter(v => v != 'index')
   }
-  await fsp.writeFile(path.join(apiFolderDst, 'api.json'), JSON.stringify(api, null, 2))
+  await fsp.writeFile(
+    path.join(apiFolderDst, 'api.json'),
+    JSON.stringify(api, null, 2)
+  )
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
   await fsp.writeFile(combinedMarkdownFile, await buildCombinedMarkdown())

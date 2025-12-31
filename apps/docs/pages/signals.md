@@ -3,6 +3,7 @@ title: Signals
 order: 40
 description: Signals are the reactive data stores. They are used to manage state and notify state changes.
 ---
+
 # Signals
 
 Signals are the reactive data stores. They are used to manage state and notify state changes.
@@ -22,11 +23,11 @@ const p = prop(0)
 p.value = 1
 console.log(p.value) // 1
 
-// create a computed signal
-const c1 = computed(() => s.value + p.value, [s, p])
+// create a computed signal from a single dependency
+const c1 = computed(() => s.value * 2, [s])
 
-// or
-const c2 = computedOf(s, p)((s, p) => s + p)
+// for multiple signals, prefer computedOf - cleaner syntax with type-safe values
+const c2 = computedOf(s, p)((sVal, pVal) => sVal + pVal)
 ```
 
 When you create a Computed signal, you need to provide a function that returns the value of the signal. The function will be called whenever the dependency signals in the second argument change. There is no magic here, if you don't provide the dependency signals, the computed signal will not update.
@@ -74,8 +75,8 @@ You can transform signals using the `map()`, `filter()`, `flatMap()`, and other 
 
 ```ts
 const count = prop(0)
-const doubled = count.map(x => x * 2)  // ✨ Auto-disposed
-const positive = count.filter(x => x > 0)  // ✨ Auto-disposed
+const doubled = count.map(x => x * 2) // ✨ Auto-disposed
+const positive = count.filter(x => x > 0) // ✨ Auto-disposed
 ```
 
 **Automatic Disposal:** All derived signals (created with `.map()`, `.filter()`, `.flatMap()`, etc.) are automatically tracked and disposed when used within renderables. No manual cleanup needed!
@@ -101,13 +102,10 @@ When you create signals within a renderable, Tempo automatically tracks them and
 import { html, prop, render } from '@tempots/dom'
 
 const MyComponent = () => {
-  const count = prop(0)  // ✨ Auto-disposed
-  const doubled = count.map(x => x * 2)  // ✨ Auto-disposed
+  const count = prop(0) // ✨ Auto-disposed
+  const doubled = count.map(x => x * 2) // ✨ Auto-disposed
 
-  return html.div(
-    'Count: ', count,
-    ' Doubled: ', doubled
-  )
+  return html.div('Count: ', count, ' Doubled: ', doubled)
 }
 
 const clear = render(MyComponent(), document.body)
@@ -121,14 +119,176 @@ If you need to create a signal that outlives the current component scope, use `u
 ```ts
 import { untracked, prop } from '@tempots/dom'
 
-const globalState = untracked(() => prop(0))  // Not auto-disposed
+const globalState = untracked(() => prop(0)) // Not auto-disposed
 // Remember to dispose manually when done: globalState.dispose()
+```
+
+## Signal Methods Reference
+
+### Listening Methods
+
+| Method                         | Description                                                                                   |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| `on(listener, options?)`       | Listen to value changes. Called immediately with current value. Returns unsubscribe function. |
+| `onChange(listener, options?)` | Like `on()` but skips the initial call - only fires on actual changes.                        |
+| `hasListeners()`               | Returns `true` if the signal has any registered listeners.                                    |
+
+**Listener Options:**
+
+```ts
+type ListenerOptions = {
+  skipInitial?: boolean // Don't call immediately with current value
+  once?: boolean // Unsubscribe after first call
+  abortSignal?: AbortSignal // Cancel via AbortController
+}
+```
+
+### Transformation Methods
+
+| Method                                 | Description                                                  |
+| -------------------------------------- | ------------------------------------------------------------ |
+| `map(fn, equals?)`                     | Transform values to a new type. Returns a Computed signal.   |
+| `flatMap(fn, equals?)`                 | Map then flatten nested signals.                             |
+| `filter(predicate, startValue?)`       | Only emit values matching predicate.                         |
+| `filterMap(fn, startValue, equals?)`   | Map + filter in one operation. Skips null/undefined results. |
+| `mapMaybe(fn, alt)`                    | Map with fallback for null/undefined results.                |
+| `mapAsync(fn, alt, recover?, equals?)` | Async transformation with abort support.                     |
+| `tap(fn)`                              | Execute side effect without modifying value.                 |
+
+```ts
+const count = prop(5)
+
+// Transform to different types
+const doubled = count.map(n => n * 2)
+const message = count.map(n => `Count is ${n}`)
+
+// Filter values
+const positive = count.filter(n => n > 0)
+
+// Async transformation
+const userData = userId.mapAsync(
+  async (id, { abortSignal }) => {
+    const res = await fetch(`/api/users/${id}`, { signal: abortSignal })
+    return res.json()
+  },
+  null // initial value
+)
+
+// Side effects without modifying
+const logged = count.tap(n => console.log('Value:', n))
+```
+
+### Object Access Methods
+
+| Method    | Description                                                                                              |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| `at(key)` | Get a signal for a specific property of the value.                                                       |
+| `$`       | Proxy object providing signals for all properties. `signal.$.name` is equivalent to `signal.at('name')`. |
+
+### Disposal Methods
+
+| Method                | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `dispose()`           | Dispose the signal and release all resources.   |
+| `isDisposed()`        | Returns `true` if the signal has been disposed. |
+| `onDispose(listener)` | Register a callback to run when disposed.       |
+
+### Prop-Specific Methods
+
+| Method          | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `set(value)`    | Set a new value.                                         |
+| `update(fn)`    | Update value using a function: `prop.update(v => v + 1)` |
+| `reducer(fn)`   | Create a reducer function with effects.                  |
+| `iso(get, set)` | Create a bidirectional transformation (isomorphism).     |
+| `atProp(key)`   | Get a writable Prop for a specific property.             |
+
+```ts
+const user = prop({ name: 'John', age: 30 })
+
+// Get writable access to nested property
+const nameProp = user.atProp('name')
+nameProp.value = 'Jane' // Updates user.value.name
+```
+
+### Static Methods
+
+| Method                                               | Description                     |
+| ---------------------------------------------------- | ------------------------------- |
+| `Signal.ofPromise(promise, init, recover?, equals?)` | Create signal from a Promise.   |
+| `Signal.is(value)`                                   | Check if a value is a Signal.   |
+| `Prop.is(value)`                                     | Check if a value is a Prop.     |
+| `Computed.is(value)`                                 | Check if a value is a Computed. |
+
+## Storage Utilities
+
+Tempo provides utilities for persisting signals to browser storage with automatic synchronization across tabs.
+
+### localStorageProp
+
+Creates a Prop backed by localStorage:
+
+```ts
+import { localStorageProp } from '@tempots/dom'
+
+const theme = localStorageProp({
+  key: 'app-theme',
+  defaultValue: 'light',
+})
+
+// Value persists across page reloads
+theme.value = 'dark'
+```
+
+### sessionStorageProp
+
+Creates a Prop backed by sessionStorage (cleared when browser closes):
+
+```ts
+import { sessionStorageProp } from '@tempots/dom'
+
+const formData = sessionStorageProp({
+  key: 'checkout-form',
+  defaultValue: { email: '', address: '' },
+})
+```
+
+### storedProp Options
+
+Both `localStorageProp` and `sessionStorageProp` accept these options:
+
+```ts
+type StorageOptions<T> = {
+  key: Value<string> // Storage key (can be reactive)
+  defaultValue: T | (() => T) // Default when not in storage
+  serialize?: (v: T) => string // Custom serialization (default: JSON.stringify)
+  deserialize?: (v: string) => T // Custom deserialization (default: JSON.parse)
+  equals?: (a: T, b: T) => boolean // Equality function
+  syncTabs?: boolean // Sync across browser tabs (default: true)
+  onKeyChange?: 'load' | 'migrate' | 'keep' // Behavior when key changes
+}
+```
+
+### syncProp
+
+For cross-tab synchronization of any Prop:
+
+```ts
+import { syncProp, prop } from '@tempots/dom'
+
+// Create a synchronized prop
+const sharedState = syncProp({
+  key: 'shared-state',
+  prop: prop({ count: 0 }),
+})
+
+// Changes in one tab automatically appear in other tabs
+sharedState.value = { count: 1 }
 ```
 
 ## Next Steps
 
 - [Learn more about Building your own Renderables](/page/components.html)
 - [Explore the Standard Library](/page/std-library.html)
-- [Explore Examples & Best Practices](/page/examples.html)
 - [Troubleshooting & FAQ](/page/troubleshooting.html)
 - [Learn more about render](/page/render.html)

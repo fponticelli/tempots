@@ -3,6 +3,7 @@ title: Renderables
 order: 40
 description: Renderables are the building blocks of Tempo applications. They are the templates that are rendered to the DOM. Tempo provides a set of functions to create and manipulate renderables.
 ---
+
 # Renderables
 
 Renderables or components are the building blocks of Tempo applications. They are the templates that are rendered to the DOM. Tempo provides a set of functions to create and manipulate renderables.
@@ -46,10 +47,7 @@ The `class` attribute is special in the sense that can be used multiple times in
 
 ```ts
 const classSignal = signal('class3 class4')
-html.div(
-  attr.class('class1 class2'),
-  attr.class(classSignal)
-)
+html.div(attr.class('class1 class2'), attr.class(classSignal))
 ```
 
 A class attribute can be a string or a signal that emits a string. The string can contain multiple classes separated by spaces.
@@ -63,17 +61,9 @@ html.div(
   dataAttr.mydata('myvalue'),
   math.math(
     mathAttr.display('inline'),
-    math.mfrac(
-      math.msup(
-        math.mi('π'),
-        math.mn('2'),
-      ),
-      math.mn('6'),
-    ),
+    math.mfrac(math.msup(math.mi('π'), math.mn('2')), math.mn('6'))
   ),
-  svg.svg(
-    svg.circle(svgAttr.cx(50), svgAttr.cy(50), svgAttr.r(40)),
-  ),
+  svg.svg(svg.circle(svgAttr.cx(50), svgAttr.cy(50), svgAttr.r(40))),
   style.color('red')
 )
 ```
@@ -84,9 +74,91 @@ Similar to attributes, events can be set using the `on` object. The `on` object 
 
 It is fine to use `signal.value` or `signal.get()` to get the value of a signal in an event handler.
 
-### emit
+### emit helpers
 
-Tempo provides a set of functions to simplify event handling. For example `emitValue` emits the value of the current `input` element when the event is triggered.
+Tempo provides a set of functions to simplify event handling by extracting values from DOM events:
+
+| Helper                            | Description                                    |
+| --------------------------------- | ---------------------------------------------- |
+| `emitValue(fn)`                   | Extract string value from input/textarea       |
+| `emitValueAsNumber(fn)`           | Extract numeric value (uses `valueAsNumber`)   |
+| `emitValueAsDate(fn)`             | Extract Date from date input                   |
+| `emitValueAsNullableDate(fn)`     | Extract Date or null from date input           |
+| `emitValueAsDateTime(fn)`         | Extract Date from datetime-local input         |
+| `emitValueAsNullableDateTime(fn)` | Extract Date or null from datetime-local input |
+| `emitChecked(fn)`                 | Extract boolean from checkbox/radio            |
+| `emitTarget(fn)`                  | Get the target element directly                |
+
+```ts
+const name = prop('')
+const age = prop(0)
+const birthDate = prop<Date | null>(null)
+const isSubscribed = prop(false)
+
+html.form(
+  // Text input - use prop.set directly as callback
+  html.input(
+    attr.type('text'),
+    attr.value(name),
+    on.input(emitValue(name.set))
+  ),
+
+  // Number input - use filter for validation
+  html.input(
+    attr.type('number'),
+    attr.value(age.map(String)),
+    on.input(
+      emitValueAsNumber(v => {
+        if (!isNaN(v)) age.set(v)
+      })
+    )
+  ),
+
+  // Date input - prop.set works directly
+  html.input(
+    attr.type('date'),
+    on.change(emitValueAsNullableDate(birthDate.set))
+  ),
+
+  // Checkbox - prop.set works directly
+  html.input(
+    attr.type('checkbox'),
+    attr.checked(isSubscribed),
+    on.change(emitChecked(isSubscribed.set))
+  ),
+
+  // Direct element access
+  html.input(
+    on.focus(
+      emitTarget((input: HTMLInputElement) => {
+        input.select() // Select all text on focus
+      })
+    )
+  )
+)
+```
+
+**Emit Options:**
+
+All emit helpers accept an optional second argument for event control:
+
+```ts
+type EmitOptions = {
+  preventDefault?: boolean
+  stopPropagation?: boolean
+  stopImmediatePropagation?: boolean
+}
+
+// Example: prevent form submission
+on.submit(
+  emitTarget(
+    () => {
+      console.log('Form submitted')
+    },
+    { preventDefault: true }
+  )
+)
+```
 
 ## input elements
 
@@ -103,10 +175,7 @@ Tempo has a set of functions to create conditional renderables. For example, to 
 ```ts
 const showSignal = signal(true)
 
-When(
-  showSignal,
-  () => html.div('This is visible')
-)
+When(showSignal, () => html.div('This is visible'))
 ```
 
 A second argument can be passed to `When` to specify a renderable to show when the condition is false.
@@ -120,26 +189,22 @@ In TypeScript it is common to work with values that can be `null` or `undefined`
 ```ts
 const valueSignal = signal<string | null>('Hello, World!')
 
-Ensure(
-  valueSignal,
-  v => html.div(v.map(text => `This is visible: ${text}`))
-)
+Ensure(valueSignal, v => html.div(v.map(text => `This is visible: ${text}`)))
 ```
 
 Unlike `When`, `Ensure` takes a function that returns a renderable. This function is called with a new signal that is guaranteed to be not `null` or `undefined`.
 
 ### OneOf
 
-
 `OneOf` helpers allow matching a signal and rendering a branch based on its
-value.  Several variations exist depending on what you want to match.
+value. Several variations exist depending on what you want to match.
 
 ```ts
 const status = signal<{ loading: true } | { error: string }>({ loading: true })
 
 OneOf(status, {
   loading: () => html.div('Loading...'),
-  error: e => html.div('Error:', e)
+  error: e => html.div('Error:', e),
 })
 ```
 
@@ -150,7 +215,7 @@ const mode = signal<'view' | 'edit'>('view')
 
 OneOfValue(mode, {
   view: () => html.div('Viewing'),
-  edit: () => html.div('Editing')
+  edit: () => html.div('Editing'),
 })
 ```
 
@@ -161,7 +226,7 @@ const pair = signal(['A', 1] as ['A' | 'B', number])
 
 OneOfTuple(pair, {
   A: n => html.div('A:', n.map(String)),
-  B: n => html.div('B:', n.map(String))
+  B: n => html.div('B:', n.map(String)),
 })
 ```
 
@@ -170,41 +235,41 @@ OneOfTuple(pair, {
 ```ts
 type State =
   | { state: 'loading' }
-  | { state: 'error', message: string }
-  | { state: 'ready', content: string }
+  | { state: 'error'; message: string }
+  | { state: 'ready'; content: string }
 
 const state = signal<State>({ state: 'loading' })
 
 OneOfField(state, 'state', {
   loading: () => html.div('Loading...'),
   error: s => html.div('Error:', s.$.message),
-  ready: s => html.div('Ready:', s.$.content)
+  ready: s => html.div('Ready:', s.$.content),
 })
 ```
 
 #### OneOfKind
 
 ```ts
-type MyType = { kind: 'A', text: string } | { kind: 'B', value: number }
+type MyType = { kind: 'A'; text: string } | { kind: 'B'; value: number }
 
 const valueSignal = signal<MyType>({ kind: 'A', text: 'Hello, World!' })
 
 OneOfKind(valueSignal, {
   A: v => html.div('A:', v.$.text),
-  B: v => html.div('B:', v.$.value.map(String))
+  B: v => html.div('B:', v.$.value.map(String)),
 })
 ```
 
 #### OneOfType
 
 ```ts
-type Msg = { type: 'inc', value: number } | { type: 'dec', value: number }
+type Msg = { type: 'inc'; value: number } | { type: 'dec'; value: number }
 
 const msg = signal<Msg>({ type: 'inc', value: 1 })
 
 OneOfType(msg, {
   inc: m => html.div('Inc', m.$.value.map(String)),
-  dec: m => html.div('Dec', m.$.value.map(String))
+  dec: m => html.div('Dec', m.$.value.map(String)),
 })
 ```
 
@@ -215,13 +280,8 @@ Of course you can also render lists of elements. Tempo provides a set of functio
 ```ts
 const itemsSignal = signal(['Item 1', 'Item 2', 'Item 3'])
 
-ForEach(
-  itemsSignal,
-  (item, position) => html.div(
-    position.$.counter.map(String),
-    ': ',
-    item
-  )
+ForEach(itemsSignal, (item, position) =>
+  html.div(position.$.counter.map(String), ': ', item)
 )
 ```
 
@@ -236,12 +296,7 @@ const itemsSignal = signal(['Item 1', 'Item 2', 'Item 3'])
 
 NotEmpty(
   itemsSignal,
-  items => html.ul(
-    ForEach(
-      items,
-      item => html.li(item)
-    ),
-  ),
+  items => html.ul(ForEach(items, item => html.li(item))),
   () => 'No items'
 )
 ```
@@ -251,12 +306,8 @@ NotEmpty(
 ```ts
 const countSignal = signal(3)
 
-Repeat(
-  countSignal,
-  pos => html.div(
-    `${pos.counter} of `,
-    pos.$.total.map(String)
-  )
+Repeat(countSignal, pos =>
+  html.div(`${pos.counter} of `, pos.$.total.map(String))
 )
 ```
 
@@ -267,9 +318,7 @@ If you know ahead of time the number and content of the elements, you can use a 
 ```ts
 const items = ['Item 1', 'Item 2', 'Item 3']
 
-html.div(
-  items.map((item, index) => html.div(String(index), ': ', item))
-)
+html.div(items.map((item, index) => html.div(String(index), ': ', item)))
 ```
 
 ## Lifecycle
@@ -318,7 +367,7 @@ const Preferences = {
     const preferences = signal({ theme: 'bubbly' })
     // the implementation, it must return an object with
     return { value: preferences, dispose: preferences.dispose }
-  }
+  },
 }
 ```
 
@@ -332,7 +381,7 @@ const MyComponent = Provide(
 )
 ```
 
-And  it can be used this way:
+And it can be used this way:
 
 ```ts
 Use(Preferences, value => html.div(value.$.theme))
@@ -358,13 +407,7 @@ const dataSignal = Signal.ofPromise<string | null>(
   null // this is the initial value before the promise resolves
 )
 
-html.div(
-  Ensure(
-    dataSignal,
-    data => html.div(data),
-    html.div('Loading...')
-  )
-)
+html.div(Ensure(dataSignal, data => html.div(data), html.div('Loading...')))
 ```
 
 Often you will want to refetch when some parameter changes.
@@ -373,7 +416,7 @@ Often you will want to refetch when some parameter changes.
 const idSignal = signal(1)
 
 const dataSignal = idSignal.mapAsync<string | null>(
-  async (id) => {
+  async id => {
     const res = await fetch(`https://api.example.com/data/${id}`)
     return res.text()
   },

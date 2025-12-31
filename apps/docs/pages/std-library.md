@@ -3,6 +3,7 @@ title: Standard Library
 order: 70
 description: The @tempots/std library provides a set of utility functions and types commonly used in web applications.
 ---
+
 # Standard Library (@tempots/std)
 
 The `@tempots/std` package is a comprehensive standard library for TypeScript that provides utility functions and types commonly used in web applications. This package serves as a natural complement to the Tempo libraries but can be used independently in any TypeScript project.
@@ -27,17 +28,30 @@ The library provides utility functions organized into several modules:
 ### Array Operations
 
 ```typescript
-import { filterMapArray, uniqueByPrimitive, range, chunk, partition, groupBy } from '@tempots/std'
+import {
+  filterMapArray,
+  uniqueByPrimitive,
+  range,
+  chunk,
+  partition,
+  groupBy,
+} from '@tempots/std'
 
 // Filter and map in one pass
 const numbers = [1, 2, 3, 4, 5]
-const evenDoubled = filterMapArray(numbers, n => n % 2 === 0 ? n * 2 : undefined) // [4, 8]
+const evenDoubled = filterMapArray(numbers, n =>
+  n % 2 === 0 ? n * 2 : undefined
+) // [4, 8]
 
 // Generate a range of numbers
 const oneToFive = range(5, 1) // [1, 2, 3, 4, 5]
 
 // Get unique values by a key extractor
-const users = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 1, name: 'Clone' }]
+const users = [
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' },
+  { id: 1, name: 'Clone' },
+]
 const uniqueUsers = uniqueByPrimitive(users, user => user.id) // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
 
 // Chunk an array into groups
@@ -101,8 +115,86 @@ AsyncResult.match(asyncResult, {
   success: data => console.log('Data:', data),
   failure: error => console.error('Error:', error),
   loading: () => console.log('Loading...'),
-  notAsked: () => console.log('Not started')
+  notAsked: () => console.log('Not started'),
 })
+```
+
+### Validation Type
+
+The `Validation` type is useful for form validation and data checking. It represents either a valid state or an invalid state with an error:
+
+```typescript
+import { Validation } from '@tempots/std'
+
+// Define validation rules
+const validateEmail = (email: string): Validation<string> => {
+  if (!email.includes('@')) {
+    return Validation.invalid('Email must contain @')
+  }
+  if (email.length < 5) {
+    return Validation.invalid('Email too short')
+  }
+  return Validation.valid
+}
+
+const validateAge = (age: number): Validation<string> => {
+  if (age < 0) return Validation.invalid('Age cannot be negative')
+  if (age > 150) return Validation.invalid('Age seems unrealistic')
+  return Validation.valid
+}
+
+// Use validation
+const emailResult = validateEmail('user@example.com')
+
+// Pattern matching
+Validation.match(
+  emailResult,
+  () => console.log('Email is valid!'),
+  error => console.log('Invalid:', error)
+)
+
+// Type guards
+if (Validation.isValid(emailResult)) {
+  console.log('Proceed with valid email')
+}
+
+if (Validation.isInvalid(emailResult)) {
+  console.log('Error:', emailResult.error)
+}
+
+// Execute side effects conditionally
+Validation.whenValid(emailResult, () => {
+  submitForm()
+})
+
+Validation.whenInvalid(emailResult, error => {
+  showError(error)
+})
+
+// Convert to Result type for further processing
+const result = Validation.toResult(emailResult, 'user@example.com')
+```
+
+**Form Validation Example with Tempo:**
+
+```typescript
+import { html, prop } from '@tempots/dom'
+import { Validation } from '@tempots/std'
+
+const email = prop('')
+const emailError = email.map(value => {
+  const validation = validateEmail(value)
+  return Validation.isInvalid(validation) ? validation.error : null
+})
+
+html.form(
+  html.input(
+    attr.type('email'),
+    attr.value(email),
+    on.input(emitValue(email.set)) // Use prop.set directly
+  ),
+  Ensure(emailError, error => html.span(attr.class('error'), error))
+)
 ```
 
 ## Available Modules
