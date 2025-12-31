@@ -7,6 +7,40 @@ description: Common issues, solutions, and frequently asked questions about Temp
 
 This page addresses common issues and questions that may arise when working with Tempo.
 
+## Common Mistakes
+
+### Renderables should not be payloads to signals
+
+The following is an anti-pattern.
+
+```typescript
+function Counter() {
+  const p = prop(1);
+  // DON'T!
+  return p.map((value) => html.div(String(value)));
+}
+```
+
+This is how it should work:
+
+```typescript
+function Counter() {
+  const p = prop(1);
+  // DO!
+  return html.div(p.map(String));
+}
+```
+
+In the rare case where a signal should really contain a Renderable, the `MapSignal` component is the way to go. The reason to avoid it is that the entire sub-tree DOM is re-rendered when the `prop` changes which is potentially inefficient.
+
+```typescript
+function Counter() {
+  const p = prop(1);
+  // Correct but inefficient
+  return MapSignal(p, (value) => html.div(String(value)));
+}
+```
+
 ## Frequently Asked Questions
 
 ### How does Tempo compare to React, Vue, or Angular?
@@ -118,7 +152,7 @@ OnElement(element => {
 })
 ```
 
-2. **Signal Listeners**: If you manually add listeners to signals, make sure to remove them.
+2. **Signal Listeners**: When working outside the renderable context, if you manually add listeners to signals, make sure to remove them.
 
 ```typescript
 const clear = signal.on(value => {
@@ -130,6 +164,8 @@ clear()
 ```
 
 If a Signal is disposed, it will automatically remove all listeners and you don't need to call `clear`.
+
+Within renderables, the scope is automatically tracked and signals are automatically disposed. The exception to that is if you define a signal in an async context where the scope cannot be automatically tracked. In this case you will have to manually dispose the signal.
 
 3. **Event Listeners**: If you manually add DOM event listeners, make sure to remove them.
 

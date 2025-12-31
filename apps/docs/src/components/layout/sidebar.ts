@@ -195,7 +195,15 @@ export function SideBar({ libraries, demos, pages }: Toc) {
           )
         ),
         html.li(
-          attr.class('mt-auto'),
+          attr.class('mt-auto flex flex-col gap-2'),
+          html.a(
+            attr.href('/tempo-docs.md'),
+            attr.download('tempo-docs.md'),
+            attr.class(
+              'flex p-2 text-sm text-gray-600 justify-center hover:underline'
+            ),
+            'Download docs (Markdown)'
+          ),
           html.a(
             attr.target('_blank'),
             attr.href('https://github.com/fponticelli'),

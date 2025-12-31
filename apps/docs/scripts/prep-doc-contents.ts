@@ -2,6 +2,7 @@ import { promises as fsp } from 'fs'
 import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
+import fm from 'front-matter'
 import { ManglerOptions, markdownToHTML, markdownWithFM } from './utils/markdown'
 import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
 
@@ -19,15 +20,34 @@ const libraries = ['tempots-dom', 'tempots-std', 'tempots-ui']
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')
+const combinedMarkdownFile = path.join(pubFolder, 'tempo-docs.md')
 const cnameFile = path.join(pubFolder, 'CNAME')
 const nojekyll = path.join(pubFolder, '.nojekyll')
 
+const COMMENTS_PATTERN = /<!--[\s\S]*?--[!]?>|<!--[\s\S]*?$|^[\s\S]*?--[!]?>/g
+
+type MarkdownDoc = {
+  content: string
+  order?: number
+}
+
+const removeMarkdownComments = (md: string) => md.replace(COMMENTS_PATTERN, '')
+
 async function getDemos(folder: string): Promise<Demo[]> {
   const dirs = filterDirectories(await fsp.readdir(folder))
-  const data = dirs.map(dir => ({
-    dir: path.join(folder, dir),
-    path: dir,
-  }))
+  const data = dirs
+    .map(dir => ({
+      dir: path.join(folder, dir),
+      path: dir,
+    }))
+    .filter(({ dir, path: demoPath }) => {
+      const packageJson = path.join(dir, 'package.json')
+      if (!fs.existsSync(packageJson)) {
+        console.warn(`Skipping demo without package.json: ${demoPath}`)
+        return false
+      }
+      return true
+    })
   const contents = await Promise.all(
     data.map(async o => {
       const { dir, path } = o
@@ -221,6 +241,132 @@ function transformCodeBlocks(content: string, fn: (content: string) => string) {
   return buff.join('```')
 }
 
+function normalizeLineEndings(content: string) {
+  return replaceAll(content, '\r', '')
+}
+
+function ensureHeading(content: string, title: string) {
+  const trimmed = content.trimStart()
+  if (trimmed.startsWith('#')) {
+    return content.trim()
+  }
+  return `# ${title}\n\n${content.trim()}`
+}
+
+function stripApiBreadcrumb(content: string) {
+  const lines = content.split('\n')
+  let index = 0
+  while (index < lines.length && lines[index].trim() === '') {
+    index++
+  }
+  if (
+    index < lines.length &&
+    lines[index].includes('[Home]') &&
+    lines[index].includes('&gt;')
+  ) {
+    lines.splice(index, 1)
+    if (lines[index]?.trim() === '') {
+      lines.splice(index, 1)
+    }
+  }
+  return lines.join('\n')
+}
+
+function fileNameToTitle(file: string) {
+  const base = path.basename(file, '.md')
+  return base.replace(/\./g, ' ').replace(/-/g, ' ')
+}
+
+async function collectPageDocs(src: string): Promise<MarkdownDoc[]> {
+  const mdFiles = await listAllMDFiles(src)
+  const docs = await Promise.all(
+    mdFiles.map(async file => {
+      const raw = await fsp.readFile(path.join(src, file), 'utf8')
+      const parsed = fm(normalizeLineEndings(removeMarkdownComments(raw)))
+      const data = parsed.attributes as { title?: string; order?: number }
+      const title = data.title ?? file
+      const body = normalizeLineEndings(parsed.body).trim()
+      return {
+        order: Number(data.order ?? 0),
+        content: ensureHeading(body, title),
+      }
+    })
+  )
+  return docs.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}
+
+async function collectLibraryDocs(src: string): Promise<MarkdownDoc[]> {
+  const docs = await Promise.all(
+    libraries.map(async library => {
+      const packageJson = await fsp.readFile(
+        path.join(src, library, 'package.json'),
+        'utf8'
+      )
+      const pack = JSON.parse(packageJson)
+      const title = pack.title ?? pack.name ?? library
+      const contentPath = path.join(src, library, 'PROJECT.md')
+      if (!fs.existsSync(contentPath)) {
+        return null
+      }
+      const raw = await fsp.readFile(contentPath, 'utf8')
+      const body = normalizeLineEndings(removeMarkdownComments(raw)).trim()
+      if (body.length === 0) {
+        return null
+      }
+      return {
+        order: Number(pack.priority ?? 0),
+        content: ensureHeading(body, title),
+      }
+    })
+  )
+  return docs
+    .filter((doc): doc is MarkdownDoc => doc != null)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}
+
+async function collectApiDocs(src: string): Promise<MarkdownDoc[]> {
+  const docs: MarkdownDoc[] = []
+  for (const library of libraries) {
+    const apiDir = path.join(src, library, 'docs/output')
+    if (!fs.existsSync(apiDir)) {
+      continue
+    }
+    const mdFiles = await listAllMDFiles(apiDir)
+    const sorted = mdFiles.sort((a, b) => {
+      if (a === 'index.md') return -1
+      if (b === 'index.md') return 1
+      return a.localeCompare(b)
+    })
+    for (const file of sorted) {
+      const raw = await fsp.readFile(path.join(apiDir, file), 'utf8')
+      let body = normalizeLineEndings(removeMarkdownComments(raw)).trim()
+      body = stripApiBreadcrumb(body).trim()
+      if (body.length === 0) {
+        continue
+      }
+      docs.push({
+        content: ensureHeading(body, fileNameToTitle(file)),
+      })
+    }
+  }
+  return docs
+}
+
+async function buildCombinedMarkdown(): Promise<string> {
+  const pages = await collectPageDocs(pagesFolderSrc)
+  const libraryDocs = await collectLibraryDocs(librariesFolderSrc)
+  const apiDocs = await collectApiDocs(librariesFolderSrc)
+  const allDocs = [...pages, ...libraryDocs, ...apiDocs]
+    .map(doc => doc.content.trim())
+    .filter(doc => doc.length > 0)
+  const header =
+    '# Tempo Documentation\n\nThis file is generated from the Tempo documentation site.'
+  if (allDocs.length === 0) {
+    return `${header}\n`
+  }
+  return `${header}\n\n${allDocs.join('\n\n---\n\n')}\n`
+}
+
 async function main() {
   console.time('main')
 
@@ -321,6 +467,7 @@ async function main() {
   await fsp.writeFile(path.join(apiFolderDst, 'api.json'), JSON.stringify(api, null, 2))
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
+  await fsp.writeFile(combinedMarkdownFile, await buildCombinedMarkdown())
 
   // CNAME
   await fsp.writeFile(cnameFile, 'tempo-ts.com')
