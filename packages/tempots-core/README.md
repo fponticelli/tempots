@@ -1,5 +1,10 @@
 # @tempots/core
 
+[![npm version](https://img.shields.io/npm/v/@tempots/core.svg)](https://www.npmjs.com/package/@tempots/core)
+[![license](https://img.shields.io/npm/l/@tempots/core.svg)](https://github.com/fponticelli/tempots/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg)](https://codecov.io/gh/fponticelli/tempots)
+[![CI](https://github.com/fponticelli/tempots/workflows/CI/badge.svg)](https://github.com/fponticelli/tempots/actions)
+
 Core types and utilities for multi-context Tempo framework.
 
 ## Overview

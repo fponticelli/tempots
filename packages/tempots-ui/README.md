@@ -4,6 +4,8 @@ A collection of reusable UI components and renderables built on top of @tempots/
 
 [![npm version](https://img.shields.io/npm/v/@tempots/ui.svg)](https://www.npmjs.com/package/@tempots/ui)
 [![license](https://img.shields.io/npm/l/@tempots/ui.svg)](https://github.com/fponticelli/tempots/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg)](https://codecov.io/gh/fponticelli/tempots)
+[![CI](https://github.com/fponticelli/tempots/workflows/CI/badge.svg)](https://github.com/fponticelli/tempots/actions)
 
 ## Installation
 

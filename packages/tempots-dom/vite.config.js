@@ -5,7 +5,7 @@ import { resolve } from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), dts({ include: ['src'] })],
+  plugins: [tsconfigPaths(), dts({ include: ['src'], insertTypesEntry: true })],
   test: {
     ...configDefaults,
     environment: 'happy-dom',

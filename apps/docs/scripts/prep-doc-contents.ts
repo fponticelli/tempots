@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as fse from 'fs-extra'
 import * as path from 'path'
 import fm from 'front-matter'
+import * as cheerio from 'cheerio'
 import {
   ManglerOptions,
   markdownToHTML,
@@ -258,6 +259,253 @@ function normalizeLineEndings(content: string) {
   return replaceAll(content, '\r', '')
 }
 
+const HTML_TAG_PATTERN =
+  /<(?:\/)?(a|p|div|span|br|hr|pre|code|ul|ol|li|table|thead|tbody|tr|th|td|strong|b|em|i|blockquote|img|h[1-6]|kbd|details|summary|section|article|header|footer)\b/i
+
+const BLOCK_TAGS = new Set([
+  'p',
+  'div',
+  'section',
+  'article',
+  'header',
+  'footer',
+  'blockquote',
+  'pre',
+  'ul',
+  'ol',
+  'table',
+  'hr',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+])
+
+type HtmlNode = cheerio.AnyNode
+type HtmlElement = cheerio.Element
+
+function normalizeMarkdownWhitespace(content: string) {
+  return content.replace(/\n{3,}/g, '\n\n')
+}
+
+function wrapBlock(content: string) {
+  const trimmed = content.trim()
+  if (!trimmed) return ''
+  return `\n\n${trimmed}\n\n`
+}
+
+function formatInlineCode(value: string) {
+  const trimmed = value.trim()
+  let fence = '`'
+  while (trimmed.includes(fence)) {
+    fence += '`'
+  }
+  return `${fence}${trimmed}${fence}`
+}
+
+function renderInline(nodes: HtmlNode[], $: cheerio.CheerioAPI, depth: number) {
+  return renderNodes(nodes, $, depth)
+    .replace(/\s*\n\s*/g, ' ')
+    .trim()
+}
+
+function renderList(
+  el: HtmlElement,
+  $: cheerio.CheerioAPI,
+  ordered: boolean,
+  depth: number
+) {
+  const items = (el.children ?? []).filter(
+    child => child.type === 'tag' && child.name === 'li'
+  ) as HtmlElement[]
+  return items
+    .map((item, index) => renderListItem(item, $, ordered, depth, index))
+    .filter(Boolean)
+    .join('\n')
+}
+
+function renderListItem(
+  el: HtmlElement,
+  $: cheerio.CheerioAPI,
+  ordered: boolean,
+  depth: number,
+  index: number
+) {
+  const indent = '  '.repeat(depth)
+  const marker = ordered ? `${index + 1}.` : '-'
+  const content = renderNodes(el.children ?? [], $, depth + 1).trim()
+  if (!content) return ''
+  const lines = content.split('\n')
+  const first = lines.shift() ?? ''
+  let rendered = `${indent}${marker} ${first}`
+  if (lines.length > 0) {
+    rendered += `\n${lines.map(line => `${indent}  ${line}`).join('\n')}`
+  }
+  return rendered
+}
+
+function renderTable(el: HtmlElement, $: cheerio.CheerioAPI, depth: number) {
+  const rows = $(el).find('tr').toArray() as HtmlElement[]
+  if (rows.length === 0) {
+    return $.html(el) ?? ''
+  }
+  const renderedRows = rows.map(row =>
+    $(row)
+      .find('th,td')
+      .toArray()
+      .map(cell => {
+        const raw = renderInline((cell as HtmlElement).children ?? [], $, depth)
+        return raw.replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()
+      })
+  )
+  const headerIndex = renderedRows.findIndex(
+    (_, idx) => $(rows[idx]).find('th').length
+  )
+  const header =
+    headerIndex >= 0 ? renderedRows.splice(headerIndex, 1)[0] : renderedRows[0]
+  if (!header || header.length === 0) {
+    return $.html(el) ?? ''
+  }
+  if (headerIndex < 0) {
+    renderedRows.shift()
+  }
+  const headerLine = `| ${header.join(' | ')} |`
+  const separatorLine = `| ${header.map(() => '---').join(' | ')} |`
+  const bodyLines = renderedRows.map(row => `| ${row.join(' | ')} |`)
+  return [headerLine, separatorLine, ...bodyLines].join('\n')
+}
+
+function renderBlockquote(content: string) {
+  const lines = content.trim().split('\n')
+  return lines.map(line => `> ${line}`.trimEnd()).join('\n')
+}
+
+function renderDetails(el: HtmlElement, $: cheerio.CheerioAPI, depth: number) {
+  const summaryEl = (el.children ?? []).find(
+    child => child.type === 'tag' && child.name === 'summary'
+  ) as HtmlElement | undefined
+  const summary = summaryEl
+    ? renderInline(summaryEl.children ?? [], $, depth)
+    : ''
+  const bodyNodes = summaryEl
+    ? (el.children ?? []).filter(child => child !== summaryEl)
+    : (el.children ?? [])
+  const body = renderNodes(bodyNodes, $, depth).trim()
+  return wrapBlock(
+    `<details>\n<summary>${summary}</summary>\n\n${body}\n</details>`
+  )
+}
+
+function renderNode(node: HtmlNode, $: cheerio.CheerioAPI, depth: number) {
+  if (node.type === 'text') {
+    return node.data ?? ''
+  }
+  if (node.type === 'comment') {
+    return ''
+  }
+  if (node.type !== 'tag') {
+    return ''
+  }
+  const el = node as HtmlElement
+  const tag = el.name?.toLowerCase()
+  if (!tag) {
+    return ''
+  }
+  if (tag === 'br') {
+    return '\n'
+  }
+  if (tag === 'hr') {
+    return '\n\n---\n\n'
+  }
+  if (tag === 'strong' || tag === 'b') {
+    return `**${renderInline(el.children ?? [], $, depth)}**`
+  }
+  if (tag === 'em' || tag === 'i') {
+    return `*${renderInline(el.children ?? [], $, depth)}*`
+  }
+  if (tag === 'code') {
+    const text = $(el).text()
+    if (text.includes('\n')) {
+      return wrapBlock(`\`\`\`\n${text.trim()}\n\`\`\``)
+    }
+    return formatInlineCode(text)
+  }
+  if (tag === 'pre') {
+    const codeEl = (el.children ?? []).find(
+      child => child.type === 'tag' && child.name === 'code'
+    ) as HtmlElement | undefined
+    const codeText = codeEl ? $(codeEl).text() : $(el).text()
+    const className = codeEl?.attribs?.class ?? ''
+    const langMatch = className.match(/language-([a-z0-9-]+)/i)
+    const lang = langMatch ? langMatch[1] : ''
+    const fence = lang ? `\`\`\`${lang}\n` : '```\n'
+    return wrapBlock(`${fence}${codeText.trim()}\n\`\`\``)
+  }
+  if (tag === 'a') {
+    const href = el.attribs?.href ?? ''
+    const text = renderInline(el.children ?? [], $, depth) || href
+    if (!href) return text
+    return `[${text}](${href})`
+  }
+  if (tag === 'img') {
+    const src = el.attribs?.src ?? ''
+    const alt = el.attribs?.alt ?? ''
+    return src ? `![${alt}](${src})` : ''
+  }
+  if (tag === 'ul' || tag === 'ol') {
+    return wrapBlock(renderList(el, $, tag === 'ol', depth))
+  }
+  if (tag === 'table') {
+    return wrapBlock(renderTable(el, $, depth))
+  }
+  if (tag === 'blockquote') {
+    return wrapBlock(renderBlockquote(renderNodes(el.children ?? [], $, depth)))
+  }
+  if (tag.startsWith('h')) {
+    const level = Number(tag.substring(1))
+    if (level >= 1 && level <= 6) {
+      const heading = renderInline(el.children ?? [], $, depth)
+      return wrapBlock(`${'#'.repeat(level)} ${heading}`.trim())
+    }
+  }
+  if (tag === 'kbd') {
+    return formatInlineCode($(el).text())
+  }
+  if (tag === 'details') {
+    return renderDetails(el, $, depth)
+  }
+  if (tag === 'span') {
+    return renderInline(el.children ?? [], $, depth)
+  }
+  if (BLOCK_TAGS.has(tag)) {
+    return wrapBlock(renderNodes(el.children ?? [], $, depth))
+  }
+  return $.html(el) ?? ''
+}
+
+function renderNodes(nodes: HtmlNode[], $: cheerio.CheerioAPI, depth: number) {
+  const parts: string[] = []
+  for (const node of nodes) {
+    const rendered = renderNode(node, $, depth)
+    if (!rendered) continue
+    parts.push(rendered)
+  }
+  return parts.join('')
+}
+
+function convertHtmlToMarkdown(content: string) {
+  return transformCodeBlocks(content, block => {
+    if (!HTML_TAG_PATTERN.test(block)) {
+      return block
+    }
+    const $ = cheerio.load(block, { decodeEntities: false })
+    const rendered = renderNodes($.root().contents().toArray(), $, 0)
+    return normalizeMarkdownWhitespace(rendered)
+  })
+}
+
 function slugifyAnchor(value: string) {
   return value
     .toLowerCase()
@@ -499,7 +747,8 @@ async function buildCombinedMarkdown(): Promise<string> {
     ),
   }
   const allDocs = [...pages, ...libraryDocs, ...apiDocs]
-    .map(doc => rewriteMarkdownLinks(doc.content.trim(), maps))
+    .map(doc => convertHtmlToMarkdown(doc.content.trim()))
+    .map(doc => rewriteMarkdownLinks(doc, maps))
     .filter(doc => doc.length > 0)
   const header =
     '# Tempo Documentation\n\nThis file is generated from the Tempo documentation site.'

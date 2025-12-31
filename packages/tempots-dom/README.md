@@ -4,6 +4,8 @@ Tempo DOM is a lightweight UI framework for building web applications with TypeS
 
 [![npm version](https://img.shields.io/npm/v/@tempots/dom.svg)](https://www.npmjs.com/package/@tempots/dom)
 [![license](https://img.shields.io/npm/l/@tempots/dom.svg)](https://github.com/fponticelli/tempots/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg)](https://codecov.io/gh/fponticelli/tempots)
+[![CI](https://github.com/fponticelli/tempots/workflows/CI/badge.svg)](https://github.com/fponticelli/tempots/actions)
 
 ## Installation
 

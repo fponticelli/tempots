@@ -1,5 +1,10 @@
 # @tempots/eslint-plugin
 
+[![npm version](https://img.shields.io/npm/v/@tempots/eslint-plugin.svg)](https://www.npmjs.com/package/@tempots/eslint-plugin)
+[![license](https://img.shields.io/npm/l/@tempots/eslint-plugin.svg)](https://github.com/fponticelli/tempots/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg)](https://codecov.io/gh/fponticelli/tempots)
+[![CI](https://github.com/fponticelli/tempots/workflows/CI/badge.svg)](https://github.com/fponticelli/tempots/actions)
+
 ESLint plugin for TempoTS to help catch common signal usage issues and prevent memory leaks.
 
 ## Installation
