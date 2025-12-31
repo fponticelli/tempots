@@ -67,7 +67,8 @@ export class DisposalScope {
         callback()
       } catch (error) {
         // Log error but continue with other callbacks
-        console.error('Error in disposal callback:', error)
+        const message = error instanceof Error ? error.message : String(error)
+        console.error('Error in disposal callback:', message)
       }
     }
     this._callbacks.length = 0
