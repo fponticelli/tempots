@@ -148,8 +148,8 @@ export const WithProvider = (
  * )
  * ```
  *
- * @template T - The type of value provided by the provider
- * @template O - The type of options passed to the provider
+ * @typeParam T - The type of value provided by the provider
+ * @typeParam O - The type of options passed to the provider
  * @param provider - The provider definition containing mark and create function
  * @param options - Options to pass to the provider's create function
  * @param child - Function that returns the child components that can access the provider
@@ -214,7 +214,7 @@ export const Provide = <T, O>(
  *   )
  * ```
  *
- * @template T - The type of value provided by the provider
+ * @typeParam T - The type of value provided by the provider
  * @param provider - The provider to consume (must be available in parent components)
  * @param child - Function that receives the provider value and returns content to render
  * @returns A renderable that consumes the provider and renders the child content
@@ -291,7 +291,7 @@ export const Use = <T>(
  *   )
  * ```
  *
- * @template T - Tuple type representing the types of all providers
+ * @typeParam T - Tuple type representing the types of all providers
  * @param providers - Variable number of providers to consume
  * @returns Function that takes a child function and returns a renderable
  * @throws {ProviderNotFoundError} When any of the providers is not found in the component tree

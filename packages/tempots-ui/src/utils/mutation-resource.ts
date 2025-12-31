@@ -5,9 +5,9 @@ import { AsyncResult, NonLoading } from '@tempots/std'
  * A write-side wrapper for async state around POST/PUT/PATCH/DELETE.
  * Mirrors AsyncResource but the action is explicit (execute), not implicit (reload).
  *
- * @template Req - The request payload/type you send.
- * @template Res - The response/value you get back on success.
- * @template E   - The error type on failure.
+ * @typeParam Req - The request payload/type you send.
+ * @typeParam Res - The response/value you get back on success.
+ * @typeParam E   - The error type on failure.
  */
 export interface MutationResource<Req, Res, E> {
   /** Current async status (Idle | Loading | Success | Failure). */

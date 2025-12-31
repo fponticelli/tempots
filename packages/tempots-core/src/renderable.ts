@@ -7,8 +7,8 @@ import type { Clear, Renderable, RenderContext } from './types'
  * context-specific helpers like `domRenderable()` or `threeRenderable()`
  * instead of calling this directly.
  *
- * @template CTX - The type of context this renderable can be rendered into
- * @template TType - The symbol type used for branding
+ * @typeParam CTX - The type of context this renderable can be rendered into
+ * @typeParam TType - The symbol type used for branding
  *
  * @param type - The symbol type for runtime type checking
  * @param renderFn - The function that renders content into the context

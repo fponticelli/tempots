@@ -26,8 +26,8 @@ export interface MutationContentOptions<Req, Res, E> {
 /**
  * Options for displaying the different states of an asynchronous resource.
  *
- * @template Res - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @typeParam Res - The type of the value when the resource is successfully loaded.
+ * @typeParam E - The type of the error when the resource fails to load.
  * @public
  */
 export interface MutationDisplayOptions<Req, Res, E> {
@@ -38,9 +38,9 @@ export interface MutationDisplayOptions<Req, Res, E> {
 /**
  * Component to display an asynchronous mutation based on its current status.
  *
- * @template Req - The type of the request.
- * @template Res - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @typeParam Req - The type of the request.
+ * @typeParam Res - The type of the value when the resource is successfully loaded.
+ * @typeParam E - The type of the error when the resource fails to load.
  *
  * @param {MutationResource<Req, Res, E>} resource - The asynchronous resource to display.
  * @param {MutationDisplayOptions<Req, Res, E>} options - The display options for the resource.
@@ -76,9 +76,9 @@ export const MutationDisplay = <Req, Res, E>(
  * loading, success, and error states. It automatically manages the lifecycle of
  * async requests and provides reload functionality.
  *
- * @template Req - The type of the request.
- * @template Res - The type of the value when the resource is successfully loaded.
- * @template E - The type of the error when the resource fails to load.
+ * @typeParam Req - The type of the request.
+ * @typeParam Res - The type of the value when the resource is successfully loaded.
+ * @typeParam E - The type of the error when the resource fails to load.
  *
  * @param {MutationResource<Req, Res, E>} resource - The asynchronous resource to display.
  * @param {MutationDisplayOptions<Req, Res, E>} options - The display options for the resource.

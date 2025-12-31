@@ -6,7 +6,7 @@ import type { Signal, Prop, Computed } from './signal'
  * This type is used throughout Tempo to allow properties to be either
  * static values or reactive signals that update over time.
  *
- * @template T - The type of the value
+ * @typeParam T - The type of the value
  *
  * @example
  * ```typescript
@@ -158,8 +158,8 @@ export interface HierarchicalContext extends RenderContext {
  * are objects with a `render()` method that receives a context and returns a
  * cleanup function, and a `type` symbol for runtime type checking.
  *
- * @template CTX - The type of context this renderable can be rendered into
- * @template TType - The symbol type used for branding (runtime type checking)
+ * @typeParam CTX - The type of context this renderable can be rendered into
+ * @typeParam TType - The symbol type used for branding (runtime type checking)
  *
  * @example
  * ```typescript
@@ -209,8 +209,8 @@ export interface Renderable<
  * that can be rendered. This includes renderables, text, signals, arrays of content,
  * and null/undefined values for conditional rendering.
  *
- * @template CTX - The type of context
- * @template TType - The symbol type used for branding
+ * @typeParam CTX - The type of context
+ * @typeParam TType - The symbol type used for branding
  *
  * @example
  * ```typescript
@@ -253,7 +253,7 @@ export type TNode<CTX extends RenderContext, TType extends symbol> =
  * dependency injection system. The type parameter ensures type safety
  * when retrieving providers.
  *
- * @template T - The type of value provided
+ * @typeParam T - The type of value provided
  * @public
  */
 export type ProviderMark<T> = symbol & { readonly __type: T }

@@ -155,35 +155,40 @@ describe('Async Component', () => {
     })
 
     test('should handle multiple async components', async () => {
-      const promise1 = resolvedPromise('First', 20)
-      const promise2 = resolvedPromise('Second', 40)
+      vi.useFakeTimers()
+      try {
+        const promise1 = resolvedPromise('First', 20)
+        const promise2 = resolvedPromise('Second', 40)
 
-      const clear = render(
-        html.div(
+        const clear = render(
           html.div(
-            attr.id('first'),
-            Async(promise1, value => `First: ${value}`)
+            html.div(
+              attr.id('first'),
+              Async(promise1, value => `First: ${value}`)
+            ),
+            html.div(
+              attr.id('second'),
+              Async(promise2, value => `Second: ${value}`)
+            )
           ),
-          html.div(
-            attr.id('second'),
-            Async(promise2, value => `Second: ${value}`)
-          )
-        ),
-        document.body
-      )
+          document.body
+        )
 
-      await delay(30)
+        await vi.advanceTimersByTimeAsync(30)
 
-      const firstDiv = document.getElementById('first')!
-      const secondDiv = document.getElementById('second')!
+        const firstDiv = document.getElementById('first')!
+        const secondDiv = document.getElementById('second')!
 
-      expect(firstDiv.textContent).toBe('First: First')
-      expect(secondDiv.textContent).toBe('') // Still pending
+        expect(firstDiv.textContent).toBe('First: First')
+        expect(secondDiv.textContent).toBe('') // Still pending
 
-      await delay(20)
+        await vi.advanceTimersByTimeAsync(20)
 
-      expect(secondDiv.textContent).toBe('Second: Second')
-      clear()
+        expect(secondDiv.textContent).toBe('Second: Second')
+        clear()
+      } finally {
+        vi.useRealTimers()
+      }
     })
 
     test('should handle promise with null/undefined values', async () => {

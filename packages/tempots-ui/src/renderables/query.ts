@@ -17,8 +17,8 @@ import { AsyncResult, NonLoading } from '@tempots/std'
 /**
  * Options for displaying the different states of an asynchronous query.
  *
- * @template Res - The type of the value when the query is successfully loaded.
- * @template E - The type of the error when the query fails to load.
+ * @typeParam Res - The type of the value when the query is successfully loaded.
+ * @typeParam E - The type of the error when the query fails to load.
  * @public
  */
 export interface QueryDisplayOptions<Res, E> {
@@ -37,8 +37,8 @@ export interface QueryDisplayOptions<Res, E> {
 /**
  * Component to display an asynchronous query based on its current status.
  *
- * @template Res - The type of the value when the query is successfully loaded.
- * @template E - The type of the error when the query fails to load.
+ * @typeParam Res - The type of the value when the query is successfully loaded.
+ * @typeParam E - The type of the error when the query fails to load.
  *
  * @param {QueryResource<Res, E>} query - The asynchronous query to display.
  * @param {QueryDisplayOptions<Res, E>} options - The display options for the query.
@@ -172,9 +172,9 @@ export const QueryDisplay = <Res, E>(
  * })
  * ```
  *
- * @template Req - The type of the request parameter
- * @template Res - The type of the successful result value
- * @template E - The type of the error (defaults to unknown)
+ * @typeParam Req - The type of the request parameter
+ * @typeParam Res - The type of the successful result value
+ * @typeParam E - The type of the error (defaults to unknown)
  * @param options - Configuration object for the query
  * @param options.request - Signal or value representing the request parameters
  * @param options.load - Async function that loads the query

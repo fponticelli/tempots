@@ -87,7 +87,7 @@ export const DOM_RENDERABLE_TYPE = Symbol('DOM_RENDERABLE')
  * }
  * ```
  *
- * @template CTX - The type of DOMContext (defaults to DOMContext)
+ * @typeParam CTX - The type of DOMContext (defaults to DOMContext)
  * @public
  */
 export type Renderable<CTX extends DOMContext = DOMContext> = CoreRenderable<
@@ -164,7 +164,7 @@ export const domRenderable = <CTX extends DOMContext = DOMContext>(
  * }
  * ```
  *
- * @template CTX - The type of DOMContext (defaults to DOMContext)
+ * @typeParam CTX - The type of DOMContext (defaults to DOMContext)
  * @public
  */
 export type TNode<CTX extends DOMContext = DOMContext> =

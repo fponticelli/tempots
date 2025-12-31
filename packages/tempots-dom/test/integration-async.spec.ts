@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { html, render, prop, WithScope } from '../src'
 import { sleep } from './helper'
 import type { Prop, Computed } from '../src'
@@ -168,33 +168,38 @@ describe('Integration - Async Contexts', () => {
   })
 
   test('should handle nested async operations', async () => {
-    let outerSignal: Prop<number> | null = null
-    let innerSignal: Prop<number> | null = null
+    vi.useFakeTimers()
+    try {
+      let outerSignal: Prop<number> | null = null
+      let innerSignal: Prop<number> | null = null
 
-    const component = WithScope(scope => {
-      setTimeout(() => {
-        outerSignal = scope.prop(1)
-
+      const component = WithScope(scope => {
         setTimeout(() => {
-          innerSignal = scope.prop(2)
+          outerSignal = scope.prop(1)
+
+          setTimeout(() => {
+            innerSignal = scope.prop(2)
+          }, 10)
         }, 10)
-      }, 10)
 
-      return html.div('test')
-    })
+        return html.div('test')
+      })
 
-    const clear = render(component, document.body)
-    await sleep(30)
+      const clear = render(component, document.body)
+      await vi.advanceTimersByTimeAsync(30)
 
-    expect(outerSignal).not.toBeNull()
-    expect(innerSignal).not.toBeNull()
-    expect(outerSignal!.isDisposed()).toBe(false)
-    expect(innerSignal!.isDisposed()).toBe(false)
+      expect(outerSignal).not.toBeNull()
+      expect(innerSignal).not.toBeNull()
+      expect(outerSignal!.isDisposed()).toBe(false)
+      expect(innerSignal!.isDisposed()).toBe(false)
 
-    clear()
+      clear()
 
-    expect(outerSignal!.isDisposed()).toBe(true)
-    expect(innerSignal!.isDisposed()).toBe(true)
+      expect(outerSignal!.isDisposed()).toBe(true)
+      expect(innerSignal!.isDisposed()).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   test('should handle Promise.then with scope.computedOf()', async () => {

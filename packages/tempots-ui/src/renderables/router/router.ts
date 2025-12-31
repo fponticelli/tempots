@@ -139,7 +139,7 @@ const makeNestedRouteMatcher = <Routes extends string[]>(routes: Routes) => {
  * })
  * ```
  *
- * @template T - The type of the routes configuration object
+ * @typeParam T - The type of the routes configuration object
  * @param routes - Object mapping route patterns to handler functions
  * @returns A renderable router component that handles URL routing and provides context
  * @throws {Error} When no matching route is found for the current URL
@@ -238,7 +238,7 @@ export const RootRouter = <
  * })
  * ```
  *
- * @template T - The type of the routes configuration object
+ * @typeParam T - The type of the routes configuration object
  * @param routes - Object mapping route patterns to handler functions
  * @returns A renderable router component that handles nested URL routing
  * @throws {Error} When no matching route is found for the remaining path

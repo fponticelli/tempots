@@ -5,8 +5,8 @@ import { AsyncResult, NonLoading } from '@tempots/std'
  * Represents an asynchronous query with its current status, value, error, and loading state.
  * Provides methods to reload the query and dispose of it.
  *
- * @template Res - The type of the value when the query is successfully loaded.
- * @template E - The type of the error when the query fails to load.
+ * @typeParam Res - The type of the value when the query is successfully loaded.
+ * @typeParam E - The type of the error when the query fails to load.
  * @public
  */
 export interface QueryResource<Res, E> {
@@ -29,9 +29,9 @@ export interface QueryResource<Res, E> {
 /**
  * Options for loading a query, including the request, abort signal, and previous result.
  *
- * @template Req - The type of the request.
- * @template Res - The type of the value when the query is successfully loaded.
- * @template E - The type of the error when the query fails to load.
+ * @typeParam Req - The type of the request.
+ * @typeParam Res - The type of the value when the query is successfully loaded.
+ * @typeParam E - The type of the error when the query fails to load.
  * @public
  */
 export interface QueryResourceLoadOptions<Req, Res, E> {
@@ -51,9 +51,9 @@ export interface QueryResourceLoadOptions<Req, Res, E> {
 /**
  * Creates an asynchronous query that can be loaded, reloaded, and disposed of.
  *
- * @template R - The type of the request.
- * @template V - The type of the value when the query is successfully loaded.
- * @template E - The type of the error when the query fails to load.
+ * @typeParam R - The type of the request.
+ * @typeParam V - The type of the value when the query is successfully loaded.
+ * @typeParam E - The type of the error when the query fails to load.
  *
  * @param request - The request to load the query.
  * @param load - The function to load the query.
