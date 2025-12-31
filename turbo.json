@@ -29,7 +29,11 @@
     },
     "lint": {},
     "format": {},
-    "typecheck": {},
+    "typecheck": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "test": {},
     "test:watch": {},
     "test:coverage": {},
