@@ -29,6 +29,9 @@ const COMMENTS_PATTERN = /<!--[\s\S]*?--[!]?>|<!--[\s\S]*?$|^[\s\S]*?--[!]?>/g
 type MarkdownDoc = {
   content: string
   order?: number
+  title?: string
+  path?: string
+  anchorId?: string
 }
 
 const removeMarkdownComments = (md: string) => md.replace(COMMENTS_PATTERN, '')
@@ -245,12 +248,22 @@ function normalizeLineEndings(content: string) {
   return replaceAll(content, '\r', '')
 }
 
-function ensureHeading(content: string, title: string) {
+function slugifyAnchor(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
+
+function ensureHeading(content: string, title: string, anchorId?: string) {
+  const anchor = anchorId ? `<a id="${anchorId}"></a>\n\n` : ''
   const trimmed = content.trimStart()
   if (trimmed.startsWith('#')) {
-    return content.trim()
+    return `${anchor}${content.trim()}`
   }
-  return `# ${title}\n\n${content.trim()}`
+  return `${anchor}# ${title}\n\n${content.trim()}`
 }
 
 function stripApiBreadcrumb(content: string) {
@@ -285,10 +298,14 @@ async function collectPageDocs(src: string): Promise<MarkdownDoc[]> {
       const parsed = fm(normalizeLineEndings(removeMarkdownComments(raw)))
       const data = parsed.attributes as { title?: string; order?: number }
       const title = data.title ?? file
+      const anchorId = slugifyAnchor(title)
       const body = normalizeLineEndings(parsed.body).trim()
       return {
         order: Number(data.order ?? 0),
-        content: ensureHeading(body, title),
+        title,
+        path: file.replace(/\.md$/, ''),
+        anchorId,
+        content: ensureHeading(body, title, anchorId),
       }
     })
   )
@@ -304,6 +321,7 @@ async function collectLibraryDocs(src: string): Promise<MarkdownDoc[]> {
       )
       const pack = JSON.parse(packageJson)
       const title = pack.title ?? pack.name ?? library
+      const anchorId = slugifyAnchor(title)
       const contentPath = path.join(src, library, 'PROJECT.md')
       if (!fs.existsSync(contentPath)) {
         return null
@@ -315,13 +333,23 @@ async function collectLibraryDocs(src: string): Promise<MarkdownDoc[]> {
       }
       return {
         order: Number(pack.priority ?? 0),
-        content: ensureHeading(body, title),
+        title,
+        path: library,
+        anchorId,
+        content: ensureHeading(body, title, anchorId),
       }
     })
   )
   return docs
     .filter((doc): doc is MarkdownDoc => doc != null)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}
+
+function apiFileTitle(library: string, file: string) {
+  if (file === 'index.md') {
+    return `${library} api index`
+  }
+  return fileNameToTitle(file)
 }
 
 async function collectApiDocs(src: string): Promise<MarkdownDoc[]> {
@@ -344,20 +372,91 @@ async function collectApiDocs(src: string): Promise<MarkdownDoc[]> {
       if (body.length === 0) {
         continue
       }
+      const title = apiFileTitle(library, file)
+      const anchorId = slugifyAnchor(title)
       docs.push({
-        content: ensureHeading(body, fileNameToTitle(file)),
+        title,
+        path: file,
+        anchorId,
+        content: ensureHeading(body, title, anchorId),
       })
     }
   }
   return docs
 }
 
+type LinkMaps = {
+  pageAnchors: Map<string, string>
+  libraryAnchors: Map<string, string>
+  apiAnchors: Map<string, string>
+}
+
+function rewriteMarkdownLinks(content: string, maps: LinkMaps) {
+  return content.replace(/(!?)\[([^\]]+)\]\(([^)]+)\)/g, (match, marker, label, url) => {
+    const updated = rewriteMarkdownLink(url, maps)
+    if (updated === url) {
+      return match
+    }
+    return `${marker}[${label}](${updated})`
+  })
+}
+
+function rewriteMarkdownLink(url: string, maps: LinkMaps) {
+  if (
+    url.startsWith('#') ||
+    /^[a-z][a-z0-9+.-]*:/.test(url)
+  ) {
+    return url
+  }
+  const [rawPath, rawHash] = url.split('#')
+  const hash = rawHash != null && rawHash.length > 0 ? `#${rawHash}` : ''
+  if (rawPath.startsWith('/page/')) {
+    const page = rawPath.replace(/^\/page\//, '').replace(/\.html$/, '')
+    const anchor = maps.pageAnchors.get(page)
+    return anchor ? `#${anchor}` : url
+  }
+  if (rawPath.startsWith('/library/')) {
+    const lib = rawPath.replace(/^\/library\//, '').replace(/\.html$/, '')
+    const anchor = maps.libraryAnchors.get(lib)
+    return anchor ? `#${anchor}` : url
+  }
+  if (rawPath.startsWith('/demo/') || rawPath.startsWith('/tool/')) {
+    return `https://tempo-ts.com${rawPath}${hash}`
+  }
+  if (rawPath.startsWith('/assets/')) {
+    return `https://tempo-ts.com${rawPath}`
+  }
+  const normalized = rawPath.replace(/^\.\//, '')
+  if (normalized.endsWith('.md')) {
+    const anchor = maps.apiAnchors.get(normalized)
+    return anchor ? `#${anchor}` : url
+  }
+  return url
+}
+
 async function buildCombinedMarkdown(): Promise<string> {
   const pages = await collectPageDocs(pagesFolderSrc)
   const libraryDocs = await collectLibraryDocs(librariesFolderSrc)
   const apiDocs = await collectApiDocs(librariesFolderSrc)
+  const maps: LinkMaps = {
+    pageAnchors: new Map(
+      pages
+        .filter(doc => doc.path && doc.anchorId)
+        .map(doc => [doc.path!, doc.anchorId!])
+    ),
+    libraryAnchors: new Map(
+      libraryDocs
+        .filter(doc => doc.path && doc.anchorId)
+        .map(doc => [doc.path!, doc.anchorId!])
+    ),
+    apiAnchors: new Map(
+      apiDocs
+        .filter(doc => doc.path && doc.anchorId)
+        .map(doc => [doc.path!, doc.anchorId!])
+    ),
+  }
   const allDocs = [...pages, ...libraryDocs, ...apiDocs]
-    .map(doc => doc.content.trim())
+    .map(doc => rewriteMarkdownLinks(doc.content.trim(), maps))
     .filter(doc => doc.length > 0)
   const header =
     '# Tempo Documentation\n\nThis file is generated from the Tempo documentation site.'

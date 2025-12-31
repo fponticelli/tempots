@@ -34,10 +34,14 @@ When you create a Computed signal, you need to provide a function that returns t
 Signals can also be created from promises using the `Signal.ofPromise()` static method.
 
 ```ts
-const signal = Signal.ofPromise(fetchRemoteData(), [])
+const userSignal = Signal.ofPromise(
+  fetch('/api/user').then(r => r.json()),
+  null, // initial value before promise resolves
+  error => ({ error: String(error) }) // optional error recovery function
+)
 ```
 
-The first argument is a promise that resolves to the value of the signal. The second argument is a default value that is used until the promise resolves.
+The first argument is a promise that resolves to the value of the signal. The second argument is the initial value used until the promise resolves. An optional third argument is an error recovery function.
 
 ## Read signals
 

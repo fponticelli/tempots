@@ -54,10 +54,10 @@ import { InViewport } from '@tempots/ui'
 
 // Create an element that detects when it's in the viewport
 const lazyLoadedContent = InViewport(
-  { threshold: 0.5 }, // Options for intersection observer
-  (isVisible) => isVisible.value
+  { mode: 'partial', once: false }, // mode: 'partial' | 'full', once?: boolean
+  (isVisible) => isVisible.map(v => v
     ? html.div('Content is visible!')
-    : html.div('Loading...')
+    : html.div('Loading...'))
 )
 
 // Render it to the DOM
@@ -88,27 +88,35 @@ title.value = 'New page title'
 
 #### Router
 
-Simple client-side routing:
+Client-side routing with `RootRouter` and `ChildRouter`:
 
 ```typescript
-import { html, render, prop } from '@tempots/dom'
-import { Router, Location } from '@tempots/ui'
+import { html, render, Provide, Use } from '@tempots/dom'
+import { RootRouter, ChildRouter, Location, NavigationService } from '@tempots/ui'
 
-// Define routes
-const app = html.div(
-  AppRouter({
+// Define routes - handlers receive a Signal<RouteInfo>
+const app = Provide(Location, {}, () =>
+  RootRouter({
     '/': () => html.div('Home page'),
     '/about': () => html.div('About page'),
-    '/users/:id': (params) => html.div(`User ID: ${params.id}`),
+    '/users/:id': (info) => html.div('User ID: ', info.$.params.$.id),
+    '/admin/*': () => AdminRoutes(),
     '*': () => html.div('404 - Not found')
   })
 )
 
+// Nested routes with ChildRouter
+const AdminRoutes = () => ChildRouter({
+  '/users': () => html.div('Admin Users'),
+  '/settings': () => html.div('Admin Settings'),
+  '*': () => html.div('Admin 404')
+})
+
 // Render it to the DOM
 render(app, document.body)
 
-// Navigate programmatically
-Location.navigate('/about')
+// Navigate programmatically using NavigationService
+NavigationService.navigate('/about')
 ```
 
 #### Query
@@ -124,16 +132,21 @@ const userId = prop(1)
 
 const userQueryView = Query({
   request: userId,
-  load: async ({ request }) => {
-    const response = await fetch(`https://api.example.com/user/${request}`)
+  load: async ({ request, abortSignal }) => {
+    const response = await fetch(`https://api.example.com/user/${request}`, { signal: abortSignal })
     if (!response.ok) throw new Error('Failed to load user')
     return response.json()
   },
-  mapError: error => error instanceof Error ? error.message : String(error),
-})({
-  loading: () => html.div('Loading...'),
-  failure: error => html.div(error.map(message => `Error: ${message}`)),
-  success: user => html.div(user.map(u => `Hello, ${u.name}!`)),
+  convertError: error => error instanceof Error ? error.message : String(error),
+  pending: ({ previous, reload }) => html.div('Loading...'),
+  failure: ({ error, reload }) => html.div(
+    error.map(message => `Error: ${message}`),
+    html.button(on.click(reload), 'Retry')
+  ),
+  success: ({ value, reload }) => html.div(
+    value.map(u => `Hello, ${u.name}!`),
+    html.button(on.click(reload), 'Refresh')
+  ),
 })
 
 // Render it to the DOM
@@ -147,20 +160,44 @@ userId.value = 2
 
 The library includes the following components and utilities:
 
+### Input & Focus
 - `AutoFocus` - Automatically focus an element
 - `AutoSelect` - Automatically select text in an input
 - `SelectOnFocus` - Select all text when an input is focused
+
+### Viewport & Layout
 - `InViewport` - Detect when an element is in the viewport
-- `Router` - Simple client-side routing
-- `Location` - Navigation and location utilities
+- `WhenInViewport` - Conditional rendering based on viewport visibility
+- `WindowSize` - Track window dimensions
+- `ElementRect` - Track element size and position
+- `PopOver` - Create popup/popover elements
+- `HiddenWhenEmpty` - Hide an element when its content is empty
+
+### Routing
+- `RootRouter` - Root-level client-side routing
+- `ChildRouter` - Nested routing for sub-routes
+- `Location` - Provider for reactive location state
+- `NavigationService` - Programmatic navigation utilities
+- `Anchor` - Navigation-aware anchor element
+
+### Async Operations
 - `Query` - Async data loading with loading/error states
+- `Mutation` - Handle async mutations (POST/PUT operations)
 - `AsyncResultView` - Display async operation results
 - `ResultView` - Display success/failure results
-- `PopOver` - Create popup/popover elements
+
+### Events & Interaction
+- `OnClickOutside` - Detect clicks outside an element
+- `OnKeyPressed` - Handle keyboard events with modifier support
+- `OnEnterKey` - Handle Enter key press
+- `OnEscapeKey` - Handle Escape key press
+
+### Utilities
 - `HTMLTitle` - Set the document title
-- `HiddenWhenEmpty` - Hide an element when its content is empty
-- `Appearance` - Apply styles based on light/dark mode
-- `Size` - Apply styles based on screen size
+- `Appearance` - Detect and react to light/dark mode
+- `classes` - Conditional CSS class binding
+- `Ticker` / `ticker` - Counter/timer signal utilities
+- `makeRelativeTime` - Human-readable relative time formatting
 
 ## Next Steps
 

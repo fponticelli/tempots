@@ -31,7 +31,7 @@ html.div(
 To create DOM attributes and properties use the `attr` object. It contains functions for all the standard attributes and properties. For example, to set the `id` attribute, use `attr.id('my-id')`.
 
 ```ts
-html.image(
+html.img(
   attr.id('my-id'),
   attr.src('https://example.com/image.jpg'),
   attr.title(titleSignal)
@@ -94,7 +94,7 @@ When using `input` elements it is very common you want to specify the type of th
 
 ## bind
 
-Tempo provides functions to bind `Props` to input elements. For example, to bind a `string` prop to an `input` element, use `bindText`. This sets a bidirectional binding between the prop and the input element.
+Tempo provides functions to bind `Props` to input elements. For example, to bind a `string` prop to an `input` element, use `BindText`. Other bind functions include `BindNumber`, `BindDate`, `BindDateTime`, and `BindChecked`. These set a bidirectional binding between the prop and the input element.
 
 ## Conditionals
 
@@ -274,12 +274,12 @@ html.div(
 
 ## Lifecycle
 
-For more advanced use cases, Tempo provides a set of functions to handle the lifecycle of a renderable. For example, to run a function when a renderable is mounted, use `OnElement`. This will take a callback function that will be called with the HTML Dom Element just mounted. Similarly `OnCtx` will take a callback function that will be called with the current `DOMContext`.
+For more advanced use cases, Tempo provides a set of functions to handle the lifecycle of a renderable. For example, to run a function when a renderable is mounted, use `WithElement`. This will take a callback function that will be called with the HTML DOM Element just mounted. Similarly `WithCtx` will take a callback function that will be called with the current `DOMContext`, and `WithBrowserCtx` for browser-specific contexts.
 
 ```ts
 html.div(
   // element is the DIV Element just mounted
-  OnElement(element => {
+  WithElement(element => {
     console.log('Mounted', element)
   })
 )
@@ -289,10 +289,10 @@ Whenever you want to cleanup resources when a renderable is unmounted, use `OnDi
 
 ```ts
 html.div(
-  OnElement(element => {
+  WithElement(element => {
     const listener = () => console.log('Clicked')
     element.addEventListener('click', listener)
-    return OnDispose(removeTree => {
+    return OnDispose((removeTree, ctx) => {
       if (removeTree) {
         element.removeEventListener('click', listener)
       }
@@ -354,11 +354,8 @@ If you are dealing with asynchronous operations, you can use `Async` to render a
 
 ```ts
 const dataSignal = Signal.ofPromise<string | null>(
-  async () => {
-    const res = await fetch('https://api.example.com/data')
-    return res.text()
-  },
-  null // this is the default state before the promise resolves
+  fetch('https://api.example.com/data').then(res => res.text()),
+  null // this is the initial value before the promise resolves
 )
 
 html.div(
