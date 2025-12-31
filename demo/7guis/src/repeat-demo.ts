@@ -72,7 +72,7 @@ export function RepeatDemo(): Renderable {
           return html.hr(
             attr.class(classes.join(' ')),
             attr.class(
-              pos.isLast.map((isLast): string =>
+              pos.isLast.map((isLast: boolean): string =>
                 isLast ? 'border-dashed' : ''
               )
             )
