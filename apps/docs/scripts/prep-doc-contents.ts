@@ -4,6 +4,7 @@ import * as fse from 'fs-extra'
 import * as path from 'path'
 import fm from 'front-matter'
 import * as cheerio from 'cheerio'
+import type { AnyNode, Element as DomElement } from 'domhandler'
 import {
   ManglerOptions,
   markdownToHTML,
@@ -39,6 +40,15 @@ type MarkdownDoc = {
   anchorId?: string
 }
 
+type PackageMeta = {
+  title?: string
+  name?: string
+  description?: string
+  version?: string
+  keywords?: string[]
+  priority?: number
+}
+
 const removeMarkdownComments = (md: string) => md.replace(COMMENTS_PATTERN, '')
 
 async function getDemos(folder: string): Promise<Demo[]> {
@@ -58,15 +68,16 @@ async function getDemos(folder: string): Promise<Demo[]> {
     })
   const contents = await Promise.all(
     data.map(async o => {
-      const { dir, path } = o
+      const { dir, path: demoPath } = o
       const pack = await loadPackage(dir)
+      const priority = typeof pack.priority === 'number' ? pack.priority : 0
       return {
-        priority: pack.priority,
+        priority,
         data: {
-          path: path,
-          version: pack.version,
-          title: pack.title,
-          description: pack.description,
+          path: demoPath,
+          version: pack.version ?? '0.0.0',
+          title: pack.title ?? demoPath,
+          description: pack.description ?? '',
         },
       }
     })
@@ -74,9 +85,9 @@ async function getDemos(folder: string): Promise<Demo[]> {
   return contents.sort((a, b) => a.priority - b.priority).map(a => a.data)
 }
 
-async function loadPackage(dir: string) {
+async function loadPackage<T extends PackageMeta = PackageMeta>(dir: string) {
   const content = await fsp.readFile(path.join(dir, 'package.json'), 'utf8')
-  return JSON.parse(content)
+  return JSON.parse(content) as T
 }
 
 function filterDirectories(dirs: string[]) {
@@ -255,6 +266,22 @@ function transformCodeBlocks(content: string, fn: (content: string) => string) {
   return buff.join('```')
 }
 
+function transformNonCodeBlocks(
+  content: string,
+  fn: (content: string) => string
+) {
+  const parts = content.split('```')
+  const buff: string[] = []
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 0) {
+      buff.push(fn(parts[i]))
+    } else {
+      buff.push(parts[i])
+    }
+  }
+  return buff.join('```')
+}
+
 function normalizeLineEndings(content: string) {
   return replaceAll(content, '\r', '')
 }
@@ -283,11 +310,30 @@ const BLOCK_TAGS = new Set([
   'h6',
 ])
 
-type HtmlNode = cheerio.AnyNode
-type HtmlElement = cheerio.Element
+type HtmlNode = AnyNode
+type HtmlElement = DomElement
 
 function normalizeMarkdownWhitespace(content: string) {
-  return content.replace(/\n{3,}/g, '\n\n')
+  const lines = content.replace(/\r/g, '').split('\n')
+  const normalized: string[] = []
+  let blankCount = 0
+  for (const line of lines) {
+    if (line.trim().length === 0) {
+      blankCount += 1
+      if (blankCount > 2) {
+        continue
+      }
+      normalized.push('')
+      continue
+    }
+    blankCount = 0
+    if (/\s{2}$/.test(line)) {
+      normalized.push(line)
+      continue
+    }
+    normalized.push(line.replace(/[ \t]+$/g, ''))
+  }
+  return normalized.join('\n').trim()
 }
 
 function wrapBlock(content: string) {
@@ -318,8 +364,9 @@ function renderList(
   depth: number
 ) {
   const items = (el.children ?? []).filter(
-    child => child.type === 'tag' && child.name === 'li'
-  ) as HtmlElement[]
+    (child): child is HtmlElement =>
+      child.type === 'tag' && child.name === 'li'
+  )
   return items
     .map((item, index) => renderListItem(item, $, ordered, depth, index))
     .filter(Boolean)
@@ -384,8 +431,9 @@ function renderBlockquote(content: string) {
 
 function renderDetails(el: HtmlElement, $: cheerio.CheerioAPI, depth: number) {
   const summaryEl = (el.children ?? []).find(
-    child => child.type === 'tag' && child.name === 'summary'
-  ) as HtmlElement | undefined
+    (child): child is HtmlElement =>
+      child.type === 'tag' && child.name === 'summary'
+  )
   const summary = summaryEl
     ? renderInline(summaryEl.children ?? [], $, depth)
     : ''
@@ -434,8 +482,9 @@ function renderNode(node: HtmlNode, $: cheerio.CheerioAPI, depth: number) {
   }
   if (tag === 'pre') {
     const codeEl = (el.children ?? []).find(
-      child => child.type === 'tag' && child.name === 'code'
-    ) as HtmlElement | undefined
+      (child): child is HtmlElement =>
+        child.type === 'tag' && child.name === 'code'
+    )
     const codeText = codeEl ? $(codeEl).text() : $(el).text()
     const className = codeEl?.attribs?.class ?? ''
     const langMatch = className.match(/language-([a-z0-9-]+)/i)
@@ -496,11 +545,11 @@ function renderNodes(nodes: HtmlNode[], $: cheerio.CheerioAPI, depth: number) {
 }
 
 function convertHtmlToMarkdown(content: string) {
-  return transformCodeBlocks(content, block => {
+  return transformNonCodeBlocks(content, block => {
     if (!HTML_TAG_PATTERN.test(block)) {
       return block
     }
-    const $ = cheerio.load(block, { decodeEntities: false })
+    const $ = cheerio.load(block, { xml: { decodeEntities: false } })
     const rendered = renderNodes($.root().contents().toArray(), $, 0)
     return normalizeMarkdownWhitespace(rendered)
   })
@@ -601,13 +650,13 @@ async function collectPageDocs(src: string): Promise<MarkdownDoc[]> {
 }
 
 async function collectLibraryDocs(src: string): Promise<MarkdownDoc[]> {
-  const docs = await Promise.all(
+  const docs: Array<MarkdownDoc | null> = await Promise.all(
     libraries.map(async library => {
       const packageJson = await fsp.readFile(
         path.join(src, library, 'package.json'),
         'utf8'
       )
-      const pack = JSON.parse(packageJson)
+      const pack = JSON.parse(packageJson) as PackageMeta
       const title = pack.title ?? pack.name ?? library
       const anchorId = slugifyAnchor(title)
       const contentPath = path.join(src, library, 'PROJECT.md')
@@ -798,7 +847,7 @@ async function main() {
 
   // api
   await prepDir(apiFolderDst)
-  const api = {}
+  const api: Record<string, string[]> = {}
   for (const library of librariesData) {
     const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/`)
     const dst = path.join(apiFolderDst, library.name)
