@@ -37,6 +37,7 @@ This enables:
 - `require-async-signal-disposal` (warn) - Signals in async contexts
 - `no-signal-reassignment` (error) - Signal variable reassignment
 - `prefer-const-signals` (warn) - Prefer const for signals
+- `no-renderable-signal-map` (warn) - Mapping signals to renderables
 
 ### Strict Configuration
 
@@ -74,6 +75,7 @@ export default [
       'tempots/require-async-signal-disposal': 'warn',
       'tempots/no-signal-reassignment': 'error',
       'tempots/prefer-const-signals': 'warn',
+      'tempots/no-renderable-signal-map': 'warn',
     },
   },
 ]
@@ -357,6 +359,35 @@ const MyComponent = ctx => {
   const doubled = count.map(x => x * 2) // ✅ Using const
 
   return html.div(count, doubled)
+}
+```
+
+---
+
+### `no-renderable-signal-map` (Recommended)
+
+Warns when signals/computeds/props produce renderables (e.g., `signal.map(v => html.div(v))` or `computedOf(signal)(v => html.div(v))`).
+
+**Why?** Signals can be passed directly into renderables. Producing a renderable from a signal creates a signal of renderables and is usually unnecessary.
+
+#### ❌ Incorrect
+
+```typescript
+const MyComponent = ctx => {
+  const count = prop(0)
+  const view = count.map(v => html.div(v)) // ❌ Avoid this pattern
+
+  return view
+}
+```
+
+#### ✅ Correct
+
+```typescript
+const MyComponent = ctx => {
+  const count = prop(0)
+
+  return html.div(count) // ✅ Pass signal directly
 }
 ```
 

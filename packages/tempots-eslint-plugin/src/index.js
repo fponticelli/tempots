@@ -5,6 +5,7 @@ import requireAsyncSignalDisposal from './rules/require-async-signal-disposal.js
 import noSignalReassignment from './rules/no-signal-reassignment.js'
 import preferConstSignals from './rules/prefer-const-signals.js'
 import noRedundantListenerDisposal from './rules/no-redundant-listener-disposal.js'
+import noRenderableSignalMap from './rules/no-renderable-signal-map.js'
 
 // Default recommended rules configuration
 const recommendedRules = {
@@ -22,6 +23,8 @@ const recommendedRules = {
   'tempots/prefer-const-signals': 'warn',
   // Warn about redundant OnDispose for signal listeners
   'tempots/no-redundant-listener-disposal': 'warn',
+  // Warn about mapping signals to renderables
+  'tempots/no-renderable-signal-map': 'warn',
 }
 
 const plugin = {
@@ -33,6 +36,7 @@ const plugin = {
     'no-signal-reassignment': noSignalReassignment,
     'prefer-const-signals': preferConstSignals,
     'no-redundant-listener-disposal': noRedundantListenerDisposal,
+    'no-renderable-signal-map': noRenderableSignalMap,
   },
   configs: {
     recommended: recommendedRules,
@@ -61,6 +65,7 @@ export default {
         'tempots/no-signal-reassignment': 'error',
         'tempots/prefer-const-signals': 'error',
         'tempots/no-redundant-listener-disposal': 'error',
+        'tempots/no-renderable-signal-map': 'error',
       },
     },
   },

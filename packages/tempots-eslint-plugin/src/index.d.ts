@@ -9,6 +9,7 @@ export interface TempoTSPlugin extends ESLint.Plugin {
     'no-signal-reassignment': Linter.RuleModule
     'prefer-const-signals': Linter.RuleModule
     'no-redundant-listener-disposal': Linter.RuleModule
+    'no-renderable-signal-map': Linter.RuleModule
   }
   configs: {
     recommended: Linter.RulesRecord
@@ -24,4 +25,3 @@ export interface TempoTSPluginExport extends TempoTSPlugin {
 
 declare const plugin: TempoTSPluginExport
 export default plugin
-

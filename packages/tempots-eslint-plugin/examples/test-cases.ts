@@ -236,7 +236,7 @@ const GoodComponent10 = ctx => {
   return html.div(count)
 }
 
-// ============================================================================
+// ============================================================================ 
 // Rule: prefer-const-signals
 // ============================================================================
 
@@ -261,6 +261,25 @@ const GoodComponent11 = ctx => {
   const doubled = count.map(x => x * 2) // ✅ Using const
 
   return html.div(count, doubled)
+}
+
+// ============================================================================
+// Rule: no-renderable-signal-map
+// ============================================================================
+
+// ❌ BAD: Mapping a signal to a renderable
+const BadComponent11 = ctx => {
+  const count = prop(0)
+  const view = count.map(v => html.div(v)) // Will trigger: no-renderable-signal-map
+
+  return view
+}
+
+// ✅ GOOD: Pass the signal directly to the renderable
+const GoodComponent12 = ctx => {
+  const count = prop(0)
+
+  return html.div(count)
 }
 
 // Helper function for examples
