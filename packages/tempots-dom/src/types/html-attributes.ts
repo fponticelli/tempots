@@ -1,6 +1,10 @@
 /**
  * Represents the HTML attributes that can be used in an HTML element.
  *
+ * **Security Warning:** Some properties like `innerHTML` and `outerHTML` can introduce
+ * Cross-Site Scripting (XSS) vulnerabilities if used with untrusted user input.
+ * Always sanitize user-provided content before using these properties.
+ *
  * @public
  */
 export type HTMLAttributes = {
@@ -171,7 +175,16 @@ export type HTMLAttributes = {
   wrap: string
   textContent: string
   innerText: string
+  /**
+   * **⚠️ XSS Warning:** Setting innerHTML with untrusted user input can lead to
+   * Cross-Site Scripting (XSS) attacks. Always sanitize content before use.
+   * Consider using `textContent` or `innerText` for plain text content instead.
+   */
   innerHTML: string
+  /**
+   * **⚠️ XSS Warning:** Setting outerHTML with untrusted user input can lead to
+   * Cross-Site Scripting (XSS) attacks. Always sanitize content before use.
+   */
   outerHTML: string
 }
 

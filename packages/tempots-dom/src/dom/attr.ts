@@ -8,10 +8,19 @@ const numberProperties = new Set([
   'valueAsNumber',
 ])
 const dateProperties = new Set(['valueAsDate'])
+/**
+ * String properties that are set directly on the DOM element.
+ *
+ * **Security Note:** `innerHTML` and `outerHTML` are included here but should be used
+ * with caution. Never pass untrusted user input to these properties as it can lead
+ * to XSS (Cross-Site Scripting) attacks. Use `textContent` or `innerText` for safe
+ * text content insertion.
+ */
 const stringProperties = new Set([
   'value',
   'textContent',
   'innerText',
+  // ⚠️ XSS Warning: innerHTML and outerHTML can execute arbitrary scripts if set with untrusted input
   'innerHTML',
   'outerHTML',
   'className',
