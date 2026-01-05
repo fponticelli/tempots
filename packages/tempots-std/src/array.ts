@@ -325,10 +325,18 @@ export const removeOneFromArray = <A>(arr: A[], item: A): boolean => {
  * @public
  */
 export const removeAllFromArray = <A>(arr: A[], item: A): boolean => {
+  // Single-pass O(n) algorithm instead of O(n²) repeated indexOf + splice
+  let writeIndex = 0
   let removed = false
-  while (removeOneFromArray(arr, item)) {
-    removed = true
+  for (let readIndex = 0; readIndex < arr.length; readIndex++) {
+    if (arr[readIndex] !== item) {
+      arr[writeIndex] = arr[readIndex]
+      writeIndex++
+    } else {
+      removed = true
+    }
   }
+  arr.length = writeIndex
   return removed
 }
 
@@ -367,10 +375,18 @@ export const removeAllFromArrayByPredicate = <A>(
   arr: A[],
   predicate: (a: A) => boolean
 ): boolean => {
+  // Single-pass O(n) algorithm instead of O(n²) repeated findIndex + splice
+  let writeIndex = 0
   let removed = false
-  while (removeOneFromArrayByPredicate(arr, predicate)) {
-    removed = true
+  for (let readIndex = 0; readIndex < arr.length; readIndex++) {
+    if (!predicate(arr[readIndex])) {
+      arr[writeIndex] = arr[readIndex]
+      writeIndex++
+    } else {
+      removed = true
+    }
   }
+  arr.length = writeIndex
   return removed
 }
 
@@ -443,13 +459,17 @@ export const arrayDiffOperations = <T, K>(
     }
   }
 
-  const ra = from.filter((_, i) => !indexesOfAThatDoNotExistInB.includes(i))
+  // Use Set for O(1) lookups instead of O(n) array.includes()
+  const indexSetA = new Set(indexesOfAThatDoNotExistInB)
+  const indexSetB = new Set(indexesOfBThatDoNotExistInA)
+
+  const ra = from.filter((_, i) => !indexSetA.has(i))
   const mapRA = new Map<K, number>()
   for (let i = 0; i < ra.length; i++) {
     mapRA.set(getKey(ra[i]), i)
   }
 
-  const rb = to.filter((_, i) => !indexesOfBThatDoNotExistInA.includes(i))
+  const rb = to.filter((_, i) => !indexSetB.has(i))
   for (let i = 0; i < rb.length; i++) {
     const bk = getKey(rb[i])
 

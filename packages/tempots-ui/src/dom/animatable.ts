@@ -250,52 +250,97 @@ export const getComputedAnimatable = (
   return result
 }
 
+/**
+ * Builds a transform string from a key-value pair.
+ * Returns the transform function string or null if not a transform property.
+ */
+const getTransformString = (
+  key: keyof AnimatableProps,
+  value: AnimatableProps[typeof key]
+): string | null => {
+  if (value == null) return null
+
+  switch (key) {
+    case 'translateX':
+      return `translateX(${value}px)`
+    case 'translateY':
+      return `translateY(${value}px)`
+    case 'translateZ':
+      return `translateZ(${value}px)`
+    case 'rotateX':
+      return `rotateX(${value}deg)`
+    case 'rotateY':
+      return `rotateY(${value}deg)`
+    case 'rotateZ':
+      return `rotateZ(${value}deg)`
+    case 'scaleX':
+      return `scaleX(${value})`
+    case 'scaleY':
+      return `scaleY(${value})`
+    case 'scaleZ':
+      return `scaleZ(${value})`
+    case 'skewX':
+      return `skewX(${value}deg)`
+    case 'skewY':
+      return `skewY(${value}deg)`
+    default:
+      return null
+  }
+}
+
+/**
+ * Builds a filter string from a key-value pair.
+ * Returns the filter function string or null if not a filter property.
+ */
+const getFilterString = (
+  key: keyof AnimatableProps,
+  value: AnimatableProps[typeof key]
+): string | null => {
+  if (value == null) return null
+
+  switch (key) {
+    case 'grayScale':
+      return `grayscale(${value}%)`
+    case 'sepia':
+      return `sepia(${value}%)`
+    case 'saturate':
+      return `saturate(${value}%)`
+    case 'hueRotate':
+      return `hue-rotate(${value}deg)`
+    case 'invert':
+      return `invert(${value}%)`
+    case 'brightness':
+      return `brightness(${value}%)`
+    case 'contrast':
+      return `contrast(${value}%)`
+    case 'blur':
+      return `blur(${value}px)`
+    default:
+      return null
+  }
+}
+
 export const applyAnimatableProp = (
   el: HTMLElement,
   key: keyof AnimatableProps,
-  value: AnimatableProps[typeof key]
+  value: AnimatableProps[typeof key],
+  transforms: string[],
+  filters: string[]
 ): void => {
   if (value == null) return
 
-  if (key === 'translateX') {
-    el.style.transform += ` translateX(${value}px)`
-  } else if (key === 'translateY') {
-    el.style.transform += ` translateY(${value}px)`
-  } else if (key === 'translateZ') {
-    el.style.transform += ` translateZ(${value}px)`
-  } else if (key === 'rotateX') {
-    el.style.transform += ` rotateX(${value}deg)`
-  } else if (key === 'rotateY') {
-    el.style.transform += ` rotateY(${value}deg)`
-  } else if (key === 'rotateZ') {
-    el.style.transform += ` rotateZ(${value}deg)`
-  } else if (key === 'scaleX') {
-    el.style.transform += ` scaleX(${value})`
-  } else if (key === 'scaleY') {
-    el.style.transform += ` scaleY(${value})`
-  } else if (key === 'scaleZ') {
-    el.style.transform += ` scaleZ(${value})`
-  } else if (key === 'skewX') {
-    el.style.transform += ` skewX(${value}deg)`
-  } else if (key === 'skewY') {
-    el.style.transform += ` skewY(${value}deg)`
-  } else if (key === 'grayScale') {
-    el.style.filter += ` grayscale(${value}%)`
-  } else if (key === 'sepia') {
-    el.style.filter += ` sepia(${value}%)`
-  } else if (key === 'saturate') {
-    el.style.filter += ` saturate(${value}%)`
-  } else if (key === 'hueRotate') {
-    el.style.filter += ` hue-rotate(${value}deg)`
-  } else if (key === 'invert') {
-    el.style.filter += ` invert(${value}%)`
-  } else if (key === 'brightness') {
-    el.style.filter += ` brightness(${value}%)`
-  } else if (key === 'contrast') {
-    el.style.filter += ` contrast(${value}%)`
-  } else if (key === 'blur') {
-    el.style.filter += ` blur(${value}px)`
+  const transformStr = getTransformString(key, value)
+  if (transformStr != null) {
+    transforms.push(transformStr)
+    return
   }
+
+  const filterStr = getFilterString(key, value)
+  if (filterStr != null) {
+    filters.push(filterStr)
+    return
+  }
+
   el.style.setProperty(key, String(value))
 }
 
@@ -335,18 +380,20 @@ export const applyInterpolatedAnimatableProp = (
   key: keyof AnimatableProps,
   from: AnimatableProps[typeof key],
   to: AnimatableProps[typeof key],
-  progress: number
+  progress: number,
+  transforms: string[],
+  filters: string[]
 ): void => {
   if (from != null && to != null) {
     if (typeof from === 'number' && typeof to === 'number') {
       const value = from + (to - from) * progress
-      applyAnimatableProp(el, key, value)
+      applyAnimatableProp(el, key, value, transforms, filters)
     } else if (key === 'boxShadow' || key === 'textShadow') {
       const value = getShadowInterpolation(
         from as string,
         to as string
       )(progress)
-      applyAnimatableProp(el, key, value)
+      applyAnimatableProp(el, key, value, transforms, filters)
     } else if (
       key === 'color' ||
       key === 'backgroundColor' ||
@@ -358,7 +405,7 @@ export const applyInterpolatedAnimatableProp = (
         from as string,
         to as string
       )(progress)
-      applyAnimatableProp(el, key, value)
+      applyAnimatableProp(el, key, value, transforms, filters)
     }
   }
 }
@@ -369,23 +416,31 @@ export const applyInterpolatedAnimatable = (
   to: AnimatableProps,
   progress: number
 ): void => {
-  el.style.transform = ''
-  el.style.filter = ''
+  // Collect all transforms and filters first, then apply once
+  const transforms: string[] = []
+  const filters: string[] = []
   for (const [key, value] of Object.entries(to)) {
     const k = key as keyof AnimatableProps
-    applyInterpolatedAnimatableProp(el, k, from[k], value, progress)
+    applyInterpolatedAnimatableProp(el, k, from[k], value, progress, transforms, filters)
   }
+  // Apply collected transforms and filters in single assignments
+  el.style.transform = transforms.join(' ')
+  el.style.filter = filters.join(' ')
 }
 
 export const applyAnimatable = (
   el: HTMLElement,
   styles: AnimatableProps
 ): void => {
-  el.style.transform = ''
-  el.style.filter = ''
+  // Collect all transforms and filters first, then apply once
+  const transforms: string[] = []
+  const filters: string[] = []
   for (const [key, value] of Object.entries(styles)) {
     if (value != null) {
-      applyAnimatableProp(el, key as keyof AnimatableProps, value)
+      applyAnimatableProp(el, key as keyof AnimatableProps, value, transforms, filters)
     }
   }
+  // Apply collected transforms and filters in single assignments
+  el.style.transform = transforms.join(' ')
+  el.style.filter = filters.join(' ')
 }

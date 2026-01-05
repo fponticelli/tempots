@@ -11,41 +11,71 @@ const makeUrl = (path: string[]) => {
   return `${base}/${path.join('/')}`
 }
 
-const cache = new Map<string, unknown>()
+// Cache for completed successful responses only
+const cache = new Map<string, Result<unknown, HttpError>>()
+
+// Map to track in-flight requests for deduplication
+const inFlightRequests = new Map<string, Promise<Result<unknown, HttpError>>>()
 
 const makeRequest = async <Out>(
   path: string[],
-  parse: (input: unknown) => DecodeResult<unknown, Out, string>
+  parse: (input: unknown) => DecodeResult<unknown, Out, string>,
+  signal?: AbortSignal
 ): Promise<Result<Out, HttpError>> => {
   const endpoint = makeUrl(path)
+
+  // Check if we have a cached successful result
   if (cache.has(endpoint)) {
-    return cache.get(endpoint) as Result<Out, HttpError>
-  } else {
-    const output = await (async () => {
-      const response = await fetch(endpoint)
-      try {
-        if (response.status === 200) {
-          const json = await response.json()
-          const result = parse(json)
-          if (result.isSuccess()) {
-            return Result.success(result.value)
-          } else {
-            return Result.failure(HttpError.badBody(result.failures.join(';')))
-          }
+    const cached = cache.get(endpoint)!
+    if (cached.isSuccess) {
+      return cached as Result<Out, HttpError>
+    }
+  }
+
+  // Check if there's already an in-flight request for this endpoint
+  if (inFlightRequests.has(endpoint)) {
+    return inFlightRequests.get(endpoint) as Promise<Result<Out, HttpError>>
+  }
+
+  // Create the request promise
+  const requestPromise = (async (): Promise<Result<Out, HttpError>> => {
+    try {
+      const response = await fetch(endpoint, { signal })
+
+      if (response.status === 200) {
+        const json = await response.json()
+        const result = parse(json)
+        if (result.isSuccess()) {
+          const successResult = Result.success(result.value)
+          // Only cache successful results
+          cache.set(endpoint, successResult as Result<unknown, HttpError>)
+          setTimeout(() => {
+            cache.delete(endpoint)
+          }, RESET_CACHE_AFTER)
+          return successResult
         } else {
-          return Result.failure(HttpError.badStatus(response.status))
+          return Result.failure(HttpError.badBody(result.failures.join(';')))
         }
-      } catch (e) {
-        console.error(e)
+      } else {
+        return Result.failure(HttpError.badStatus(response.status))
+      }
+    } catch (e) {
+      // Check if it was an abort error
+      if (e instanceof DOMException && e.name === 'AbortError') {
         return Result.failure(HttpError.networkError)
       }
-    })()
-    cache.set(endpoint, output)
-    setTimeout(() => {
-      cache.delete(endpoint)
-    }, RESET_CACHE_AFTER) // reset cache entry after elapsed time
-    return output
-  }
+      console.error(e)
+      return Result.failure(HttpError.networkError)
+    } finally {
+      // Remove from in-flight requests when done
+      inFlightRequests.delete(endpoint)
+    }
+  })()
+
+  // Track this request as in-flight
+  inFlightRequests.set(endpoint, requestPromise as Promise<Result<unknown, HttpError>>)
+
+  return requestPromise
 }
 
 const feedName = (feed: Feed) => {
@@ -66,17 +96,17 @@ const feedName = (feed: Feed) => {
 }
 
 export const Request = {
-  item(id: number) {
+  item(id: number, signal?: AbortSignal) {
     const path = ['v0', 'item', `${id}.json`]
-    return makeRequest(path, decodeItem)
+    return makeRequest(path, decodeItem, signal)
   },
-  user(id: string) {
+  user(id: string, signal?: AbortSignal) {
     const path = ['v0', 'user', `${id}.json`]
-    return makeRequest(path, decodeUser)
+    return makeRequest(path, decodeUser, signal)
   },
-  feed(feed: Feed, page: number) {
+  feed(feed: Feed, page: number, signal?: AbortSignal) {
     const name = feedName(feed)
     const path = ['v0', name, `${page}.json`]
-    return makeRequest(path, decodeFeed)
+    return makeRequest(path, decodeFeed, signal)
   },
 }
