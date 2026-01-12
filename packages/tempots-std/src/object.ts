@@ -158,9 +158,11 @@ export const removeObjectFields = <T extends object, F extends Array<keyof T>>(
   ob: T,
   ...fields: F
 ): Omit<T, TupleToUnion<F>> => {
+  // Use Set for O(1) lookups instead of O(m) array.includes() in loop
+  const fieldsSet = new Set<keyof T>(fields)
   const ks = objectKeys(ob)
   return ks.reduce((acc: Record<IndexKey, unknown>, key) => {
-    if (!fields.includes(key)) acc[key] = ob[key]
+    if (!fieldsSet.has(key)) acc[key] = ob[key]
     return acc
   }, {}) as Omit<T, TupleToUnion<F>>
 }
