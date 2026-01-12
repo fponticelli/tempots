@@ -831,10 +831,10 @@ export const stringToCharcodes = (s: string): number[] => {
  * @public
  */
 export const chunkString = (s: string, len: number): string[] => {
+  // Use index-based approach to avoid O(n²) repeated substring allocations
   const chunks: string[] = []
-  while (s.length > 0) {
-    chunks.push(s.substring(0, len))
-    s = s.substring(len)
+  for (let i = 0; i < s.length; i += len) {
+    chunks.push(s.substring(i, i + len))
   }
   return chunks
 }
@@ -871,9 +871,11 @@ export const trimChars = (value: string, charlist: string): string => {
  * @public
  */
 export const trimCharsLeft = (value: string, charlist: string): string => {
+  // Use Set for O(1) character lookups instead of O(m) string.includes()
+  const charSet = new Set(charlist)
   let pos = 0
   for (let i = 0; i < value.length; i++) {
-    if (charlist.includes(value.charAt(i))) pos++
+    if (charSet.has(value.charAt(i))) pos++
     else break
   }
   return value.substring(pos)
@@ -888,12 +890,14 @@ export const trimCharsLeft = (value: string, charlist: string): string => {
  * @public
  */
 export const trimCharsRight = (value: string, charlist: string): string => {
+  // Use Set for O(1) character lookups instead of O(m) string.includes()
+  const charSet = new Set(charlist)
   const len = value.length
   let pos = len
   let i
   for (let j = 0; j < len; j++) {
     i = len - j - 1
-    if (charlist.includes(value.charAt(i))) pos = i
+    if (charSet.has(value.charAt(i))) pos = i
     else break
   }
   return value.substring(0, pos)

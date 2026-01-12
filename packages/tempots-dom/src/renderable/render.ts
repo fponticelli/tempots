@@ -446,9 +446,8 @@ export class HeadlessAdapter<EL> {
   }
 }
 
-const removeNodesWithPlaceholders = () => {
-  const nodes = document.querySelectorAll(`[${_NODE_PLACEHOLDER_ATTR}]`)
-  nodes.forEach(_removeDOMNode)
+const parseJSON = (json: string) => {
+  return JSON.parse(json.replace(/&quot;/g, '"'))
 }
 
 const restoreClassPlaceholder = (el: HTMLElement) => {
@@ -459,22 +458,12 @@ const restoreClassPlaceholder = (el: HTMLElement) => {
   }
 }
 
-const restoreAllClassPlaceholders = () => {
-  const nodes = document.querySelectorAll(`[${CLASS_PLACEHOLDER_ATTR}]`)
-  nodes.forEach(el => restoreClassPlaceholder(el as HTMLElement))
-}
-
 const restoreInnerHTMLPlaceholder = (el: HTMLElement) => {
   const html = el.getAttribute(HTML_PLACEHOLDER_ATTR)
   el.removeAttribute(HTML_PLACEHOLDER_ATTR)
   if (html != null) {
     el.innerHTML = html
   }
-}
-
-const restoreAllInnerHTMLPlaceholders = () => {
-  const nodes = document.querySelectorAll(`[${HTML_PLACEHOLDER_ATTR}]`)
-  nodes.forEach(el => restoreInnerHTMLPlaceholder(el as HTMLElement))
 }
 
 const restoreInnerTextPlaceholder = (el: HTMLElement) => {
@@ -485,29 +474,19 @@ const restoreInnerTextPlaceholder = (el: HTMLElement) => {
   }
 }
 
-const restoreAllInnerTextPlaceholders = () => {
-  const nodes = document.querySelectorAll(`[${TEXT_PLACEHOLDER_ATTR}]`)
-  nodes.forEach(el => restoreInnerTextPlaceholder(el as HTMLElement))
-}
-
-const parseJSON = (json: string) => {
-  return JSON.parse(json.replace(/&quot;/g, '"'))
-}
-
 const restoreStylePlaceholder = (el: HTMLElement) => {
   const styles = el.getAttribute(STYLE_PLACEHOLDER_ATTR)
   el.removeAttribute(STYLE_PLACEHOLDER_ATTR)
   if (styles != null) {
     const parsed = parseJSON(styles)
-    Object.entries(parsed).forEach(([key, value]) => {
-      el.style.setProperty(key, value as string)
-    })
+    // Batch all style properties into a single cssText assignment
+    const styleEntries = Object.entries(parsed)
+    if (styleEntries.length > 0) {
+      el.style.cssText = styleEntries
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('; ')
+    }
   }
-}
-
-const restoreAllStylePlaceholders = () => {
-  const nodes = document.querySelectorAll(`[${STYLE_PLACEHOLDER_ATTR}]`)
-  nodes.forEach(el => restoreStylePlaceholder(el as HTMLElement))
 }
 
 const restoreAttrsPlaceholder = (el: HTMLElement) => {
@@ -525,11 +504,6 @@ const restoreAttrsPlaceholder = (el: HTMLElement) => {
   }
 }
 
-const restoreAllAttrsPlaceholders = () => {
-  const nodes = document.querySelectorAll(`[${ATTRS_PLACEHOLDER_ATTR}]`)
-  nodes.forEach(el => restoreAttrsPlaceholder(el as HTMLElement))
-}
-
 /**
  * Restores all placeholders in the DOM. This function is useful when the HTML is rendered on the server and then
  * hydrated on the client. It restores the original content that was replaced with placeholders during the initial
@@ -538,10 +512,43 @@ const restoreAllAttrsPlaceholders = () => {
  * @public
  */
 export const restoreTempoPlaceholders = () => {
-  removeNodesWithPlaceholders()
-  restoreAllClassPlaceholders()
-  restoreAllInnerTextPlaceholders()
-  restoreAllInnerHTMLPlaceholders()
-  restoreAllStylePlaceholders()
-  restoreAllAttrsPlaceholders()
+  // Single DOM query with compound selector instead of 6 separate queries
+  const allPlaceholderAttrs = [
+    _NODE_PLACEHOLDER_ATTR,
+    CLASS_PLACEHOLDER_ATTR,
+    HTML_PLACEHOLDER_ATTR,
+    TEXT_PLACEHOLDER_ATTR,
+    STYLE_PLACEHOLDER_ATTR,
+    ATTRS_PLACEHOLDER_ATTR,
+  ]
+  const selector = allPlaceholderAttrs.map(attr => `[${attr}]`).join(',')
+  const nodes = document.querySelectorAll(selector)
+
+  // Process each node based on which attributes it has
+  nodes.forEach(node => {
+    const el = node as HTMLElement
+
+    // Handle node removal first
+    if (el.hasAttribute(_NODE_PLACEHOLDER_ATTR)) {
+      _removeDOMNode(el)
+      return // Node is removed, no further processing needed
+    }
+
+    // Restore placeholders in order
+    if (el.hasAttribute(CLASS_PLACEHOLDER_ATTR)) {
+      restoreClassPlaceholder(el)
+    }
+    if (el.hasAttribute(TEXT_PLACEHOLDER_ATTR)) {
+      restoreInnerTextPlaceholder(el)
+    }
+    if (el.hasAttribute(HTML_PLACEHOLDER_ATTR)) {
+      restoreInnerHTMLPlaceholder(el)
+    }
+    if (el.hasAttribute(STYLE_PLACEHOLDER_ATTR)) {
+      restoreStylePlaceholder(el)
+    }
+    if (el.hasAttribute(ATTRS_PLACEHOLDER_ATTR)) {
+      restoreAttrsPlaceholder(el)
+    }
+  })
 }

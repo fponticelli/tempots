@@ -25,10 +25,12 @@ export const mapRegExp = (
       pos = result.index + result[0].length
     }
   } else {
-    while ((result = pattern.exec(subject.substring(pos))) !== null) {
-      buff.push(subject.substring(pos, pos + result.index))
+    // For non-global patterns, create a global version to avoid repeated substring calls
+    const globalPattern = new RegExp(pattern.source, pattern.flags + 'g')
+    while ((result = globalPattern.exec(subject)) !== null) {
+      buff.push(subject.substring(pos, result.index))
       buff.push(f(...result))
-      pos += result.index + result[0].length
+      pos = result.index + result[0].length
     }
   }
   buff.push(subject.substring(pos))

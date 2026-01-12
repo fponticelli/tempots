@@ -169,23 +169,30 @@ abstract class HeadlessBase {
       return
     }
     const classes = (this.properties[classKey] ??= []) as string[]
-    tokens.forEach(token => {
-      if (!classes.includes(token)) {
+    // Use Set for O(1) lookups instead of O(n) includes() in loop
+    const existingSet = new Set(classes)
+    for (const token of tokens) {
+      if (!existingSet.has(token)) {
         classes.push(token)
+        existingSet.add(token)
       }
-    })
+    }
   }
   readonly removeClasses = (tokens: string[]): void => {
     if (tokens.length === 0) {
       return
     }
     const classes = (this.properties[classKey] ??= []) as string[]
-    tokens.forEach(token => {
-      const index = classes.indexOf(token)
-      if (index !== -1) {
-        classes.splice(index, 1)
+    // Use Set for O(1) lookups and single-pass filter instead of O(n²)
+    const toRemove = new Set(tokens)
+    let writeIndex = 0
+    for (let readIndex = 0; readIndex < classes.length; readIndex++) {
+      if (!toRemove.has(classes[readIndex])) {
+        classes[writeIndex] = classes[readIndex]
+        writeIndex++
       }
-    })
+    }
+    classes.length = writeIndex
     if (classes.length === 0) {
       delete this.properties[classKey]
     }
