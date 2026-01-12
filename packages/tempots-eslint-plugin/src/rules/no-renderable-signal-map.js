@@ -35,7 +35,14 @@ const SIGNAL_TRANSFORM_METHODS = new Set([
   'deriveProp',
 ])
 
-const RENDERABLE_HELPERS = new Set(['html', 'attr', 'on', 'svg', 'math', 'style'])
+const RENDERABLE_HELPERS = new Set([
+  'html',
+  'attr',
+  'on',
+  'svg',
+  'math',
+  'style',
+])
 const EXCLUDED_FUNCTIONS = new Set(['OnDispose', 'OnMount', 'OnUnmount'])
 const SIGNAL_TYPE_NAMES = new Set(['Signal', 'Computed', 'Prop'])
 
@@ -355,9 +362,7 @@ export default {
         const typeStatus = getTypeStatus(node)
         if (typeStatus === 'match') {
           const calleeObject =
-            node.callee.type === 'MemberExpression'
-              ? node.callee.object
-              : null
+            node.callee.type === 'MemberExpression' ? node.callee.object : null
           if (calleeObject && calleeObject.type === 'Identifier') {
             context.report({
               node,

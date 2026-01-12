@@ -10,6 +10,8 @@ export interface TempoTSPlugin extends ESLint.Plugin {
     'prefer-const-signals': Linter.RuleModule
     'no-redundant-listener-disposal': Linter.RuleModule
     'no-renderable-signal-map': Linter.RuleModule
+    'no-empty-fragment': Linter.RuleModule
+    'no-single-child-fragment': Linter.RuleModule
   }
   configs: {
     recommended: Linter.RulesRecord

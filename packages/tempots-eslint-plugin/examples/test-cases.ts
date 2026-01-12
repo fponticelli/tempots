@@ -7,6 +7,7 @@ import {
   untracked,
   html,
   Fragment,
+  Empty,
   OnDispose,
 } from '@tempots/dom'
 
@@ -280,6 +281,34 @@ const GoodComponent12 = ctx => {
   const count = prop(0)
 
   return html.div(count)
+}
+
+// ============================================================================
+// Rule: no-empty-fragment
+// ============================================================================
+
+// ❌ BAD: Empty fragment
+const BadComponent12 = ctx => {
+  return Fragment() // Will trigger: no-empty-fragment
+}
+
+// ✅ GOOD: Use Empty instead
+const GoodComponent13 = ctx => {
+  return Empty
+}
+
+// ============================================================================
+// Rule: no-single-child-fragment
+// ============================================================================
+
+// ❌ BAD: Fragment with single child
+const BadComponent13 = ctx => {
+  return Fragment(html.div('hello')) // Will trigger: no-single-child-fragment
+}
+
+// ✅ GOOD: Return the child directly
+const GoodComponent14 = ctx => {
+  return html.div('hello')
 }
 
 // Helper function for examples

@@ -43,6 +43,9 @@ export declare const svg: {
   circle: (...children: Value<any>[]) => Renderable
 }
 
+export declare function Fragment(...children: Value<any>[]): Renderable
+export declare const Empty: Renderable
+
 declare global {
   const Signal: {
     is(value: any): value is Signal<any>

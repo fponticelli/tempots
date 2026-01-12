@@ -6,6 +6,8 @@ import noSignalReassignment from './rules/no-signal-reassignment.js'
 import preferConstSignals from './rules/prefer-const-signals.js'
 import noRedundantListenerDisposal from './rules/no-redundant-listener-disposal.js'
 import noRenderableSignalMap from './rules/no-renderable-signal-map.js'
+import noEmptyFragment from './rules/no-empty-fragment.js'
+import noSingleChildFragment from './rules/no-single-child-fragment.js'
 
 // Default recommended rules configuration
 const recommendedRules = {
@@ -25,6 +27,10 @@ const recommendedRules = {
   'tempots/no-redundant-listener-disposal': 'warn',
   // Warn about mapping signals to renderables
   'tempots/no-renderable-signal-map': 'warn',
+  // Warn about empty Fragment() usage
+  'tempots/no-empty-fragment': 'warn',
+  // Warn about Fragment() with a single child
+  'tempots/no-single-child-fragment': 'warn',
 }
 
 const plugin = {
@@ -37,6 +43,8 @@ const plugin = {
     'prefer-const-signals': preferConstSignals,
     'no-redundant-listener-disposal': noRedundantListenerDisposal,
     'no-renderable-signal-map': noRenderableSignalMap,
+    'no-empty-fragment': noEmptyFragment,
+    'no-single-child-fragment': noSingleChildFragment,
   },
   configs: {
     recommended: recommendedRules,
@@ -66,6 +74,8 @@ export default {
         'tempots/prefer-const-signals': 'error',
         'tempots/no-redundant-listener-disposal': 'error',
         'tempots/no-renderable-signal-map': 'error',
+        'tempots/no-empty-fragment': 'error',
+        'tempots/no-single-child-fragment': 'error',
       },
     },
   },

@@ -38,6 +38,8 @@ This enables:
 - `no-signal-reassignment` (error) - Signal variable reassignment
 - `prefer-const-signals` (warn) - Prefer const for signals
 - `no-renderable-signal-map` (warn) - Mapping signals to renderables
+- `no-empty-fragment` (warn) - Empty Fragment() usage
+- `no-single-child-fragment` (warn) - Fragment() with one child
 
 ### Strict Configuration
 
@@ -76,6 +78,8 @@ export default [
       'tempots/no-signal-reassignment': 'error',
       'tempots/prefer-const-signals': 'warn',
       'tempots/no-renderable-signal-map': 'warn',
+      'tempots/no-empty-fragment': 'warn',
+      'tempots/no-single-child-fragment': 'warn',
     },
   },
 ]
@@ -388,6 +392,54 @@ const MyComponent = ctx => {
   const count = prop(0)
 
   return html.div(count) // ✅ Pass signal directly
+}
+```
+
+---
+
+### `no-empty-fragment` (Recommended)
+
+Warns about `Fragment()` with no children.
+
+**Why?** An empty fragment does nothing. Use `Empty` instead.
+
+#### ❌ Incorrect
+
+```typescript
+const MyComponent = ctx => {
+  return Fragment()
+}
+```
+
+#### ✅ Correct
+
+```typescript
+const MyComponent = ctx => {
+  return Empty
+}
+```
+
+---
+
+### `no-single-child-fragment` (Recommended)
+
+Warns about `Fragment()` with a single child.
+
+**Why?** A fragment is only needed to group multiple children.
+
+#### ❌ Incorrect
+
+```typescript
+const MyComponent = ctx => {
+  return Fragment(html.div('hello'))
+}
+```
+
+#### ✅ Correct
+
+```typescript
+const MyComponent = ctx => {
+  return html.div('hello')
 }
 ```
 

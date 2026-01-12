@@ -200,10 +200,47 @@ function getOldVersionFromGit(packageDir) {
   }
 }
 
+function getNpmRegistry() {
+  try {
+    const registry = execSync('npm config get registry', {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }).trim()
+    return registry || 'https://registry.npmjs.org/'
+  } catch (error) {
+    return 'https://registry.npmjs.org/'
+  }
+}
+
+function ensureNpmLogin(registry, packageName) {
+  try {
+    execSync(`npm whoami --registry ${registry}`, {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    })
+    return
+  } catch (error) {
+    console.log('\n🔐 npm login required before publishing.')
+    try {
+      execSync(`npm login --registry ${registry}`, { stdio: 'inherit' })
+      execSync(`npm whoami --registry ${registry}`, {
+        encoding: 'utf8',
+        stdio: 'pipe',
+      })
+    } catch (loginError) {
+      console.error(
+        `\n❌ Unable to authenticate with npm. Make sure you have publish access to ${packageName} and try again.`
+      )
+      process.exit(1)
+    }
+  }
+}
+
 async function publishToNpm(packageDir, oldVersion = null) {
   const packageJsonPath = path.join(packageDir, 'package.json')
   const packageJson = require(packageJsonPath)
   const packageName = packageJson.name
+  const registry = getNpmRegistry()
 
   // Check if we have a pending version update
   const versionUpdateFile = path.join(packageDir, '.temp-version-update')
@@ -257,6 +294,8 @@ async function publishToNpm(packageDir, oldVersion = null) {
     console.log('❌ Publishing cancelled. No changes were made.')
     process.exit(1)
   }
+
+  ensureNpmLogin(registry, packageName)
 
   // If we have a pending version update, apply it now
   if (versionInfo) {
