@@ -202,7 +202,6 @@ Keeping these terms consistent improves readability across the project.
 - Aim for high test coverage (80%+ statements, 75%+ branches)
 - Test both happy path and error cases
 - Follow the comprehensive [Testing Guidelines](./TESTING_GUIDELINES.md)
-- See [Coverage Report](./COVERAGE.md) for current coverage status
 
 ## Package Development
 
