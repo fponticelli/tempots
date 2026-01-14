@@ -21,7 +21,11 @@ Optionally you can pass an object with the following options:
 function render(
   node: Renderable,
   parent: Node | string,
-  { doc, clear, disposeWithParent = true }: { doc?: Document; clear?: boolean, disposeWithParent } = {}
+  { doc, clear, disposeWithParent = true }: {
+    doc?: Document
+    clear?: boolean
+    disposeWithParent?: boolean
+  } = {}
 ): () => void
 ```
 

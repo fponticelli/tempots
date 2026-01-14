@@ -423,18 +423,57 @@ WithProvider(({ set, use }) => {
 
 ## Asynchronous Operations
 
-If you are dealing with asynchronous operations, you can use `Async` to render a promise or `Task` to render a function that returns a promise. More likely than not you will want to use a combination of `Signal`s and `Promise` to define your UI. Let's take as an example loading from an API.
+Tempo provides two renderables for handling async operations: `Async` and `Task`.
+
+### Async vs Task
+
+- **`Async(promise, options)`** - Wraps an existing Promise. The promise starts executing immediately when created.
+- **`Task(fn, options)`** - Wraps a function that returns a Promise. The function is called when the component renders (lazy execution).
+
+```ts
+import { Async, Task } from '@tempots/dom'
+
+// Async: promise executes immediately when this line runs
+const immediateLoad = Async(
+  fetch('/api/data').then(r => r.json()),
+  {
+    pending: () => html.div('Loading...'),
+    then: data => html.div('Data: ', JSON.stringify(data)),
+    error: err => html.div('Error: ', String(err))
+  }
+)
+
+// Task: fetch only happens when the component renders
+const lazyLoad = Task(
+  () => fetch('/api/data').then(r => r.json()),
+  {
+    pending: () => html.div('Loading...'),
+    then: data => html.div('Data: ', JSON.stringify(data)),
+    error: err => html.div('Error: ', String(err))
+  }
+)
+
+// Shorthand: just pass a function for the success case
+const simpleTask = Task(
+  () => fetch('/api/data').then(r => r.json()),
+  data => html.div('Data: ', JSON.stringify(data))
+)
+```
+
+### Using Signals for Reactive Data
+
+More often you'll want to combine `Signal`s with `Promise` for reactive data fetching:
 
 ```ts
 const dataSignal = Signal.ofPromise<string | null>(
   fetch('https://api.example.com/data').then(res => res.text()),
-  null // this is the initial value before the promise resolves
+  null // initial value before the promise resolves
 )
 
 html.div(Ensure(dataSignal, data => html.div(data), html.div('Loading...')))
 ```
 
-Often you will want to refetch when some parameter changes.
+When you need to refetch based on changing parameters, use `mapAsync`:
 
 ```ts
 const idSignal = signal(1)
@@ -444,10 +483,10 @@ const dataSignal = idSignal.mapAsync<string | null>(
     const res = await fetch(`https://api.example.com/data/${id}`)
     return res.text()
   },
-  null // this is the default state before the promise resolves
+  null // default value before the promise resolves
 )
 
-// the rest remains the same
+// dataSignal automatically refetches when idSignal changes
 ```
 
 ## Portal
