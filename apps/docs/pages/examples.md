@@ -12,7 +12,8 @@ This page provides practical examples and patterns for common scenarios when bui
 ### Complete Form with Validation
 
 ```typescript
-import { html, prop, computedOf, render, Ensure } from '@tempots/dom'
+import { html, prop, computedOf, render, Ensure, attr, on, emitValue } from '@tempots/dom'
+import type { Prop, Signal } from '@tempots/dom'
 import { Validation } from '@tempots/std'
 
 // Validation functions
@@ -100,7 +101,7 @@ const FormField = (
 ### Basic Query Usage
 
 ```typescript
-import { html, prop, render } from '@tempots/dom'
+import { html, prop, render, attr, on, emitValue, Ensure } from '@tempots/dom'
 import { Query } from '@tempots/ui'
 
 interface User {
@@ -155,8 +156,14 @@ const UserProfile = () => {
 ### Mutation for POST/PUT Operations
 
 ```typescript
-import { html, prop } from '@tempots/dom'
+import { html, prop, attr, on, emitValue } from '@tempots/dom'
 import { Mutation } from '@tempots/ui'
+
+interface User {
+  id: number
+  name: string
+  email: string
+}
 
 const CreateUserForm = () => {
   const name = prop('')
@@ -212,8 +219,15 @@ const CreateUserForm = () => {
 ### Protected Routes
 
 ```typescript
-import { html, prop, Provide, Use } from '@tempots/dom'
-import { RootRouter, ChildRouter, Location, NavigationService } from '@tempots/ui'
+import { html, prop, Provide, Use, makeProviderMark, When, Fragment, attr, on, emitValue } from '@tempots/dom'
+import type { Signal, TNode } from '@tempots/dom'
+import { RootRouter, ChildRouter, Location, NavigationService, Anchor } from '@tempots/ui'
+
+interface User {
+  id: number
+  name: string
+  email: string
+}
 
 // Auth provider
 const Auth = {
@@ -313,7 +327,7 @@ const LoginPage = () => Use(Auth, user => {
 ### Global Keyboard Handler
 
 ```typescript
-import { html, prop } from '@tempots/dom'
+import { html, prop, attr, on, emitValue, When } from '@tempots/dom'
 import { OnKeyPressed, OnEnterKey, OnEscapeKey } from '@tempots/ui'
 
 const KeyboardShortcutsDemo = () => {
@@ -441,7 +455,7 @@ const TextEditor = () => {
 ## Click Outside Detection
 
 ```typescript
-import { html, prop } from '@tempots/dom'
+import { html, prop, attr, on, When } from '@tempots/dom'
 import { OnClickOutside } from '@tempots/ui'
 
 const Dropdown = () => {
@@ -473,7 +487,7 @@ const Dropdown = () => {
 ## Viewport Detection
 
 ```typescript
-import { html } from '@tempots/dom'
+import { html, attr, When } from '@tempots/dom'
 import { InViewport, WhenInViewport } from '@tempots/ui'
 
 const LazyLoadedSection = () => html.div(

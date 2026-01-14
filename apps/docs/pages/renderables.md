@@ -168,6 +168,30 @@ When using `input` elements it is very common you want to specify the type of th
 
 Tempo provides functions to bind `Props` to input elements. For example, to bind a `string` prop to an `input` element, use `BindText`. Other bind functions include `BindNumber`, `BindDate`, `BindDateTime`, and `BindChecked`. These set a bidirectional binding between the prop and the input element.
 
+```ts
+import { prop, input, BindText, BindNumber, BindDate, BindDateTime, BindChecked } from '@tempots/dom'
+
+// Text binding - syncs input value with prop
+const email = prop('')
+input.text(BindText(email))
+
+// Number binding - parses input as number
+const age = prop(0)
+input.number(BindNumber(age))
+
+// Date binding - syncs with date input
+const birthDate = prop(new Date())
+input.date(BindDate(birthDate))
+
+// DateTime binding - syncs with datetime-local input
+const appointmentTime = prop(new Date())
+input['datetime-local'](BindDateTime(appointmentTime))
+
+// Checkbox binding - syncs checked state
+const isSubscribed = prop(false)
+input.checkbox(BindChecked(isSubscribed))
+```
+
 ## Conditionals
 
 Tempo has a set of functions to create conditional renderables. For example, to render a `div` element only if a condition is met, use `When` (or `Unless` for its negation).

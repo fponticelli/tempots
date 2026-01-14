@@ -57,16 +57,16 @@ Tempo is a lightweight UI framework that takes a different approach:
 
 Yes! Tempo can be integrated with most JavaScript libraries. Since Tempo directly manipulates the DOM, you can use it alongside other libraries that do the same. You can:
 
-1. Use the `OnElement` renderable to get a reference to a DOM element
+1. Use the `WithElement` renderable to get a reference to a DOM element
 2. Initialize third-party libraries with that element
 3. Clean up resources with `OnDispose`
 
 ```typescript
-import { html, OnElement, OnDispose } from '@tempots/dom'
+import { html, WithElement, OnDispose } from '@tempots/dom'
 import SomeThirdPartyLib from 'some-third-party-lib'
 
 const ThirdPartyComponent = () => html.div(
-  OnElement(element => {
+  WithElement(element => {
     // Initialize the third-party library
     const instance = new SomeThirdPartyLib(element)
 
@@ -141,7 +141,7 @@ If your application is experiencing memory leaks, check:
 1. **Cleanup Functions**: Make sure you're properly cleaning up resources with `OnDispose`.
 
 ```typescript
-OnElement(element => {
+WithElement(element => {
   const interval = setInterval(() => {
     // Do something
   }, 1000)
@@ -170,7 +170,7 @@ Within renderables, the scope is automatically tracked and signals are automatic
 3. **Event Listeners**: If you manually add DOM event listeners, make sure to remove them.
 
 ```typescript
-OnElement(element => {
+WithElement(element => {
   const handler = () => console.log('Clicked')
   element.addEventListener('click', handler)
 

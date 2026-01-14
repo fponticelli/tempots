@@ -59,10 +59,10 @@ When you add a callback to a signal, the callback is called immediately with the
 You can update a prop using the `set()` method or using the `value` setter. They both take a new value and update the signal. You can also update a prop using the `update()` method. The method takes a function that receives the current value and returns the new value.
 
 ```ts
-const prop = prop(0)
-prop.set(1)
-prop.value = 2
-prop.update(v => v + 1)
+const p = prop(0)
+p.set(1)
+p.value = 2
+p.update(v => v + 1)
 ```
 
 ## Effects
