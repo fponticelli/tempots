@@ -1,9 +1,9 @@
 import { attr, html, on, prop, Renderable } from "@tempots/dom";
 
 /**
- * Island Counter component props.
+ * Island Counter component options.
  */
-export interface IslandCounterProps {
+export interface IslandCounterOptions {
   initial: number;
   label: string;
 }
@@ -12,11 +12,11 @@ export interface IslandCounterProps {
  * Island Counter component - only hydrated based on strategy (visible, idle, etc.).
  * This is a standalone island that can be lazily loaded.
  */
-export const IslandCounter = (props: IslandCounterProps): Renderable => {
-  const count = prop(props.initial);
+export const IslandCounter = (options: IslandCounterOptions): Renderable => {
+  const count = prop(options.initial);
 
   return html.div(
-    html.h3(props.label),
+    html.h3(options.label),
     html.div(
       attr.class("counter"),
       html.button(
@@ -37,14 +37,14 @@ export const IslandCounter = (props: IslandCounterProps): Renderable => {
  * This is what the server renders; the client will hydrate with the real component.
  */
 export const IslandCounterPlaceholder = (
-  props: IslandCounterProps,
+  options: IslandCounterOptions,
 ): Renderable => {
   return html.div(
-    html.h3(props.label),
+    html.h3(options.label),
     html.div(
       attr.class("counter"),
       html.button("-"),
-      html.span(String(props.initial)),
+      html.span(String(options.initial)),
       html.button("+"),
     ),
   );

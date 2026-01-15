@@ -409,10 +409,10 @@ export const ISLAND_ATTR = "data-tempo-island";
 export const ISLAND_HYDRATE_ATTR = "data-tempo-hydrate";
 
 /**
- * Attribute name for serialized island props.
+ * Attribute name for serialized island options.
  * @public
  */
-export const ISLAND_PROPS_ATTR = "data-tempo-props";
+export const ISLAND_OPTIONS_ATTR = "data-tempo-options";
 
 /**
  * Hydration strategy for islands.
@@ -446,7 +446,7 @@ export interface IslandHydrateOptions {
  * Maps island names to their component factories.
  * @public
  */
-export type IslandRegistry = Record<string, (props: unknown) => Renderable>;
+export type IslandRegistry = Record<string, (options: unknown) => Renderable>;
 
 /**
  * Hydrates a single island element with the given component.
@@ -461,23 +461,23 @@ export type IslandRegistry = Record<string, (props: unknown) => Renderable>;
  * import { Counter } from './islands/Counter'
  *
  * const element = document.querySelector('[data-tempo-island="Counter"]')
- * const props = JSON.parse(element.dataset.tempoProps || '{}')
+ * const options = JSON.parse(element.dataset.tempoProps || '{}')
  *
- * hydrateIsland(element, Counter, props)
+ * hydrateIsland(element, Counter, options)
  * ```
  *
  * @param element - The island container element.
  * @param component - The component factory function.
- * @param props - Props to pass to the component.
- * @param options - Hydration options.
+ * @param componentOptions - Options to pass to the component.
+ * @param hydrateOptions - Hydration options.
  * @returns A cleanup function.
  * @public
  */
-export function hydrateIsland<P>(
+export function hydrateIsland<O>(
   element: HTMLElement,
-  component: (props: P) => Renderable,
-  props: P,
-  options: IslandHydrateOptions = {},
+  component: (options: O) => Renderable,
+  componentOptions: O,
+  hydrateOptions: IslandHydrateOptions = {},
 ): () => void {
   // Clear the server-rendered placeholder content
   element.innerHTML = "";
@@ -487,11 +487,11 @@ export function hydrateIsland<P>(
     element.ownerDocument,
     element,
     undefined,
-    options.providers ?? {},
+    hydrateOptions.providers ?? {},
   );
 
   const scope = new DisposalScope();
-  const clear = withScope(scope, () => component(props).render(ctx));
+  const clear = withScope(scope, () => component(componentOptions).render(ctx));
 
   return (removeTree: boolean = false) => {
     scope.dispose();
@@ -642,15 +642,15 @@ export function initIslands(
       return;
     }
 
-    // Parse props from data attribute
-    const propsStr = element.getAttribute(ISLAND_PROPS_ATTR);
-    let props: unknown = {};
-    if (propsStr) {
+    // Parse options from data attribute
+    const optionsStr = element.getAttribute(ISLAND_OPTIONS_ATTR);
+    let componentOptions: unknown = {};
+    if (optionsStr) {
       try {
-        props = JSON.parse(propsStr);
+        componentOptions = JSON.parse(optionsStr);
       } catch (e) {
         console.warn(
-          `[Tempo Islands] Failed to parse props for "${islandName}":`,
+          `[Tempo Islands] Failed to parse options for "${islandName}":`,
           e,
         );
       }
@@ -662,13 +662,13 @@ export function initIslands(
 
     // Schedule hydration
     const cancelSchedule = scheduleHydration(element, strategy, () => {
-      const cleanup = hydrateIsland(element, component, props, options);
+      const cleanup = hydrateIsland(element, component, componentOptions, options);
       cleanups.push(cleanup);
 
       // Remove island markers after hydration
       element.removeAttribute(ISLAND_ATTR);
       element.removeAttribute(ISLAND_HYDRATE_ATTR);
-      element.removeAttribute(ISLAND_PROPS_ATTR);
+      element.removeAttribute(ISLAND_OPTIONS_ATTR);
     });
 
     cleanups.push(cancelSchedule);
@@ -688,23 +688,23 @@ export function initIslands(
  * @example
  * ```typescript
  * // In your SSR template
- * const Counter = (props: CounterProps) => {
+ * const Counter = (options: CounterOptions) => {
  *   return html.div(
- *     ...islandMarker('Counter', props, 'visible'),
+ *     ...islandMarker('Counter', options, 'visible'),
  *     // ... counter implementation
  *   )
  * }
  * ```
  *
  * @param name - The island component name (must match registry key).
- * @param props - Props to serialize for client-side hydration.
+ * @param options - Options to serialize for client-side hydration.
  * @param strategy - When to hydrate the island.
  * @returns An array of attribute setters for the island element.
  * @public
  */
 export function islandMarker(
   name: string,
-  props: unknown = {},
+  options: unknown = {},
   strategy: HydrationStrategy = "visible",
 ): Array<{ name: string; value: string }> {
   const strategyStr =
@@ -712,9 +712,158 @@ export function islandMarker(
 
   return [
     { name: ISLAND_ATTR, value: name },
-    { name: ISLAND_PROPS_ATTR, value: JSON.stringify(props) },
+    { name: ISLAND_OPTIONS_ATTR, value: JSON.stringify(options) },
     { name: ISLAND_HYDRATE_ATTR, value: strategyStr },
   ];
+}
+
+// ============================================================================
+// High-Level Client API
+// ============================================================================
+
+/**
+ * Options for the startClient function.
+ * @public
+ */
+export interface ClientOptions<R extends IslandRegistry> {
+  /**
+   * App component for client-only rendering.
+   * If provided and no SSR content is detected, this will be rendered.
+   */
+  app?: () => Renderable;
+
+  /**
+   * Island component registry.
+   * Maps island names to their component factories.
+   */
+  islands: R;
+
+  /**
+   * Container selector or element.
+   * @default "#app"
+   */
+  container?: string | HTMLElement;
+
+  /**
+   * Providers to inject during hydration.
+   */
+  providers?: Providers;
+
+  /**
+   * Enable debug logging.
+   * @default false
+   */
+  debug?: boolean;
+}
+
+/**
+ * Initializes the Tempo client with automatic SSR detection.
+ *
+ * This is a high-level convenience function that handles:
+ * - Container detection
+ * - SSR vs client-only mode detection
+ * - Island initialization
+ * - HMR cleanup (when available)
+ *
+ * For more control, use the lower-level `initIslands()` and `hydrateIsland()` functions directly.
+ *
+ * @example
+ * ```typescript
+ * // Minimal usage - islands only
+ * import { startClient } from '@tempots/client'
+ * import { Counter, TodoList } from './islands'
+ *
+ * startClient({
+ *   islands: { Counter, TodoList }
+ * })
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With client-only fallback
+ * import { startClient } from '@tempots/client'
+ * import { App, Counter } from './app'
+ *
+ * startClient({
+ *   app: () => App(),
+ *   islands: { Counter },
+ *   debug: true
+ * })
+ * ```
+ *
+ * @param options - Client configuration options.
+ * @returns A cleanup function that disposes all islands and removes event listeners.
+ * @public
+ */
+export function startClient<R extends IslandRegistry>(
+  options: ClientOptions<R>,
+): () => void {
+  const {
+    app,
+    islands,
+    container: containerOption = "#app",
+    providers = {},
+    debug = false,
+  } = options;
+
+  const log = debug
+    ? (message: string) => console.log(`[Tempo] ${message}`)
+    : () => {};
+
+  // Find container
+  const container =
+    typeof containerOption === "string"
+      ? document.querySelector<HTMLElement>(containerOption)
+      : containerOption;
+
+  if (!container) {
+    const selector =
+      typeof containerOption === "string" ? containerOption : "(element)";
+    console.error(`[Tempo] Could not find container: ${selector}`);
+    return () => {};
+  }
+
+  // Detect SSR mode by checking for island markers
+  const hasSSRContent = container.querySelector(`[${ISLAND_ATTR}]`) !== null;
+
+  let cleanup: () => void;
+
+  if (hasSSRContent) {
+    // SSR mode: Just initialize islands, don't re-render the app
+    log("SSR mode: Initializing islands...");
+    cleanup = initIslands(islands, { providers });
+    log("Islands initialized! Static content stays static.");
+  } else if (app) {
+    // Client-only mode: Render the full app, then initialize islands
+    log("Client-only mode: Rendering app...");
+    const ctx = new BrowserContext(document, container, undefined, providers);
+    const scope = new DisposalScope();
+    const clear = withScope(scope, () => app().render(ctx));
+    const islandCleanup = initIslands(islands, { providers });
+
+    cleanup = () => {
+      islandCleanup();
+      scope.dispose();
+      clear(true);
+    };
+    log("App rendered and islands initialized!");
+  } else {
+    // No SSR content and no app provided - just initialize any islands
+    log("No SSR content detected, initializing islands only...");
+    cleanup = initIslands(islands, { providers });
+  }
+
+  // Set up HMR cleanup if available
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hot = (import.meta as any).hot;
+  if (hot) {
+    hot.dispose(() => {
+      log("HMR cleanup...");
+      cleanup();
+    });
+  }
+
+  return cleanup;
 }
 
 // Re-export useful types

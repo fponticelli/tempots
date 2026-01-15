@@ -19,7 +19,30 @@ pnpm add @tempots/client
 
 ## Usage
 
-### Basic Hydration
+### Quick Start with `startClient()`
+
+The simplest way to initialize your client-side application:
+
+```typescript
+// entry-client.ts
+import { startClient } from '@tempots/client'
+import { App, Counter, TodoList } from './app'
+
+startClient({
+  app: () => App(),              // App to render in client-only mode
+  islands: { Counter, TodoList }, // Islands to hydrate
+  debug: true,                    // Optional: enable debug logging
+})
+```
+
+`startClient()` automatically:
+- Detects SSR vs client-only mode
+- Initializes islands with their hydration strategies
+- Sets up HMR cleanup (when available)
+
+### Basic Hydration (Low-Level)
+
+For more control, use the low-level `hydrate()` function:
 
 ```typescript
 import { hydrate } from '@tempots/client'
@@ -45,7 +68,7 @@ Islands allow you to hydrate only specific interactive components while keeping 
 import { html } from '@tempots/dom'
 import {
   ISLAND_ATTR,
-  ISLAND_PROPS_ATTR,
+  ISLAND_OPTIONS_ATTR,
   ISLAND_HYDRATE_ATTR,
 } from '@tempots/client'
 
@@ -84,19 +107,42 @@ Islands support multiple hydration strategies to optimize loading performance:
 
 ```typescript
 // Hydrate immediately when JS loads
-islandMarker('Counter', props, 'immediate')
+islandMarker('Counter', options, 'immediate')
 
 // Hydrate when browser is idle (requestIdleCallback)
-islandMarker('Counter', props, 'idle')
+islandMarker('Counter', options, 'idle')
 
 // Hydrate when scrolled into view (IntersectionObserver)
-islandMarker('Counter', props, 'visible')
+islandMarker('Counter', options, 'visible')
 
 // Hydrate when media query matches
-islandMarker('Counter', props, { media: '(min-width: 768px)' })
+islandMarker('Counter', options, { media: '(min-width: 768px)' })
 ```
 
 ## API
+
+### `startClient(options)`
+
+High-level function to initialize the Tempo client with automatic SSR detection.
+
+**Options:**
+- `app?: () => Renderable` - App component for client-only rendering
+- `islands: IslandRegistry` - Map of island names to component factories
+- `container?: string | HTMLElement` - Container selector or element (default: `"#app"`)
+- `providers?: Providers` - Providers to inject during hydration
+- `debug?: boolean` - Enable debug logging (default: `false`)
+
+**Returns:** `() => void` - Cleanup function
+
+**Example:**
+```typescript
+startClient({
+  app: () => App(),
+  islands: { Counter, TodoList },
+  container: '#app',
+  debug: true,
+})
+```
 
 ### `hydrate(renderable, container, options?)`
 
@@ -113,15 +159,15 @@ Hydrates server-rendered HTML with client-side interactivity.
 
 **Returns:** `() => void` - Cleanup function
 
-### `hydrateIsland(element, component, props, options?)`
+### `hydrateIsland(element, component, componentOptions, hydrateOptions?)`
 
 Hydrates a single island element.
 
 **Parameters:**
 - `element: HTMLElement` - The island container element
-- `component: (props: P) => Renderable` - Component factory
-- `props: P` - Props to pass to the component
-- `options?: IslandHydrateOptions` - Optional configuration
+- `component: (options: O) => Renderable` - Component factory
+- `componentOptions: O` - Options to pass to the component
+- `hydrateOptions?: IslandHydrateOptions` - Optional configuration
 
 **Returns:** `() => void` - Cleanup function
 
@@ -135,13 +181,13 @@ Scans the document for islands and hydrates them based on their strategy.
 
 **Returns:** `() => void` - Cleanup function for all islands
 
-### `islandMarker(name, props, strategy?)`
+### `islandMarker(name, options, strategy?)`
 
 Creates attributes for marking an island during server-side rendering.
 
 **Parameters:**
 - `name: string` - Island name (must match registry key)
-- `props: unknown` - Props to serialize
+- `options: unknown` - Options to serialize
 - `strategy?: HydrationStrategy` - When to hydrate (default: 'visible')
 
 **Returns:** `Array<{ name: string; value: string }>` - Attribute list
@@ -150,7 +196,7 @@ Creates attributes for marking an island during server-side rendering.
 
 - `ISLAND_ATTR` - Attribute name for island markers (`data-tempo-island`)
 - `ISLAND_HYDRATE_ATTR` - Attribute for hydration strategy (`data-tempo-hydrate`)
-- `ISLAND_PROPS_ATTR` - Attribute for serialized props (`data-tempo-props`)
+- `ISLAND_OPTIONS_ATTR` - Attribute for serialized options (`data-tempo-options`)
 - `HYDRATION_ID_ATTR` - Attribute for hydration IDs (`data-tts-id`)
 
 ## License

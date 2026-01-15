@@ -67,7 +67,7 @@ Islands are marked in the server-rendered HTML with data attributes:
 
 ```html
 <div data-tempo-island="Counter"
-     data-tempo-props='{"initial":10}'
+     data-tempo-options='{"initial":10}'
      data-tempo-hydrate="visible">
   <!-- Server-rendered content -->
 </div>

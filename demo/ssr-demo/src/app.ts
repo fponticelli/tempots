@@ -8,9 +8,9 @@ import {
 } from "./components";
 
 /**
- * Main App component props.
+ * Main App component options.
  */
-export interface AppProps {
+export interface AppOptions {
   /** Server render timestamp */
   timestamp?: string;
   /** Whether the app has been hydrated */
@@ -22,12 +22,11 @@ export interface AppProps {
 /**
  * Main App component.
  */
-export const App = (props: AppProps = {}): Renderable => {
-  const {
+export const App = ({
     timestamp = new Date().toISOString(),
     hydrated,
     showIslands = true,
-  } = props;
+  }: AppOptions = {}): Renderable => {
 
   return html.div(
     attr.class("container"),
@@ -48,6 +47,6 @@ export const App = (props: AppProps = {}): Renderable => {
 
 // Re-export components for convenience
 export { Counter, IslandCounter } from "./components";
-export type { CounterProps, IslandCounterProps } from "./components";
+export type { CounterOptions, IslandCounterOptions } from "./components";
 
 export default App;

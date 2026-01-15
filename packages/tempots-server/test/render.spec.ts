@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
-import { renderToStream, renderToString, renderToStaticMarkup } from '../src/index'
-import { html, attr, prop, ForEach, When, TextNode, Fragment } from '@tempots/dom'
+import { renderToStream, renderToString, renderToStaticMarkup, createRenderer } from '../src/index'
+import { html, attr, prop, ForEach, When, TextNode, Fragment, Renderable } from '@tempots/dom'
 
 describe('renderToString', () => {
   describe('basic rendering', () => {
@@ -276,5 +276,147 @@ describe('renderToStream', () => {
 
     const result = chunks.join('')
     expect(result).toContain('data-tts-node')
+  })
+})
+
+describe('createRenderer', () => {
+  interface AppOptions {
+    title?: string
+    timestamp?: string
+  }
+
+  const App = (options: AppOptions = {}): Renderable =>
+    html.div(
+      html.h1(options.title ?? 'Default Title'),
+      options.timestamp ? html.span(`Time: ${options.timestamp}`) : null
+    )
+
+  test('should create render function', async () => {
+    const { render } = createRenderer(App)
+
+    const result = await render('/')
+
+    expect(result).toContain('<div')
+    expect(result).toContain('Default Title')
+  })
+
+  test('should create renderStream function', async () => {
+    const { renderStream } = createRenderer(App)
+
+    const stream = renderStream('/')
+
+    expect(stream).toBeDefined()
+    expect(stream.readable).toBe(true)
+
+    // Consume the stream
+    const chunks: string[] = []
+    for await (const chunk of stream) {
+      chunks.push(chunk.toString())
+    }
+
+    const result = chunks.join('')
+    expect(result).toContain('Default Title')
+  })
+
+  test('should pass getData result to App', async () => {
+    const { render } = createRenderer(App, {
+      getData: () => ({
+        title: 'Custom Title',
+        timestamp: '2024-01-15T12:00:00Z',
+      }),
+    })
+
+    const result = await render('/')
+
+    expect(result).toContain('Custom Title')
+    expect(result).toContain('Time: 2024-01-15T12:00:00Z')
+  })
+
+  test('should pass url to getData', async () => {
+    const getData = vi.fn().mockReturnValue({ title: 'Test' })
+
+    const { render } = createRenderer(App, { getData })
+
+    await render('/test-page')
+
+    expect(getData).toHaveBeenCalledWith('/test-page')
+  })
+
+  test('should support async getData', async () => {
+    const { render } = createRenderer(App, {
+      getData: async (url) => {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        return { title: `Page: ${url}` }
+      },
+    })
+
+    const result = await render('/async-page')
+
+    expect(result).toContain('Page: /async-page')
+  })
+
+  test('should generate hydration placeholders by default', async () => {
+    const { render } = createRenderer(App)
+
+    const result = await render('/')
+
+    expect(result).toContain('data-tts-node')
+  })
+
+  test('should not generate placeholders when hydrate is false', async () => {
+    const { render } = createRenderer(App, { hydrate: false })
+
+    const result = await render('/')
+
+    expect(result).not.toContain('data-tts-node')
+  })
+
+  test('should stream with getData', async () => {
+    const { renderStream } = createRenderer(App, {
+      getData: () => ({ title: 'Streamed Title' }),
+    })
+
+    const stream = renderStream('/')
+
+    const chunks: string[] = []
+    for await (const chunk of stream) {
+      chunks.push(chunk.toString())
+    }
+
+    const result = chunks.join('')
+    expect(result).toContain('Streamed Title')
+  })
+
+  test('should stream with async getData', async () => {
+    const { renderStream } = createRenderer(App, {
+      getData: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        return { title: 'Async Streamed Title' }
+      },
+    })
+
+    const stream = renderStream('/')
+
+    const chunks: string[] = []
+    for await (const chunk of stream) {
+      chunks.push(chunk.toString())
+    }
+
+    const result = chunks.join('')
+    expect(result).toContain('Async Streamed Title')
+  })
+
+  test('should work without getData', async () => {
+    const { render, renderStream } = createRenderer(App)
+
+    const stringResult = await render('/')
+    expect(stringResult).toContain('Default Title')
+
+    const stream = renderStream('/')
+    const chunks: string[] = []
+    for await (const chunk of stream) {
+      chunks.push(chunk.toString())
+    }
+    expect(chunks.join('')).toContain('Default Title')
   })
 })

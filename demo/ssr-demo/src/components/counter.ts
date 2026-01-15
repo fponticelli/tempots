@@ -2,9 +2,9 @@ import { attr, html, on, prop, Renderable } from "@tempots/dom";
 import { createIslandAttrs } from "../utils/island-attrs";
 
 /**
- * Counter component props.
+ * Counter component options.
  */
-export interface CounterProps {
+export interface CounterOptions {
   initial?: number;
   label?: string;
 }
@@ -12,8 +12,8 @@ export interface CounterProps {
 /**
  * Interactive Counter component - used for client-side hydration.
  */
-export const Counter = (props: CounterProps = {}): Renderable => {
-  const { initial = 0, label = "Interactive Counter" } = props;
+export const Counter = (options: CounterOptions = {}): Renderable => {
+  const { initial = 0, label = "Interactive Counter" } = options;
   const count = prop(initial);
 
   return html.div(
@@ -38,8 +38,8 @@ export const Counter = (props: CounterProps = {}): Renderable => {
  * Static counter placeholder for SSR - renders the same structure as Counter.
  * This is what the server renders; the client will hydrate with the real component.
  */
-export const CounterIsland = (props: CounterProps = {}): Renderable => {
-  const { initial = 0, label = "Interactive Counter" } = props;
+export const CounterIsland = (options: CounterOptions = {}): Renderable => {
+  const { initial = 0, label = "Interactive Counter" } = options;
 
   return html.div(
     attr.class("card"),

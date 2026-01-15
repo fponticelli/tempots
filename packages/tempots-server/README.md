@@ -19,6 +19,27 @@ pnpm add @tempots/server
 
 ## Usage
 
+### Quick Start with `createRenderer()`
+
+The simplest way to set up your server-side rendering entry point:
+
+```typescript
+// entry-server.ts
+import { createRenderer } from '@tempots/server'
+import { App } from './app'
+
+export const { render, renderStream } = createRenderer(App, {
+  getData: (url) => ({
+    timestamp: new Date().toISOString(),
+    path: new URL(url, 'https://example.com').pathname,
+  }),
+})
+
+export { App }
+```
+
+This creates standard `render()` and `renderStream()` functions ready for use with your Express/Vite server.
+
 ### Streaming (Recommended for large pages)
 
 ```typescript
@@ -81,6 +102,31 @@ const markup = await renderToStaticMarkup(EmailTemplate())
 ```
 
 ## API
+
+### `createRenderer(App, options?)`
+
+High-level function to create standard render functions for SSR entry points.
+
+**Parameters:**
+- `App: (options: O) => Renderable` - The app component factory
+
+**Options:**
+- `getData?: (url: string) => O | Promise<O>` - Function to get initial data for each request
+- `hydrate?: boolean` - Generate hydration placeholders (default: `true`)
+- `selector?: string` - Root element selector (default: `"body"`)
+- `providers?: Providers` - Providers to inject during rendering
+
+**Returns:** `{ render, renderStream }`
+- `render(url: string): Promise<string>` - Renders to HTML string
+- `renderStream(url: string): Readable` - Renders to stream
+
+**Example:**
+```typescript
+export const { render, renderStream } = createRenderer(App, {
+  getData: (url) => ({ timestamp: Date.now() }),
+  hydrate: true,
+})
+```
 
 ### `renderToStream(renderable, options?)`
 

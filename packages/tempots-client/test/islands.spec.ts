@@ -3,8 +3,9 @@ import {
   hydrateIsland,
   initIslands,
   islandMarker,
+  startClient,
   ISLAND_ATTR,
-  ISLAND_PROPS_ATTR,
+  ISLAND_OPTIONS_ATTR,
   ISLAND_HYDRATE_ATTR,
   HYDRATION_ID_ATTR,
 } from "../src/index";
@@ -27,8 +28,8 @@ describe("Islands Architecture", () => {
     it("should hydrate a single island element", () => {
       container.innerHTML = `<div ${HYDRATION_ID_ATTR}="c1"><span>0</span></div>`;
 
-      const Counter = (props: { initial: number }): Renderable => {
-        const count = prop(props.initial);
+      const Counter = (options: { initial: number }): Renderable => {
+        const count = prop(options.initial);
         return html.div(html.span(count.map(String)));
       };
 
@@ -39,11 +40,11 @@ describe("Islands Architecture", () => {
       cleanup();
     });
 
-    it("should pass props to the component", () => {
+    it("should pass options to the component", () => {
       container.innerHTML = `<div ${HYDRATION_ID_ATTR}="g1">Hello World</div>`;
 
-      const Greeter = (props: { name: string }): Renderable => {
-        return html.div(`Hello ${props.name}`);
+      const Greeter = (options: { name: string }): Renderable => {
+        return html.div(`Hello ${options.name}`);
       };
 
       hydrateIsland(container, Greeter, { name: "World" });
@@ -70,13 +71,13 @@ describe("Islands Architecture", () => {
   describe("initIslands", () => {
     it("should initialize all islands in the document", () => {
       container.innerHTML = `
-        <div ${ISLAND_ATTR}="Counter" ${ISLAND_PROPS_ATTR}='{"initial":5}' ${ISLAND_HYDRATE_ATTR}="immediate">
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_OPTIONS_ATTR}='{"initial":5}' ${ISLAND_HYDRATE_ATTR}="immediate">
           <span>5</span>
         </div>
       `;
 
-      const Counter = (props: { initial: number }): Renderable => {
-        const count = prop(props.initial);
+      const Counter = (options: { initial: number }): Renderable => {
+        const count = prop(options.initial);
         return html.div(html.span(count.map(String)));
       };
 
@@ -85,7 +86,7 @@ describe("Islands Architecture", () => {
       // Island markers should be removed after hydration
       const island = container.querySelector("div");
       expect(island?.hasAttribute(ISLAND_ATTR)).toBe(false);
-      expect(island?.hasAttribute(ISLAND_PROPS_ATTR)).toBe(false);
+      expect(island?.hasAttribute(ISLAND_OPTIONS_ATTR)).toBe(false);
       expect(island?.hasAttribute(ISLAND_HYDRATE_ATTR)).toBe(false);
 
       cleanup();
@@ -96,15 +97,15 @@ describe("Islands Architecture", () => {
         <div ${ISLAND_ATTR}="Counter" ${ISLAND_HYDRATE_ATTR}="immediate">
           <span>0</span>
         </div>
-        <div ${ISLAND_ATTR}="Greeter" ${ISLAND_PROPS_ATTR}='{"name":"Alice"}' ${ISLAND_HYDRATE_ATTR}="immediate">
+        <div ${ISLAND_ATTR}="Greeter" ${ISLAND_OPTIONS_ATTR}='{"name":"Alice"}' ${ISLAND_HYDRATE_ATTR}="immediate">
           <span>Hello Alice</span>
         </div>
       `;
 
       // Components return content to render inside the island container
       const Counter = (): Renderable => html.span("0");
-      const Greeter = (props: { name: string }): Renderable =>
-        html.span(`Hello ${props.name}`);
+      const Greeter = (options: { name: string }): Renderable =>
+        html.span(`Hello ${options.name}`);
 
       const cleanup = initIslands({ Counter, Greeter });
 
@@ -136,9 +137,9 @@ describe("Islands Architecture", () => {
       consoleWarn.mockRestore();
     });
 
-    it("should warn on invalid props JSON", () => {
+    it("should warn on invalid options JSON", () => {
       container.innerHTML = `
-        <div ${ISLAND_ATTR}="Counter" ${ISLAND_PROPS_ATTR}='invalid-json' ${ISLAND_HYDRATE_ATTR}="immediate">
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_OPTIONS_ATTR}='invalid-json' ${ISLAND_HYDRATE_ATTR}="immediate">
           Content
         </div>
       `;
@@ -149,7 +150,7 @@ describe("Islands Architecture", () => {
       initIslands({ Counter });
 
       expect(consoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to parse props"),
+        expect.stringContaining("Failed to parse options"),
         expect.anything()
       );
 
@@ -249,7 +250,7 @@ describe("Islands Architecture", () => {
       expect(markers).toHaveLength(3);
       expect(markers).toContainEqual({ name: ISLAND_ATTR, value: "Counter" });
       expect(markers).toContainEqual({
-        name: ISLAND_PROPS_ATTR,
+        name: ISLAND_OPTIONS_ATTR,
         value: '{"initial":10}',
       });
       expect(markers).toContainEqual({ name: ISLAND_HYDRATE_ATTR, value: "visible" });
@@ -269,12 +270,12 @@ describe("Islands Architecture", () => {
       expect(strategyMarker?.value).toBe("media:(min-width: 1024px)");
     });
 
-    it("should serialize props to JSON", () => {
-      const props = { count: 42, label: "Test", nested: { a: 1 } };
-      const markers = islandMarker("Counter", props);
+    it("should serialize options to JSON", () => {
+      const options = { count: 42, label: "Test", nested: { a: 1 } };
+      const markers = islandMarker("Counter", options);
 
-      const propsMarker = markers.find((m) => m.name === ISLAND_PROPS_ATTR);
-      expect(propsMarker?.value).toBe(JSON.stringify(props));
+      const optionsMarker = markers.find((m) => m.name === ISLAND_OPTIONS_ATTR);
+      expect(optionsMarker?.value).toBe(JSON.stringify(options));
     });
   });
 
@@ -305,6 +306,196 @@ describe("Islands Architecture", () => {
           resolve();
         }, 5);
       });
+    });
+  });
+
+  describe("startClient", () => {
+    it("should initialize islands in SSR mode (when island markers present)", () => {
+      container.innerHTML = `
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_OPTIONS_ATTR}='{"initial":5}' ${ISLAND_HYDRATE_ATTR}="immediate">
+          <span>5</span>
+        </div>
+      `;
+
+      let hydrated = false;
+      const Counter = (options: { initial: number }): Renderable => {
+        hydrated = true;
+        return html.span(String(options.initial));
+      };
+
+      const cleanup = startClient({
+        islands: { Counter },
+      });
+
+      expect(hydrated).toBe(true);
+      cleanup();
+    });
+
+    it("should render app in client-only mode (no island markers)", () => {
+      // Container is empty, no SSR content
+      container.innerHTML = "";
+
+      let appRendered = false;
+      const App = (): Renderable => {
+        appRendered = true;
+        return html.div("App content");
+      };
+
+      const Counter = (): Renderable => html.span("Counter");
+
+      const cleanup = startClient({
+        app: () => App(),
+        islands: { Counter },
+      });
+
+      expect(appRendered).toBe(true);
+      expect(container.textContent).toContain("App content");
+      cleanup();
+    });
+
+    it("should use custom container selector", () => {
+      // Create a custom container
+      const customContainer = document.createElement("div");
+      customContainer.id = "custom-app";
+      document.body.appendChild(customContainer);
+
+      customContainer.innerHTML = `
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_HYDRATE_ATTR}="immediate">
+          <span>0</span>
+        </div>
+      `;
+
+      let hydrated = false;
+      const Counter = (): Renderable => {
+        hydrated = true;
+        return html.span("0");
+      };
+
+      const cleanup = startClient({
+        container: "#custom-app",
+        islands: { Counter },
+      });
+
+      expect(hydrated).toBe(true);
+      cleanup();
+      customContainer.remove();
+    });
+
+    it("should accept HTMLElement as container", () => {
+      container.innerHTML = `
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_HYDRATE_ATTR}="immediate">
+          <span>0</span>
+        </div>
+      `;
+
+      let hydrated = false;
+      const Counter = (): Renderable => {
+        hydrated = true;
+        return html.span("0");
+      };
+
+      const cleanup = startClient({
+        container: container,
+        islands: { Counter },
+      });
+
+      expect(hydrated).toBe(true);
+      cleanup();
+    });
+
+    it("should log errors when container not found", () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const cleanup = startClient({
+        container: "#non-existent",
+        islands: {},
+      });
+
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining("Could not find container")
+      );
+
+      cleanup();
+      consoleError.mockRestore();
+    });
+
+    it("should log debug messages when debug is true", () => {
+      container.innerHTML = `
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_HYDRATE_ATTR}="immediate">
+          <span>0</span>
+        </div>
+      `;
+
+      const consoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      const Counter = (): Renderable => html.span("0");
+
+      const cleanup = startClient({
+        islands: { Counter },
+        debug: true,
+      });
+
+      expect(consoleLog).toHaveBeenCalledWith(
+        expect.stringContaining("[Tempo]")
+      );
+
+      cleanup();
+      consoleLog.mockRestore();
+    });
+
+    it("should not log debug messages when debug is false", () => {
+      container.innerHTML = `
+        <div ${ISLAND_ATTR}="Counter" ${ISLAND_HYDRATE_ATTR}="immediate">
+          <span>0</span>
+        </div>
+      `;
+
+      const consoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      const Counter = (): Renderable => html.span("0");
+
+      const cleanup = startClient({
+        islands: { Counter },
+        debug: false,
+      });
+
+      expect(consoleLog).not.toHaveBeenCalled();
+
+      cleanup();
+      consoleLog.mockRestore();
+    });
+
+    it("should return cleanup function", () => {
+      container.innerHTML = "";
+
+      const App = (): Renderable => html.div("Test");
+
+      const cleanup = startClient({
+        app: () => App(),
+        islands: {},
+      });
+
+      expect(typeof cleanup).toBe("function");
+
+      // Cleanup should work without errors
+      cleanup();
+
+      // After cleanup, container should be empty
+      expect(container.innerHTML).toBe("");
+    });
+
+    it("should work with empty islands registry", () => {
+      container.innerHTML = "";
+
+      const App = (): Renderable => html.div("No islands");
+
+      const cleanup = startClient({
+        app: () => App(),
+        islands: {},
+      });
+
+      expect(container.textContent).toContain("No islands");
+      cleanup();
     });
   });
 });

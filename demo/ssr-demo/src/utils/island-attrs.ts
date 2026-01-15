@@ -1,7 +1,7 @@
 import { Attr, Renderable } from "@tempots/dom";
 import {
   ISLAND_ATTR,
-  ISLAND_PROPS_ATTR,
+  ISLAND_OPTIONS_ATTR,
   ISLAND_HYDRATE_ATTR,
 } from "@tempots/client";
 
@@ -11,10 +11,10 @@ import {
  */
 export const createIslandAttrs = (
   name: string,
-  props: unknown,
+  options: unknown,
   strategy: string,
 ): Renderable[] => [
   Attr(ISLAND_ATTR, name),
-  Attr(ISLAND_PROPS_ATTR, JSON.stringify(props)),
+  Attr(ISLAND_OPTIONS_ATTR, JSON.stringify(options)),
   Attr(ISLAND_HYDRATE_ATTR, strategy),
 ];

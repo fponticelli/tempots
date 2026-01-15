@@ -1,15 +1,15 @@
 import { Fragment, Portal, Value, attr, signal, Use } from '@tempots/dom'
 import { Location, urlFromLocation } from '@tempots/ui'
 
-export type OpenGraphProps = {
+export type OpenGraphOptions = {
   readonly title: Value<string>
   readonly description?: Value<string | undefined>
   readonly image?: Value<string | undefined>
   readonly keywords?: Value<string[] | undefined>
 }
 
-export function OpenGraph(props: OpenGraphProps) {
-  const { title, description, image, keywords } = props
+export function OpenGraph(options: OpenGraphOptions) {
+  const { title, description, image, keywords } = options
   const imageSignal =
     Value.maybeToSignal<string | undefined>(image) ??
     signal(undefined as string | undefined)

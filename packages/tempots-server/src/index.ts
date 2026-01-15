@@ -309,6 +309,164 @@ function collectPortalHTML(
   return parts.join("");
 }
 
+// ============================================================================
+// High-Level Server API
+// ============================================================================
+
+/**
+ * Options for createRenderer.
+ * @public
+ */
+export interface RendererOptions<O extends Record<string, unknown>> {
+  /**
+   * Generate hydration placeholders in the output.
+   * @default true
+   */
+  hydrate?: boolean;
+
+  /**
+   * Function to get initial data for each request.
+   * The returned object will be passed to the App component.
+   */
+  getData?: (url: string) => O | Promise<O>;
+
+  /**
+   * The selector used to find the root element.
+   * @default "body"
+   */
+  selector?: string;
+
+  /**
+   * Providers to inject during rendering.
+   */
+  providers?: Providers;
+}
+
+/**
+ * Result of createRenderer containing render functions.
+ * @public
+ */
+export interface Renderer {
+  /**
+   * Renders the app to an HTML string.
+   */
+  render: (url: string) => Promise<string>;
+
+  /**
+   * Renders the app to a Node.js Readable stream.
+   */
+  renderStream: (url: string) => Readable;
+}
+
+/**
+ * Creates standard render functions for SSR entry points.
+ *
+ * This is a high-level convenience function that creates the standard
+ * `render()` and `renderStream()` exports for your entry-server.ts file.
+ *
+ * For more control, use the lower-level `renderToString()` and `renderToStream()` functions directly.
+ *
+ * @example
+ * ```typescript
+ * // entry-server.ts
+ * import { createRenderer } from '@tempots/server'
+ * import { App } from './app'
+ *
+ * export const { render, renderStream } = createRenderer(App, {
+ *   getData: (url) => ({
+ *     timestamp: new Date().toISOString(),
+ *     path: new URL(url, 'https://example.com').pathname
+ *   })
+ * })
+ *
+ * export { App }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Without getData (for simple apps)
+ * export const { render, renderStream } = createRenderer(App)
+ * ```
+ *
+ * @param App - The app component factory function.
+ * @param options - Renderer options.
+ * @returns An object with `render` and `renderStream` functions.
+ * @public
+ */
+export function createRenderer<O extends Record<string, unknown>>(
+  App: (options: O) => Renderable,
+  options: RendererOptions<O> = {},
+): Renderer {
+  const {
+    hydrate = true,
+    getData,
+    selector = "body",
+    providers = {},
+  } = options;
+
+  /**
+   * Renders the app to an HTML string.
+   */
+  async function render(url: string): Promise<string> {
+    const data = getData ? await getData(url) : ({} as O);
+
+    return renderToString(App(data), {
+      url,
+      selector,
+      providers,
+      generatePlaceholders: hydrate,
+    });
+  }
+
+  /**
+   * Renders the app to a Node.js Readable stream.
+   */
+  function renderStreamFn(url: string): Readable {
+    // For streaming, we need to handle async getData
+    // We'll create a wrapper stream that waits for data first
+    if (getData) {
+      const passThrough = new Readable({
+        read() {},
+      });
+
+      // Start async data fetch, then pipe the real stream
+      Promise.resolve(getData(url))
+        .then((data) => {
+          const realStream = renderToStream(App(data), {
+            url,
+            selector,
+            providers,
+            generatePlaceholders: hydrate,
+          });
+
+          realStream.on("data", (chunk) => passThrough.push(chunk));
+          realStream.on("end", () => passThrough.push(null));
+          realStream.on("error", (err) => passThrough.destroy(err));
+        })
+        .catch((err) => {
+          passThrough.destroy(
+            err instanceof Error ? err : new Error(String(err)),
+          );
+        });
+
+      return passThrough;
+    }
+
+    // No getData, render synchronously
+    return renderToStream(App({} as O), {
+      url,
+      selector,
+      providers,
+      generatePlaceholders: hydrate,
+    });
+  }
+
+  return {
+    render,
+    renderStream: renderStreamFn,
+  };
+}
+
 // Re-export useful types from @tempots/dom for convenience
 export type { Renderable, Providers, StreamOptions };
 export { runHeadless, HeadlessContext, HeadlessPortal };
