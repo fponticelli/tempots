@@ -442,11 +442,29 @@ export interface IslandHydrateOptions {
 }
 
 /**
+ * Island component factory type.
+ * Options are received from JSON deserialization and typed as `unknown`.
+ * Components should cast options to their expected type internally.
+ *
+ * @example
+ * ```typescript
+ * interface CounterOptions { initial?: number }
+ *
+ * const Counter: IslandComponent = (options) => {
+ *   const { initial = 0 } = (options ?? {}) as CounterOptions;
+ *   return html.div(/* ... *\/)
+ * }
+ * ```
+ * @public
+ */
+export type IslandComponent = (options: unknown) => Renderable;
+
+/**
  * Island component registry type.
  * Maps island names to their component factories.
  * @public
  */
-export type IslandRegistry = Record<string, (options: unknown) => Renderable>;
+export type IslandRegistry = Record<string, IslandComponent>;
 
 /**
  * Hydrates a single island element with the given component.

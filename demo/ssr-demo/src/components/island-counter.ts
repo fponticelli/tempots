@@ -11,12 +11,14 @@ export interface IslandCounterOptions {
 /**
  * Island Counter component - only hydrated based on strategy (visible, idle, etc.).
  * This is a standalone island that can be lazily loaded.
+ * Accepts `unknown` for island registry compatibility; casts internally.
  */
-export const IslandCounter = (options: IslandCounterOptions): Renderable => {
-  const count = prop(options.initial);
+export const IslandCounter = (options: unknown): Renderable => {
+  const { initial, label } = options as IslandCounterOptions;
+  const count = prop(initial);
 
   return html.div(
-    html.h3(options.label),
+    html.h3(label),
     html.div(
       attr.class("counter"),
       html.button(

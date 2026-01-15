@@ -11,9 +11,11 @@ export interface CounterOptions {
 
 /**
  * Interactive Counter component - used for client-side hydration.
+ * Accepts `unknown` for island registry compatibility; casts internally.
  */
-export const Counter = (options: CounterOptions = {}): Renderable => {
-  const { initial = 0, label = "Interactive Counter" } = options;
+export const Counter = (options: unknown): Renderable => {
+  const { initial = 0, label = "Interactive Counter" } =
+    (options ?? {}) as CounterOptions;
   const count = prop(initial);
 
   return html.div(
