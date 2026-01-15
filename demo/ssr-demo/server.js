@@ -21,6 +21,15 @@ async function createServer() {
   app.use('*', async (req, res, next) => {
     const url = req.originalUrl
 
+    // Skip non-page requests (static assets, special paths, etc.)
+    if (
+      url.startsWith('/.well-known') ||
+      url.startsWith('/@') ||
+      url.includes('.') && !url.endsWith('.html')
+    ) {
+      return next()
+    }
+
     try {
       // Read the index.html template
       let template = fs.readFileSync(
