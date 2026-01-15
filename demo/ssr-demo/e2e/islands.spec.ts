@@ -121,6 +121,7 @@ test.describe("SSR Demo - Islands Architecture", () => {
     await page.goto("http://localhost:3000");
     await page.waitForTimeout(100);
 
-    expect(logs.some((log) => log.includes("[Tempo] Islands initialized!"))).toBe(true);
+    // In SSR mode, the message includes "SSR mode:"
+    expect(logs.some((log) => log.includes("Islands initialized!"))).toBe(true);
   });
 });
