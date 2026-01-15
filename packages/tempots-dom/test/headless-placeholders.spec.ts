@@ -19,7 +19,9 @@ describe("Headless Placeholders", () => {
       html.span('Hello World')
     )
     const { root } = runHeadless(app)
-    expect(root.contentToHTML(true)).toStrictEqual('<div data-tts-node><span>Hello World</span></div>')
+    const output = root.contentToHTML(true)
+    // Should have data-tts-node and data-tempo-id attributes for hydration
+    expect(output).toMatch(/<div data-tts-node data-tempo-id="[a-z0-9]+"><span>Hello World<\/span><\/div>/)
   })
 
   test('restore placeholders', async () => {

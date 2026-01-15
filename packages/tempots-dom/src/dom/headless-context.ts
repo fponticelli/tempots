@@ -5,6 +5,13 @@ import { BrowserContext } from './browser-context'
 import { DOMContext, HandlerOptions } from './dom-context'
 import { ProviderNotFoundError } from './errors'
 
+/**
+ * Attribute name for hydration IDs.
+ * Used to match server-rendered elements with client-side renderables during hydration.
+ * @public
+ */
+export const HYDRATION_ID_ATTR = 'data-tempo-id'
+
 const classKey = Symbol('class')
 const styleKey = Symbol('style')
 const handlerKey = Symbol('handler')
@@ -332,7 +339,12 @@ export class HeadlessElement extends HeadlessBase {
         return ` ${name}="${quote(value as string)}"`
       })
       .join('')
-    const placeholder = generatePlaceholders ? ` ${_NODE_PLACEHOLDER_ATTR}` : ''
+    // When generating placeholders for hydration:
+    // - data-tts-node marks the element as server-rendered
+    // - data-tempo-id provides a unique identifier for hydration matching
+    const placeholder = generatePlaceholders
+      ? ` ${_NODE_PLACEHOLDER_ATTR} ${HYDRATION_ID_ATTR}="${this.id}"`
+      : ''
     return { attrs: `${ns}${attrs}${placeholder}`, innerHTML }
   }
 

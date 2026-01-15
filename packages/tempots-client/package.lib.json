@@ -1,0 +1,40 @@
+{
+  "name": "@tempots/client",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "description": "Client-side hydration utilities for Tempo SSR applications",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "hydration",
+    "client",
+    "ssr"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "peerDependencies": {
+    "@tempots/core": "^2.0.0",
+    "@tempots/dom": "^35.0.0"
+  }
+}

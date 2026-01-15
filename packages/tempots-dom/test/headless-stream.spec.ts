@@ -126,7 +126,9 @@ describe('HeadlessElement toHTMLStream', () => {
         chunks.push(chunk)
       }
 
-      expect(chunks.join('')).toContain('data-tts-node')
+      const result = chunks.join('')
+      expect(result).toContain('data-tts-node')
+      expect(result).toContain('data-tempo-id')
     })
 
     test('should not include placeholders when option is false', async () => {
