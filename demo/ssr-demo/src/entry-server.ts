@@ -1,5 +1,5 @@
 import { renderToString, renderToStream } from "@tempots/server";
-import { App } from "./App";
+import { App } from "./app";
 
 /**
  * Server-side render function.

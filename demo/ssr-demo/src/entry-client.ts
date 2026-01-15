@@ -1,6 +1,6 @@
 import { initIslands, ISLAND_ATTR } from "@tempots/client";
 import { BrowserContext } from "@tempots/dom";
-import { App, Counter, IslandCounter } from "./App";
+import { App, Counter, IslandCounter } from "./app";
 
 /**
  * Client-side entry point.
@@ -36,12 +36,7 @@ if (container) {
     // Client-only mode: Render the full app
     console.log("[Tempo] Client-only mode: Rendering app...");
 
-    const ctx = new BrowserContext(
-      document,
-      container,
-      undefined,
-      {},
-    );
+    const ctx = new BrowserContext(document, container, undefined, {});
 
     const clear = App().render(ctx);
 
