@@ -1,4 +1,13 @@
-import { Attr, attr, html, on, prop, Renderable, Signal, When } from "@tempots/dom";
+import {
+  Attr,
+  attr,
+  html,
+  on,
+  prop,
+  Renderable,
+  Signal,
+  When,
+} from "@tempots/dom";
 import {
   ISLAND_ATTR,
   ISLAND_PROPS_ATTR,

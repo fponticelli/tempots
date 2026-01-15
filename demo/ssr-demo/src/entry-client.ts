@@ -18,13 +18,18 @@ if (container) {
   const timestamp = new Date().toISOString();
 
   // Hydrate the main app (full hydration)
-  const cleanup = hydrate(App({ timestamp, hydrated, showIslands: true }), container);
+  const cleanup = hydrate(
+    App({ timestamp, hydrated, showIslands: true }),
+    container,
+  );
 
   // Initialize islands - they will hydrate based on their strategy
   // (visible, idle, immediate, media)
   const islandCleanup = initIslands({
     // Cast is needed because IslandRegistry uses unknown props
-    IslandCounter: IslandCounter as (props: unknown) => ReturnType<typeof IslandCounter>,
+    IslandCounter: IslandCounter as (
+      props: unknown,
+    ) => ReturnType<typeof IslandCounter>,
   });
 
   // Mark as hydrated
