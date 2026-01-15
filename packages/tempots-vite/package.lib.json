@@ -1,0 +1,46 @@
+{
+  "name": "@tempots/vite",
+  "private": false,
+  "version": "1.0.0",
+  "description": "Vite plugin for Tempo SSR, SSG, and Islands architecture",
+  "keywords": [
+    "tempo",
+    "tempots",
+    "vite",
+    "plugin",
+    "ssr",
+    "ssg",
+    "islands"
+  ],
+  "homepage": "https://github.com/fponticelli/tempots",
+  "bugs": {
+    "url": "https://github.com/fponticelli/tempots/issues"
+  },
+  "author": {
+    "name": "Franco Ponticelli",
+    "email": "franco.ponticelli@gmail.com",
+    "url": "https://github.com/fponticelli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fponticelli/tempots.git"
+  },
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    }
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@tempots/dom": "^35.0.0",
+    "@tempots/server": "^1.0.0"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0"
+  }
+}
