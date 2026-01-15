@@ -1,8 +1,9 @@
-import type { Plugin, ResolvedConfig } from "vite";
+import { type Plugin, type ResolvedConfig, build } from "vite";
 import { renderToString, renderToStaticMarkup } from "@tempots/server";
 import type { Renderable } from "@tempots/dom";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { pathToFileURL } from "node:url";
 
 /**
  * Rendering mode for the Tempo Vite plugin.
@@ -49,10 +50,17 @@ export interface TempoViteOptions {
   routes?: string[] | RouteConfig[] | (() => Promise<string[] | RouteConfig[]>);
 
   /**
-   * Path to the entry file that exports the app component.
-   * @default "src/App.ts" or "src/App.tsx"
+   * Path to the client entry file.
+   * @default "src/entry-client.ts"
    */
   entry?: string;
+
+  /**
+   * Path to the server entry file for SSR/SSG.
+   * Should export `render(url)` function or `App` component.
+   * @default "src/entry-server.ts"
+   */
+  ssrEntry?: string;
 
   /**
    * Path to the HTML template file.
@@ -143,12 +151,17 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
   const {
     mode = "ssg",
     routes: routesOption,
-    entry = "src/App.ts",
+    // entry is accepted for configuration but handled by Vite's default behavior
+    entry: _entry = "src/entry-client.ts",
+    ssrEntry = "src/entry-server.ts",
     template = "index.html",
     container = "#app",
     hydrate = mode === "ssr" || mode === "islands",
     outDir = "dist",
   } = options;
+
+  // Suppress unused variable warning - entry is for configuration documentation
+  void _entry;
 
   let config: ResolvedConfig;
 
@@ -179,36 +192,136 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
       const templatePath = path.resolve(config.root, template);
       const templateHtml = fs.readFileSync(templatePath, "utf-8");
 
-      // Entry path for future SSR build integration
-      void entry; // Will be used when SSR build is implemented
+      const ssrOutDir = path.resolve(config.root, outDir, ".ssr-temp");
+      const ssrEntryPath = path.resolve(config.root, ssrEntry);
 
-      console.log(`\n[tempo] Generating ${routes.length} static pages...`);
+      // Check if SSR entry exists
+      if (!fs.existsSync(ssrEntryPath)) {
+        console.error(
+          `\n[tempo] SSR entry not found: ${ssrEntry}\n` +
+            `  Create an entry-server.ts that exports { render } or { App }`,
+        );
+        return;
+      }
+
+      console.log(`\n[tempo] Building SSR module...`);
+
+      // Build the SSR entry module
+      try {
+        await build({
+          configFile: false,
+          root: config.root,
+          logLevel: "warn",
+          build: {
+            ssr: ssrEntryPath,
+            outDir: ssrOutDir,
+            emptyOutDir: true,
+            rollupOptions: {
+              output: {
+                format: "esm",
+                entryFileNames: "entry-server.mjs",
+              },
+            },
+          },
+          // Suppress console output during SSR build
+          customLogger: {
+            ...config.logger,
+            info: () => {},
+            warn: config.logger.warn,
+            error: config.logger.error,
+            warnOnce: config.logger.warnOnce,
+            hasWarned: config.logger.hasWarned,
+            clearScreen: () => {},
+            hasErrorLogged: config.logger.hasErrorLogged,
+          },
+        });
+      } catch (error) {
+        console.error(`[tempo] SSR build failed:`, error);
+        return;
+      }
+
+      // Import the built SSR module
+      const ssrModulePath = path.join(ssrOutDir, "entry-server.mjs");
+      const ssrModuleUrl = pathToFileURL(ssrModulePath).href;
+
+      let ssrModule: {
+        render?: (url: string) => Promise<string>;
+        App?: (options: { url?: string }) => Renderable;
+      };
+
+      try {
+        // Add cache-busting query to avoid module caching issues
+        ssrModule = await import(`${ssrModuleUrl}?t=${Date.now()}`);
+      } catch (error) {
+        console.error(`[tempo] Failed to load SSR module:`, error);
+        return;
+      }
+
+      // Get the render function - support both patterns
+      let renderFn: (url: string) => Promise<string>;
+
+      if (typeof ssrModule.render === "function") {
+        // Pattern 1: createRenderer() style - exports { render }
+        renderFn = ssrModule.render;
+      } else if (typeof ssrModule.App === "function") {
+        // Pattern 2: Direct App export - wrap with renderToString
+        const App = ssrModule.App;
+        renderFn = async (url: string) => {
+          const renderable = App({ url });
+          if (hydrate) {
+            return renderToString(renderable, { generatePlaceholders: true });
+          }
+          return renderToStaticMarkup(renderable);
+        };
+      } else {
+        console.error(
+          `[tempo] SSR entry must export 'render' function or 'App' component`,
+        );
+        return;
+      }
+
+      console.log(`[tempo] Generating ${routes.length} static pages...`);
+
+      // Extract container ID for injection
+      const containerId = container.replace("#", "");
+      const containerRegex = new RegExp(
+        `(<[^>]*id="${containerId}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`,
+      );
 
       for (const route of routes) {
         try {
-          // For SSG, we need to dynamically import the built module
-          // This is a simplified version - a full implementation would use Vite's SSR
+          // Render the app for this route
+          const appHtml = await renderFn(route.path);
+
+          // Inject rendered HTML into template
+          const html = templateHtml.replace(containerRegex, `$1${appHtml}$3`);
+
+          // Write to output file
           const outputPath = getOutputPath(
             route,
             path.resolve(config.root, outDir),
           );
 
-          // Create the output directory if it doesn't exist
           const outputDir = path.dirname(outputPath);
           if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true });
           }
 
-          // For now, just copy the template with a placeholder
-          // A full implementation would import and render the app
-          const html = templateHtml;
-
           fs.writeFileSync(outputPath, html);
-          console.log(`  [tempo] Generated: ${route.path} -> ${outputPath}`);
+          console.log(`  ✓ ${route.path}`);
         } catch (error) {
-          console.error(`  [tempo] Error generating ${route.path}:`, error);
+          console.error(`  ✗ ${route.path}:`, error);
         }
       }
+
+      // Clean up temporary SSR build
+      try {
+        fs.rmSync(ssrOutDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+
+      console.log(`[tempo] SSG complete!\n`);
     },
   };
 
@@ -243,25 +356,32 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
           // Apply Vite HTML transforms
           templateHtml = await server.transformIndexHtml(url, templateHtml);
 
-          // Load the entry module
-          const entryModule = await server.ssrLoadModule(
-            path.resolve(config.root, entry),
+          // Load the SSR entry module
+          const ssrModule = await server.ssrLoadModule(
+            path.resolve(config.root, ssrEntry),
           );
 
-          // Get the app component
-          const App = entryModule.default || entryModule.App;
+          // Get the render function - support both patterns
+          let appHtml: string;
 
-          if (typeof App !== "function") {
-            console.warn(
-              "[tempo] Entry module should export a default function or App",
-            );
-            return next();
+          if (typeof ssrModule.render === "function") {
+            // Pattern 1: createRenderer() style - exports { render }
+            appHtml = await ssrModule.render(url);
+          } else {
+            // Pattern 2: Direct App export
+            const App = ssrModule.default || ssrModule.App;
+
+            if (typeof App !== "function") {
+              console.warn(
+                "[tempo] SSR entry must export 'render' function or 'App' component",
+              );
+              return next();
+            }
+
+            appHtml = await renderToString(App({ url }) as Renderable, {
+              generatePlaceholders: hydrate,
+            });
           }
-
-          // Render the app
-          const appHtml = await renderToString(App({ url }) as Renderable, {
-            generatePlaceholders: hydrate,
-          });
 
           // Inject the rendered HTML into the template
           const html = templateHtml.replace(

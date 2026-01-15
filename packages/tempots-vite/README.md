@@ -52,7 +52,7 @@ export default defineConfig({
   plugins: [
     tempo({
       mode: 'ssr',
-      entry: 'src/App.ts',
+      ssrEntry: 'src/entry-server.ts',
     })
   ]
 })
@@ -84,7 +84,8 @@ export default defineConfig({
 |--------|------|---------|-------------|
 | `mode` | `'ssg' \| 'ssr' \| 'islands' \| 'hybrid'` | `'ssg'` | Rendering mode |
 | `routes` | `string[] \| RouteConfig[] \| (() => Promise<...>)` | `['/']` | Routes to pre-render (SSG) |
-| `entry` | `string` | `'src/App.ts'` | Entry file exporting the app |
+| `entry` | `string` | `'src/entry-client.ts'` | Client entry file |
+| `ssrEntry` | `string` | `'src/entry-server.ts'` | Server entry file (exports `render` or `App`) |
 | `template` | `string` | `'index.html'` | HTML template file |
 | `container` | `string` | `'#app'` | App container selector |
 | `hydrate` | `boolean` | `true` for SSR/islands | Generate hydration markers |
