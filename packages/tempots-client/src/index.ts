@@ -392,6 +392,314 @@ export class HydrationContext implements DOMContext {
   };
 }
 
+// ============================================================================
+// Islands Architecture
+// ============================================================================
+
+/**
+ * Attribute name for island markers.
+ * @public
+ */
+export const ISLAND_ATTR = "data-tempo-island";
+
+/**
+ * Attribute name for island hydration strategy.
+ * @public
+ */
+export const ISLAND_HYDRATE_ATTR = "data-tempo-hydrate";
+
+/**
+ * Attribute name for serialized island props.
+ * @public
+ */
+export const ISLAND_PROPS_ATTR = "data-tempo-props";
+
+/**
+ * Hydration strategy for islands.
+ *
+ * - `"immediate"` - Hydrate as soon as possible (client:load)
+ * - `"idle"` - Hydrate when the browser is idle (client:idle)
+ * - `"visible"` - Hydrate when scrolled into view (client:visible)
+ * - `"media"` - Hydrate when a media query matches
+ *
+ * @public
+ */
+export type HydrationStrategy =
+  | "immediate"
+  | "idle"
+  | "visible"
+  | { media: string };
+
+/**
+ * Options for island hydration.
+ * @public
+ */
+export interface IslandHydrateOptions {
+  /**
+   * Providers to inject during hydration.
+   */
+  providers?: Providers;
+}
+
+/**
+ * Island component registry type.
+ * Maps island names to their component factories.
+ * @public
+ */
+export type IslandRegistry = Record<string, (props: unknown) => Renderable>;
+
+/**
+ * Hydrates a single island element with the given component.
+ *
+ * @example
+ * ```typescript
+ * import { hydrateIsland } from '@tempots/client'
+ * import { Counter } from './islands/Counter'
+ *
+ * const element = document.querySelector('[data-tempo-island="Counter"]')
+ * const props = JSON.parse(element.dataset.tempoProps || '{}')
+ *
+ * hydrateIsland(element, Counter, props)
+ * ```
+ *
+ * @param element - The island container element.
+ * @param component - The component factory function.
+ * @param props - Props to pass to the component.
+ * @param options - Hydration options.
+ * @returns A cleanup function.
+ * @public
+ */
+export function hydrateIsland<P>(
+  element: HTMLElement,
+  component: (props: P) => Renderable,
+  props: P,
+  options: IslandHydrateOptions = {},
+): () => void {
+  const renderable = component(props);
+  return hydrate(renderable, element, {
+    providers: options.providers,
+    removeMarkers: true,
+  });
+}
+
+/**
+ * Schedules island hydration based on the specified strategy.
+ *
+ * @param element - The island element to hydrate.
+ * @param strategy - When to hydrate the island.
+ * @param hydrateCallback - Function to call when hydration should occur.
+ * @returns A cleanup function to cancel scheduled hydration.
+ * @internal
+ */
+function scheduleHydration(
+  element: HTMLElement,
+  strategy: HydrationStrategy,
+  hydrateCallback: () => void,
+): () => void {
+  if (strategy === "immediate") {
+    hydrateCallback();
+    return () => {};
+  }
+
+  if (strategy === "idle") {
+    if ("requestIdleCallback" in window) {
+      const id = requestIdleCallback(hydrateCallback);
+      return () => cancelIdleCallback(id);
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      const id = setTimeout(hydrateCallback, 1);
+      return () => clearTimeout(id);
+    }
+  }
+
+  if (strategy === "visible") {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            observer.disconnect();
+            hydrateCallback();
+            break;
+          }
+        }
+      },
+      { rootMargin: "50px" },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }
+
+  if (typeof strategy === "object" && "media" in strategy) {
+    const mediaQuery = window.matchMedia(strategy.media);
+    if (mediaQuery.matches) {
+      hydrateCallback();
+      return () => {};
+    }
+
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        mediaQuery.removeEventListener("change", handler);
+        hydrateCallback();
+      }
+    };
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }
+
+  // Default to immediate
+  hydrateCallback();
+  return () => {};
+}
+
+/**
+ * Parses the hydration strategy from a string attribute.
+ *
+ * @param value - The attribute value (e.g., "visible", "idle", "media:(min-width: 768px)")
+ * @returns The parsed hydration strategy.
+ * @internal
+ */
+function parseStrategy(value: string | null): HydrationStrategy {
+  if (!value || value === "immediate" || value === "load") {
+    return "immediate";
+  }
+  if (value === "idle") {
+    return "idle";
+  }
+  if (value === "visible") {
+    return "visible";
+  }
+  if (value.startsWith("media:")) {
+    return { media: value.slice(6).trim() };
+  }
+  return "immediate";
+}
+
+/**
+ * Initializes all islands in the document using the provided registry.
+ *
+ * This function scans the document for elements with `data-tempo-island` attributes
+ * and hydrates them using the corresponding component from the registry.
+ *
+ * @example
+ * ```typescript
+ * import { initIslands } from '@tempots/client'
+ * import { Counter } from './islands/Counter'
+ * import { TodoList } from './islands/TodoList'
+ *
+ * // Initialize all islands
+ * const cleanup = initIslands({
+ *   Counter,
+ *   TodoList,
+ * })
+ *
+ * // Later, to cleanup all islands:
+ * cleanup()
+ * ```
+ *
+ * @param registry - A map of island names to component factories.
+ * @param options - Hydration options.
+ * @returns A cleanup function that disposes all islands.
+ * @public
+ */
+export function initIslands(
+  registry: IslandRegistry,
+  options: IslandHydrateOptions = {},
+): () => void {
+  const cleanups: Array<() => void> = [];
+  const elements = document.querySelectorAll(`[${ISLAND_ATTR}]`);
+
+  elements.forEach((el) => {
+    const element = el as HTMLElement;
+    const islandName = element.getAttribute(ISLAND_ATTR);
+
+    if (!islandName) {
+      console.warn("[Tempo Islands] Element missing island name:", element);
+      return;
+    }
+
+    const component = registry[islandName];
+    if (!component) {
+      console.warn(
+        `[Tempo Islands] Component "${islandName}" not found in registry`,
+      );
+      return;
+    }
+
+    // Parse props from data attribute
+    const propsStr = element.getAttribute(ISLAND_PROPS_ATTR);
+    let props: unknown = {};
+    if (propsStr) {
+      try {
+        props = JSON.parse(propsStr);
+      } catch (e) {
+        console.warn(
+          `[Tempo Islands] Failed to parse props for "${islandName}":`,
+          e,
+        );
+      }
+    }
+
+    // Parse hydration strategy
+    const strategyStr = element.getAttribute(ISLAND_HYDRATE_ATTR);
+    const strategy = parseStrategy(strategyStr);
+
+    // Schedule hydration
+    const cancelSchedule = scheduleHydration(element, strategy, () => {
+      const cleanup = hydrateIsland(element, component, props, options);
+      cleanups.push(cleanup);
+
+      // Remove island markers after hydration
+      element.removeAttribute(ISLAND_ATTR);
+      element.removeAttribute(ISLAND_HYDRATE_ATTR);
+      element.removeAttribute(ISLAND_PROPS_ATTR);
+    });
+
+    cleanups.push(cancelSchedule);
+  });
+
+  return () => {
+    cleanups.forEach((cleanup) => cleanup());
+  };
+}
+
+/**
+ * Creates an island marker for server-side rendering.
+ *
+ * This function returns attributes that should be added to the island's
+ * root element during SSR to enable client-side hydration.
+ *
+ * @example
+ * ```typescript
+ * // In your SSR template
+ * const Counter = (props: CounterProps) => {
+ *   return html.div(
+ *     ...islandMarker('Counter', props, 'visible'),
+ *     // ... counter implementation
+ *   )
+ * }
+ * ```
+ *
+ * @param name - The island component name (must match registry key).
+ * @param props - Props to serialize for client-side hydration.
+ * @param strategy - When to hydrate the island.
+ * @returns An array of attribute setters for the island element.
+ * @public
+ */
+export function islandMarker(
+  name: string,
+  props: unknown = {},
+  strategy: HydrationStrategy = "visible",
+): Array<{ name: string; value: string }> {
+  const strategyStr =
+    typeof strategy === "object" ? `media:${strategy.media}` : strategy;
+
+  return [
+    { name: ISLAND_ATTR, value: name },
+    { name: ISLAND_PROPS_ATTR, value: JSON.stringify(props) },
+    { name: ISLAND_HYDRATE_ATTR, value: strategyStr },
+  ];
+}
+
 // Re-export useful types
 export type { Renderable, Providers };
 export { HYDRATION_ID_ATTR };
