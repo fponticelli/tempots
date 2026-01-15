@@ -18,6 +18,17 @@ const stripTags = (html: string): string => {
   return html.replace(/<[^>]*>?/g, '')
 }
 
+/**
+ * Options for streaming HTML output.
+ * @public
+ */
+export interface StreamOptions {
+  /**
+   * Whether to generate placeholder attributes for hydration.
+   */
+  generatePlaceholders?: boolean
+}
+
 abstract class HeadlessBase {
   readonly id = makeRandom()
   private readonly properties: Record<string, unknown> & {
@@ -54,6 +65,16 @@ abstract class HeadlessBase {
     }
   }
   abstract isPortal(): this is HeadlessPortal
+
+  /**
+   * Generates HTML output as an async stream of string chunks.
+   * This allows for progressive rendering and better memory efficiency
+   * for large DOM trees.
+   *
+   * @param options - Options for streaming output.
+   * @yields String chunks of HTML content.
+   */
+  abstract toHTMLStream(options?: StreamOptions): AsyncGenerator<string>
 
   readonly getPortals = (): HeadlessPortal[] => {
     const children = this.elements().flatMap(child => {
@@ -274,10 +295,15 @@ export class HeadlessElement extends HeadlessBase {
 
   readonly isPortal = (): this is HeadlessPortal => false
 
-  readonly toHTML = (generatePlaceholders: boolean = false): string => {
-    const children = this.children.map(child => child.toHTML()).join('')
-    const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
+  /**
+   * Builds the attributes string for this element.
+   * Returns an object containing the attributes string and any innerHTML value.
+   */
+  private readonly buildAttributesString = (
+    generatePlaceholders: boolean
+  ): { attrs: string; innerHTML: string | null } => {
     let innerHTML = null as string | null
+    const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
     const attrs = this.getVisibleAttributes()
       .map(([name, value]) => {
         if (name === 'class') {
@@ -307,10 +333,51 @@ export class HeadlessElement extends HeadlessBase {
       })
       .join('')
     const placeholder = generatePlaceholders ? ` ${_NODE_PLACEHOLDER_ATTR}` : ''
+    return { attrs: `${ns}${attrs}${placeholder}`, innerHTML }
+  }
+
+  readonly toHTML = (generatePlaceholders: boolean = false): string => {
+    const children = this.children.map(child => child.toHTML()).join('')
+    const { attrs, innerHTML } =
+      this.buildAttributesString(generatePlaceholders)
     if (selfClosingTags.has(this.tagName) && children === '') {
-      return `<${this.tagName}${ns}${attrs}${placeholder} />`
+      return `<${this.tagName}${attrs} />`
     }
-    return `<${this.tagName}${ns}${attrs}${placeholder}>${innerHTML ?? children}</${this.tagName}>`
+    return `<${this.tagName}${attrs}>${innerHTML ?? children}</${this.tagName}>`
+  }
+
+  /**
+   * Generates HTML output as an async stream of string chunks.
+   * Yields the opening tag, then each child's content, then the closing tag.
+   *
+   * @param options - Options for streaming output.
+   * @yields String chunks of HTML content.
+   */
+  async *toHTMLStream(options?: StreamOptions): AsyncGenerator<string> {
+    const generatePlaceholders = options?.generatePlaceholders ?? false
+    const { attrs, innerHTML } =
+      this.buildAttributesString(generatePlaceholders)
+
+    // Self-closing tags with no children
+    if (selfClosingTags.has(this.tagName) && this.children.length === 0) {
+      yield `<${this.tagName}${attrs} />`
+      return
+    }
+
+    // Opening tag
+    yield `<${this.tagName}${attrs}>`
+
+    // Content: either innerHTML or children
+    if (innerHTML !== null) {
+      yield innerHTML
+    } else {
+      for (const child of this.children) {
+        yield* child.toHTMLStream(options)
+      }
+    }
+
+    // Closing tag
+    yield `</${this.tagName}>`
   }
 }
 
@@ -326,10 +393,35 @@ export class HeadlessPortal extends HeadlessBase {
 
   readonly toHTML = (): string => ''
 
+  /**
+   * Portals don't render inline - they render at their target selector.
+   * This method yields nothing for the inline position.
+   */
+  // eslint-disable-next-line require-yield
+  async *toHTMLStream(options?: StreamOptions): AsyncGenerator<string> {
+    // Portals render at their target location, not inline
+    // Options parameter kept for API consistency with other toHTMLStream implementations
+    void options
+    return
+  }
+
   readonly contentToHTML = (generatePlaceholders: boolean = false): string => {
     return this.children
       .map(child => child.toHTML(generatePlaceholders))
       .join('')
+  }
+
+  /**
+   * Streams the portal's content HTML.
+   * Unlike toHTMLStream, this yields the actual content for rendering at the target location.
+   *
+   * @param options - Options for streaming output.
+   * @yields String chunks of the portal's content.
+   */
+  async *contentToHTMLStream(options?: StreamOptions): AsyncGenerator<string> {
+    for (const child of this.children) {
+      yield* child.toHTMLStream(options)
+    }
   }
 }
 
@@ -340,6 +432,18 @@ export class HeadlessText {
   readonly isText = (): this is HeadlessText => true
   readonly getText = (): string => this.text
   readonly toHTML = (): string => this.text
+
+  /**
+   * Streams the text content as a single chunk.
+   *
+   * @param options - Options (unused for text nodes, kept for API consistency).
+   * @yields The text content.
+   */
+  async *toHTMLStream(options?: StreamOptions): AsyncGenerator<string> {
+    // Options parameter kept for API consistency with other toHTMLStream implementations
+    void options
+    yield this.text
+  }
 }
 
 export type HeadlessNode = HeadlessElement | HeadlessPortal | HeadlessText
