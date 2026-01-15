@@ -451,6 +451,10 @@ export type IslandRegistry = Record<string, (props: unknown) => Renderable>;
 /**
  * Hydrates a single island element with the given component.
  *
+ * Unlike full hydration, islands are re-rendered fresh on the client.
+ * The server-rendered HTML is replaced with the interactive component.
+ * This is simpler and more reliable than trying to match existing DOM.
+ *
  * @example
  * ```typescript
  * import { hydrateIsland } from '@tempots/client'
@@ -475,11 +479,24 @@ export function hydrateIsland<P>(
   props: P,
   options: IslandHydrateOptions = {},
 ): () => void {
-  const renderable = component(props);
-  return hydrate(renderable, element, {
-    providers: options.providers,
-    removeMarkers: true,
-  });
+  // Clear the server-rendered placeholder content
+  element.innerHTML = "";
+
+  // Create a fresh BrowserContext and render the component
+  const ctx = new BrowserContext(
+    element.ownerDocument,
+    element,
+    undefined,
+    options.providers ?? {},
+  );
+
+  const scope = new DisposalScope();
+  const clear = withScope(scope, () => component(props).render(ctx));
+
+  return (removeTree: boolean = false) => {
+    scope.dispose();
+    clear(removeTree);
+  };
 }
 
 /**

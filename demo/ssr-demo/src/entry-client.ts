@@ -1,49 +1,35 @@
-import { hydrate, initIslands } from "@tempots/client";
-import { prop, untracked } from "@tempots/dom";
-import { App, IslandCounter } from "./App";
+import { initIslands } from "@tempots/client";
+import { Counter, IslandCounter } from "./App";
 
 /**
  * Client-side entry point.
- * Hydrates the server-rendered HTML with client-side interactivity.
- * Also initializes islands with lazy hydration.
+ *
+ * This demo uses Islands Architecture - no full-app hydration!
+ * Only the interactive islands are hydrated, static content stays static.
  */
 const container = document.getElementById("app");
 
 if (container) {
-  // Create a signal to track hydration status (untracked since it's at module level)
-  const hydrated = untracked(() => prop(false));
-
-  // Get the timestamp from the server-rendered content (if available)
-  // For simplicity, we'll use a new timestamp on client
-  const timestamp = new Date().toISOString();
-
-  // Hydrate the main app (full hydration)
-  const cleanup = hydrate(
-    App({ timestamp, hydrated, showIslands: true }),
-    container,
-  );
-
-  // Initialize islands - they will hydrate based on their strategy
+  // Initialize all islands - they will hydrate based on their strategy
   // (visible, idle, immediate, media)
-  const islandCleanup = initIslands({
+  const cleanup = initIslands({
+    // Register all island components
     // Cast is needed because IslandRegistry uses unknown props
+    Counter: Counter as (props: unknown) => ReturnType<typeof Counter>,
     IslandCounter: IslandCounter as (
       props: unknown,
     ) => ReturnType<typeof IslandCounter>,
   });
 
-  // Mark as hydrated
-  hydrated.set(true);
-
-  console.log("[Tempo] App hydrated successfully!");
-  console.log("[Tempo] Islands initialized with lazy hydration strategies");
+  console.log("[Tempo] Islands initialized!");
+  console.log(
+    "[Tempo] Static content stays static, only islands are interactive",
+  );
 
   // Optional: cleanup on hot module replacement
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
       cleanup();
-      islandCleanup();
-      hydrated.dispose();
     });
   }
 } else {

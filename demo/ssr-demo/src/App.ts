@@ -15,16 +15,20 @@ import {
 } from "@tempots/client";
 
 /**
- * Counter component demonstrating client-side interactivity after hydration.
- * This version uses full hydration - all JS is loaded on page load.
+ * Counter component - now an island with immediate hydration.
  */
-const Counter = (): Renderable => {
-  const count = prop(0);
+export interface CounterProps {
+  initial?: number;
+  label?: string;
+}
+
+export const Counter = (props: CounterProps = {}): Renderable => {
+  const { initial = 0, label = "Interactive Counter" } = props;
+  const count = prop(initial);
 
   return html.div(
-    attr.class("card"),
-    html.h2("Full Hydration Counter"),
-    html.p("This counter uses full hydration (JS loaded immediately):"),
+    html.h2(label),
+    html.p("This counter hydrates immediately as an island:"),
     html.div(
       attr.class("counter"),
       html.button(
@@ -35,6 +39,28 @@ const Counter = (): Renderable => {
       html.button(
         on.click(() => count.update((c) => c + 1)),
         "+",
+      ),
+    ),
+  );
+};
+
+/**
+ * Static counter placeholder for SSR - renders the same structure as Counter.
+ */
+const CounterIsland = (props: CounterProps = {}): Renderable => {
+  const { initial = 0, label = "Interactive Counter" } = props;
+
+  return html.div(
+    attr.class("card"),
+    ...createIslandAttrs("Counter", { initial, label }, "immediate"),
+    html.div(
+      html.h2(label),
+      html.p("This counter hydrates immediately as an island:"),
+      html.div(
+        attr.class("counter"),
+        html.button("-"),
+        html.span(String(initial)),
+        html.button("+"),
       ),
     ),
   );
@@ -84,6 +110,22 @@ const createIslandAttrs = (
 ];
 
 /**
+ * Static placeholder for IslandCounter - renders the same structure without signals.
+ * This is what the server renders; the client will hydrate with the real component.
+ */
+const IslandCounterPlaceholder = (props: IslandCounterProps): Renderable => {
+  return html.div(
+    html.h3(props.label),
+    html.div(
+      attr.class("counter"),
+      html.button("-"),
+      html.span(String(props.initial)),
+      html.button("+"),
+    ),
+  );
+};
+
+/**
  * Islands demo section showing lazy hydration.
  */
 const IslandsDemo = (): Renderable => {
@@ -103,16 +145,11 @@ const IslandsDemo = (): Renderable => {
         { initial: 10, label: "Visible Island (hydrates when visible)" },
         "visible",
       ),
-      // Server-rendered content (will be hydrated on client)
-      html.div(
-        html.h3("Visible Island (hydrates when visible)"),
-        html.div(
-          attr.class("counter"),
-          html.button("-"),
-          html.span("10"),
-          html.button("+"),
-        ),
-      ),
+      // Static placeholder - will be hydrated by initIslands
+      IslandCounterPlaceholder({
+        initial: 10,
+        label: "Visible Island (hydrates when visible)",
+      }),
     ),
 
     // Island with "idle" strategy - hydrates when browser is idle
@@ -123,16 +160,10 @@ const IslandsDemo = (): Renderable => {
         { initial: 20, label: "Idle Island (hydrates on browser idle)" },
         "idle",
       ),
-      // Server-rendered content
-      html.div(
-        html.h3("Idle Island (hydrates on browser idle)"),
-        html.div(
-          attr.class("counter"),
-          html.button("-"),
-          html.span("20"),
-          html.button("+"),
-        ),
-      ),
+      IslandCounterPlaceholder({
+        initial: 20,
+        label: "Idle Island (hydrates on browser idle)",
+      }),
     ),
 
     // Island with "immediate" strategy - hydrates immediately
@@ -143,16 +174,10 @@ const IslandsDemo = (): Renderable => {
         { initial: 30, label: "Immediate Island (hydrates immediately)" },
         "immediate",
       ),
-      // Server-rendered content
-      html.div(
-        html.h3("Immediate Island (hydrates immediately)"),
-        html.div(
-          attr.class("counter"),
-          html.button("-"),
-          html.span("30"),
-          html.button("+"),
-        ),
-      ),
+      IslandCounterPlaceholder({
+        initial: 30,
+        label: "Immediate Island (hydrates immediately)",
+      }),
     ),
   );
 };
@@ -245,7 +270,7 @@ export const App = (props: AppProps = {}): Renderable => {
       ),
     ),
     hydrated ? HydrationStatus(hydrated) : null,
-    Counter(),
+    CounterIsland(), // Use island version - will be hydrated by initIslands
     showIslands ? IslandsDemo() : null,
     Features(),
     ServerTimestamp(timestamp),

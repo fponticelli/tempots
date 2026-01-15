@@ -14,7 +14,9 @@
     "build:server": "vite build --ssr src/entry-server.ts --outDir dist/server",
     "preview": "vite preview",
     "lint": "eslint src",
-    "format": "eslint src --fix"
+    "format": "eslint src --fix",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@tempots/dom": "workspace:*",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.49.1",
     "@tempots/eslint-plugin": "workspace:*",
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
