@@ -55,6 +55,7 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
     const library = data.$.library
     const path = data.$.path
     const isRoot = path.map(v => v == null)
+    const hasApiDocs = library.map(l => l.hasApiDocs ?? false)
     const apiUrl = computed(() => {
       const prefix = library.value.name.split('-').pop()
       return path.value == null
@@ -83,7 +84,7 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
           )
         )
       ),
-      EmbedHTMLFragmentFromURL(apiUrl)
+      When(hasApiDocs, () => EmbedHTMLFragmentFromURL(apiUrl))
     )
   })
 }

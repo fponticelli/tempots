@@ -207,6 +207,7 @@ async function collectLibrary(
   const packageJson = await fsp.readFile(p, 'utf8')
   const pack = JSON.parse(packageJson)
   const libraryPath = path.join(src, library, 'PROJECT.md')
+  const apiDocsPath = path.join(src, library, 'docs/output/')
   const content = await markdownToHTML(
     fs.existsSync(libraryPath) ? await fsp.readFile(libraryPath, 'utf8') : '',
     library,
@@ -225,6 +226,7 @@ async function collectLibrary(
       version: pack.version,
       keywords: pack.keywords ?? [],
       content,
+      hasApiDocs: fs.existsSync(apiDocsPath),
     },
   }
 }

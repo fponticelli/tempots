@@ -5,6 +5,7 @@ export type Library = {
   keywords: string[]
   content: string
   description?: string
+  hasApiDocs?: boolean
 }
 
 export type Demo = {
