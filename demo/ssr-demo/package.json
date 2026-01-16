@@ -3,6 +3,7 @@
   "title": "SSR Demo",
   "description": "Server-Side Rendering demo using TempoTS",
   "priority": 7,
+  "docsExclude": true,
   "private": true,
   "version": "0.0.0",
   "type": "module",

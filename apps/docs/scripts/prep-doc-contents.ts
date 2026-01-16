@@ -22,7 +22,7 @@ const demoFolderDst = path.join(pubFolder, 'demos')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
 const librariesFolderSrc = path.join(rootFolder, 'packages')
-const libraries = ['tempots-dom', 'tempots-std', 'tempots-ui']
+const libraries = ['tempots-dom', 'tempots-std', 'tempots-ui', 'tempots-server', 'tempots-client', 'tempots-vite']
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')
@@ -47,6 +47,7 @@ type PackageMeta = {
   version?: string
   keywords?: string[]
   priority?: number
+  docsExclude?: boolean
 }
 
 const removeMarkdownComments = (md: string) => md.replace(COMMENTS_PATTERN, '')
@@ -70,6 +71,10 @@ async function getDemos(folder: string): Promise<Demo[]> {
     data.map(async o => {
       const { dir, path: demoPath } = o
       const pack = await loadPackage(dir)
+      // Skip demos marked for exclusion from docs
+      if (pack.docsExclude) {
+        return null
+      }
       const priority = typeof pack.priority === 'number' ? pack.priority : 0
       return {
         priority,
@@ -82,7 +87,10 @@ async function getDemos(folder: string): Promise<Demo[]> {
       }
     })
   )
-  return contents.sort((a, b) => a.priority - b.priority).map(a => a.data)
+  return contents
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+    .sort((a, b) => a.priority - b.priority)
+    .map(a => a.data)
 }
 
 async function loadPackage<T extends PackageMeta = PackageMeta>(dir: string) {
@@ -850,6 +858,11 @@ async function main() {
   const api: Record<string, string[]> = {}
   for (const library of librariesData) {
     const apiDir = path.join(librariesFolderSrc, `${library.name}/docs/output/`)
+    // Skip libraries without API documentation
+    if (!fs.existsSync(apiDir)) {
+      api[library.name] = []
+      continue
+    }
     const dst = path.join(apiFolderDst, library.name)
     const pages = await createPages(apiDir, dst, {
       mdMangler: content => {
