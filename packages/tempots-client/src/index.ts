@@ -364,8 +364,11 @@ export class HydrationContext implements DOMContext {
     };
   };
 
+  // HydrationContext runs in a browser environment, so isBrowser() returns true
+  // to ensure browser-specific code paths (like Location provider) work correctly.
+  // Note: isBrowserDOM returns false since this is not a BrowserContext instance.
   readonly isBrowserDOM = (): this is BrowserContext => false;
-  readonly isBrowser = (): this is BrowserContext => false;
+  readonly isBrowser = (): this is BrowserContext => true as never;
   readonly isHeadlessDOM = (): this is HeadlessContext => false;
   readonly isHeadless = (): this is HeadlessContext => false;
 

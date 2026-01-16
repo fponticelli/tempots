@@ -5,11 +5,25 @@ description: This is the documentation site for Tempo. Tempo is a modern, open-s
 ---
 # Tempo
 
-[![npm @tempots/dom](https://img.shields.io/npm/v/@tempots/dom?label=@tempots/dom)](https://www.npmjs.com/package/@tempots/dom)
-[![npm @tempots/std](https://img.shields.io/npm/v/@tempots/std?label=@tempots/std)](https://www.npmjs.com/package/@tempots/std)
-[![npm @tempots/ui](https://img.shields.io/npm/v/@tempots/ui?label=@tempots/ui)](https://www.npmjs.com/package/@tempots/ui)
-[![codecov](https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg)](https://codecov.io/gh/fponticelli/tempots)
-[![CI](https://github.com/fponticelli/tempots/workflows/CI/badge.svg)](https://github.com/fponticelli/tempots/actions)
+<table>
+<tr>
+<td style="border:none">
+<a href="https://www.npmjs.com/package/@tempots/dom"><img src="https://img.shields.io/npm/v/@tempots/dom?label=@tempots/dom" alt="npm @tempots/dom" /></a>
+</td>
+<td style="border:none">
+<a href="https://www.npmjs.com/package/@tempots/std"><img src="https://img.shields.io/npm/v/@tempots/std?label=@tempots/std" alt="npm @tempots/std" /></a>
+</td>
+<td style="border:none">
+<a href="https://www.npmjs.com/package/@tempots/ui"><img src="https://img.shields.io/npm/v/@tempots/ui?label=@tempots/ui" alt="npm @tempots/ui" /></a>
+</td>
+<td style="border:none">
+<a href="https://codecov.io/gh/fponticelli/tempots"><img src="https://codecov.io/gh/fponticelli/tempots/branch/main/graph/badge.svg" alt="codecov" /></a>
+</td>
+<td style="border:none">
+<a href="https://github.com/fponticelli/tempots/actions"><img src="https://github.com/fponticelli/tempots/workflows/CI/badge.svg" alt="CI" /></a>
+</td>
+</tr>
+</table>
 
 > A new UI Framework for the web
 

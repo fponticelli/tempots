@@ -115,7 +115,7 @@ export function PageLayout({ main, sidebar }: { main: TNode; sidebar: TNode }) {
           'h-[calc(100dvh-4rem)] print:h-none overflow-auto print:overflow-visible'
         ),
         html.div(attr.id('main-anchor')),
-        html.div(attr.class('h-full overflow-hidden'), main)
+        html.div(attr.class('h-full overflow-auto'), main)
       )
     )
   )

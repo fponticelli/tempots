@@ -397,7 +397,7 @@ describe("HydrationContext", () => {
   });
 
   describe("type guards", () => {
-    it("should return false for browser/headless type guards", () => {
+    it("should identify as browser environment but not BrowserContext", () => {
       const ctx = new HydrationContext(
         document,
         container,
@@ -407,7 +407,9 @@ describe("HydrationContext", () => {
         0
       );
 
-      expect(ctx.isBrowser()).toBe(false);
+      // isBrowser() returns true since hydration runs in browser environment
+      expect(ctx.isBrowser()).toBe(true);
+      // isBrowserDOM() returns false since this is not a BrowserContext instance
       expect(ctx.isBrowserDOM()).toBe(false);
       expect(ctx.isHeadless()).toBe(false);
       expect(ctx.isHeadlessDOM()).toBe(false);

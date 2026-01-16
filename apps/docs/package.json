@@ -5,18 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cp dist/index.html dist/404.html",
+    "build": "pnpm docs:prep && tsc && vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "lint": "eslint src",
     "format": "eslint src --fix",
-    "docs:prep": "tsx ./scripts/prep-doc-contents.ts",
-    "docs:static": "tsx ./scripts/generate-static-pages.ts"
+    "docs:prep": "tsx ./scripts/prep-doc-contents.ts"
   },
   "dependencies": {
     "@tabler/icons": "^3.35.0",
+    "@tempots/client": "workspace:*",
     "@tempots/dom": "workspace:*",
+    "@tempots/server": "workspace:*",
     "@tempots/std": "workspace:*",
     "@tempots/ui": "workspace:*",
+    "@tempots/vite": "workspace:*",
     "happy-dom": "20.0.8"
   },
   "devDependencies": {
@@ -25,6 +27,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tempots/eslint-plugin": "workspace:*",
     "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.0.0",
     "@types/prismjs": "^1.26.5",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",

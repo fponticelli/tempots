@@ -45,9 +45,23 @@ export interface TempoViteOptions {
 
   /**
    * Routes to pre-render for SSG mode.
-   * Can be an array of paths/configs or a function that returns them.
+   * - Array: Explicit list of routes to render
+   * - Function: Async function that returns routes
+   * - 'crawl': Automatically discover routes by crawling links (default)
+   *
+   * @default 'crawl'
    */
-  routes?: string[] | RouteConfig[] | (() => Promise<string[] | RouteConfig[]>);
+  routes?:
+    | string[]
+    | RouteConfig[]
+    | (() => Promise<string[] | RouteConfig[]>)
+    | "crawl";
+
+  /**
+   * Seed routes for crawl mode. Crawling starts from these URLs.
+   * @default ['/']
+   */
+  seedRoutes?: string[];
 
   /**
    * Path to the client entry file.
@@ -126,6 +140,85 @@ function getOutputPath(route: RouteConfig, outDir: string): string {
 }
 
 /**
+ * Extracts internal links from HTML content.
+ * Filters to paths starting with / (excluding // protocol-relative URLs)
+ * and excludes static assets (URLs containing a dot in the path).
+ */
+function extractInternalLinks(html: string): string[] {
+  const hrefRegex = /href=["']([^"']+)["']/g;
+  const links = new Set<string>();
+  let match;
+
+  while ((match = hrefRegex.exec(html)) !== null) {
+    const href = match[1];
+
+    // Must start with / but not // (protocol-relative)
+    if (!href.startsWith("/") || href.startsWith("//")) {
+      continue;
+    }
+
+    // Remove hash and query string
+    const cleanPath = href.split("#")[0].split("?")[0];
+
+    // Skip static assets (paths with file extensions in the last segment)
+    // e.g., /assets/style.css, /images/logo.png
+    // But allow /page.html style routes
+    const lastSegment = cleanPath.split("/").pop() || "";
+    if (lastSegment.includes(".") && !lastSegment.endsWith(".html")) {
+      continue;
+    }
+
+    if (cleanPath) {
+      links.add(cleanPath);
+    }
+  }
+
+  return Array.from(links);
+}
+
+/**
+ * Crawls routes starting from seed URLs, discovering new routes by
+ * following internal links in rendered HTML.
+ */
+async function crawlRoutes(
+  renderFn: (url: string) => Promise<string>,
+  seedRoutes: string[],
+  logger: { log: (msg: string) => void },
+): Promise<string[]> {
+  const discovered = new Set<string>();
+  const queue = [...seedRoutes];
+  const failed = new Set<string>();
+
+  logger.log(`[tempo] Crawling routes starting from: ${seedRoutes.join(", ")}`);
+
+  while (queue.length > 0) {
+    const url = queue.shift()!;
+
+    if (discovered.has(url) || failed.has(url)) {
+      continue;
+    }
+
+    try {
+      const html = await renderFn(url);
+      discovered.add(url);
+
+      const links = extractInternalLinks(html);
+      for (const link of links) {
+        if (!discovered.has(link) && !failed.has(link)) {
+          queue.push(link);
+        }
+      }
+    } catch (error) {
+      failed.add(url);
+      logger.log(`  ⚠ Failed to render ${url}: ${error}`);
+    }
+  }
+
+  logger.log(`[tempo] Discovered ${discovered.size} routes`);
+  return Array.from(discovered);
+}
+
+/**
  * Creates the Tempo Vite plugin.
  *
  * @example
@@ -150,7 +243,8 @@ function getOutputPath(route: RouteConfig, outDir: string): string {
 export function tempo(options: TempoViteOptions = {}): Plugin[] {
   const {
     mode = "ssg",
-    routes: routesOption,
+    routes: routesOption = "crawl",
+    seedRoutes = ["/"],
     // entry is accepted for configuration but handled by Vite's default behavior
     entry: _entry = "src/entry-client.ts",
     ssrEntry = "src/entry-server.ts",
@@ -183,14 +277,13 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
         return;
       }
 
-      const resolvedRoutes =
-        typeof routesOption === "function"
-          ? await routesOption()
-          : routesOption;
-      const routes = normalizeRoutes(resolvedRoutes);
-
-      const templatePath = path.resolve(config.root, template);
-      const templateHtml = fs.readFileSync(templatePath, "utf-8");
+      // Read from the built output (has Vite-processed script tags)
+      const builtTemplatePath = path.resolve(config.root, outDir, "index.html");
+      if (!fs.existsSync(builtTemplatePath)) {
+        console.error(`[tempo] Built template not found: ${builtTemplatePath}`);
+        return;
+      }
+      const templateHtml = fs.readFileSync(builtTemplatePath, "utf-8");
 
       const ssrOutDir = path.resolve(config.root, outDir, ".ssr-temp");
       const ssrEntryPath = path.resolve(config.root, ssrEntry);
@@ -278,6 +371,27 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
           `[tempo] SSR entry must export 'render' function or 'App' component`,
         );
         return;
+      }
+
+      // Resolve routes - support crawl mode, explicit arrays, and async functions
+      let routes: RouteConfig[];
+      const logger = { log: console.log };
+
+      if (routesOption === "crawl") {
+        // Crawl mode: discover routes by following links
+        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger);
+        routes = discoveredPaths.map((p) => ({ path: p }));
+      } else if (typeof routesOption === "function") {
+        // Async function mode
+        const resolvedRoutes = await routesOption();
+        routes = normalizeRoutes(resolvedRoutes);
+      } else if (Array.isArray(routesOption)) {
+        // Explicit array mode
+        routes = normalizeRoutes(routesOption);
+      } else {
+        // Fallback to crawl if no routes specified
+        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger);
+        routes = discoveredPaths.map((p) => ({ path: p }));
       }
 
       console.log(`[tempo] Generating ${routes.length} static pages...`);
@@ -431,3 +545,6 @@ export async function renderApp(
 
 // Re-export types for convenience
 export type { Renderable };
+
+// Export utilities for testing
+export { extractInternalLinks, crawlRoutes };

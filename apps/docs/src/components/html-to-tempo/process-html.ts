@@ -1,6 +1,10 @@
 import { jsQuote, quote, trimChars } from '@tempots/std'
 
 export function parseHTML(html: string) {
+  // DOMParser is only available in browser environment
+  if (typeof DOMParser === 'undefined') {
+    throw new Error('DOMParser is not available (SSR environment)')
+  }
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
   return doc.body

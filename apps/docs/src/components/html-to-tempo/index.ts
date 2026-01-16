@@ -23,14 +23,17 @@ export function HtmlToTempo() {
     '<div class="message">\n  Hello World!\n  <br/>\n  How are <b>you</b>?\n</div>'
   )
   const tempo = prop('')
-  content.on(html => {
-    try {
-      const tempoStr = htmlToTempo(html)
-      tempo.set(tempoStr)
-    } catch (e) {
-      console.warn('Failed to parse HTML', e)
-    }
-  })
+  // Only process HTML in browser environment (DOMParser not available in SSR)
+  if (typeof DOMParser !== 'undefined') {
+    content.on(html => {
+      try {
+        const tempoStr = htmlToTempo(html)
+        tempo.set(tempoStr)
+      } catch (e) {
+        console.warn('Failed to parse HTML', e)
+      }
+    })
+  }
   return html.div(
     attr.class('h-full p-4 flex flex-col gap-2'),
     HTMLTitle('Tempo • HTML to Tempo'),

@@ -83,7 +83,8 @@ export default defineConfig({
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `mode` | `'ssg' \| 'ssr' \| 'islands' \| 'hybrid'` | `'ssg'` | Rendering mode |
-| `routes` | `string[] \| RouteConfig[] \| (() => Promise<...>)` | `['/']` | Routes to pre-render (SSG) |
+| `routes` | `string[] \| RouteConfig[] \| (() => Promise<...>) \| 'crawl'` | `'crawl'` | Routes to pre-render (SSG) |
+| `seedRoutes` | `string[]` | `['/']` | Seed routes for crawl mode |
 | `entry` | `string` | `'src/entry-client.ts'` | Client entry file |
 | `ssrEntry` | `string` | `'src/entry-server.ts'` | Server entry file (exports `render` or `App`) |
 | `template` | `string` | `'index.html'` | HTML template file |
@@ -105,6 +106,33 @@ tempo({
   ]
 })
 ```
+
+### Automatic Route Discovery (Default)
+
+By default, the plugin automatically discovers routes by crawling internal links starting from `/`:
+
+```typescript
+tempo({
+  mode: 'ssg',
+  // routes: 'crawl' is the default
+})
+```
+
+Customize crawling with seed routes:
+
+```typescript
+tempo({
+  mode: 'ssg',
+  routes: 'crawl',
+  seedRoutes: ['/', '/api', '/docs'],  // Start crawling from multiple entry points
+})
+```
+
+The crawler:
+- Follows all internal links (`href` starting with `/`)
+- Skips external links and static assets
+- Handles `.html` routes
+- Strips query strings and hash fragments
 
 ### Dynamic Routes
 

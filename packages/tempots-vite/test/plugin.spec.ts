@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { tempo, renderApp } from "../src/index";
+import { describe, it, expect, vi } from "vitest";
+import { tempo, renderApp, extractInternalLinks, crawlRoutes } from "../src/index";
 import { html } from "@tempots/dom";
 
 describe("tempo plugin", () => {
@@ -97,6 +97,30 @@ describe("tempo plugin", () => {
 
       expect(plugins.length).toBe(3);
     });
+
+    it("should accept routes as 'crawl' string", () => {
+      const plugins = tempo({
+        routes: "crawl",
+      });
+
+      expect(plugins.length).toBe(3);
+    });
+
+    it("should accept seedRoutes option", () => {
+      const plugins = tempo({
+        routes: "crawl",
+        seedRoutes: ["/", "/api"],
+      });
+
+      expect(plugins.length).toBe(3);
+    });
+
+    it("should default routes to 'crawl'", () => {
+      const plugins = tempo({});
+
+      // Just verify it doesn't throw - actual crawling happens at build time
+      expect(plugins.length).toBe(3);
+    });
   });
 
   describe("ssg plugin", () => {
@@ -145,5 +169,153 @@ describe("renderApp", () => {
     const result = await renderApp(App());
 
     expect(result).toContain("data-tempo-id");
+  });
+});
+
+describe("extractInternalLinks", () => {
+  it("should extract internal links starting with /", () => {
+    const html = `
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/blog/post-1">Blog Post</a>
+    `;
+
+    const links = extractInternalLinks(html);
+
+    expect(links).toContain("/");
+    expect(links).toContain("/about");
+    expect(links).toContain("/blog/post-1");
+  });
+
+  it("should exclude external links", () => {
+    const html = `
+      <a href="https://example.com">External</a>
+      <a href="//cdn.example.com/file.js">Protocol-relative</a>
+      <a href="mailto:test@example.com">Email</a>
+    `;
+
+    const links = extractInternalLinks(html);
+
+    expect(links).toHaveLength(0);
+  });
+
+  it("should exclude static assets", () => {
+    const html = `
+      <a href="/assets/style.css">CSS</a>
+      <a href="/images/logo.png">Image</a>
+      <a href="/scripts/app.js">Script</a>
+    `;
+
+    const links = extractInternalLinks(html);
+
+    expect(links).toHaveLength(0);
+  });
+
+  it("should allow .html routes", () => {
+    const html = `
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+    `;
+
+    const links = extractInternalLinks(html);
+
+    expect(links).toContain("/about.html");
+    expect(links).toContain("/contact.html");
+  });
+
+  it("should strip hash and query strings", () => {
+    const html = `
+      <a href="/page#section">With hash</a>
+      <a href="/search?q=test">With query</a>
+      <a href="/both?q=test#section">With both</a>
+    `;
+
+    const links = extractInternalLinks(html);
+
+    expect(links).toContain("/page");
+    expect(links).toContain("/search");
+    expect(links).toContain("/both");
+    expect(links).not.toContain("/page#section");
+    expect(links).not.toContain("/search?q=test");
+  });
+
+  it("should deduplicate links", () => {
+    const html = `
+      <a href="/about">About 1</a>
+      <a href="/about">About 2</a>
+      <a href="/about#section">About 3</a>
+    `;
+
+    const links = extractInternalLinks(html);
+
+    expect(links.filter((l) => l === "/about")).toHaveLength(1);
+  });
+});
+
+describe("crawlRoutes", () => {
+  it("should discover routes by following links", async () => {
+    const pages: Record<string, string> = {
+      "/": '<a href="/about">About</a><a href="/contact">Contact</a>',
+      "/about": '<a href="/">Home</a><a href="/team">Team</a>',
+      "/contact": '<a href="/">Home</a>',
+      "/team": '<a href="/about">About</a>',
+    };
+
+    const renderFn = async (url: string) => pages[url] || "";
+    const logger = { log: vi.fn() };
+
+    const routes = await crawlRoutes(renderFn, ["/"], logger);
+
+    expect(routes).toContain("/");
+    expect(routes).toContain("/about");
+    expect(routes).toContain("/contact");
+    expect(routes).toContain("/team");
+    expect(routes).toHaveLength(4);
+  });
+
+  it("should start from multiple seed routes", async () => {
+    const pages: Record<string, string> = {
+      "/": '<a href="/page1">Page 1</a>',
+      "/api": '<a href="/api/docs">API Docs</a>',
+      "/page1": "",
+      "/api/docs": "",
+    };
+
+    const renderFn = async (url: string) => pages[url] || "";
+    const logger = { log: vi.fn() };
+
+    const routes = await crawlRoutes(renderFn, ["/", "/api"], logger);
+
+    expect(routes).toContain("/");
+    expect(routes).toContain("/api");
+    expect(routes).toContain("/page1");
+    expect(routes).toContain("/api/docs");
+  });
+
+  it("should handle render errors gracefully", async () => {
+    const renderFn = async (url: string) => {
+      if (url === "/broken") throw new Error("Render failed");
+      return '<a href="/broken">Broken</a>';
+    };
+    const logger = { log: vi.fn() };
+
+    const routes = await crawlRoutes(renderFn, ["/"], logger);
+
+    expect(routes).toContain("/");
+    expect(routes).not.toContain("/broken");
+  });
+
+  it("should not visit the same route twice", async () => {
+    let renderCount = 0;
+    const renderFn = async (url: string) => {
+      renderCount++;
+      return '<a href="/">Home</a><a href="/about">About</a>';
+    };
+    const logger = { log: vi.fn() };
+
+    await crawlRoutes(renderFn, ["/"], logger);
+
+    // Should only render / and /about once each
+    expect(renderCount).toBe(2);
   });
 });
