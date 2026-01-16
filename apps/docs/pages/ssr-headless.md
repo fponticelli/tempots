@@ -1,188 +1,310 @@
 ---
 title: SSR & Headless Rendering
 order: 85
-description: Server-side rendering and headless rendering with Tempo for improved performance and SEO.
+description: Server-side rendering, static site generation, and client hydration with Tempo.
 ---
 
 # SSR & Headless Rendering
 
-Tempo supports server-side rendering (SSR) and headless rendering for scenarios where you need to render your application without a browser environment. This is useful for:
+Tempo provides comprehensive support for server-side rendering (SSR), static site generation (SSG), and client-side hydration through dedicated packages:
+
+| Package | Purpose |
+|---------|---------|
+| `@tempots/server` | Server-side rendering to strings and streams |
+| `@tempots/client` | Client-side hydration and islands architecture |
+| `@tempots/vite` | Vite plugin for SSG with automatic route discovery |
+
+## Why SSR/SSG?
 
 - **SEO optimization** - Pre-render pages for search engine crawlers
 - **Performance** - Send pre-rendered HTML for faster initial page loads
-- **Testing** - Run component tests without a browser
-- **Static site generation** - Generate static HTML files at build time
+- **Static hosting** - Deploy to CDNs without a server
+- **Progressive enhancement** - Pages work before JavaScript loads
 
-## Headless Rendering
+## @tempots/server
 
-The `runHeadless` function allows you to render Tempo components without a browser DOM:
+The server package provides functions to render Tempo components to HTML strings or streams.
+
+### Installation
+
+```bash
+npm install @tempots/server
+```
+
+### renderToString
+
+Renders a component to an HTML string:
 
 ```typescript
-import { runHeadless, html, prop } from '@tempots/dom'
+import { renderToString } from '@tempots/server'
+import { html } from '@tempots/dom'
 
-// Create a renderable component
-const App = () => {
-  const count = prop(0)
+const App = () => html.div(
+  html.h1('Hello, World!'),
+  html.p('Rendered on the server.')
+)
+
+const htmlString = await renderToString(App(), {
+  url: 'https://example.com/page',
+  generatePlaceholders: true, // Enable hydration markers
+})
+```
+
+### renderToStream
+
+Renders to a Node.js Readable stream for streaming SSR:
+
+```typescript
+import { renderToStream } from '@tempots/server'
+
+app.get('/', (req, res) => {
+  const stream = renderToStream(App(), {
+    url: req.url,
+    onShellReady: () => res.write('<!DOCTYPE html>'),
+    onAllReady: () => res.end(),
+  })
+  stream.pipe(res)
+})
+```
+
+### createRenderer
+
+High-level convenience function for SSR entry points:
+
+```typescript
+// entry-server.ts
+import { createRenderer } from '@tempots/server'
+import { App } from './App'
+
+export const { render, renderStream } = createRenderer(
+  (options) => App(options),
+  {
+    hydrate: true,
+    getData: async (url) => {
+      // Fetch data for this URL
+      return { user: await fetchUser() }
+    }
+  }
+)
+```
+
+## @tempots/client
+
+The client package provides hydration and islands architecture support.
+
+### Installation
+
+```bash
+npm install @tempots/client
+```
+
+### hydrate
+
+Hydrates server-rendered HTML with client-side interactivity:
+
+```typescript
+import { hydrate } from '@tempots/client'
+import { App } from './App'
+
+// Server-rendered HTML is already in the DOM
+const cleanup = hydrate(App(), document.getElementById('app')!)
+```
+
+### startClient
+
+High-level client initialization with islands support:
+
+```typescript
+import { startClient } from '@tempots/client'
+import { App } from './App'
+import { Counter, TodoList } from './islands'
+
+startClient({
+  app: () => App(),
+  islands: { Counter, TodoList },
+  container: '#app',
+  debug: true,
+})
+```
+
+### Islands Architecture
+
+Islands allow you to hydrate only interactive components while keeping the rest static:
+
+```typescript
+// Define an island component
+import { html, prop, on } from '@tempots/dom'
+
+export const Counter = (options: unknown) => {
+  const { initial = 0 } = (options ?? {}) as { initial?: number }
+  const count = prop(initial)
+
   return html.div(
-    html.h1('Hello, World!'),
-    html.p('Count: ', count.map(String)),
-    html.button(
-      on.click(() => count.update(n => n + 1)),
-      'Increment'
-    )
+    html.button(on.click(() => count.update(n => n - 1)), '-'),
+    html.span(count.map(String)),
+    html.button(on.click(() => count.update(n => n + 1)), '+'),
   )
 }
 
-// Run in headless mode
-const { clear, root, currentURL } = runHeadless(() => App(), {
+// Mark islands in your SSR template
+import { islandMarker, attr } from '@tempots/dom'
+
+const CounterIsland = (initial: number) => html.div(
+  ...islandMarker('Counter', { initial }, 'visible').map(
+    ({ name, value }) => attr[name](value)
+  ),
+  // Static placeholder content
+  html.span(String(initial))
+)
+```
+
+Hydration strategies:
+- `"immediate"` - Hydrate as soon as possible
+- `"idle"` - Hydrate when browser is idle
+- `"visible"` - Hydrate when scrolled into view
+- `{ media: "(min-width: 768px)" }` - Hydrate when media query matches
+
+## @tempots/vite
+
+The Vite plugin provides SSG with automatic route discovery.
+
+### Installation
+
+```bash
+npm install @tempots/vite
+```
+
+### Configuration
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { tempo } from '@tempots/vite'
+
+export default defineConfig({
+  plugins: [
+    tempo({
+      mode: 'ssg',           // or 'ssr', 'islands', 'hybrid'
+      routes: 'crawl',       // Auto-discover routes (default)
+      seedRoutes: ['/'],     // Starting points for crawling
+      ssrEntry: 'src/entry-server.ts',
+      container: '#app',
+      hydrate: true,
+    })
+  ]
+})
+```
+
+### Route Discovery
+
+By default, the plugin crawls your site starting from `/` and discovers all internal links:
+
+```typescript
+// Explicit routes
+tempo({
+  routes: ['/', '/about', '/contact'],
+})
+
+// Dynamic routes
+tempo({
+  routes: async () => {
+    const posts = await fetchBlogPosts()
+    return ['/', ...posts.map(p => `/blog/${p.slug}`)]
+  },
+})
+
+// Crawl with multiple entry points
+tempo({
+  routes: 'crawl',
+  seedRoutes: ['/', '/docs', '/api'],
+})
+```
+
+### Project Structure
+
+```
+my-app/
+├── src/
+│   ├── App.ts              # Main app component
+│   ├── entry-client.ts     # Client entry (hydration)
+│   └── entry-server.ts     # Server entry (rendering)
+├── index.html              # HTML template
+└── vite.config.ts          # Vite configuration
+```
+
+### Entry Files
+
+**entry-server.ts:**
+```typescript
+import { renderToString } from '@tempots/server'
+import { App } from './App'
+
+export async function render(url: string): Promise<string> {
+  return renderToString(App(), {
+    url,
+    generatePlaceholders: true,
+  })
+}
+```
+
+**entry-client.ts:**
+```typescript
+import { render } from '@tempots/dom'
+import { App } from './App'
+
+render(App(), document.getElementById('app')!)
+```
+
+## Low-Level API: runHeadless
+
+For advanced use cases, you can use the low-level headless rendering API:
+
+```typescript
+import { runHeadless, html } from '@tempots/dom'
+
+const App = () => html.div(
+  html.h1('Hello, World!'),
+  html.p('Headless rendered')
+)
+
+const { root, clear, currentURL } = runHeadless(() => App(), {
   startUrl: 'https://example.com',
   selector: 'body',
 })
 
-// The root contains the rendered structure
-console.log(root) // HeadlessPortal with rendered content
+// Get HTML output
+const htmlOutput = root.contentToHTML(true) // true = include placeholders
 
-// Clean up when done
+// Clean up
 clear()
-```
-
-### HeadlessOptions
-
-```typescript
-type HeadlessOptions = {
-  startUrl?: Value<string> // Initial URL (default: 'https://example.com')
-  selector: string // Root element selector (e.g., 'body', '#app')
-  providers?: Providers // Providers to inject
-}
-```
-
-## Server-Side Rendering with Adapters
-
-To convert the headless render result to actual HTML, use the `HeadlessAdapter` class. This allows integration with HTML manipulation libraries like Cheerio.
-
-### Cheerio Example
-
-```typescript
-import * as cheerio from 'cheerio'
-import { runHeadless, HeadlessAdapter, HeadlessPortal } from '@tempots/dom'
-
-const renderToHTML = (App: () => Renderable): string => {
-  // Run the app headlessly
-  const { root, clear } = runHeadless(() => App(), { selector: 'body' })
-
-  // Load a base HTML template
-  const $ = cheerio.load(
-    '<!DOCTYPE html><html><head></head><body></body></html>'
-  )
-
-  // Create an adapter for Cheerio
-  const adapter = new HeadlessAdapter<cheerio.Cheerio<any>>({
-    select: (selector: string) => [$(selector)],
-    getAttribute: (el, name) => el.attr(name) ?? null,
-    setAttribute: (el, name, value) => {
-      if (value === null) {
-        el.removeAttr(name)
-      } else {
-        el.attr(name, value)
-      }
-    },
-    getClass: el => el.attr('class') ?? '',
-    setClass: (el, value) => {
-      if (value === null) {
-        el.removeAttr('class')
-      } else {
-        el.attr('class', value)
-      }
-    },
-    getStyles: el => {
-      const style = el.attr('style') ?? ''
-      // Parse style string to object
-      return Object.fromEntries(
-        style
-          .split(';')
-          .filter(s => s.includes(':'))
-          .map(s => s.split(':').map(p => p.trim()))
-      )
-    },
-    setStyles: (el, styles) => {
-      const styleStr = Object.entries(styles)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join('; ')
-      if (styleStr) {
-        el.attr('style', styleStr)
-      } else {
-        el.removeAttr('style')
-      }
-    },
-    appendHTML: (el, html) => el.append(html),
-    getInnerHTML: el => el.html() ?? '',
-    setInnerHTML: (el, html) => el.html(html),
-    getInnerText: el => el.text() ?? '',
-    setInnerText: (el, text) => el.text(text),
-  })
-
-  // Apply the headless render to the Cheerio DOM
-  // Second parameter enables placeholders for hydration
-  adapter.setFromRoot(root, true)
-
-  // Clean up
-  clear()
-
-  // Return the final HTML
-  return $.html()
-}
-```
-
-## Hydration
-
-When pre-rendering on the server, you can enable placeholders that allow the client to restore dynamic content:
-
-### Server Side
-
-```typescript
-// Enable placeholders when setting from root
-adapter.setFromRoot(root, true) // true = setPlaceholders
-```
-
-### Client Side
-
-```typescript
-import { render, restoreTempoPlaceholders } from '@tempots/dom'
-
-// First, restore any placeholders from SSR
-restoreTempoPlaceholders()
-
-// Then render the app normally
-render(App(), document.body, { clear: false })
 ```
 
 ## Context-Aware Rendering
 
-Use `WithBrowserCtx` and `WithHeadlessCtx` to conditionally render content based on the environment:
+Conditionally render based on environment:
 
 ```typescript
 import { html, WithBrowserCtx, WithHeadlessCtx } from '@tempots/dom'
 
-const App = () =>
-  html.div(
-    // Only renders in browser
-    WithBrowserCtx(ctx => {
-      // Access browser-specific APIs
-      return html.div('Browser width: ', window.innerWidth.toString())
-    }),
+const App = () => html.div(
+  // Only in browser
+  WithBrowserCtx(() =>
+    html.div('Window width: ', window.innerWidth.toString())
+  ),
 
-    // Only renders in headless mode
-    WithHeadlessCtx(ctx => {
-      return html.div('Server-rendered content')
-    }),
+  // Only in headless/SSR
+  WithHeadlessCtx(() =>
+    html.div('Server-rendered placeholder')
+  ),
 
-    // Renders in both environments
-    html.p('This renders everywhere')
-  )
+  // Both environments
+  html.p('Universal content')
+)
 ```
 
 ## Next Steps
 
-- [Learn more about render](/page/render.html)
-- [Explore the Providers pattern](/page/providers.html)
-- [Discover UI Components](/page/ui-components.html)
+- [Quick Start](/page/quick-start.html) - Get started with Tempo
+- [Renderables](/page/renderables.html) - Learn about the building blocks
+- [Signals](/page/signals.html) - Reactive state management
+- [Examples](/page/examples.html) - Common patterns and best practices

@@ -55,7 +55,8 @@ apps/docs/
 │   ├── utils/             # Utility functions
 │   ├── icons/             # Icon components
 │   ├── model/             # Data models and types
-│   └── main.ts            # Application entry point
+│   ├── entry-client.ts    # Client entry point (hydration)
+│   └── entry-server.ts    # Server entry point (SSG rendering)
 ├── pages/                 # Documentation pages (Markdown)
 │   ├── index.md           # Homepage
 │   ├── quick-start.md     # Getting started guide
@@ -63,7 +64,6 @@ apps/docs/
 │   ├── components.md      # Component building guide
 │   └── ...                # Other documentation pages
 ├── scripts/               # Build and utility scripts
-│   ├── generate-static-pages.ts  # Static site generation
 │   └── prep-doc-contents.ts      # Documentation processing
 ├── public/                # Static assets
 │   ├── api/               # Generated API documentation
@@ -73,7 +73,7 @@ apps/docs/
 ├── index.html             # HTML template
 ├── package.json           # Dependencies and scripts
 ├── tailwind.config.js     # Tailwind CSS configuration
-├── vite.config.js         # Vite build configuration
+├── vite.config.ts         # Vite build configuration with @tempots/vite
 └── README.md             # This file
 ```
 
@@ -156,13 +156,31 @@ pnpm build
 
 ### Static Site Generation
 
-The build process generates a static site:
+The build uses `@tempots/vite` for automatic SSG:
 
-1. **Page Processing**: Markdown files are processed and converted to HTML
-2. **API Documentation**: TypeScript source is analyzed to generate API docs
-3. **Demo Builds**: Demo applications are built and included
-4. **Asset Optimization**: Images, CSS, and JS are optimized
-5. **Static Generation**: All pages are pre-rendered for fast loading
+1. **Route Discovery**: The plugin crawls internal links starting from `/` to discover all routes
+2. **Page Rendering**: Each route is rendered using `entry-server.ts`
+3. **HTML Generation**: Pre-rendered HTML is written to the `dist/` directory
+4. **Client Hydration**: `entry-client.ts` provides client-side interactivity
+5. **Asset Optimization**: Images, CSS, and JS are optimized by Vite
+
+The Vite configuration (`vite.config.ts`) uses the Tempo plugin:
+
+```typescript
+import { defineConfig } from 'vite'
+import { tempo } from '@tempots/vite'
+
+export default defineConfig({
+  plugins: [
+    tempo({
+      mode: 'ssg',
+      ssrEntry: 'src/entry-server.ts',
+      routes: 'crawl',  // Auto-discover routes
+      hydrate: true,
+    })
+  ]
+})
+```
 
 ## Deployment
 
