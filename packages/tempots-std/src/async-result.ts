@@ -139,56 +139,79 @@ export const AsyncResult = {
     return r.type === 'Loading'
   },
   /**
-   * Gets the value if the result is a success; otherwise, returns the alternative value.
+   * Gets the value if the result is a success or loading with a previous value; otherwise, returns the alternative value.
    * @param r - The result.
    * @param alt - The alternative value.
-   * @returns The value if the result is a success; otherwise, the alternative value.
+   * @returns The value if the result is a success or loading with previous value; otherwise, the alternative value.
    * @public
    */
   getOrElse<V, E>(r: AsyncResult<V, E>, alt: V): V {
-    return AsyncResult.isSuccess(r) ? r.value : alt
+    if (AsyncResult.isSuccess(r)) {
+      return r.value
+    } else if (AsyncResult.isLoading(r) && r.previousValue !== undefined) {
+      return r.previousValue
+    }
+    return alt
   },
   /**
-   * Gets the value if the result is a success; otherwise, returns the value from the alternative function.
+   * Gets the value if the result is a success or loading with a previous value; otherwise, returns the value from the alternative function.
    * @param r - The result.
    * @param altf - The alternative function.
-   * @returns The value if the result is a success; otherwise, the value from the alternative
+   * @returns The value if the result is a success or loading with previous value; otherwise, the value from the alternative function.
    * @public
-   * function.
    */
   getOrElseLazy<V, E>(r: AsyncResult<V, E>, altf: () => V): V {
-    return AsyncResult.isSuccess(r) ? r.value : altf()
+    if (AsyncResult.isSuccess(r)) {
+      return r.value
+    } else if (AsyncResult.isLoading(r) && r.previousValue !== undefined) {
+      return r.previousValue
+    }
+    return altf()
   },
   /**
-   * Gets the value if the result is a success; otherwise, returns `null`.
+   * Gets the value if the result is a success or loading with a previous value; otherwise, returns `null`.
    * @param r - The result.
-   * @returns The value if the result is a success; otherwise, `null`.
+   * @returns The value if the result is a success or loading with previous value; otherwise, `null`.
    * @public
    */
   getOrNull<V, E>(r: AsyncResult<V, E>): V | null {
-    return AsyncResult.isSuccess(r) ? r.value : null
+    if (AsyncResult.isSuccess(r)) {
+      return r.value
+    } else if (AsyncResult.isLoading(r) && r.previousValue !== undefined) {
+      return r.previousValue
+    }
+    return null
   },
   /**
-   * Gets the value if the result is a success; otherwise, returns `undefined`.
+   * Gets the value if the result is a success or loading with a previous value; otherwise, returns `undefined`.
    * @param r - The result.
-   * @returns The value if the result is a success; otherwise, `undefined`.
+   * @returns The value if the result is a success or loading with previous value; otherwise, `undefined`.
    * @public
    */
   getOrUndefined<V, E>(r: AsyncResult<V, E>): Maybe<V> {
-    return AsyncResult.isSuccess(r) ? r.value : undefined
+    if (AsyncResult.isSuccess(r)) {
+      return r.value
+    } else if (AsyncResult.isLoading(r) && r.previousValue !== undefined) {
+      return r.previousValue
+    }
+    return undefined
   },
   /**
-   * Gets the value of a `AsyncResult` if it is a `Success`, otherwise it throws the error contained in the `Failure`.
+   * Gets the value of a `AsyncResult` if it is a `Success` or loading with a previous value, otherwise it throws the error contained in the `Failure`.
    * @param r - The `AsyncResult` to get the value from.
-   * @returns The value of the `AsyncResult` if it is a `Success`.
+   * @returns The value of the `AsyncResult` if it is a `Success` or loading with previous value.
    */
   getUnsafe: <V, E>(r: AsyncResult<V, E>): V => {
     if (AsyncResult.isSuccess(r)) {
       return r.value
+    } else if (AsyncResult.isLoading(r) && r.previousValue !== undefined) {
+      return r.previousValue
     } else if (AsyncResult.isFailure(r)) {
       throw r.error
     } else {
-      throw new Error('Cannot get value from a not-asked or loading result')
+      throw new Error(
+        'Cannot get value from a not-asked or loading result without previous value'
+      )
     }
   },
   /**

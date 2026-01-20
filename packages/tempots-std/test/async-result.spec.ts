@@ -80,13 +80,18 @@ describe('AsyncResult', () => {
     const success = AsyncResult.success(42);
     const failure = AsyncResult.failure('error');
     const loading = AsyncResult.loading();
+    const loadingWithValue = AsyncResult.loading(99);
     const notAsked = AsyncResult.notAsked;
 
     test('getOrElse returns value for success', () => {
       expect(AsyncResult.getOrElse(success, 0)).toBe(42);
     });
 
-    test('getOrElse returns alternative for non-success states', () => {
+    test('getOrElse returns previousValue for loading with value', () => {
+      expect(AsyncResult.getOrElse(loadingWithValue, 0)).toBe(99);
+    });
+
+    test('getOrElse returns alternative for non-success states without value', () => {
       expect(AsyncResult.getOrElse(failure, 0)).toBe(0);
       expect(AsyncResult.getOrElse(loading, 0)).toBe(0);
       expect(AsyncResult.getOrElse(notAsked, 0)).toBe(0);
@@ -98,9 +103,15 @@ describe('AsyncResult', () => {
       expect(altFn).not.toHaveBeenCalled();
     });
 
-    test('getOrElseLazy calls alternative function for non-success states', () => {
-      const altFn = vi.fn(() => 99);
-      expect(AsyncResult.getOrElseLazy(failure, altFn)).toBe(99);
+    test('getOrElseLazy returns previousValue for loading with value', () => {
+      const altFn = vi.fn(() => 0);
+      expect(AsyncResult.getOrElseLazy(loadingWithValue, altFn)).toBe(99);
+      expect(altFn).not.toHaveBeenCalled();
+    });
+
+    test('getOrElseLazy calls alternative function for non-success states without value', () => {
+      const altFn = vi.fn(() => 77);
+      expect(AsyncResult.getOrElseLazy(failure, altFn)).toBe(77);
       expect(altFn).toHaveBeenCalledOnce();
     });
 
@@ -108,7 +119,11 @@ describe('AsyncResult', () => {
       expect(AsyncResult.getOrNull(success)).toBe(42);
     });
 
-    test('getOrNull returns null for non-success states', () => {
+    test('getOrNull returns previousValue for loading with value', () => {
+      expect(AsyncResult.getOrNull(loadingWithValue)).toBe(99);
+    });
+
+    test('getOrNull returns null for non-success states without value', () => {
       expect(AsyncResult.getOrNull(failure)).toBe(null);
       expect(AsyncResult.getOrNull(loading)).toBe(null);
       expect(AsyncResult.getOrNull(notAsked)).toBe(null);
@@ -118,7 +133,11 @@ describe('AsyncResult', () => {
       expect(AsyncResult.getOrUndefined(success)).toBe(42);
     });
 
-    test('getOrUndefined returns undefined for non-success states', () => {
+    test('getOrUndefined returns previousValue for loading with value', () => {
+      expect(AsyncResult.getOrUndefined(loadingWithValue)).toBe(99);
+    });
+
+    test('getOrUndefined returns undefined for non-success states without value', () => {
       expect(AsyncResult.getOrUndefined(failure)).toBe(undefined);
       expect(AsyncResult.getOrUndefined(loading)).toBe(undefined);
       expect(AsyncResult.getOrUndefined(notAsked)).toBe(undefined);
@@ -131,20 +150,25 @@ describe('AsyncResult', () => {
       expect(AsyncResult.getUnsafe(success)).toBe(42);
     });
 
+    test('returns previousValue for loading with value', () => {
+      const loadingWithValue = AsyncResult.loading(99);
+      expect(AsyncResult.getUnsafe(loadingWithValue)).toBe(99);
+    });
+
     test('throws error for failure', () => {
       const error = new Error('test error');
       const failure = AsyncResult.failure(error);
       expect(() => AsyncResult.getUnsafe(failure)).toThrow(error);
     });
 
-    test('throws error for loading state', () => {
+    test('throws error for loading state without value', () => {
       const loading = AsyncResult.loading();
-      expect(() => AsyncResult.getUnsafe(loading)).toThrow('Cannot get value from a not-asked or loading result');
+      expect(() => AsyncResult.getUnsafe(loading)).toThrow('Cannot get value from a not-asked or loading result without previous value');
     });
 
     test('throws error for notAsked state', () => {
       const notAsked = AsyncResult.notAsked;
-      expect(() => AsyncResult.getUnsafe(notAsked)).toThrow('Cannot get value from a not-asked or loading result');
+      expect(() => AsyncResult.getUnsafe(notAsked)).toThrow('Cannot get value from a not-asked or loading result without previous value');
     });
   });
 
