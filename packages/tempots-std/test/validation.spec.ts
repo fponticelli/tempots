@@ -206,6 +206,53 @@ describe('Validation', () => {
       expect(handler2).toHaveBeenCalled()
       expect(result).toBe(valid)
     })
+
+    test('calls else handler when no specific handler for valid', () => {
+      const valid = Validation.valid
+      const elseHandler = vi.fn()
+      const result = Validation.effect(valid, { else: elseHandler })
+
+      expect(elseHandler).toHaveBeenCalled()
+      expect(result).toBe(valid)
+    })
+
+    test('calls else handler when no specific handler for invalid', () => {
+      const invalid = Validation.invalid('error')
+      const elseHandler = vi.fn()
+      const result = Validation.effect(invalid, { else: elseHandler })
+
+      expect(elseHandler).toHaveBeenCalled()
+      expect(result).toBe(invalid)
+    })
+
+    test('does not call else handler when specific handler is provided', () => {
+      const valid = Validation.valid
+      const validHandler = vi.fn()
+      const elseHandler = vi.fn()
+      const result = Validation.effect(valid, { valid: validHandler, else: elseHandler })
+
+      expect(validHandler).toHaveBeenCalled()
+      expect(elseHandler).not.toHaveBeenCalled()
+      expect(result).toBe(valid)
+    })
+
+    test('else handler works as fallback for unhandled states', () => {
+      const valid = Validation.valid
+      const invalid = Validation.invalid('error')
+      const validHandler = vi.fn()
+      const elseHandler = vi.fn()
+
+      Validation.effect(valid, { valid: validHandler, else: elseHandler })
+      expect(validHandler).toHaveBeenCalled()
+      expect(elseHandler).not.toHaveBeenCalled()
+
+      validHandler.mockClear()
+      elseHandler.mockClear()
+
+      Validation.effect(invalid, { valid: validHandler, else: elseHandler })
+      expect(validHandler).not.toHaveBeenCalled()
+      expect(elseHandler).toHaveBeenCalled()
+    })
   })
 
   describe('toResult', () => {

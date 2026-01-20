@@ -208,8 +208,9 @@ export const Result = {
   /**
    * Executes side effects based on the state of the result.
    * Unlike `match`, all handlers are optional, allowing you to react only to specific states.
+   * The `else` handler is called when no specific handler is provided for the current state.
    * @param r - The result.
-   * @param handlers - An object with optional handlers for each state.
+   * @param handlers - An object with optional handlers for each state and an optional `else` fallback.
    * @returns The result that was passed in, allowing for chaining.
    * @public
    */
@@ -218,12 +219,21 @@ export const Result = {
     handlers: {
       success?: (value: V) => void
       failure?: (error: E) => void
+      else?: () => void
     }
   ): Result<V, E> => {
     if (r.type === 'Success') {
-      handlers.success?.(r.value)
+      if (handlers.success) {
+        handlers.success(r.value)
+      } else {
+        handlers.else?.()
+      }
     } else {
-      handlers.failure?.(r.error)
+      if (handlers.failure) {
+        handlers.failure(r.error)
+      } else {
+        handlers.else?.()
+      }
     }
     return r
   },

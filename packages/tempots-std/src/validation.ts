@@ -100,8 +100,9 @@ export const Validation = {
   /**
    * Executes side effects based on the state of the validation.
    * Unlike `match`, all handlers are optional, allowing you to react only to specific states.
+   * The `else` handler is called when no specific handler is provided for the current state.
    * @param v - The validation.
-   * @param handlers - An object with optional handlers for each state.
+   * @param handlers - An object with optional handlers for each state and an optional `else` fallback.
    * @returns The validation that was passed in, allowing for chaining.
    * @public
    */
@@ -110,12 +111,21 @@ export const Validation = {
     handlers: {
       valid?: () => void
       invalid?: (error: E) => void
+      else?: () => void
     }
   ): Validation<E> => {
     if (v.type === 'valid') {
-      handlers.valid?.()
+      if (handlers.valid) {
+        handlers.valid()
+      } else {
+        handlers.else?.()
+      }
     } else {
-      handlers.invalid?.(v.error)
+      if (handlers.invalid) {
+        handlers.invalid(v.error)
+      } else {
+        handlers.else?.()
+      }
     }
     return v
   },

@@ -303,6 +303,71 @@ describe('AsyncResult', () => {
       expect(handler2).toHaveBeenCalledWith(42);
       expect(result).toBe(success);
     });
+
+    test('calls else handler when no specific handler for success', () => {
+      const success = AsyncResult.success(42);
+      const elseHandler = vi.fn();
+      const result = AsyncResult.effect(success, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('calls else handler when no specific handler for failure', () => {
+      const failure = AsyncResult.failure('error');
+      const elseHandler = vi.fn();
+      const result = AsyncResult.effect(failure, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(failure);
+    });
+
+    test('calls else handler when no specific handler for loading', () => {
+      const loading = AsyncResult.loading('prev');
+      const elseHandler = vi.fn();
+      const result = AsyncResult.effect(loading, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(loading);
+    });
+
+    test('calls else handler when no specific handler for notAsked', () => {
+      const notAsked = AsyncResult.notAsked;
+      const elseHandler = vi.fn();
+      const result = AsyncResult.effect(notAsked, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(notAsked);
+    });
+
+    test('does not call else handler when specific handler is provided', () => {
+      const success = AsyncResult.success(42);
+      const successHandler = vi.fn();
+      const elseHandler = vi.fn();
+      const result = AsyncResult.effect(success, { success: successHandler, else: elseHandler });
+
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(elseHandler).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('else handler works as fallback for unhandled states', () => {
+      const success = AsyncResult.success(42);
+      const failure = AsyncResult.failure('error');
+      const successHandler = vi.fn();
+      const elseHandler = vi.fn();
+
+      AsyncResult.effect(success, { success: successHandler, else: elseHandler });
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(elseHandler).not.toHaveBeenCalled();
+
+      successHandler.mockClear();
+      elseHandler.mockClear();
+
+      AsyncResult.effect(failure, { success: successHandler, else: elseHandler });
+      expect(successHandler).not.toHaveBeenCalled();
+      expect(elseHandler).toHaveBeenCalled();
+    });
   });
 
   describe('whenSuccess', () => {

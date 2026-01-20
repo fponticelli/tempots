@@ -388,6 +388,53 @@ describe('Result', () => {
       expect(handler2).toHaveBeenCalledWith(42);
       expect(result).toBe(success);
     });
+
+    test('calls else handler when no specific handler for success', () => {
+      const success = Result.success(42);
+      const elseHandler = vi.fn();
+      const result = Result.effect(success, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('calls else handler when no specific handler for failure', () => {
+      const failure = Result.failure('error');
+      const elseHandler = vi.fn();
+      const result = Result.effect(failure, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(failure);
+    });
+
+    test('does not call else handler when specific handler is provided', () => {
+      const success = Result.success(42);
+      const successHandler = vi.fn();
+      const elseHandler = vi.fn();
+      const result = Result.effect(success, { success: successHandler, else: elseHandler });
+
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(elseHandler).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('else handler works as fallback for unhandled states', () => {
+      const success = Result.success(42);
+      const failure = Result.failure('error');
+      const successHandler = vi.fn();
+      const elseHandler = vi.fn();
+
+      Result.effect(success, { success: successHandler, else: elseHandler });
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(elseHandler).not.toHaveBeenCalled();
+
+      successHandler.mockClear();
+      elseHandler.mockClear();
+
+      Result.effect(failure, { success: successHandler, else: elseHandler });
+      expect(successHandler).not.toHaveBeenCalled();
+      expect(elseHandler).toHaveBeenCalled();
+    });
   });
 
   describe('whenSuccess', () => {
