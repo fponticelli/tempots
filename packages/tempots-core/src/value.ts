@@ -218,6 +218,52 @@ export const computedOf = <T extends Value<unknown>[]>(...args: T) => {
 }
 
 /**
+ * Creates a computed signal that depends on other signals or literal values and performs an
+ * asynchronous computation when any of the dependencies change.
+ *
+ * This is the async version of `computedOf`. It handles Promise-based computations by providing
+ * an alternative value while the async operation is pending and optional error recovery.
+ *
+ * @typeParam T - The types of the dependency values.
+ * @param args - The signals or literal values that the computation depends on.
+ * @returns A function that takes the async computation function and configuration.
+ *
+ * @example
+ * ```ts
+ * const userId = sig(1)
+ * const userData = computedOfAsync(userId)(
+ *   async (id) => await fetchUser(id),
+ *   { name: 'Loading...', id: 0 },  // alt value while loading
+ *   (error) => ({ name: 'Error', id: -1 })  // optional recovery
+ * )
+ * ```
+ *
+ * @public
+ */
+export const computedOfAsync = <T extends Value<unknown>[]>(...args: T) => {
+  /**
+   * @param fn - The async function that computes the value from the dependencies.
+   * @param alt - The alternative value to use while the async operation is pending or on error (if no recover is provided).
+   * @param recover - Optional function to recover from errors, returning an alternative value.
+   * @param equals - Optional equality function to compare values. Defaults to strict equality.
+   * @returns A signal that emits the computed value.
+   */
+  return <O>(
+    fn: (...args: ValueTypes<T>) => Promise<O>,
+    alt: O,
+    recover?: (error: unknown) => O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
+  ) => {
+    return computedOf(...args)((...args) => args).mapAsync(
+      ([...args]) => fn(...(args as ValueTypes<T>)),
+      alt,
+      recover,
+      equals
+    )
+  }
+}
+
+/**
  * Joins a set of signals into a single signal that emits a record of the values.
  * @param values - The set of signals to join as a record of `Value`s.
  * @returns A signal that emits a record of the values.
