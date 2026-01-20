@@ -304,80 +304,85 @@ describe('animatable.ts', () => {
   })
 
   describe('applyAnimatableProp', () => {
+    let transforms: string[]
+    let filters: string[]
+
     beforeEach(() => {
       element.style.transform = ''
       element.style.filter = ''
+      transforms = []
+      filters = []
     })
 
     it('should apply transform properties', () => {
-      applyAnimatableProp(element, 'translateX', 10)
-      expect(element.style.transform).toContain('translateX(10px)')
+      applyAnimatableProp(element, 'translateX', 10, transforms, filters)
+      expect(transforms).toContain('translateX(10px)')
 
-      applyAnimatableProp(element, 'translateY', 20)
-      expect(element.style.transform).toContain('translateY(20px)')
+      applyAnimatableProp(element, 'translateY', 20, transforms, filters)
+      expect(transforms).toContain('translateY(20px)')
 
-      applyAnimatableProp(element, 'translateZ', 30)
-      expect(element.style.transform).toContain('translateZ(30px)')
+      applyAnimatableProp(element, 'translateZ', 30, transforms, filters)
+      expect(transforms).toContain('translateZ(30px)')
 
-      applyAnimatableProp(element, 'rotateX', 45)
-      expect(element.style.transform).toContain('rotateX(45deg)')
+      applyAnimatableProp(element, 'rotateX', 45, transforms, filters)
+      expect(transforms).toContain('rotateX(45deg)')
 
-      applyAnimatableProp(element, 'rotateY', 90)
-      expect(element.style.transform).toContain('rotateY(90deg)')
+      applyAnimatableProp(element, 'rotateY', 90, transforms, filters)
+      expect(transforms).toContain('rotateY(90deg)')
 
-      applyAnimatableProp(element, 'rotateZ', 45)
-      expect(element.style.transform).toContain('rotateZ(45deg)')
+      applyAnimatableProp(element, 'rotateZ', 45, transforms, filters)
+      expect(transforms).toContain('rotateZ(45deg)')
 
-      applyAnimatableProp(element, 'scaleX', 1.5)
-      expect(element.style.transform).toContain('scaleX(1.5)')
+      applyAnimatableProp(element, 'scaleX', 1.5, transforms, filters)
+      expect(transforms).toContain('scaleX(1.5)')
 
-      applyAnimatableProp(element, 'scaleY', 2.0)
-      expect(element.style.transform).toContain('scaleY(2)')
+      applyAnimatableProp(element, 'scaleY', 2.0, transforms, filters)
+      expect(transforms).toContain('scaleY(2)')
 
-      applyAnimatableProp(element, 'scaleZ', 0.5)
-      expect(element.style.transform).toContain('scaleZ(0.5)')
+      applyAnimatableProp(element, 'scaleZ', 0.5, transforms, filters)
+      expect(transforms).toContain('scaleZ(0.5)')
 
-      applyAnimatableProp(element, 'skewX', 15)
-      expect(element.style.transform).toContain('skewX(15deg)')
+      applyAnimatableProp(element, 'skewX', 15, transforms, filters)
+      expect(transforms).toContain('skewX(15deg)')
 
-      applyAnimatableProp(element, 'skewY', 25)
-      expect(element.style.transform).toContain('skewY(25deg)')
+      applyAnimatableProp(element, 'skewY', 25, transforms, filters)
+      expect(transforms).toContain('skewY(25deg)')
     })
 
     it('should apply filter properties', () => {
-      applyAnimatableProp(element, 'blur', 5)
-      expect(element.style.filter).toContain('blur(5px)')
+      applyAnimatableProp(element, 'blur', 5, transforms, filters)
+      expect(filters).toContain('blur(5px)')
 
-      applyAnimatableProp(element, 'brightness', 120)
-      expect(element.style.filter).toContain('brightness(120%)')
+      applyAnimatableProp(element, 'brightness', 120, transforms, filters)
+      expect(filters).toContain('brightness(120%)')
 
-      applyAnimatableProp(element, 'grayScale', 50)
-      expect(element.style.filter).toContain('grayscale(50%)')
+      applyAnimatableProp(element, 'grayScale', 50, transforms, filters)
+      expect(filters).toContain('grayscale(50%)')
 
-      applyAnimatableProp(element, 'sepia', 25)
-      expect(element.style.filter).toContain('sepia(25%)')
+      applyAnimatableProp(element, 'sepia', 25, transforms, filters)
+      expect(filters).toContain('sepia(25%)')
 
-      applyAnimatableProp(element, 'saturate', 150)
-      expect(element.style.filter).toContain('saturate(150%)')
+      applyAnimatableProp(element, 'saturate', 150, transforms, filters)
+      expect(filters).toContain('saturate(150%)')
 
-      applyAnimatableProp(element, 'hueRotate', 90)
-      expect(element.style.filter).toContain('hue-rotate(90deg)')
+      applyAnimatableProp(element, 'hueRotate', 90, transforms, filters)
+      expect(filters).toContain('hue-rotate(90deg)')
 
-      applyAnimatableProp(element, 'invert', 75)
-      expect(element.style.filter).toContain('invert(75%)')
+      applyAnimatableProp(element, 'invert', 75, transforms, filters)
+      expect(filters).toContain('invert(75%)')
 
-      applyAnimatableProp(element, 'contrast', 110)
-      expect(element.style.filter).toContain('contrast(110%)')
+      applyAnimatableProp(element, 'contrast', 110, transforms, filters)
+      expect(filters).toContain('contrast(110%)')
     })
 
     it('should apply other properties via setProperty', () => {
       const spy = vi.spyOn(element.style, 'setProperty')
-      applyAnimatableProp(element, 'width', 100)
+      applyAnimatableProp(element, 'width', 100, transforms, filters)
       expect(spy).toHaveBeenCalledWith('width', '100')
     })
 
     it('should skip null values', () => {
-      applyAnimatableProp(element, 'width', null)
+      applyAnimatableProp(element, 'width', null, transforms, filters)
       expect(element.style.getPropertyValue('width')).toBe('')
     })
   })
