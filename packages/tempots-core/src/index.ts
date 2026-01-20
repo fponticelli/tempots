@@ -42,7 +42,13 @@ export {
 } from './signal'
 
 // Value utilities
-export { computedOf, effectOf, joinSignals, Value } from './value'
+export {
+  computedOf,
+  computedOfAsync,
+  effectOf,
+  joinSignals,
+  Value,
+} from './value'
 
 // Disposal scope
 export { DisposalScope } from './disposal-scope'
