@@ -18,6 +18,7 @@ export {
   computed,
   effect,
   computedOf,
+  computedOfAsync,
   effectOf,
   joinSignals,
   Value,
