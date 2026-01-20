@@ -296,4 +296,201 @@ export const Result = {
     }
     return Result.success(values)
   },
+
+  /**
+   * Maps the error of a failed `Result` to a new error using the provided function.
+   * For success results, the result is preserved unchanged.
+   * @param r - The `Result` to map the error of.
+   * @param f - The mapping function to apply to the error.
+   * @returns A new `Result` with the mapped error if failed, otherwise the original success.
+   * @public
+   */
+  mapError: <V, E, F>(r: Result<V, E>, f: (error: E) => F): Result<V, F> => {
+    if (r.type === 'Failure') {
+      return Result.failure(f(r.error))
+    } else {
+      return r
+    }
+  },
+
+  /**
+   * Maps the error of a failed `Result` to a new `Result` using the provided function.
+   * This allows recovery from errors by returning a new successful result.
+   * @param r - The `Result` to recover from.
+   * @param f - The recovery function that returns a new `Result`.
+   * @returns The result of the recovery function if failed, otherwise the original success.
+   * @public
+   */
+  flatMapError: <V, E, F>(
+    r: Result<V, E>,
+    f: (error: E) => Result<V, F>
+  ): Result<V, F> => {
+    if (r.type === 'Failure') {
+      return f(r.error)
+    } else {
+      return r
+    }
+  },
+
+  /**
+   * Recovers from a failure by providing an alternative value.
+   * @param r - The `Result` to recover from.
+   * @param f - The function that provides an alternative value given the error.
+   * @returns A successful `Result` with the alternative value if failed, otherwise the original success.
+   * @public
+   */
+  recover: <V, E>(r: Result<V, E>, f: (error: E) => V): Result<V, never> => {
+    if (r.type === 'Failure') {
+      return { type: 'Success', value: f(r.error) }
+    } else {
+      return r
+    }
+  },
+
+  /**
+   * Applies a function wrapped in a `Result` to a value wrapped in a `Result`.
+   * Useful for applying multiple arguments to a function in a safe way.
+   * @param resultFn - The `Result` containing the function.
+   * @param resultVal - The `Result` containing the value.
+   * @returns A new `Result` with the result of applying the function to the value.
+   * @public
+   */
+  ap: <V, U, E>(
+    resultFn: Result<(v: V) => U, E>,
+    resultVal: Result<V, E>
+  ): Result<U, E> => {
+    if (Result.isSuccess(resultFn) && Result.isSuccess(resultVal)) {
+      return Result.success(resultFn.value(resultVal.value))
+    } else if (Result.isFailure(resultFn)) {
+      return Result.failure(resultFn.error)
+    } else {
+      return Result.failure((resultVal as Failure<E>).error)
+    }
+  },
+
+  /**
+   * Maps two `Result` values using a function.
+   * @param r1 - The first `Result`.
+   * @param r2 - The second `Result`.
+   * @param f - The function to apply to both values.
+   * @returns A new `Result` with the result of applying the function to both values.
+   * @public
+   */
+  map2: <V1, V2, U, E>(
+    r1: Result<V1, E>,
+    r2: Result<V2, E>,
+    f: (v1: V1, v2: V2) => U
+  ): Result<U, E> => {
+    if (Result.isSuccess(r1) && Result.isSuccess(r2)) {
+      return Result.success(f(r1.value, r2.value))
+    } else if (Result.isFailure(r1)) {
+      return Result.failure(r1.error)
+    } else {
+      return Result.failure((r2 as Failure<E>).error)
+    }
+  },
+
+  /**
+   * Maps three `Result` values using a function.
+   * @param r1 - The first `Result`.
+   * @param r2 - The second `Result`.
+   * @param r3 - The third `Result`.
+   * @param f - The function to apply to all three values.
+   * @returns A new `Result` with the result of applying the function to all three values.
+   * @public
+   */
+  map3: <V1, V2, V3, U, E>(
+    r1: Result<V1, E>,
+    r2: Result<V2, E>,
+    r3: Result<V3, E>,
+    f: (v1: V1, v2: V2, v3: V3) => U
+  ): Result<U, E> => {
+    if (Result.isSuccess(r1) && Result.isSuccess(r2) && Result.isSuccess(r3)) {
+      return Result.success(f(r1.value, r2.value, r3.value))
+    } else if (Result.isFailure(r1)) {
+      return Result.failure(r1.error)
+    } else if (Result.isFailure(r2)) {
+      return Result.failure(r2.error)
+    } else {
+      return Result.failure((r3 as Failure<E>).error)
+    }
+  },
+
+  /**
+   * Converts a Promise to a Result.
+   * @param p - The Promise to convert.
+   * @returns A Promise that resolves to a Result.
+   * @public
+   */
+  ofPromise: async <V>(p: Promise<V>): Promise<Result<V, Error>> => {
+    try {
+      const v = await p
+      return Result.success(v)
+    } catch (e) {
+      return Result.failure(e instanceof Error ? e : new Error(String(e)))
+    }
+  },
+
+  /**
+   * Swaps the success and failure values of a Result.
+   * A success becomes a failure with the value as the error,
+   * and a failure becomes a success with the error as the value.
+   * @param r - The Result to swap.
+   * @returns A new Result with swapped success and failure.
+   * @public
+   */
+  swap: <V, E>(r: Result<V, E>): Result<E, V> => {
+    if (Result.isSuccess(r)) {
+      return Result.failure(r.value)
+    } else {
+      return Result.success(r.error)
+    }
+  },
+
+  /**
+   * Converts a nullable value to a Result.
+   * @param value - The nullable value.
+   * @param error - The error to use if the value is null or undefined.
+   * @returns A Result containing the value if not null/undefined, otherwise a failure.
+   * @public
+   */
+  fromNullable: <V, E>(value: V | null | undefined, error: E): Result<V, E> => {
+    if (value == null) {
+      return Result.failure(error)
+    } else {
+      return Result.success(value)
+    }
+  },
+
+  /**
+   * Converts a nullable value to a Result using a lazy error function.
+   * @param value - The nullable value.
+   * @param errorFn - The function to call to get the error if the value is null or undefined.
+   * @returns A Result containing the value if not null/undefined, otherwise a failure.
+   * @public
+   */
+  fromNullableLazy: <V, E>(
+    value: V | null | undefined,
+    errorFn: () => E
+  ): Result<V, E> => {
+    if (value == null) {
+      return Result.failure(errorFn())
+    } else {
+      return Result.success(value)
+    }
+  },
+
+  /**
+   * Wraps a function that may throw into a function that returns a Result.
+   * @param f - The function that may throw.
+   * @returns A function that returns a Result instead of throwing.
+   * @public
+   */
+  tryCatch: <V>(f: () => V): Result<V, Error> => {
+    try {
+      return Result.success(f())
+    } catch (e) {
+      return Result.failure(e instanceof Error ? e : new Error(String(e)))
+    }
+  },
 }

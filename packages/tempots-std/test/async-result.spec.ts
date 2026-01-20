@@ -394,4 +394,526 @@ describe('AsyncResult', () => {
       }
     });
   });
+
+  describe('map', () => {
+    test('maps success values', () => {
+      const result = AsyncResult.success(5);
+      const mapped = AsyncResult.map(result, x => x * 2);
+
+      expect(AsyncResult.isSuccess(mapped)).toBe(true);
+      if (AsyncResult.isSuccess(mapped)) {
+        expect(mapped.value).toBe(10);
+      }
+    });
+
+    test('does not map failure values', () => {
+      const result = AsyncResult.failure('error');
+      const mapped = AsyncResult.map(result, (x: number) => x * 2);
+
+      expect(AsyncResult.isFailure(mapped)).toBe(true);
+      if (AsyncResult.isFailure(mapped)) {
+        expect(mapped.error).toBe('error');
+      }
+    });
+
+    test('preserves notAsked state', () => {
+      const result = AsyncResult.notAsked;
+      const mapped = AsyncResult.map(result, (x: number) => x * 2);
+
+      expect(AsyncResult.isNotAsked(mapped)).toBe(true);
+    });
+
+    test('maps loading state with previous value', () => {
+      const result = AsyncResult.loading(5);
+      const mapped = AsyncResult.map(result, x => x * 2);
+
+      expect(AsyncResult.isLoading(mapped)).toBe(true);
+      if (AsyncResult.isLoading(mapped)) {
+        expect(mapped.previousValue).toBe(10);
+      }
+    });
+
+    test('maps loading state without previous value', () => {
+      const result = AsyncResult.loading<number>();
+      const mapped = AsyncResult.map(result, x => x * 2);
+
+      expect(AsyncResult.isLoading(mapped)).toBe(true);
+      if (AsyncResult.isLoading(mapped)) {
+        expect(mapped.previousValue).toBeUndefined();
+      }
+    });
+
+    test('can change value type', () => {
+      const result = AsyncResult.success(42);
+      const mapped = AsyncResult.map(result, x => `Number: ${x}`);
+
+      expect(AsyncResult.isSuccess(mapped)).toBe(true);
+      if (AsyncResult.isSuccess(mapped)) {
+        expect(mapped.value).toBe('Number: 42');
+      }
+    });
+
+    test('mapping function is not called for failures', () => {
+      const mapFn = vi.fn((x: number) => x * 2);
+      const result = AsyncResult.failure('error');
+
+      AsyncResult.map(result, mapFn);
+
+      expect(mapFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('flatMap', () => {
+    test('flat maps success values', () => {
+      const result = AsyncResult.success(5);
+      const flatMapped = AsyncResult.flatMap(result, x => AsyncResult.success(x * 2));
+
+      expect(AsyncResult.isSuccess(flatMapped)).toBe(true);
+      if (AsyncResult.isSuccess(flatMapped)) {
+        expect(flatMapped.value).toBe(10);
+      }
+    });
+
+    test('flat maps to failure', () => {
+      const result = AsyncResult.success(5);
+      const flatMapped = AsyncResult.flatMap(result, x => AsyncResult.failure(`Error: ${x}`));
+
+      expect(AsyncResult.isFailure(flatMapped)).toBe(true);
+      if (AsyncResult.isFailure(flatMapped)) {
+        expect(flatMapped.error).toBe('Error: 5');
+      }
+    });
+
+    test('does not flat map failure values', () => {
+      const result = AsyncResult.failure('original error');
+      const flatMapped = AsyncResult.flatMap(result, (x: number) => AsyncResult.success(x * 2));
+
+      expect(AsyncResult.isFailure(flatMapped)).toBe(true);
+      if (AsyncResult.isFailure(flatMapped)) {
+        expect(flatMapped.error).toBe('original error');
+      }
+    });
+
+    test('preserves notAsked state', () => {
+      const result = AsyncResult.notAsked;
+      const flatMapped = AsyncResult.flatMap(result, (x: number) => AsyncResult.success(x * 2));
+
+      expect(AsyncResult.isNotAsked(flatMapped)).toBe(true);
+    });
+
+    test('returns loading for loading state', () => {
+      const result = AsyncResult.loading(5);
+      const flatMapped = AsyncResult.flatMap(result, x => AsyncResult.success(x * 2));
+
+      expect(AsyncResult.isLoading(flatMapped)).toBe(true);
+    });
+
+    test('flat mapping function is not called for failures', () => {
+      const flatMapFn = vi.fn((x: number) => AsyncResult.success(x * 2));
+      const result = AsyncResult.failure('error');
+
+      AsyncResult.flatMap(result, flatMapFn);
+
+      expect(flatMapFn).not.toHaveBeenCalled();
+    });
+
+    test('can chain multiple flat maps', () => {
+      const result = AsyncResult.success(5);
+      const chained = AsyncResult.flatMap(
+        AsyncResult.flatMap(result, x => AsyncResult.success(x * 2)),
+        x => AsyncResult.success(x + 1)
+      );
+
+      expect(AsyncResult.isSuccess(chained)).toBe(true);
+      if (AsyncResult.isSuccess(chained)) {
+        expect(chained.value).toBe(11); // (5 * 2) + 1
+      }
+    });
+  });
+
+  describe('mapError', () => {
+    test('maps error values', () => {
+      const result = AsyncResult.failure('error');
+      const mapped = AsyncResult.mapError(result, e => `Mapped: ${e}`);
+
+      expect(AsyncResult.isFailure(mapped)).toBe(true);
+      if (AsyncResult.isFailure(mapped)) {
+        expect(mapped.error).toBe('Mapped: error');
+      }
+    });
+
+    test('does not map success values', () => {
+      const result = AsyncResult.success(42);
+      const mapped = AsyncResult.mapError(result, (e: string) => `Mapped: ${e}`);
+
+      expect(AsyncResult.isSuccess(mapped)).toBe(true);
+      if (AsyncResult.isSuccess(mapped)) {
+        expect(mapped.value).toBe(42);
+      }
+    });
+
+    test('preserves notAsked state', () => {
+      const result = AsyncResult.notAsked;
+      const mapped = AsyncResult.mapError(result, (e: string) => `Mapped: ${e}`);
+
+      expect(AsyncResult.isNotAsked(mapped)).toBe(true);
+    });
+
+    test('preserves loading state with previous value', () => {
+      const result = AsyncResult.loading(5);
+      const mapped = AsyncResult.mapError(result, (e: string) => `Mapped: ${e}`);
+
+      expect(AsyncResult.isLoading(mapped)).toBe(true);
+      if (AsyncResult.isLoading(mapped)) {
+        expect(mapped.previousValue).toBe(5);
+      }
+    });
+
+    test('can change error type', () => {
+      const result = AsyncResult.failure('error');
+      const mapped = AsyncResult.mapError(result, () => ({ code: 500 }));
+
+      expect(AsyncResult.isFailure(mapped)).toBe(true);
+      if (AsyncResult.isFailure(mapped)) {
+        expect(mapped.error).toEqual({ code: 500 });
+      }
+    });
+
+    test('mapping function is not called for success', () => {
+      const mapFn = vi.fn((e: string) => `Mapped: ${e}`);
+      const result = AsyncResult.success(42);
+
+      AsyncResult.mapError(result, mapFn);
+
+      expect(mapFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('flatMapError', () => {
+    test('flat maps error to success (recovery)', () => {
+      const result = AsyncResult.failure('error');
+      const recovered = AsyncResult.flatMapError(result, () => AsyncResult.success(42));
+
+      expect(AsyncResult.isSuccess(recovered)).toBe(true);
+      if (AsyncResult.isSuccess(recovered)) {
+        expect(recovered.value).toBe(42);
+      }
+    });
+
+    test('flat maps error to different error', () => {
+      const result = AsyncResult.failure('error');
+      const mapped = AsyncResult.flatMapError(result, e => AsyncResult.failure(`Wrapped: ${e}`));
+
+      expect(AsyncResult.isFailure(mapped)).toBe(true);
+      if (AsyncResult.isFailure(mapped)) {
+        expect(mapped.error).toBe('Wrapped: error');
+      }
+    });
+
+    test('does not flat map success values', () => {
+      const result = AsyncResult.success(42);
+      const mapped = AsyncResult.flatMapError(result, () => AsyncResult.success(0));
+
+      expect(AsyncResult.isSuccess(mapped)).toBe(true);
+      if (AsyncResult.isSuccess(mapped)) {
+        expect(mapped.value).toBe(42);
+      }
+    });
+
+    test('preserves notAsked state', () => {
+      const result = AsyncResult.notAsked;
+      const mapped = AsyncResult.flatMapError(result, () => AsyncResult.success(0));
+
+      expect(AsyncResult.isNotAsked(mapped)).toBe(true);
+    });
+
+    test('preserves loading state with previous value', () => {
+      const result = AsyncResult.loading(5);
+      const mapped = AsyncResult.flatMapError(result, () => AsyncResult.success(0));
+
+      expect(AsyncResult.isLoading(mapped)).toBe(true);
+      if (AsyncResult.isLoading(mapped)) {
+        expect(mapped.previousValue).toBe(5);
+      }
+    });
+
+    test('recovery function is not called for success', () => {
+      const recoveryFn = vi.fn(() => AsyncResult.success(0));
+      const result = AsyncResult.success(42);
+
+      AsyncResult.flatMapError(result, recoveryFn);
+
+      expect(recoveryFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('toResult', () => {
+    test('converts success to Result success', () => {
+      const asyncResult = AsyncResult.success(42);
+      const result = AsyncResult.toResult(asyncResult);
+
+      expect(result).toEqual({ type: 'Success', value: 42 });
+    });
+
+    test('converts failure to Result failure', () => {
+      const asyncResult = AsyncResult.failure('error');
+      const result = AsyncResult.toResult(asyncResult);
+
+      expect(result).toEqual({ type: 'Failure', error: 'error' });
+    });
+
+    test('returns undefined for notAsked', () => {
+      const asyncResult = AsyncResult.notAsked;
+      const result = AsyncResult.toResult(asyncResult);
+
+      expect(result).toBeUndefined();
+    });
+
+    test('returns undefined for loading', () => {
+      const asyncResult = AsyncResult.loading(5);
+      const result = AsyncResult.toResult(asyncResult);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('isSettled', () => {
+    test('returns true for success', () => {
+      expect(AsyncResult.isSettled(AsyncResult.success(42))).toBe(true);
+    });
+
+    test('returns true for failure', () => {
+      expect(AsyncResult.isSettled(AsyncResult.failure('error'))).toBe(true);
+    });
+
+    test('returns false for notAsked', () => {
+      expect(AsyncResult.isSettled(AsyncResult.notAsked)).toBe(false);
+    });
+
+    test('returns false for loading', () => {
+      expect(AsyncResult.isSettled(AsyncResult.loading())).toBe(false);
+    });
+  });
+
+  describe('recover', () => {
+    test('recovers from failure with alternative value', () => {
+      const result = AsyncResult.failure('error');
+      const recovered = AsyncResult.recover(result, () => 42);
+
+      expect(AsyncResult.isSuccess(recovered)).toBe(true);
+      if (AsyncResult.isSuccess(recovered)) {
+        expect(recovered.value).toBe(42);
+      }
+    });
+
+    test('uses error in recovery function', () => {
+      const result = AsyncResult.failure(5);
+      const recovered = AsyncResult.recover(result, e => e * 2);
+
+      expect(AsyncResult.isSuccess(recovered)).toBe(true);
+      if (AsyncResult.isSuccess(recovered)) {
+        expect(recovered.value).toBe(10);
+      }
+    });
+
+    test('does not call recovery for success', () => {
+      const recoveryFn = vi.fn(() => 0);
+      const result = AsyncResult.success(42);
+
+      const recovered = AsyncResult.recover(result, recoveryFn);
+
+      expect(recoveryFn).not.toHaveBeenCalled();
+      expect(AsyncResult.isSuccess(recovered)).toBe(true);
+      if (AsyncResult.isSuccess(recovered)) {
+        expect(recovered.value).toBe(42);
+      }
+    });
+
+    test('preserves notAsked state', () => {
+      const result = AsyncResult.notAsked;
+      const recovered = AsyncResult.recover(result, () => 0);
+
+      expect(AsyncResult.isNotAsked(recovered)).toBe(true);
+    });
+
+    test('preserves loading state', () => {
+      const result = AsyncResult.loading(5);
+      const recovered = AsyncResult.recover(result, () => 0);
+
+      expect(AsyncResult.isLoading(recovered)).toBe(true);
+      if (AsyncResult.isLoading(recovered)) {
+        expect(recovered.previousValue).toBe(5);
+      }
+    });
+  });
+
+  describe('ap', () => {
+    test('applies function to value when both are success', () => {
+      const fnResult = AsyncResult.success((x: number) => x * 2);
+      const valResult = AsyncResult.success(5);
+      const result = AsyncResult.ap(fnResult, valResult);
+
+      expect(AsyncResult.isSuccess(result)).toBe(true);
+      if (AsyncResult.isSuccess(result)) {
+        expect(result.value).toBe(10);
+      }
+    });
+
+    test('returns failure when function is failure', () => {
+      const fnResult = AsyncResult.failure('fn error');
+      const valResult = AsyncResult.success(5);
+      const result = AsyncResult.ap(fnResult, valResult);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('fn error');
+      }
+    });
+
+    test('returns failure when value is failure', () => {
+      const fnResult = AsyncResult.success((x: number) => x * 2);
+      const valResult = AsyncResult.failure('val error');
+      const result = AsyncResult.ap(fnResult, valResult);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('val error');
+      }
+    });
+
+    test('returns loading when either is loading', () => {
+      const fnResult = AsyncResult.success((x: number) => x * 2);
+      const valResult = AsyncResult.loading<number>();
+      const result = AsyncResult.ap(fnResult, valResult);
+
+      expect(AsyncResult.isLoading(result)).toBe(true);
+    });
+
+    test('returns notAsked when either is notAsked and neither loading', () => {
+      const fnResult = AsyncResult.notAsked as AsyncResult<(x: number) => number, string>;
+      const valResult = AsyncResult.success(5);
+      const result = AsyncResult.ap(fnResult, valResult);
+
+      expect(AsyncResult.isNotAsked(result)).toBe(true);
+    });
+  });
+
+  describe('map2', () => {
+    test('maps two success values', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.success(3);
+      const result = AsyncResult.map2(r1, r2, (a, b) => a + b);
+
+      expect(AsyncResult.isSuccess(result)).toBe(true);
+      if (AsyncResult.isSuccess(result)) {
+        expect(result.value).toBe(8);
+      }
+    });
+
+    test('returns first failure when first is failure', () => {
+      const r1 = AsyncResult.failure('error1');
+      const r2 = AsyncResult.success(3);
+      const result = AsyncResult.map2(r1, r2, (a: number, b: number) => a + b);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('error1');
+      }
+    });
+
+    test('returns second failure when second is failure', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.failure('error2');
+      const result = AsyncResult.map2(r1, r2, (a, b: number) => a + b);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('error2');
+      }
+    });
+
+    test('returns loading when either is loading', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.loading<number>();
+      const result = AsyncResult.map2(r1, r2, (a, b) => a + b);
+
+      expect(AsyncResult.isLoading(result)).toBe(true);
+    });
+
+    test('returns notAsked when either is notAsked and neither loading', () => {
+      const r1 = AsyncResult.notAsked as AsyncResult<number, string>;
+      const r2 = AsyncResult.success(3);
+      const result = AsyncResult.map2(r1, r2, (a, b) => a + b);
+
+      expect(AsyncResult.isNotAsked(result)).toBe(true);
+    });
+  });
+
+  describe('map3', () => {
+    test('maps three success values', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.success(3);
+      const r3 = AsyncResult.success(2);
+      const result = AsyncResult.map3(r1, r2, r3, (a, b, c) => a + b + c);
+
+      expect(AsyncResult.isSuccess(result)).toBe(true);
+      if (AsyncResult.isSuccess(result)) {
+        expect(result.value).toBe(10);
+      }
+    });
+
+    test('returns first failure when first is failure', () => {
+      const r1 = AsyncResult.failure('error1');
+      const r2 = AsyncResult.success(3);
+      const r3 = AsyncResult.success(2);
+      const result = AsyncResult.map3(r1, r2, r3, (a: number, b: number, c: number) => a + b + c);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('error1');
+      }
+    });
+
+    test('returns second failure when second is failure', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.failure('error2');
+      const r3 = AsyncResult.success(2);
+      const result = AsyncResult.map3(r1, r2, r3, (a, b: number, c: number) => a + b + c);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('error2');
+      }
+    });
+
+    test('returns third failure when third is failure', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.success(3);
+      const r3 = AsyncResult.failure('error3');
+      const result = AsyncResult.map3(r1, r2, r3, (a, b, c: number) => a + b + c);
+
+      expect(AsyncResult.isFailure(result)).toBe(true);
+      if (AsyncResult.isFailure(result)) {
+        expect(result.error).toBe('error3');
+      }
+    });
+
+    test('returns loading when any is loading', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.loading<number>();
+      const r3 = AsyncResult.success(2);
+      const result = AsyncResult.map3(r1, r2, r3, (a, b, c) => a + b + c);
+
+      expect(AsyncResult.isLoading(result)).toBe(true);
+    });
+
+    test('returns notAsked when any is notAsked and none loading', () => {
+      const r1 = AsyncResult.success(5);
+      const r2 = AsyncResult.success(3);
+      const r3 = AsyncResult.notAsked as AsyncResult<number, string>;
+      const result = AsyncResult.map3(r1, r2, r3, (a, b, c) => a + b + c);
+
+      expect(AsyncResult.isNotAsked(result)).toBe(true);
+    });
+  });
 });

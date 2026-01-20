@@ -409,4 +409,279 @@ describe('Validation', () => {
       }
     })
   })
+
+  describe('mapError', () => {
+    test('maps error values', () => {
+      const validation = Validation.invalid('error')
+      const mapped = Validation.mapError(validation, e => `Mapped: ${e}`)
+
+      expect(Validation.isInvalid(mapped)).toBe(true)
+      if (Validation.isInvalid(mapped)) {
+        expect(mapped.error).toBe('Mapped: error')
+      }
+    })
+
+    test('does not map valid validations', () => {
+      const validation = Validation.valid
+      const mapped = Validation.mapError(validation, (e: string) => `Mapped: ${e}`)
+
+      expect(Validation.isValid(mapped)).toBe(true)
+    })
+
+    test('can change error type', () => {
+      const validation = Validation.invalid('error')
+      const mapped = Validation.mapError(validation, () => ({ code: 500 }))
+
+      expect(Validation.isInvalid(mapped)).toBe(true)
+      if (Validation.isInvalid(mapped)) {
+        expect(mapped.error).toEqual({ code: 500 })
+      }
+    })
+
+    test('mapping function is not called for valid', () => {
+      const mapFn = vi.fn((e: string) => `Mapped: ${e}`)
+      const validation = Validation.valid
+
+      Validation.mapError(validation, mapFn)
+
+      expect(mapFn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('flatMapError', () => {
+    test('flat maps error to valid (recovery)', () => {
+      const validation = Validation.invalid('error')
+      const recovered = Validation.flatMapError(validation, () => Validation.valid)
+
+      expect(Validation.isValid(recovered)).toBe(true)
+    })
+
+    test('flat maps error to different error', () => {
+      const validation = Validation.invalid('error')
+      const mapped = Validation.flatMapError(validation, e => Validation.invalid(`Wrapped: ${e}`))
+
+      expect(Validation.isInvalid(mapped)).toBe(true)
+      if (Validation.isInvalid(mapped)) {
+        expect(mapped.error).toBe('Wrapped: error')
+      }
+    })
+
+    test('does not flat map valid validations', () => {
+      const validation = Validation.valid
+      const mapped = Validation.flatMapError(validation, () => Validation.invalid('new error'))
+
+      expect(Validation.isValid(mapped)).toBe(true)
+    })
+
+    test('recovery function is not called for valid', () => {
+      const recoveryFn = vi.fn(() => Validation.valid)
+      const validation = Validation.valid
+
+      Validation.flatMapError(validation, recoveryFn)
+
+      expect(recoveryFn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('combine', () => {
+    test('combines two valid validations', () => {
+      const v1 = Validation.valid
+      const v2 = Validation.valid
+      const combined = Validation.combine(v1, v2, (e1, e2) => `${e1}, ${e2}`)
+
+      expect(Validation.isValid(combined)).toBe(true)
+    })
+
+    test('returns first invalid when first is invalid', () => {
+      const v1 = Validation.invalid('error1')
+      const v2 = Validation.valid
+      const combined = Validation.combine(v1, v2, (e1, e2) => `${e1}, ${e2}`)
+
+      expect(Validation.isInvalid(combined)).toBe(true)
+      if (Validation.isInvalid(combined)) {
+        expect(combined.error).toBe('error1')
+      }
+    })
+
+    test('returns second invalid when second is invalid', () => {
+      const v1 = Validation.valid
+      const v2 = Validation.invalid('error2')
+      const combined = Validation.combine(v1, v2, (e1, e2) => `${e1}, ${e2}`)
+
+      expect(Validation.isInvalid(combined)).toBe(true)
+      if (Validation.isInvalid(combined)) {
+        expect(combined.error).toBe('error2')
+      }
+    })
+
+    test('combines errors when both are invalid', () => {
+      const v1 = Validation.invalid('error1')
+      const v2 = Validation.invalid('error2')
+      const combined = Validation.combine(v1, v2, (e1, e2) => `${e1}, ${e2}`)
+
+      expect(Validation.isInvalid(combined)).toBe(true)
+      if (Validation.isInvalid(combined)) {
+        expect(combined.error).toBe('error1, error2')
+      }
+    })
+  })
+
+  describe('all', () => {
+    test('returns valid when all validations are valid', () => {
+      const validations = [
+        Validation.valid,
+        Validation.valid,
+        Validation.valid,
+      ]
+      const combined = Validation.all(validations)
+
+      expect(Validation.isValid(combined)).toBe(true)
+    })
+
+    test('returns first invalid when any validation is invalid', () => {
+      const validations = [
+        Validation.valid,
+        Validation.invalid('error1'),
+        Validation.invalid('error2'),
+      ]
+      const combined = Validation.all(validations)
+
+      expect(Validation.isInvalid(combined)).toBe(true)
+      if (Validation.isInvalid(combined)) {
+        expect(combined.error).toBe('error1')
+      }
+    })
+
+    test('returns valid for empty array', () => {
+      const validations: Validation<string>[] = []
+      const combined = Validation.all(validations)
+
+      expect(Validation.isValid(combined)).toBe(true)
+    })
+  })
+
+  describe('allErrors', () => {
+    test('returns valid when all validations are valid', () => {
+      const validations = [
+        Validation.valid,
+        Validation.valid,
+        Validation.valid,
+      ]
+      const combined = Validation.allErrors(validations)
+
+      expect(Validation.isValid(combined)).toBe(true)
+    })
+
+    test('collects all errors when any validation is invalid', () => {
+      const validations = [
+        Validation.valid,
+        Validation.invalid('error1'),
+        Validation.valid,
+        Validation.invalid('error2'),
+      ]
+      const combined = Validation.allErrors(validations)
+
+      expect(Validation.isInvalid(combined)).toBe(true)
+      if (Validation.isInvalid(combined)) {
+        expect(combined.error).toEqual(['error1', 'error2'])
+      }
+    })
+
+    test('returns valid for empty array', () => {
+      const validations: Validation<string>[] = []
+      const combined = Validation.allErrors(validations)
+
+      expect(Validation.isValid(combined)).toBe(true)
+    })
+  })
+
+  describe('equals', () => {
+    test('returns true for two valid validations', () => {
+      const v1 = Validation.valid
+      const v2 = Validation.valid
+
+      expect(Validation.equals(v1, v2)).toBe(true)
+    })
+
+    test('returns true for two invalid validations with same error', () => {
+      const v1 = Validation.invalid('error')
+      const v2 = Validation.invalid('error')
+
+      expect(Validation.equals(v1, v2)).toBe(true)
+    })
+
+    test('returns false for two invalid validations with different errors', () => {
+      const v1 = Validation.invalid('error1')
+      const v2 = Validation.invalid('error2')
+
+      expect(Validation.equals(v1, v2)).toBe(false)
+    })
+
+    test('returns false for valid vs invalid', () => {
+      const v1 = Validation.valid
+      const v2 = Validation.invalid('error')
+
+      expect(Validation.equals(v1, v2)).toBe(false)
+      expect(Validation.equals(v2, v1)).toBe(false)
+    })
+
+    test('uses custom equality function', () => {
+      const v1 = Validation.invalid({ code: 500 })
+      const v2 = Validation.invalid({ code: 500 })
+
+      // Default equality (reference) returns false
+      expect(Validation.equals(v1, v2)).toBe(false)
+
+      // Custom equality returns true
+      expect(Validation.equals(v1, v2, (e1, e2) => e1.code === e2.code)).toBe(true)
+    })
+  })
+
+  describe('recover', () => {
+    test('returns valid for invalid validation', () => {
+      const validation = Validation.invalid('error')
+      const recovered = Validation.recover(validation)
+
+      expect(Validation.isValid(recovered)).toBe(true)
+    })
+
+    test('returns valid for valid validation', () => {
+      const validation = Validation.valid
+      const recovered = Validation.recover(validation)
+
+      expect(Validation.isValid(recovered)).toBe(true)
+    })
+  })
+
+  describe('getError', () => {
+    test('returns error for invalid validation', () => {
+      const validation = Validation.invalid('test error')
+      const error = Validation.getError(validation)
+
+      expect(error).toBe('test error')
+    })
+
+    test('returns undefined for valid validation', () => {
+      const validation = Validation.valid
+      const error = Validation.getError(validation)
+
+      expect(error).toBeUndefined()
+    })
+  })
+
+  describe('getErrorOrElse', () => {
+    test('returns error for invalid validation', () => {
+      const validation = Validation.invalid('test error')
+      const error = Validation.getErrorOrElse(validation, 'default')
+
+      expect(error).toBe('test error')
+    })
+
+    test('returns default for valid validation', () => {
+      const validation = Validation.valid
+      const error = Validation.getErrorOrElse(validation, 'default')
+
+      expect(error).toBe('default')
+    })
+  })
 });
