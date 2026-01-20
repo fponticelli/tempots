@@ -41,6 +41,6 @@
   },
   "peerDependencies": {
     "@tempots/dom": "^35.0.0",
-    "@tempots/std": "^0.24.0"
+    "@tempots/std": "^0.25.1"
   }
 }

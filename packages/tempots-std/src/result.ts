@@ -206,6 +206,29 @@ export const Result = {
     }
   },
   /**
+   * Executes side effects based on the state of the result.
+   * Unlike `match`, all handlers are optional, allowing you to react only to specific states.
+   * @param r - The result.
+   * @param handlers - An object with optional handlers for each state.
+   * @returns The result that was passed in, allowing for chaining.
+   * @public
+   */
+  effect: <V, E>(
+    r: Result<V, E>,
+    handlers: {
+      success?: (value: V) => void
+      failure?: (error: E) => void
+    }
+  ): Result<V, E> => {
+    if (r.type === 'Success') {
+      handlers.success?.(r.value)
+    } else {
+      handlers.failure?.(r.error)
+    }
+    return r
+  },
+
+  /**
    * Calls the provided function if the result is a success.
    * @param apply - The function to call if the result is a success.
    * @returns A function that takes a `Result` and calls the provided function if the result is a success.
@@ -217,6 +240,13 @@ export const Result = {
     }
     return r
   },
+
+  /**
+   * Calls the provided function if the result is a failure.
+   * @param apply - The function to call if the result is a failure.
+   * @returns The result that was passed in.
+   * @public
+   */
   whenFailure: <V, E>(r: Result<V, E>, apply: (e: E) => void): Result<V, E> => {
     if (Result.isFailure(r)) {
       apply(r.error)

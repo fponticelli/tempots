@@ -304,6 +304,92 @@ describe('Result', () => {
     });
   });
 
+  describe('effect', () => {
+    test('calls success handler for Success', () => {
+      const success = Result.success(42);
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+      };
+      const result = Result.effect(success, handlers);
+
+      expect(handlers.success).toHaveBeenCalledWith(42);
+      expect(handlers.failure).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('calls failure handler for Failure', () => {
+      const failure = Result.failure('error');
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+      };
+      const result = Result.effect(failure, handlers);
+
+      expect(handlers.success).not.toHaveBeenCalled();
+      expect(handlers.failure).toHaveBeenCalledWith('error');
+      expect(result).toBe(failure);
+    });
+
+    test('works with only success handler provided', () => {
+      const success = Result.success(42);
+      const successHandler = vi.fn();
+      const result = Result.effect(success, { success: successHandler });
+
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(result).toBe(success);
+    });
+
+    test('works with only failure handler provided', () => {
+      const failure = Result.failure('error');
+      const failureHandler = vi.fn();
+      const result = Result.effect(failure, { failure: failureHandler });
+
+      expect(failureHandler).toHaveBeenCalledWith('error');
+      expect(result).toBe(failure);
+    });
+
+    test('works with no handlers provided', () => {
+      const success = Result.success(42);
+      const result = Result.effect(success, {});
+
+      expect(result).toBe(success);
+    });
+
+    test('does not call missing handler for success', () => {
+      const success = Result.success(42);
+      const failureHandler = vi.fn();
+      const result = Result.effect(success, { failure: failureHandler });
+
+      expect(failureHandler).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('does not call missing handler for failure', () => {
+      const failure = Result.failure('error');
+      const successHandler = vi.fn();
+      const result = Result.effect(failure, { success: successHandler });
+
+      expect(successHandler).not.toHaveBeenCalled();
+      expect(result).toBe(failure);
+    });
+
+    test('can be chained', () => {
+      const success = Result.success(42);
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
+
+      const result = Result.effect(
+        Result.effect(success, { success: handler1 }),
+        { success: handler2 }
+      );
+
+      expect(handler1).toHaveBeenCalledWith(42);
+      expect(handler2).toHaveBeenCalledWith(42);
+      expect(result).toBe(success);
+    });
+  });
+
   describe('whenSuccess', () => {
     test('calls function for success and returns original result', () => {
       const success = Result.success(42);

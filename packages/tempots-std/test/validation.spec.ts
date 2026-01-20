@@ -122,6 +122,92 @@ describe('Validation', () => {
     })
   })
 
+  describe('effect', () => {
+    test('calls valid handler for Valid', () => {
+      const valid = Validation.valid
+      const handlers = {
+        valid: vi.fn(),
+        invalid: vi.fn(),
+      }
+      const result = Validation.effect(valid, handlers)
+
+      expect(handlers.valid).toHaveBeenCalled()
+      expect(handlers.invalid).not.toHaveBeenCalled()
+      expect(result).toBe(valid)
+    })
+
+    test('calls invalid handler for Invalid', () => {
+      const invalid = Validation.invalid('error')
+      const handlers = {
+        valid: vi.fn(),
+        invalid: vi.fn(),
+      }
+      const result = Validation.effect(invalid, handlers)
+
+      expect(handlers.valid).not.toHaveBeenCalled()
+      expect(handlers.invalid).toHaveBeenCalledWith('error')
+      expect(result).toBe(invalid)
+    })
+
+    test('works with only valid handler provided', () => {
+      const valid = Validation.valid
+      const validHandler = vi.fn()
+      const result = Validation.effect(valid, { valid: validHandler })
+
+      expect(validHandler).toHaveBeenCalled()
+      expect(result).toBe(valid)
+    })
+
+    test('works with only invalid handler provided', () => {
+      const invalid = Validation.invalid('error')
+      const invalidHandler = vi.fn()
+      const result = Validation.effect(invalid, { invalid: invalidHandler })
+
+      expect(invalidHandler).toHaveBeenCalledWith('error')
+      expect(result).toBe(invalid)
+    })
+
+    test('works with no handlers provided', () => {
+      const valid = Validation.valid
+      const result = Validation.effect(valid, {})
+
+      expect(result).toBe(valid)
+    })
+
+    test('does not call missing handler for valid', () => {
+      const valid = Validation.valid
+      const invalidHandler = vi.fn()
+      const result = Validation.effect(valid, { invalid: invalidHandler })
+
+      expect(invalidHandler).not.toHaveBeenCalled()
+      expect(result).toBe(valid)
+    })
+
+    test('does not call missing handler for invalid', () => {
+      const invalid = Validation.invalid('error')
+      const validHandler = vi.fn()
+      const result = Validation.effect(invalid, { valid: validHandler })
+
+      expect(validHandler).not.toHaveBeenCalled()
+      expect(result).toBe(invalid)
+    })
+
+    test('can be chained', () => {
+      const valid = Validation.valid
+      const handler1 = vi.fn()
+      const handler2 = vi.fn()
+
+      const result = Validation.effect(
+        Validation.effect(valid, { valid: handler1 }),
+        { valid: handler2 }
+      )
+
+      expect(handler1).toHaveBeenCalled()
+      expect(handler2).toHaveBeenCalled()
+      expect(result).toBe(valid)
+    })
+  })
+
   describe('toResult', () => {
     test('converts valid validation to success result', () => {
       const valid = Validation.valid

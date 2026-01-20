@@ -96,6 +96,30 @@ export const Validation = {
       () => Result.success<T>(value),
       (err: E) => Result.failure<E>(err)
     ),
+
+  /**
+   * Executes side effects based on the state of the validation.
+   * Unlike `match`, all handlers are optional, allowing you to react only to specific states.
+   * @param v - The validation.
+   * @param handlers - An object with optional handlers for each state.
+   * @returns The validation that was passed in, allowing for chaining.
+   * @public
+   */
+  effect: <E>(
+    v: Validation<E>,
+    handlers: {
+      valid?: () => void
+      invalid?: (error: E) => void
+    }
+  ): Validation<E> => {
+    if (v.type === 'valid') {
+      handlers.valid?.()
+    } else {
+      handlers.invalid?.(v.error)
+    }
+    return v
+  },
+
   /**
    * Execute a function when the `Validation` is valid.
    *
@@ -109,6 +133,7 @@ export const Validation = {
     }
     return r
   },
+
   /**
    * Execute a function when the `Validation` is invalid.
    *

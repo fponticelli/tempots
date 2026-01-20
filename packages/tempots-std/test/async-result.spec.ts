@@ -204,6 +204,107 @@ describe('AsyncResult', () => {
     });
   });
 
+  describe('effect', () => {
+    test('calls success handler for AsyncSuccess', () => {
+      const success = AsyncResult.success(42);
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+        loading: vi.fn(),
+        notAsked: vi.fn(),
+      };
+      const result = AsyncResult.effect(success, handlers);
+
+      expect(handlers.success).toHaveBeenCalledWith(42);
+      expect(handlers.failure).not.toHaveBeenCalled();
+      expect(handlers.loading).not.toHaveBeenCalled();
+      expect(handlers.notAsked).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('calls failure handler for AsyncFailure', () => {
+      const failure = AsyncResult.failure('error');
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+        loading: vi.fn(),
+        notAsked: vi.fn(),
+      };
+      const result = AsyncResult.effect(failure, handlers);
+
+      expect(handlers.success).not.toHaveBeenCalled();
+      expect(handlers.failure).toHaveBeenCalledWith('error');
+      expect(handlers.loading).not.toHaveBeenCalled();
+      expect(handlers.notAsked).not.toHaveBeenCalled();
+      expect(result).toBe(failure);
+    });
+
+    test('calls loading handler for Loading', () => {
+      const loading = AsyncResult.loading('previous');
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+        loading: vi.fn(),
+        notAsked: vi.fn(),
+      };
+      const result = AsyncResult.effect(loading, handlers);
+
+      expect(handlers.success).not.toHaveBeenCalled();
+      expect(handlers.failure).not.toHaveBeenCalled();
+      expect(handlers.loading).toHaveBeenCalledWith('previous');
+      expect(handlers.notAsked).not.toHaveBeenCalled();
+      expect(result).toBe(loading);
+    });
+
+    test('calls notAsked handler for NotAsked', () => {
+      const notAsked = AsyncResult.notAsked;
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+        loading: vi.fn(),
+        notAsked: vi.fn(),
+      };
+      const result = AsyncResult.effect(notAsked, handlers);
+
+      expect(handlers.success).not.toHaveBeenCalled();
+      expect(handlers.failure).not.toHaveBeenCalled();
+      expect(handlers.loading).not.toHaveBeenCalled();
+      expect(handlers.notAsked).toHaveBeenCalled();
+      expect(result).toBe(notAsked);
+    });
+
+    test('works with only some handlers provided', () => {
+      const success = AsyncResult.success(42);
+      const successHandler = vi.fn();
+      const result = AsyncResult.effect(success, { success: successHandler });
+
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(result).toBe(success);
+    });
+
+    test('works with no handlers provided', () => {
+      const success = AsyncResult.success(42);
+      const result = AsyncResult.effect(success, {});
+
+      expect(result).toBe(success);
+    });
+
+    test('can be chained', () => {
+      const success = AsyncResult.success(42);
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
+
+      const result = AsyncResult.effect(
+        AsyncResult.effect(success, { success: handler1 }),
+        { success: handler2 }
+      );
+
+      expect(handler1).toHaveBeenCalledWith(42);
+      expect(handler2).toHaveBeenCalledWith(42);
+      expect(result).toBe(success);
+    });
+  });
+
   describe('whenSuccess', () => {
     test('calls function for success and returns original result', () => {
       const success = AsyncResult.success(42);

@@ -225,6 +225,40 @@ export const AsyncResult = {
     }
   },
   /**
+   * Executes side effects based on the state of the result.
+   * Unlike `match`, all handlers are optional, allowing you to react only to specific states.
+   * @param r - The result.
+   * @param handlers - An object with optional handlers for each state.
+   * @returns The result that was passed in, allowing for chaining.
+   * @public
+   */
+  effect: <V, E>(
+    r: AsyncResult<V, E>,
+    handlers: {
+      success?: (value: V) => void
+      failure?: (error: E) => void
+      loading?: (previousValue?: V) => void
+      notAsked?: () => void
+    }
+  ): AsyncResult<V, E> => {
+    switch (r.type) {
+      case 'AsyncSuccess':
+        handlers.success?.(r.value)
+        break
+      case 'AsyncFailure':
+        handlers.failure?.(r.error)
+        break
+      case 'Loading':
+        handlers.loading?.(r.previousValue)
+        break
+      case 'NotAsked':
+        handlers.notAsked?.()
+        break
+    }
+    return r
+  },
+
+  /**
    * When the result is a success, it applies the function to the value.
    *
    * @param r - The result.
