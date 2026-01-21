@@ -230,9 +230,12 @@ export const computedOf = <T extends Value<unknown>[]>(...args: T) => {
  *
  * @example
  * ```ts
- * const userId = sig(1)
+ * const userId = prop(1)
  * const userData = computedOfAsync(userId)(
- *   async (id) => await fetchUser(id),
+ *   async (id, { abortSignal }) => {
+ *     const response = await fetch(`/api/users/${id}`, { signal: abortSignal })
+ *     return response.json()
+ *   },
  *   { name: 'Loading...', id: 0 },  // alt value while loading
  *   (error) => ({ name: 'Error', id: -1 })  // optional recovery
  * )
@@ -242,20 +245,95 @@ export const computedOf = <T extends Value<unknown>[]>(...args: T) => {
  */
 export const computedOfAsync = <T extends Value<unknown>[]>(...args: T) => {
   /**
-   * @param fn - The async function that computes the value from the dependencies.
+   * @param fn - The async function that computes the value from the dependencies. The last argument is an options object containing the abortSignal.
    * @param alt - The alternative value to use while the async operation is pending or on error (if no recover is provided).
    * @param recover - Optional function to recover from errors, returning an alternative value.
    * @param equals - Optional equality function to compare values. Defaults to strict equality.
    * @returns A signal that emits the computed value.
    */
   return <O>(
-    fn: (...args: ValueTypes<T>) => Promise<O>,
+    fn: (
+      ...args: [...ValueTypes<T>, { abortSignal: AbortSignal }]
+    ) => Promise<O>,
     alt: O,
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = (a, b) => a === b
   ) => {
     return computedOf(...args)((...args) => args).mapAsync(
-      ([...args]) => fn(...(args as ValueTypes<T>)),
+      ([...args], options) =>
+        fn(
+          ...([...args, options] as [
+            ...ValueTypes<T>,
+            { abortSignal: AbortSignal },
+          ])
+        ),
+      alt,
+      recover,
+      equals
+    )
+  }
+}
+
+/**
+ * Creates a computed signal that depends on other signals or literal values and performs an
+ * asynchronous generator computation when any of the dependencies change.
+ *
+ * This is the async generator version of `computedOf`. It handles streaming computations where
+ * multiple values are yielded over time. Each yield updates the signal.
+ *
+ * @typeParam T - The types of the dependency values.
+ * @param args - The signals or literal values that the computation depends on.
+ * @returns A function that takes the async generator function and configuration.
+ *
+ * @example
+ * ```ts
+ * const query = prop('hello')
+ * const streamingResponse = computedOfAsyncGenerator(query)(
+ *   async function* (q, { abortSignal }) {
+ *     const response = await fetch(`/api/stream?q=${q}`, { signal: abortSignal })
+ *     const reader = response.body!.getReader()
+ *     let accumulated = ''
+ *
+ *     while (true) {
+ *       const { done, value } = await reader.read()
+ *       if (done) break
+ *       accumulated += new TextDecoder().decode(value)
+ *       yield accumulated
+ *     }
+ *   },
+ *   '',  // alt value while loading
+ *   (error) => 'Error: ' + error  // optional recovery
+ * )
+ * ```
+ *
+ * @public
+ */
+export const computedOfAsyncGenerator = <T extends Value<unknown>[]>(
+  ...args: T
+) => {
+  /**
+   * @param fn - The async generator function that yields values over time. The last argument is an options object containing the abortSignal.
+   * @param alt - The alternative value to use before the first yield or on error (if no recover is provided).
+   * @param recover - Optional function to recover from errors, returning an alternative value.
+   * @param equals - Optional equality function to compare values. Defaults to strict equality.
+   * @returns A signal that emits each yielded value.
+   */
+  return <O>(
+    fn: (
+      ...args: [...ValueTypes<T>, { abortSignal: AbortSignal }]
+    ) => AsyncGenerator<O, void, unknown>,
+    alt: O,
+    recover?: (error: unknown) => O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
+  ) => {
+    return computedOf(...args)((...args) => args).mapAsyncGenerator(
+      ([...args], options) =>
+        fn(
+          ...([...args, options] as [
+            ...ValueTypes<T>,
+            { abortSignal: AbortSignal },
+          ])
+        ),
       alt,
       recover,
       equals

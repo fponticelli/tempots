@@ -575,6 +575,84 @@ export class Signal<T> implements ReadSignal<T> {
   }
 
   /**
+   * Maps the values emitted by the signal to multiple values over time using an async generator.
+   * Each time the source signal changes, a new async generator is created and iterated.
+   * Previous generators are aborted when a new value arrives.
+   *
+   * This is useful for streaming data, such as:
+   * - AI/LLM streaming responses
+   * - Server-Sent Events (SSE)
+   * - Paginated data loading
+   * - WebSocket message streams
+   *
+   * @example
+   * ```typescript
+   * const query = prop('hello')
+   *
+   * // Stream AI response tokens
+   * const streamingResponse = query.mapAsyncGenerator(
+   *   async function* (q, { abortSignal }) {
+   *     const response = await fetch('/api/stream?q=' + q, { signal: abortSignal })
+   *     const reader = response.body!.getReader()
+   *     let accumulated = ''
+   *
+   *     while (true) {
+   *       const { done, value } = await reader.read()
+   *       if (done) break
+   *       accumulated += new TextDecoder().decode(value)
+   *       yield accumulated  // Update signal with each chunk
+   *     }
+   *   },
+   *   '',  // alt: empty string while loading
+   *   (err) => 'Error: ' + err  // recover
+   * )
+   * ```
+   *
+   * @typeParam O - The type of the yielded values.
+   * @param fn - The async generator function that yields values over time. The second argument provides an AbortSignal to cancel the generator when a new value arrives.
+   * @param alt - The initial value to use before the first yield.
+   * @param recover - Optional function to handle errors thrown by the generator.
+   * @param equals - Optional equality function to compare yielded values.
+   * @returns A property that updates each time the generator yields a value.
+   */
+  readonly mapAsyncGenerator = <O>(
+    fn: (
+      value: T,
+      options: { abortSignal: AbortSignal }
+    ) => AsyncGenerator<O, void, unknown>,
+    alt: O,
+    recover?: (error: unknown) => O,
+    equals: (a: O, b: O) => boolean = (a, b) => a === b
+  ) => {
+    const p = prop(alt, equals)
+    let count = 0
+    let abortController = new AbortController()
+    p.onDispose(
+      this.on(async v => {
+        const current = ++count
+        abortController.abort()
+        abortController = new AbortController()
+        try {
+          const generator = fn(v, { abortSignal: abortController.signal })
+          for await (const yielded of generator) {
+            if (current !== count) return // Stale generator, stop iterating
+            p.set(yielded)
+          }
+        } catch (error) {
+          if (current === count) {
+            if (recover != null) {
+              p.set(recover(error))
+            } else {
+              throw error
+            }
+          }
+        }
+      })
+    )
+    return p
+  }
+
+  /**
    * Maps the values of the signal using the provided function `fn`, and returns a new signal
    * containing the mapped values. If the mapped value is `undefined` or `null`, it is replaced
    * with the provided `alt` value.

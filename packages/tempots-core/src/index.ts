@@ -45,6 +45,7 @@ export {
 export {
   computedOf,
   computedOfAsync,
+  computedOfAsyncGenerator,
   effectOf,
   joinSignals,
   Value,
