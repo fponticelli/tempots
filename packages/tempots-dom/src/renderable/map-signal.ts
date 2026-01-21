@@ -28,7 +28,7 @@ export const MapSignal = <T>(
     const signal = value as Signal<T>
     return domRenderable((ctx: DOMContext) => {
       ctx = ctx.makeRef()
-      // eslint-disable-next-line tempots/no-renderable-signal-map
+
       const mountableSignal = signal.map(v => renderableOfTNode(fn(v)))
       let previousClear: Clear = () => {}
       const clear = mountableSignal.on(child => {
