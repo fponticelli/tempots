@@ -683,7 +683,12 @@ export function initIslands(
 
     // Schedule hydration
     const cancelSchedule = scheduleHydration(element, strategy, () => {
-      const cleanup = hydrateIsland(element, component, componentOptions, options);
+      const cleanup = hydrateIsland(
+        element,
+        component,
+        componentOptions,
+        options,
+      );
       cleanups.push(cleanup);
 
       // Remove island markers after hydration

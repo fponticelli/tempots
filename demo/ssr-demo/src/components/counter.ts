@@ -14,8 +14,8 @@ export interface CounterOptions {
  * Accepts `unknown` for island registry compatibility; casts internally.
  */
 export const Counter = (options: unknown): Renderable => {
-  const { initial = 0, label = "Interactive Counter" } =
-    (options ?? {}) as CounterOptions;
+  const { initial = 0, label = "Interactive Counter" } = (options ??
+    {}) as CounterOptions;
   const count = prop(initial);
 
   return html.div(

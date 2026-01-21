@@ -23,11 +23,10 @@ export interface AppOptions {
  * Main App component.
  */
 export const App = ({
-    timestamp = new Date().toISOString(),
-    hydrated,
-    showIslands = true,
-  }: AppOptions = {}): Renderable => {
-
+  timestamp = new Date().toISOString(),
+  hydrated,
+  showIslands = true,
+}: AppOptions = {}): Renderable => {
   return html.div(
     attr.class("container"),
     html.header(
