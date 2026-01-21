@@ -9,6 +9,18 @@
         "dist/**"
       ]
     },
+    "@tempos/docs#build": {
+      "dependsOn": [
+        "^build",
+        "7guis#build",
+        "counter#build",
+        "hnpwa#build",
+        "todomvc#build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
     "build:watch": {
       "persistent": true,
       "cache": false,
