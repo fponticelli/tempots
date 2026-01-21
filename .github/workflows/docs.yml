@@ -38,9 +38,6 @@ jobs:
         run: pnpm run docs
       - name: Build Docs
         run: pnpm run build --filter=@tempos/docs
-      - name: Build Pages
-        working-directory: apps/docs
-        run: pnpm run docs:static
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
