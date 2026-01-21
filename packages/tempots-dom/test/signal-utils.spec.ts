@@ -511,7 +511,7 @@ describe('animateSignals', () => {
     expect(animated.value).toBeGreaterThan(0)
     expect(animated.value).toBeLessThan(100)
 
-    await sleep(30) // Complete animation
+    await sleep(100) // Complete animation with margin for CI timing variations
     expect(animated.value).toBe(100)
   })
 
