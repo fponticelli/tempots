@@ -30,106 +30,132 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./array": {
+      "types": "./dist/array.d.ts",
       "import": "./dist/array.js",
       "require": "./dist/array.cjs"
     },
     "./async-result": {
+      "types": "./dist/async-result.d.ts",
       "import": "./dist/async-result.js",
       "require": "./dist/async-result.cjs"
     },
     "./bigint": {
+      "types": "./dist/bigint.d.ts",
       "import": "./dist/bigint.js",
       "require": "./dist/bigint.cjs"
     },
     "./boolean": {
+      "types": "./dist/boolean.d.ts",
       "import": "./dist/boolean.js",
       "require": "./dist/boolean.cjs"
     },
     "./date": {
+      "types": "./dist/date.d.ts",
       "import": "./dist/date.js",
       "require": "./dist/date.cjs"
     },
     "./deferred": {
+      "types": "./dist/deferred.d.ts",
       "import": "./dist/deferred.js",
       "require": "./dist/deferred.cjs"
     },
     "./domain": {
+      "types": "./dist/domain.d.ts",
       "import": "./dist/domain.js",
       "require": "./dist/domain.cjs"
     },
     "./equal": {
+      "types": "./dist/equal.d.ts",
       "import": "./dist/equal.js",
       "require": "./dist/equal.cjs"
     },
     "./error": {
+      "types": "./dist/error.d.ts",
       "import": "./dist/error.js",
       "require": "./dist/error.cjs"
     },
     "./function": {
+      "types": "./dist/function.d.ts",
       "import": "./dist/function.js",
       "require": "./dist/function.cjs"
     },
     "./iterator": {
+      "types": "./dist/iterator.d.ts",
       "import": "./dist/iterator.js",
       "require": "./dist/iterator.cjs"
     },
     "./json": {
+      "types": "./dist/json.d.ts",
       "import": "./dist/json.js",
       "require": "./dist/json.cjs"
     },
     "./map": {
+      "types": "./dist/map.d.ts",
       "import": "./dist/map.js",
       "require": "./dist/map.cjs"
     },
     "./number": {
+      "types": "./dist/number.d.ts",
       "import": "./dist/number.js",
       "require": "./dist/number.cjs"
     },
     "./object": {
+      "types": "./dist/object.d.ts",
       "import": "./dist/object.js",
       "require": "./dist/object.cjs"
     },
     "./promise": {
+      "types": "./dist/promise.d.ts",
       "import": "./dist/promise.js",
       "require": "./dist/promise.cjs"
     },
     "./random": {
+      "types": "./dist/random.d.ts",
       "import": "./dist/random.js",
       "require": "./dist/random.cjs"
     },
     "./regexp": {
+      "types": "./dist/regexp.d.ts",
       "import": "./dist/regexp.js",
       "require": "./dist/regexp.cjs"
     },
     "./result": {
+      "types": "./dist/result.d.ts",
       "import": "./dist/result.js",
       "require": "./dist/result.cjs"
     },
     "./set": {
+      "types": "./dist/set.d.ts",
       "import": "./dist/set.js",
       "require": "./dist/set.cjs"
     },
     "./string": {
+      "types": "./dist/string.d.ts",
       "import": "./dist/string.js",
       "require": "./dist/string.cjs"
     },
     "./timer": {
+      "types": "./dist/timer.d.ts",
       "import": "./dist/timer.js",
       "require": "./dist/timer.cjs"
     },
     "./union": {
+      "types": "./dist/union.d.ts",
       "import": "./dist/union.js",
       "require": "./dist/union.cjs"
     },
     "./url": {
+      "types": "./dist/url.d.ts",
       "import": "./dist/url.js",
       "require": "./dist/url.cjs"
     },
     "./validation": {
+      "types": "./dist/validation.d.ts",
       "import": "./dist/validation.js",
       "require": "./dist/validation.cjs"
     }
