@@ -22,106 +22,132 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "import": "./index.js",
       "require": "./index.cjs"
     },
     "./array": {
+      "types": "./array.d.ts",
       "import": "./array.js",
       "require": "./array.cjs"
     },
     "./async-result": {
+      "types": "./async-result.d.ts",
       "import": "./async-result.js",
       "require": "./async-result.cjs"
     },
     "./bigint": {
+      "types": "./bigint.d.ts",
       "import": "./bigint.js",
       "require": "./bigint.cjs"
     },
     "./boolean": {
+      "types": "./boolean.d.ts",
       "import": "./boolean.js",
       "require": "./boolean.cjs"
     },
     "./date": {
+      "types": "./date.d.ts",
       "import": "./date.js",
       "require": "./date.cjs"
     },
     "./deferred": {
+      "types": "./deferred.d.ts",
       "import": "./deferred.js",
       "require": "./deferred.cjs"
     },
     "./domain": {
+      "types": "./domain.d.ts",
       "import": "./domain.js",
       "require": "./domain.cjs"
     },
     "./equal": {
+      "types": "./equal.d.ts",
       "import": "./equal.js",
       "require": "./equal.cjs"
     },
     "./error": {
+      "types": "./error.d.ts",
       "import": "./error.js",
       "require": "./error.cjs"
     },
     "./function": {
+      "types": "./function.d.ts",
       "import": "./function.js",
       "require": "./function.cjs"
     },
     "./iterator": {
+      "types": "./iterator.d.ts",
       "import": "./iterator.js",
       "require": "./iterator.cjs"
     },
     "./json": {
+      "types": "./json.d.ts",
       "import": "./json.js",
       "require": "./json.cjs"
     },
     "./map": {
+      "types": "./map.d.ts",
       "import": "./map.js",
       "require": "./map.cjs"
     },
     "./number": {
+      "types": "./number.d.ts",
       "import": "./number.js",
       "require": "./number.cjs"
     },
     "./object": {
+      "types": "./object.d.ts",
       "import": "./object.js",
       "require": "./object.cjs"
     },
     "./promise": {
+      "types": "./promise.d.ts",
       "import": "./promise.js",
       "require": "./promise.cjs"
     },
     "./random": {
+      "types": "./random.d.ts",
       "import": "./random.js",
       "require": "./random.cjs"
     },
     "./regexp": {
+      "types": "./regexp.d.ts",
       "import": "./regexp.js",
       "require": "./regexp.cjs"
     },
     "./result": {
+      "types": "./result.d.ts",
       "import": "./result.js",
       "require": "./result.cjs"
     },
     "./set": {
+      "types": "./set.d.ts",
       "import": "./set.js",
       "require": "./set.cjs"
     },
     "./string": {
+      "types": "./string.d.ts",
       "import": "./string.js",
       "require": "./string.cjs"
     },
     "./timer": {
+      "types": "./timer.d.ts",
       "import": "./timer.js",
       "require": "./timer.cjs"
     },
     "./union": {
+      "types": "./union.d.ts",
       "import": "./union.js",
       "require": "./union.cjs"
     },
     "./url": {
+      "types": "./url.d.ts",
       "import": "./url.js",
       "require": "./url.cjs"
     },
     "./validation": {
+      "types": "./validation.d.ts",
       "import": "./validation.js",
       "require": "./validation.cjs"
     }

@@ -1,17 +1,21 @@
 {
   "name": "@tempots/dom",
-  "version": "35.0.2",
+  "version": "35.0.3",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "import": "./index.js",
       "require": "./index.cjs"
     }
   },
   "license": "Apache-2.0",
+  "dependencies": {
+    "@tempots/core": "^2.0.4"
+  },
   "description": "Fully-typed frontend framework alternative to React and Angular",
   "keywords": [
     "tempo",
