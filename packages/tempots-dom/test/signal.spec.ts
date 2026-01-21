@@ -1039,6 +1039,211 @@ describe("Signal", () => {
     expect(abortCount).toBeGreaterThan(0); // Previous operations should have been aborted
   });
 
+  test("mapAsyncGenerator basic usage", async () => {
+    const p = prop(1);
+    const yielded: number[] = [];
+
+    const result = p.mapAsyncGenerator(
+      async function* (v) {
+        yield v;
+        yield v * 2;
+        yield v * 3;
+      },
+      0
+    );
+
+    expect(result.value).toBe(0); // Initial alt value
+
+    // Track all yielded values
+    result.on(v => yielded.push(v));
+
+    await sleep(10);
+    expect(result.value).toBe(3); // Final yielded value (1 * 3)
+    expect(yielded).toContain(1);
+    expect(yielded).toContain(2);
+    expect(yielded).toContain(3);
+  });
+
+  test("mapAsyncGenerator with delayed yields", async () => {
+    const p = prop(2);
+    const yielded: number[] = [];
+
+    const result = p.mapAsyncGenerator(
+      async function* (v) {
+        yield v;
+        await sleep(5);
+        yield v * 2;
+        await sleep(5);
+        yield v * 3;
+      },
+      0
+    );
+
+    result.on(v => yielded.push(v));
+
+    await sleep(5);
+    expect(yielded).toContain(2); // First yield
+
+    await sleep(20);
+    expect(result.value).toBe(6); // Final yielded value (2 * 3)
+    expect(yielded).toContain(4); // Second yield
+    expect(yielded).toContain(6); // Third yield
+  });
+
+  test("mapAsyncGenerator aborts previous generator on new value", async () => {
+    const p = prop(1);
+    let abortCount = 0;
+    const yielded: number[] = [];
+
+    const result = p.mapAsyncGenerator(
+      async function* (v, { abortSignal }) {
+        abortSignal.addEventListener('abort', () => abortCount++);
+        yield v;
+        await sleep(50);
+        yield v * 10; // Should not be reached if aborted
+      },
+      0
+    );
+
+    result.on(v => yielded.push(v));
+
+    await sleep(5);
+    expect(yielded).toContain(1); // First yield from v=1
+
+    // Change value before the generator completes
+    p.set(2);
+
+    await sleep(10);
+    expect(yielded).toContain(2); // First yield from v=2
+    expect(abortCount).toBe(1); // Previous generator was aborted
+
+    await sleep(60);
+    expect(result.value).toBe(20); // Final value from second generator (2 * 10)
+    expect(yielded).not.toContain(10); // First generator's second yield was skipped
+  });
+
+  test("mapAsyncGenerator with error recovery", async () => {
+    const p = prop(1);
+
+    const result = p.mapAsyncGenerator(
+      async function* (v) {
+        yield v;
+        throw new Error("test error");
+      },
+      0,
+      () => -1 // Recovery value
+    );
+
+    expect(result.value).toBe(0);
+
+    await sleep(10);
+    expect(result.value).toBe(-1); // Recovered value
+  });
+
+  test("mapAsyncGenerator without recovery throws", async () => {
+    const p = prop(1);
+
+    let unhandledError: any = null;
+    const handler = (error: any) => {
+      unhandledError = error;
+    };
+    process.on('unhandledRejection', handler);
+
+    const result = p.mapAsyncGenerator(
+      async function* () {
+        throw new Error("unrecovered error");
+      },
+      0
+    );
+
+    expect(result.value).toBe(0);
+
+    await sleep(10);
+
+    expect(unhandledError).toBeInstanceOf(Error);
+    expect(unhandledError.message).toBe("unrecovered error");
+
+    process.removeListener('unhandledRejection', handler);
+  });
+
+  test("mapAsyncGenerator with custom equals", async () => {
+    const p = prop(1);
+    const customEquals = (a: { v: number }, b: { v: number }) => a.v === b.v;
+    const callCount = { count: 0 };
+
+    const result = p.mapAsyncGenerator(
+      async function* (v) {
+        yield { v };
+        yield { v }; // Same value, should not trigger update with custom equals
+        yield { v: v + 1 };
+      },
+      { v: 0 },
+      undefined,
+      customEquals
+    );
+
+    result.on(() => callCount.count++);
+
+    await sleep(10);
+
+    // Initial (0) + first yield (1) + third yield (2) = 3 updates
+    // The duplicate { v: 1 } should not trigger an additional update
+    expect(callCount.count).toBe(3);
+    expect(result.value).toEqual({ v: 2 });
+  });
+
+  test("mapAsyncGenerator disposes correctly", async () => {
+    const p = prop(1);
+    let generatorCompleted = false;
+
+    const result = p.mapAsyncGenerator(
+      async function* (v) {
+        yield v;
+        await sleep(50);
+        generatorCompleted = true;
+        yield v * 2;
+      },
+      0
+    );
+
+    await sleep(10);
+    expect(result.value).toBe(1);
+
+    // Dispose the result prop
+    result.dispose();
+
+    await sleep(60);
+    // Generator may have completed, but result should not update after disposal
+    expect(result.value).toBe(1);
+  });
+
+  test("mapAsyncGenerator handles rapid value changes", async () => {
+    const p = prop(1);
+    let abortCount = 0;
+
+    const result = p.mapAsyncGenerator(
+      async function* (v, { abortSignal }) {
+        abortSignal.addEventListener('abort', () => abortCount++);
+        yield v;
+        await sleep(20);
+        yield v * 10;
+      },
+      0
+    );
+
+    // Rapid changes
+    p.set(2);
+    p.set(3);
+    p.set(4);
+    p.set(5);
+
+    await sleep(50);
+
+    // Only the last generator should complete
+    expect(result.value).toBe(50); // 5 * 10
+    expect(abortCount).toBeGreaterThanOrEqual(3); // At least 3 generators were aborted
+  });
+
   test("feedProp disposal cleanup", () => {
     const source = prop(1);
     const target = prop(0);
