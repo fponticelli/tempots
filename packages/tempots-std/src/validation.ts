@@ -96,6 +96,40 @@ export const Validation = {
       () => Result.success<T>(value),
       (err: E) => Result.failure<E>(err)
     ),
+
+  /**
+   * Executes side effects based on the state of the validation.
+   * Unlike `match`, all handlers are optional, allowing you to react only to specific states.
+   * The `else` handler is called when no specific handler is provided for the current state.
+   * @param v - The validation.
+   * @param handlers - An object with optional handlers for each state and an optional `else` fallback.
+   * @returns The validation that was passed in, allowing for chaining.
+   * @public
+   */
+  effect: <E>(
+    v: Validation<E>,
+    handlers: {
+      valid?: () => void
+      invalid?: (error: E) => void
+      else?: () => void
+    }
+  ): Validation<E> => {
+    if (v.type === 'valid') {
+      if (handlers.valid) {
+        handlers.valid()
+      } else {
+        handlers.else?.()
+      }
+    } else {
+      if (handlers.invalid) {
+        handlers.invalid(v.error)
+      } else {
+        handlers.else?.()
+      }
+    }
+    return v
+  },
+
   /**
    * Execute a function when the `Validation` is valid.
    *
@@ -109,6 +143,7 @@ export const Validation = {
     }
     return r
   },
+
   /**
    * Execute a function when the `Validation` is invalid.
    *
@@ -121,5 +156,163 @@ export const Validation = {
       apply(r.error)
     }
     return r
+  },
+
+  /**
+   * Maps the error of an invalid `Validation` to a new error using the provided function.
+   * For valid validations, the validation is preserved unchanged.
+   * @param v - The `Validation` to map the error of.
+   * @param f - The mapping function to apply to the error.
+   * @returns A new `Validation` with the mapped error if invalid, otherwise the original valid.
+   * @public
+   */
+  mapError: <E, F>(v: Validation<E>, f: (error: E) => F): Validation<F> => {
+    if (v.type === 'invalid') {
+      return Validation.invalid(f(v.error))
+    } else {
+      return v
+    }
+  },
+
+  /**
+   * Maps the error of an invalid `Validation` to a new `Validation` using the provided function.
+   * This allows recovery from errors by returning a valid validation.
+   * @param v - The `Validation` to recover from.
+   * @param f - The recovery function that returns a new `Validation`.
+   * @returns The result of the recovery function if invalid, otherwise the original valid.
+   * @public
+   */
+  flatMapError: <E, F>(
+    v: Validation<E>,
+    f: (error: E) => Validation<F>
+  ): Validation<F> => {
+    if (v.type === 'invalid') {
+      return f(v.error)
+    } else {
+      return v
+    }
+  },
+
+  /**
+   * Combines two validations. Both must be valid for the result to be valid.
+   * If both are invalid, errors are combined using the provided function.
+   * @param v1 - The first validation.
+   * @param v2 - The second validation.
+   * @param combineErrors - The function to combine two errors.
+   * @returns A combined validation.
+   * @public
+   */
+  combine: <E>(
+    v1: Validation<E>,
+    v2: Validation<E>,
+    combineErrors: (e1: E, e2: E) => E
+  ): Validation<E> => {
+    if (Validation.isValid(v1) && Validation.isValid(v2)) {
+      return Validation.valid
+    } else if (Validation.isInvalid(v1) && Validation.isInvalid(v2)) {
+      return Validation.invalid(combineErrors(v1.error, v2.error))
+    } else if (Validation.isInvalid(v1)) {
+      return v1
+    } else {
+      return v2
+    }
+  },
+
+  /**
+   * Combines multiple validations into a single validation.
+   * All must be valid for the result to be valid.
+   * Returns the first invalid validation if any.
+   * @param validations - The validations to combine.
+   * @returns A single validation that is valid only if all inputs are valid.
+   * @public
+   */
+  all: <E>(validations: Validation<E>[]): Validation<E> => {
+    for (const validation of validations) {
+      if (Validation.isInvalid(validation)) {
+        return validation
+      }
+    }
+    return Validation.valid
+  },
+
+  /**
+   * Combines multiple validations, accumulating all errors.
+   * All must be valid for the result to be valid.
+   * If any are invalid, all errors are collected into an array.
+   * @param validations - The validations to combine.
+   * @returns A validation that is valid only if all inputs are valid, otherwise contains all errors.
+   * @public
+   */
+  allErrors: <E>(validations: Validation<E>[]): Validation<E[]> => {
+    const errors: E[] = []
+    for (const validation of validations) {
+      if (Validation.isInvalid(validation)) {
+        errors.push(validation.error)
+      }
+    }
+    if (errors.length > 0) {
+      return Validation.invalid(errors)
+    }
+    return Validation.valid
+  },
+
+  /**
+   * Compares two validations for equality.
+   * @param v1 - The first validation.
+   * @param v2 - The second validation.
+   * @param errorEquals - Optional custom equality function for errors. Defaults to strict equality.
+   * @returns `true` if the validations are equal, `false` otherwise.
+   * @public
+   */
+  equals: <E>(
+    v1: Validation<E>,
+    v2: Validation<E>,
+    errorEquals: (e1: E, e2: E) => boolean = (e1, e2) => e1 === e2
+  ): boolean => {
+    if (v1.type === 'valid' && v2.type === 'valid') {
+      return true
+    } else if (v1.type === 'invalid' && v2.type === 'invalid') {
+      return errorEquals(v1.error, v2.error)
+    } else {
+      return false
+    }
+  },
+
+  /**
+   * Recovers from an invalid validation by returning a valid validation.
+   * @param v - The `Validation` to recover from.
+   * @returns A valid validation regardless of the input.
+   * @public
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  recover: <E>(_v: Validation<E>): Validation<never> => {
+    return Validation.valid
+  },
+
+  /**
+   * Gets the error if the validation is invalid, otherwise returns undefined.
+   * @param v - The validation to get the error from.
+   * @returns The error if invalid, otherwise undefined.
+   * @public
+   */
+  getError: <E>(v: Validation<E>): E | undefined => {
+    if (Validation.isInvalid(v)) {
+      return v.error
+    }
+    return undefined
+  },
+
+  /**
+   * Gets the error if the validation is invalid, otherwise returns the default value.
+   * @param v - The validation to get the error from.
+   * @param defaultError - The default error to return if valid.
+   * @returns The error if invalid, otherwise the default error.
+   * @public
+   */
+  getErrorOrElse: <E>(v: Validation<E>, defaultError: E): E => {
+    if (Validation.isInvalid(v)) {
+      return v.error
+    }
+    return defaultError
   },
 }

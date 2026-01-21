@@ -27,7 +27,7 @@ const makeRequest = async <Out>(
   // Check if we have a cached successful result
   if (cache.has(endpoint)) {
     const cached = cache.get(endpoint)!
-    if (cached.isSuccess) {
+    if (Result.isSuccess(cached)) {
       return cached as Result<Out, HttpError>
     }
   }
@@ -73,7 +73,10 @@ const makeRequest = async <Out>(
   })()
 
   // Track this request as in-flight
-  inFlightRequests.set(endpoint, requestPromise as Promise<Result<unknown, HttpError>>)
+  inFlightRequests.set(
+    endpoint,
+    requestPromise as Promise<Result<unknown, HttpError>>
+  )
 
   return requestPromise
 }

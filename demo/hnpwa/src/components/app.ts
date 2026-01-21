@@ -69,7 +69,7 @@ function HeaderLink({ route, feed }: { route: Signal<Route>; feed: Feed }) {
   const whenTrue = () =>
     html.span(aria.current('page'), toTitle(Route.feeds(feed, 1)))
   const whenFalse = () => LinkRoute({ route: signal(Route.feeds(feed, 1)) })
-  return Fragment(When(condition, whenTrue, whenFalse))
+  return When(condition, whenTrue, whenFalse)
 }
 
 export function App(route: Signal<Route>, page: Signal<Page>) {

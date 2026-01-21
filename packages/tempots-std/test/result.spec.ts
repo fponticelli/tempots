@@ -304,6 +304,139 @@ describe('Result', () => {
     });
   });
 
+  describe('effect', () => {
+    test('calls success handler for Success', () => {
+      const success = Result.success(42);
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+      };
+      const result = Result.effect(success, handlers);
+
+      expect(handlers.success).toHaveBeenCalledWith(42);
+      expect(handlers.failure).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('calls failure handler for Failure', () => {
+      const failure = Result.failure('error');
+      const handlers = {
+        success: vi.fn(),
+        failure: vi.fn(),
+      };
+      const result = Result.effect(failure, handlers);
+
+      expect(handlers.success).not.toHaveBeenCalled();
+      expect(handlers.failure).toHaveBeenCalledWith('error');
+      expect(result).toBe(failure);
+    });
+
+    test('works with only success handler provided', () => {
+      const success = Result.success(42);
+      const successHandler = vi.fn();
+      const result = Result.effect(success, { success: successHandler });
+
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(result).toBe(success);
+    });
+
+    test('works with only failure handler provided', () => {
+      const failure = Result.failure('error');
+      const failureHandler = vi.fn();
+      const result = Result.effect(failure, { failure: failureHandler });
+
+      expect(failureHandler).toHaveBeenCalledWith('error');
+      expect(result).toBe(failure);
+    });
+
+    test('works with no handlers provided', () => {
+      const success = Result.success(42);
+      const result = Result.effect(success, {});
+
+      expect(result).toBe(success);
+    });
+
+    test('does not call missing handler for success', () => {
+      const success = Result.success(42);
+      const failureHandler = vi.fn();
+      const result = Result.effect(success, { failure: failureHandler });
+
+      expect(failureHandler).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('does not call missing handler for failure', () => {
+      const failure = Result.failure('error');
+      const successHandler = vi.fn();
+      const result = Result.effect(failure, { success: successHandler });
+
+      expect(successHandler).not.toHaveBeenCalled();
+      expect(result).toBe(failure);
+    });
+
+    test('can be chained', () => {
+      const success = Result.success(42);
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
+
+      const result = Result.effect(
+        Result.effect(success, { success: handler1 }),
+        { success: handler2 }
+      );
+
+      expect(handler1).toHaveBeenCalledWith(42);
+      expect(handler2).toHaveBeenCalledWith(42);
+      expect(result).toBe(success);
+    });
+
+    test('calls else handler when no specific handler for success', () => {
+      const success = Result.success(42);
+      const elseHandler = vi.fn();
+      const result = Result.effect(success, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('calls else handler when no specific handler for failure', () => {
+      const failure = Result.failure('error');
+      const elseHandler = vi.fn();
+      const result = Result.effect(failure, { else: elseHandler });
+
+      expect(elseHandler).toHaveBeenCalled();
+      expect(result).toBe(failure);
+    });
+
+    test('does not call else handler when specific handler is provided', () => {
+      const success = Result.success(42);
+      const successHandler = vi.fn();
+      const elseHandler = vi.fn();
+      const result = Result.effect(success, { success: successHandler, else: elseHandler });
+
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(elseHandler).not.toHaveBeenCalled();
+      expect(result).toBe(success);
+    });
+
+    test('else handler works as fallback for unhandled states', () => {
+      const success = Result.success(42);
+      const failure = Result.failure('error');
+      const successHandler = vi.fn();
+      const elseHandler = vi.fn();
+
+      Result.effect(success, { success: successHandler, else: elseHandler });
+      expect(successHandler).toHaveBeenCalledWith(42);
+      expect(elseHandler).not.toHaveBeenCalled();
+
+      successHandler.mockClear();
+      elseHandler.mockClear();
+
+      Result.effect(failure, { success: successHandler, else: elseHandler });
+      expect(successHandler).not.toHaveBeenCalled();
+      expect(elseHandler).toHaveBeenCalled();
+    });
+  });
+
   describe('whenSuccess', () => {
     test('calls function for success and returns original result', () => {
       const success = Result.success(42);
@@ -596,6 +729,390 @@ describe('Result', () => {
       expect(Result.isFailure(combined)).toBe(true);
       if (Result.isFailure(combined)) {
         expect(combined.error).toBe('first error');
+      }
+    });
+  });
+
+  describe('mapError', () => {
+    test('maps error values', () => {
+      const result = Result.failure('error');
+      const mapped = Result.mapError(result, e => `Mapped: ${e}`);
+
+      expect(Result.isFailure(mapped)).toBe(true);
+      if (Result.isFailure(mapped)) {
+        expect(mapped.error).toBe('Mapped: error');
+      }
+    });
+
+    test('does not map success values', () => {
+      const result = Result.success(42);
+      const mapped = Result.mapError(result, (e: string) => `Mapped: ${e}`);
+
+      expect(Result.isSuccess(mapped)).toBe(true);
+      if (Result.isSuccess(mapped)) {
+        expect(mapped.value).toBe(42);
+      }
+    });
+
+    test('can change error type', () => {
+      const result = Result.failure('error');
+      const mapped = Result.mapError(result, () => ({ code: 500 }));
+
+      expect(Result.isFailure(mapped)).toBe(true);
+      if (Result.isFailure(mapped)) {
+        expect(mapped.error).toEqual({ code: 500 });
+      }
+    });
+
+    test('mapping function is not called for success', () => {
+      const mapFn = vi.fn((e: string) => `Mapped: ${e}`);
+      const result = Result.success(42);
+
+      Result.mapError(result, mapFn);
+
+      expect(mapFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('flatMapError', () => {
+    test('flat maps error to success (recovery)', () => {
+      const result = Result.failure('error');
+      const recovered = Result.flatMapError(result, () => Result.success(42));
+
+      expect(Result.isSuccess(recovered)).toBe(true);
+      if (Result.isSuccess(recovered)) {
+        expect(recovered.value).toBe(42);
+      }
+    });
+
+    test('flat maps error to different error', () => {
+      const result = Result.failure('error');
+      const mapped = Result.flatMapError(result, e => Result.failure(`Wrapped: ${e}`));
+
+      expect(Result.isFailure(mapped)).toBe(true);
+      if (Result.isFailure(mapped)) {
+        expect(mapped.error).toBe('Wrapped: error');
+      }
+    });
+
+    test('does not flat map success values', () => {
+      const result = Result.success(42);
+      const mapped = Result.flatMapError(result, () => Result.success(0));
+
+      expect(Result.isSuccess(mapped)).toBe(true);
+      if (Result.isSuccess(mapped)) {
+        expect(mapped.value).toBe(42);
+      }
+    });
+
+    test('recovery function is not called for success', () => {
+      const recoveryFn = vi.fn(() => Result.success(0));
+      const result = Result.success(42);
+
+      Result.flatMapError(result, recoveryFn);
+
+      expect(recoveryFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('recover', () => {
+    test('recovers from failure with alternative value', () => {
+      const result = Result.failure('error');
+      const recovered = Result.recover(result, () => 42);
+
+      expect(Result.isSuccess(recovered)).toBe(true);
+      if (Result.isSuccess(recovered)) {
+        expect(recovered.value).toBe(42);
+      }
+    });
+
+    test('uses error in recovery function', () => {
+      const result = Result.failure(5);
+      const recovered = Result.recover(result, e => e * 2);
+
+      expect(Result.isSuccess(recovered)).toBe(true);
+      if (Result.isSuccess(recovered)) {
+        expect(recovered.value).toBe(10);
+      }
+    });
+
+    test('does not call recovery for success', () => {
+      const recoveryFn = vi.fn(() => 0);
+      const result = Result.success(42);
+
+      const recovered = Result.recover(result, recoveryFn);
+
+      expect(recoveryFn).not.toHaveBeenCalled();
+      expect(Result.isSuccess(recovered)).toBe(true);
+      if (Result.isSuccess(recovered)) {
+        expect(recovered.value).toBe(42);
+      }
+    });
+  });
+
+  describe('ap', () => {
+    test('applies function to value when both are success', () => {
+      const fnResult = Result.success((x: number) => x * 2);
+      const valResult = Result.success(5);
+      const result = Result.ap(fnResult, valResult);
+
+      expect(Result.isSuccess(result)).toBe(true);
+      if (Result.isSuccess(result)) {
+        expect(result.value).toBe(10);
+      }
+    });
+
+    test('returns failure when function is failure', () => {
+      const fnResult = Result.failure('fn error');
+      const valResult = Result.success(5);
+      const result = Result.ap(fnResult, valResult);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('fn error');
+      }
+    });
+
+    test('returns failure when value is failure', () => {
+      const fnResult = Result.success((x: number) => x * 2);
+      const valResult = Result.failure('val error');
+      const result = Result.ap(fnResult, valResult);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('val error');
+      }
+    });
+  });
+
+  describe('map2', () => {
+    test('maps two success values', () => {
+      const r1 = Result.success(5);
+      const r2 = Result.success(3);
+      const result = Result.map2(r1, r2, (a, b) => a + b);
+
+      expect(Result.isSuccess(result)).toBe(true);
+      if (Result.isSuccess(result)) {
+        expect(result.value).toBe(8);
+      }
+    });
+
+    test('returns first failure when first is failure', () => {
+      const r1 = Result.failure('error1');
+      const r2 = Result.success(3);
+      const result = Result.map2(r1, r2, (a: number, b: number) => a + b);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error1');
+      }
+    });
+
+    test('returns second failure when second is failure', () => {
+      const r1 = Result.success(5);
+      const r2 = Result.failure('error2');
+      const result = Result.map2(r1, r2, (a, b: number) => a + b);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error2');
+      }
+    });
+  });
+
+  describe('map3', () => {
+    test('maps three success values', () => {
+      const r1 = Result.success(5);
+      const r2 = Result.success(3);
+      const r3 = Result.success(2);
+      const result = Result.map3(r1, r2, r3, (a, b, c) => a + b + c);
+
+      expect(Result.isSuccess(result)).toBe(true);
+      if (Result.isSuccess(result)) {
+        expect(result.value).toBe(10);
+      }
+    });
+
+    test('returns first failure when first is failure', () => {
+      const r1 = Result.failure('error1');
+      const r2 = Result.success(3);
+      const r3 = Result.success(2);
+      const result = Result.map3(r1, r2, r3, (a: number, b: number, c: number) => a + b + c);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error1');
+      }
+    });
+
+    test('returns second failure when second is failure', () => {
+      const r1 = Result.success(5);
+      const r2 = Result.failure('error2');
+      const r3 = Result.success(2);
+      const result = Result.map3(r1, r2, r3, (a, b: number, c: number) => a + b + c);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error2');
+      }
+    });
+
+    test('returns third failure when third is failure', () => {
+      const r1 = Result.success(5);
+      const r2 = Result.success(3);
+      const r3 = Result.failure('error3');
+      const result = Result.map3(r1, r2, r3, (a, b, c: number) => a + b + c);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error3');
+      }
+    });
+  });
+
+  describe('ofPromise', () => {
+    test('returns success for resolved promise', async () => {
+      const promise = Promise.resolve(42);
+      const result = await Result.ofPromise(promise);
+
+      expect(Result.isSuccess(result)).toBe(true);
+      if (Result.isSuccess(result)) {
+        expect(result.value).toBe(42);
+      }
+    });
+
+    test('returns failure for rejected promise with Error', async () => {
+      const error = new Error('test error');
+      const promise = Promise.reject(error);
+      const result = await Result.ofPromise(promise);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe(error);
+      }
+    });
+
+    test('returns failure with Error for rejected promise with non-Error', async () => {
+      const promise = Promise.reject('string error');
+      const result = await Result.ofPromise(promise);
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBeInstanceOf(Error);
+        expect(result.error.message).toBe('string error');
+      }
+    });
+  });
+
+  describe('swap', () => {
+    test('swaps success to failure', () => {
+      const result = Result.success(42);
+      const swapped = Result.swap(result);
+
+      expect(Result.isFailure(swapped)).toBe(true);
+      if (Result.isFailure(swapped)) {
+        expect(swapped.error).toBe(42);
+      }
+    });
+
+    test('swaps failure to success', () => {
+      const result = Result.failure('error');
+      const swapped = Result.swap(result);
+
+      expect(Result.isSuccess(swapped)).toBe(true);
+      if (Result.isSuccess(swapped)) {
+        expect(swapped.value).toBe('error');
+      }
+    });
+  });
+
+  describe('fromNullable', () => {
+    test('returns success for non-null value', () => {
+      const result = Result.fromNullable(42, 'error');
+
+      expect(Result.isSuccess(result)).toBe(true);
+      if (Result.isSuccess(result)) {
+        expect(result.value).toBe(42);
+      }
+    });
+
+    test('returns failure for null', () => {
+      const result = Result.fromNullable(null, 'error');
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error');
+      }
+    });
+
+    test('returns failure for undefined', () => {
+      const result = Result.fromNullable(undefined, 'error');
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('error');
+      }
+    });
+
+    test('returns success for falsy but non-null values', () => {
+      expect(Result.isSuccess(Result.fromNullable(0, 'error'))).toBe(true);
+      expect(Result.isSuccess(Result.fromNullable('', 'error'))).toBe(true);
+      expect(Result.isSuccess(Result.fromNullable(false, 'error'))).toBe(true);
+    });
+  });
+
+  describe('fromNullableLazy', () => {
+    test('returns success for non-null value without calling error function', () => {
+      const errorFn = vi.fn(() => 'error');
+      const result = Result.fromNullableLazy(42, errorFn);
+
+      expect(Result.isSuccess(result)).toBe(true);
+      expect(errorFn).not.toHaveBeenCalled();
+    });
+
+    test('returns failure for null and calls error function', () => {
+      const errorFn = vi.fn(() => 'lazy error');
+      const result = Result.fromNullableLazy(null, errorFn);
+
+      expect(Result.isFailure(result)).toBe(true);
+      expect(errorFn).toHaveBeenCalledOnce();
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe('lazy error');
+      }
+    });
+  });
+
+  describe('tryCatch', () => {
+    test('returns success for non-throwing function', () => {
+      const result = Result.tryCatch(() => 42);
+
+      expect(Result.isSuccess(result)).toBe(true);
+      if (Result.isSuccess(result)) {
+        expect(result.value).toBe(42);
+      }
+    });
+
+    test('returns failure for throwing function with Error', () => {
+      const error = new Error('test error');
+      const result = Result.tryCatch(() => {
+        throw error;
+      });
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBe(error);
+      }
+    });
+
+    test('returns failure with Error for throwing function with non-Error', () => {
+      const result = Result.tryCatch(() => {
+        throw 'string error';
+      });
+
+      expect(Result.isFailure(result)).toBe(true);
+      if (Result.isFailure(result)) {
+        expect(result.error).toBeInstanceOf(Error);
+        expect(result.error.message).toBe('string error');
       }
     });
   });

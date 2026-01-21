@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "14.0.0",
+  "version": "14.0.5",
   "type": "module",
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
@@ -36,6 +36,7 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
@@ -70,8 +71,8 @@
     "@floating-ui/dom": "1.7.1"
   },
   "peerDependencies": {
-    "@tempots/dom": "^33.1.0",
-    "@tempots/std": "^0.24.0"
+    "@tempots/dom": "^35.0.4",
+    "@tempots/std": "^0.25.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

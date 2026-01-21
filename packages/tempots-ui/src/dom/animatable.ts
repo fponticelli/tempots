@@ -421,7 +421,15 @@ export const applyInterpolatedAnimatable = (
   const filters: string[] = []
   for (const [key, value] of Object.entries(to)) {
     const k = key as keyof AnimatableProps
-    applyInterpolatedAnimatableProp(el, k, from[k], value, progress, transforms, filters)
+    applyInterpolatedAnimatableProp(
+      el,
+      k,
+      from[k],
+      value,
+      progress,
+      transforms,
+      filters
+    )
   }
   // Apply collected transforms and filters in single assignments
   el.style.transform = transforms.join(' ')
@@ -437,7 +445,13 @@ export const applyAnimatable = (
   const filters: string[] = []
   for (const [key, value] of Object.entries(styles)) {
     if (value != null) {
-      applyAnimatableProp(el, key as keyof AnimatableProps, value, transforms, filters)
+      applyAnimatableProp(
+        el,
+        key as keyof AnimatableProps,
+        value,
+        transforms,
+        filters
+      )
     }
   }
   // Apply collected transforms and filters in single assignments
