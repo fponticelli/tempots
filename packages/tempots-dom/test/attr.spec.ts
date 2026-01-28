@@ -90,6 +90,29 @@ describe('Attribute Utils', () => {
         setter(false)
         expect((element as any).hidden).toBe(false)
       })
+
+      test('should handle multiple property', () => {
+        const fileInput = document.createElement('input')
+        fileInput.type = 'file'
+        const setter = _makeSetter('multiple', fileInput)
+
+        setter(true)
+        expect(fileInput.multiple).toBe(true)
+
+        setter(false)
+        expect(fileInput.multiple).toBe(false)
+      })
+
+      test('should handle readonly property', () => {
+        const input = document.createElement('input')
+        const setter = _makeSetter('readonly', input)
+
+        setter(true)
+        expect(input.readOnly).toBe(true)
+
+        setter(false)
+        expect(input.readOnly).toBe(false)
+      })
     })
 
     describe('number properties (rowSpan, colSpan, tabIndex, valueAsNumber)', () => {

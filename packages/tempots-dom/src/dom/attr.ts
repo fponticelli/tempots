@@ -1,4 +1,4 @@
-const boolProperties = new Set(['checked', 'disabled', 'hidden'])
+const boolProperties = new Set(['checked', 'disabled', 'hidden', 'multiple', 'readonly', 'required', 'autofocus'])
 const boolAttributes = new Set(['selected'])
 
 const numberProperties = new Set([
@@ -8,6 +8,10 @@ const numberProperties = new Set([
   'valueAsNumber',
 ])
 const dateProperties = new Set(['valueAsDate'])
+const propertyAliases: Record<string, string> = {
+  readonly: 'readOnly',
+}
+
 /**
  * String properties that are set directly on the DOM element.
  *
@@ -48,43 +52,44 @@ export const _makeSetter = (attributeName: string, element: Element) => {
       }
     }
   } else if (boolProperties.has(attributeName)) {
+    const propName = propertyAliases[attributeName] || attributeName
     return (value: unknown) => {
       if (value == null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = null
+        ; (element as any)[propName] = null
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = Boolean(value)
+        ; (element as any)[propName] = Boolean(value)
       }
     }
   } else if (numberProperties.has(attributeName)) {
     return (value: unknown) => {
       if (value == null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = null
+        ; (element as any)[attributeName] = null
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = Number(value)
+        ; (element as any)[attributeName] = Number(value)
       }
     }
   } else if (dateProperties.has(attributeName)) {
     return (value: unknown) => {
       if (value == null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = null
+        ; (element as any)[attributeName] = null
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = value
+        ; (element as any)[attributeName] = value
       }
     }
   } else if (stringProperties.has(attributeName)) {
     return (value: unknown) => {
       if (value == null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = null
+        ; (element as any)[attributeName] = null
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(element as any)[attributeName] = String(value)
+        ; (element as any)[attributeName] = String(value)
       }
     }
   } else {
@@ -115,7 +120,7 @@ export const _makeGetter = (attributeName: string, element: Element) => {
     return () => element.hasAttribute(attributeName)
   } else if (boolProperties.has(attributeName)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return () => Boolean((element as any)[attributeName])
+    return () => Boolean((element as any)[propertyAliases[attributeName] || attributeName])
   } else if (numberProperties.has(attributeName)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return () => Number((element as any)[attributeName])
