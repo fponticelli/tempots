@@ -2,42 +2,13 @@ import type { TNode, Renderable } from '../types/domain'
 import type { HTMLTags } from '../types/html-tags'
 import type { SVGTags } from '../types/svg-tags'
 import type { MathMLTags } from '../types/mathml-tags'
-import { Signal } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
-import { _signalText, _staticText } from './text'
-import { Fragment } from './fragment'
-import { Empty } from './empty'
+import { renderableOfTNode } from './shared'
 import { attr } from './attribute'
 import { InputTypes } from '../types/html-attributes'
 import { domRenderable } from '../types/domain'
 
-/**
- * Converts a TNode into a Renderable.
- * @param child - The TNode to convert.
- * @returns The corresponding Renderable.
- * @public
- */
-export const renderableOfTNode = <T extends DOMContext>(
-  child: TNode<T>
-): Renderable<T> => {
-  if (child == null) {
-    return Empty
-  } else if (Array.isArray(child)) {
-    return Fragment(...child.map(renderableOfTNode))
-  } else if (typeof child === 'string') {
-    return _staticText(child)
-  } else if (Signal.is(child as Signal<string>)) {
-    return _signalText(child as Signal<string>)
-  } else if (
-    typeof child === 'object' &&
-    'render' in child &&
-    'type' in child
-  ) {
-    return child as Renderable
-  } else {
-    throw new Error(`Unknown type: '${typeof child}' for child: ${child}`)
-  }
-}
+export { renderableOfTNode }
 
 /**
  * Creates a Renderable that represents an HTML element.

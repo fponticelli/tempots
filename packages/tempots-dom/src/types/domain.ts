@@ -1,4 +1,3 @@
-import { ReadSignal } from '../../../tempots-core/dist/signal'
 import { DOMContext } from '../dom/dom-context'
 import {
   AnySignal,
@@ -170,20 +169,13 @@ export const domRenderable = <CTX extends DOMContext = DOMContext>(
 export type TNode<CTX extends DOMContext = DOMContext> =
   | Renderable<CTX>
   | string
-  | ReadSignal<string>
+  | Signal<string>
   | undefined
   | null
   | Renderable<CTX>[]
 // Clear and ProviderMark are re-exported from @tempots/core
-/**
- * Represents a collection of providers.
- * The keys of the record are ProviderMark types, and the values are of unknown type.
- * @public
- */
-export type Providers = Record<
-  ProviderMark<unknown>,
-  [unknown, undefined | (() => void)]
->
+// Providers is re-exported from @tempots/render
+export type { Providers } from '@tempots/render'
 
 /**
  * Represents the size of an object with width and height.
@@ -207,14 +199,10 @@ export type Size = {
  */
 export type NValue<T> =
   | Value<NonNullable<T>>
-  | ReadSignal<T>
-  | ReadSignal<T | null>
-  | ReadSignal<T | undefined>
-  | ReadSignal<T | null | undefined>
-  // | AnySignal<T>
-  // | AnySignal<T | null>
-  // | AnySignal<T | undefined>
-  // | AnySignal<T | null | undefined>
+  | Signal<T>
+  | Signal<T | null>
+  | Signal<T | undefined>
+  | Signal<T | null | undefined>
   | null
   | undefined
 
