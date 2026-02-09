@@ -31,7 +31,7 @@ export const Comments = (
           )
         ),
         // Comment content
-        Ensure(item.$.content, (content: Signal<string>) =>
+        Ensure(item.$.content, content =>
           view.Text(content, nativeStyle.style(styles.commentContent))
         ),
         // Nested comments
