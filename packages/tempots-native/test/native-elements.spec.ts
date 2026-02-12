@@ -46,6 +46,40 @@ describe('Native view elements', () => {
   })
 })
 
+describe('view.custom() escape hatch', () => {
+  test('view.custom creates a custom view type', () => {
+    const { bridge, ctx } = createTestContext()
+    const renderable = view.custom('MapView')
+    const clear = renderable.render(ctx)
+    expect(bridge.root.children[0].type).toBe('MapView')
+    clear(true)
+  })
+
+  test('view.custom passes children', () => {
+    const { bridge, ctx } = createTestContext()
+    const renderable = view.custom('MapView', view.View())
+    const clear = renderable.render(ctx)
+    expect(bridge.root.children[0].type).toBe('MapView')
+    expect(bridge.root.children[0].children[0].type).toBe('View')
+    clear(true)
+  })
+
+  test('view.custom works with style props', () => {
+    const { bridge, ctx } = createTestContext()
+    const renderable = view.custom(
+      'MapView',
+      nativeStyle.style({ flex: 1 }),
+      nativeStyle.prop('region', { lat: 0, lng: 0 }),
+    )
+    const clear = renderable.render(ctx)
+    const node = bridge.root.children[0]
+    expect(node.type).toBe('MapView')
+    expect(node.styles.flex).toBe(1)
+    expect(node.props.region).toEqual({ lat: 0, lng: 0 })
+    clear(true)
+  })
+})
+
 describe('Native styles', () => {
   test('applyStyle sets static styles', () => {
     const { bridge, ctx } = createTestContext()

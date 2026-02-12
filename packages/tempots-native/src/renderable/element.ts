@@ -35,8 +35,11 @@ type ViewFactory = (
 /**
  * Common native view types available on both iOS and Android.
  *
- * The `view` proxy supports any string view type, but this interface
- * provides autocomplete for the most commonly used ones.
+ * This interface defines all recognized native view types. Accessing
+ * an unknown property on the `view` proxy will cause a compile-time
+ * error, catching typos early. For custom native view types, use
+ * `view.custom('MyView', ...)` or call `NativeEl('MyView', ...)`
+ * directly.
  *
  * @public
  */
@@ -114,6 +117,29 @@ export type NativeViewTypes = {
 
   /** iOS date/time picker. */
   DatePickerIOS: ViewFactory;
+
+  // --- Escape hatch ---
+
+  /**
+   * Create a renderable for a custom native view type not in the
+   * built-in list.
+   *
+   * @example
+   * ```typescript
+   * view.custom('MapView',
+   *   nativeStyle.style({ flex: 1 }),
+   *   nativeStyle.prop('region', regionSignal),
+   * )
+   * ```
+   *
+   * @param viewType - The custom native view type name
+   * @param children - Child renderables
+   * @returns A NativeRenderable for the custom view type
+   */
+  custom: (
+    viewType: string,
+    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
+  ) => NativeRenderable;
 };
 
 /**
@@ -129,19 +155,16 @@ export type NativeViewTypes = {
  *
  * @public
  */
-export const view = new Proxy(
-  {} as NativeViewTypes &
-    Record<
-      string,
-      (
-        ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-      ) => NativeRenderable
-    >,
-  {
-    get: (_, viewType: string) => {
+export const view = new Proxy({} as NativeViewTypes, {
+  get: (_, prop: string) => {
+    if (prop === "custom") {
       return (
+        viewType: string,
         ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
       ) => NativeEl(viewType, ...children);
-    },
+    }
+    return (
+      ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
+    ) => NativeEl(prop, ...children);
   },
-);
+});
