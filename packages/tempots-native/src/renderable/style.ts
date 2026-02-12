@@ -105,7 +105,61 @@ export const nativeStyle = {
   /** Set the testID for testing. */
   testID: (id: string): NativeRenderable => applyProp("testID", id),
 
-  /** Set accessibility label. */
+  /** Set accessibility label (VoiceOver on iOS, TalkBack on Android). */
   accessibilityLabel: (label: Value<string>): NativeRenderable =>
     applyProp("accessibilityLabel", label),
+
+  /** Set accessibility hint text. */
+  accessibilityHint: (hint: Value<string>): NativeRenderable =>
+    applyProp("accessibilityHint", hint),
+
+  /**
+   * Set the accessibility role (e.g. 'button', 'header', 'link', 'image').
+   * Used by both VoiceOver (iOS) and TalkBack (Android).
+   */
+  accessibilityRole: (
+    role: Value<
+      | "none"
+      | "button"
+      | "link"
+      | "search"
+      | "image"
+      | "text"
+      | "adjustable"
+      | "header"
+      | "summary"
+      | "alert"
+      | "checkbox"
+      | "radio"
+      | "menu"
+      | "progressbar"
+      | "timer"
+    >,
+  ): NativeRenderable => applyProp("accessibilityRole", role),
+
+  /** Set whether the view is refreshing (for RefreshControl). */
+  refreshing: (value: Value<boolean>): NativeRenderable =>
+    applyProp("refreshing", value),
+
+  /** Set the return key type for TextInput. */
+  returnKeyType: (
+    type: Value<"done" | "go" | "next" | "search" | "send" | "default">,
+  ): NativeRenderable => applyProp("returnKeyType", type),
+
+  /** Set multiline mode for TextInput. */
+  multiline: (value: Value<boolean>): NativeRenderable =>
+    applyProp("multiline", value),
+
+  /** Set max length for TextInput. */
+  maxLength: (length: Value<number>): NativeRenderable =>
+    applyProp("maxLength", length),
+
+  /** Set auto-capitalize mode for TextInput. */
+  autoCapitalize: (
+    mode: Value<"none" | "sentences" | "words" | "characters">,
+  ): NativeRenderable => applyProp("autoCapitalize", mode),
+
+  /** Set auto-correct for TextInput. */
+  autoCorrect: (value: Value<boolean>): NativeRenderable =>
+    applyProp("autoCorrect", value),
 };

@@ -18,6 +18,8 @@ export type {
   TextSubmitEvent,
   FocusEvent,
   LayoutEvent,
+  ValueChangeEvent,
+  RefreshEvent,
 } from "./types/event-types";
 
 // Shared renderables (from @tempots/render via native kit)

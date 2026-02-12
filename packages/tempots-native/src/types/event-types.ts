@@ -62,3 +62,19 @@ export interface LayoutEvent {
   readonly width: number;
   readonly height: number;
 }
+
+/**
+ * Event emitted when a Switch value changes.
+ * @public
+ */
+export interface ValueChangeEvent {
+  readonly value: boolean;
+}
+
+/**
+ * Event emitted on pull-to-refresh.
+ * @public
+ */
+export interface RefreshEvent {
+  readonly refreshing: boolean;
+}

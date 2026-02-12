@@ -49,10 +49,11 @@ jobs:
             packages/tempots-std/coverage/lcov.info
             packages/tempots-dom/coverage/lcov.info
             packages/tempots-ui/coverage/lcov.info
+            packages/tempots-native/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
-          
+
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
         uses: romeovs/lcov-reporter-action@v0.3.1
@@ -62,6 +63,7 @@ jobs:
             packages/tempots-std/coverage/lcov.info
             packages/tempots-dom/coverage/lcov.info
             packages/tempots-ui/coverage/lcov.info
+            packages/tempots-native/coverage/lcov.info
           
       - name: Archive coverage artifacts
         uses: actions/upload-artifact@v4

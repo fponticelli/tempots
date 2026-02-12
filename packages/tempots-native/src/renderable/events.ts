@@ -9,6 +9,8 @@ import type {
   TextSubmitEvent,
   FocusEvent,
   LayoutEvent,
+  ValueChangeEvent,
+  RefreshEvent,
 } from "../types/event-types";
 
 /**
@@ -69,4 +71,12 @@ export const nativeOn = {
   /** Listen for layout events. */
   layout: (handler: (e: LayoutEvent) => void): NativeRenderable =>
     onEvent("layout", handler),
+
+  /** Listen for value change events (e.g. Switch toggle). */
+  valueChange: (handler: (e: ValueChangeEvent) => void): NativeRenderable =>
+    onEvent("valueChange", handler),
+
+  /** Listen for refresh events (e.g. pull-to-refresh). */
+  refresh: (handler: (e: RefreshEvent) => void): NativeRenderable =>
+    onEvent("refresh", handler),
 };
