@@ -200,4 +200,82 @@ describe("nativeOn - all event types", () => {
     expect(handler).toHaveBeenCalledWith({ refreshing: true });
     clear(true);
   });
+
+  test("nativeOn.endReached handles infinite scroll events", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("FlatList");
+    const handler = vi.fn();
+    const clear = nativeOn.endReached(handler).render(viewCtx);
+
+    bridge.dispatchEvent(viewCtx.handle, "endReached", {
+      distanceFromEnd: 50,
+    });
+    expect(handler).toHaveBeenCalledWith({ distanceFromEnd: 50 });
+    clear(true);
+  });
+
+  test("nativeOn.contentSizeChange handles auto-growing TextInput", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("TextInput");
+    const handler = vi.fn();
+    const clear = nativeOn.contentSizeChange(handler).render(viewCtx);
+
+    bridge.dispatchEvent(viewCtx.handle, "contentSizeChange", {
+      contentWidth: 300,
+      contentHeight: 100,
+    });
+    expect(handler).toHaveBeenCalledWith({
+      contentWidth: 300,
+      contentHeight: 100,
+    });
+    clear(true);
+  });
+
+  test("nativeOn.momentumScrollEnd handles scroll snap/pagination", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const handler = vi.fn();
+    const clear = nativeOn.momentumScrollEnd(handler).render(viewCtx);
+
+    const scrollData = {
+      contentOffset: { x: 375, y: 0 },
+      contentSize: { width: 1500, height: 812 },
+      layoutMeasurement: { width: 375, height: 812 },
+    };
+    bridge.dispatchEvent(viewCtx.handle, "momentumScrollEnd", scrollData);
+    expect(handler).toHaveBeenCalledWith(scrollData);
+    clear(true);
+  });
+
+  test("nativeOn.scrollBeginDrag handles drag start", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const handler = vi.fn();
+    const clear = nativeOn.scrollBeginDrag(handler).render(viewCtx);
+
+    const scrollData = {
+      contentOffset: { x: 0, y: 100 },
+      contentSize: { width: 375, height: 2000 },
+      layoutMeasurement: { width: 375, height: 812 },
+    };
+    bridge.dispatchEvent(viewCtx.handle, "scrollBeginDrag", scrollData);
+    expect(handler).toHaveBeenCalledWith(scrollData);
+    clear(true);
+  });
+
+  test("nativeOn.scrollEndDrag handles drag end", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const handler = vi.fn();
+    const clear = nativeOn.scrollEndDrag(handler).render(viewCtx);
+
+    const scrollData = {
+      contentOffset: { x: 0, y: 250 },
+      contentSize: { width: 375, height: 2000 },
+      layoutMeasurement: { width: 375, height: 812 },
+    };
+    bridge.dispatchEvent(viewCtx.handle, "scrollEndDrag", scrollData);
+    expect(handler).toHaveBeenCalledWith(scrollData);
+    clear(true);
+  });
 });

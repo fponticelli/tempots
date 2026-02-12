@@ -162,4 +162,56 @@ export const nativeStyle = {
   /** Set auto-correct for TextInput. */
   autoCorrect: (value: Value<boolean>): NativeRenderable =>
     applyProp("autoCorrect", value),
+
+  // --- Image props ---
+
+  /** Set how the image should be resized to fit its container. */
+  resizeMode: (
+    mode: Value<"cover" | "contain" | "stretch" | "repeat" | "center">,
+  ): NativeRenderable => applyProp("resizeMode", mode),
+
+  // --- ScrollView / FlatList props ---
+
+  /** Set whether the list scrolls horizontally. */
+  horizontal: (value: Value<boolean>): NativeRenderable =>
+    applyProp("horizontal", value),
+
+  /** Show or hide the vertical scroll indicator. */
+  showsVerticalScrollIndicator: (value: Value<boolean>): NativeRenderable =>
+    applyProp("showsVerticalScrollIndicator", value),
+
+  /** Show or hide the horizontal scroll indicator. */
+  showsHorizontalScrollIndicator: (value: Value<boolean>): NativeRenderable =>
+    applyProp("showsHorizontalScrollIndicator", value),
+
+  /** Enable or disable paging for ScrollView. */
+  pagingEnabled: (value: Value<boolean>): NativeRenderable =>
+    applyProp("pagingEnabled", value),
+
+  /** Enable or disable scroll for ScrollView. */
+  scrollEnabled: (value: Value<boolean>): NativeRenderable =>
+    applyProp("scrollEnabled", value),
+
+  // --- View props ---
+
+  /**
+   * Controls whether the view can receive touch events.
+   * - 'auto': default behavior
+   * - 'none': touch passes through
+   * - 'box-none': view ignores touch but children can receive it
+   * - 'box-only': view receives touch but children cannot
+   */
+  pointerEvents: (
+    value: Value<"auto" | "none" | "box-none" | "box-only">,
+  ): NativeRenderable => applyProp("pointerEvents", value),
+
+  /**
+   * Extends the touchable area without changing the view's layout.
+   * Useful for making small buttons easier to tap.
+   */
+  hitSlop: (
+    value: Value<
+      number | { top?: number; right?: number; bottom?: number; left?: number }
+    >,
+  ): NativeRenderable => applyProp("hitSlop", value),
 };

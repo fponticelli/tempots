@@ -41,7 +41,7 @@ type ViewFactory = (
  * @public
  */
 export type NativeViewTypes = {
-  // --- Cross-platform views ---
+  // --- Core layout ---
 
   /** Generic container view. */
   View: ViewFactory;
@@ -49,34 +49,57 @@ export type NativeViewTypes = {
   Text: ViewFactory;
   /** Image display (use `nativeStyle.source` for the image URI). */
   Image: ViewFactory;
+  /** Image as a background with children rendered on top. */
+  ImageBackground: ViewFactory;
+
+  // --- Scrolling & lists ---
+
   /** Scrollable container. */
   ScrollView: ViewFactory;
   /** Optimized scrollable list for large datasets. */
   FlatList: ViewFactory;
+  /** Section-based list with headers. */
+  SectionList: ViewFactory;
+  /** Base virtualized list (used by FlatList/SectionList internally). */
+  VirtualizedList: ViewFactory;
+
+  // --- Input ---
+
   /** Text input field. */
   TextInput: ViewFactory;
-  /** Touchable view with opacity feedback. */
-  TouchableOpacity: ViewFactory;
-  /** Container that respects device safe areas (notch, status bar). */
-  SafeAreaView: ViewFactory;
-  /** Status bar configuration. */
-  StatusBar: ViewFactory;
-  /** Modal overlay. */
-  Modal: ViewFactory;
-  /** Loading spinner indicator. */
-  ActivityIndicator: ViewFactory;
+  /** Simple platform-styled button. */
+  Button: ViewFactory;
   /** Toggle switch. */
   Switch: ViewFactory;
-  /** Container that adjusts for the keyboard. */
-  KeyboardAvoidingView: ViewFactory;
-  /** Section-based list. */
-  SectionList: ViewFactory;
-  /** Touchable with no visual feedback. */
-  TouchableWithoutFeedback: ViewFactory;
+
+  // --- Pressables / touchables ---
+
+  /** Modern pressable view with configurable feedback (replaces Touchable* family). */
+  Pressable: ViewFactory;
+  /** Touchable view with opacity feedback. */
+  TouchableOpacity: ViewFactory;
   /** Touchable with highlight feedback. */
   TouchableHighlight: ViewFactory;
+  /** Touchable with no visual feedback. */
+  TouchableWithoutFeedback: ViewFactory;
   /** Touchable with native platform feedback (ripple on Android). */
   TouchableNativeFeedback: ViewFactory;
+
+  // --- Layout containers ---
+
+  /** Container that respects device safe areas (notch, status bar). */
+  SafeAreaView: ViewFactory;
+  /** Container that adjusts for the keyboard. */
+  KeyboardAvoidingView: ViewFactory;
+
+  // --- Overlays & feedback ---
+
+  /** Modal overlay. */
+  Modal: ViewFactory;
+  /** Status bar configuration. */
+  StatusBar: ViewFactory;
+  /** Loading spinner indicator. */
+  ActivityIndicator: ViewFactory;
   /** Refresh control for pull-to-refresh. */
   RefreshControl: ViewFactory;
 

@@ -78,3 +78,36 @@ export interface ValueChangeEvent {
 export interface RefreshEvent {
   readonly refreshing: boolean;
 }
+
+/**
+ * Event emitted when a FlatList/SectionList reaches the end of its content.
+ * Used for infinite scroll / pagination.
+ * @public
+ */
+export interface EndReachedEvent {
+  readonly distanceFromEnd: number;
+}
+
+/**
+ * Event emitted when content size changes (e.g. TextInput auto-growing).
+ * @public
+ */
+export interface ContentSizeChangeEvent {
+  readonly contentWidth: number;
+  readonly contentHeight: number;
+}
+
+/**
+ * Event emitted at the end of a scroll momentum phase
+ * (after the user lifts their finger and the scroll decelerates to a stop).
+ * Same shape as ScrollEvent.
+ * @public
+ */
+export type MomentumScrollEndEvent = ScrollEvent;
+
+/**
+ * Event emitted when the user starts or stops dragging the scroll view.
+ * Same shape as ScrollEvent.
+ * @public
+ */
+export type ScrollDragEvent = ScrollEvent;

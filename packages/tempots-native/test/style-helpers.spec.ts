@@ -285,3 +285,132 @@ describe("nativeStyle - accessibility and input helpers", () => {
     clear(true);
   });
 });
+
+describe("nativeStyle - image, scroll, and view helpers", () => {
+  test("nativeStyle.resizeMode sets image resize mode", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("Image");
+    const renderable = nativeStyle.resizeMode("cover");
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.resizeMode).toBe("cover");
+    clear(true);
+  });
+
+  test("nativeStyle.horizontal sets horizontal scroll", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const renderable = nativeStyle.horizontal(true);
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.horizontal).toBe(true);
+    clear(true);
+  });
+
+  test("nativeStyle.showsVerticalScrollIndicator", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const renderable = nativeStyle.showsVerticalScrollIndicator(false);
+    const clear = renderable.render(viewCtx);
+    expect(
+      bridge.getNode(viewCtx.handle)!.props.showsVerticalScrollIndicator,
+    ).toBe(false);
+    clear(true);
+  });
+
+  test("nativeStyle.showsHorizontalScrollIndicator", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const renderable = nativeStyle.showsHorizontalScrollIndicator(false);
+    const clear = renderable.render(viewCtx);
+    expect(
+      bridge.getNode(viewCtx.handle)!.props.showsHorizontalScrollIndicator,
+    ).toBe(false);
+    clear(true);
+  });
+
+  test("nativeStyle.pagingEnabled sets paging", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const renderable = nativeStyle.pagingEnabled(true);
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.pagingEnabled).toBe(true);
+    clear(true);
+  });
+
+  test("nativeStyle.scrollEnabled sets scroll enabled", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("ScrollView");
+    const renderable = nativeStyle.scrollEnabled(false);
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.scrollEnabled).toBe(false);
+    clear(true);
+  });
+
+  test("nativeStyle.pointerEvents sets pointer events", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("View");
+    const renderable = nativeStyle.pointerEvents("none");
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.pointerEvents).toBe("none");
+    clear(true);
+  });
+
+  test("nativeStyle.hitSlop sets hit slop with number", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("View");
+    const renderable = nativeStyle.hitSlop(10);
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.hitSlop).toBe(10);
+    clear(true);
+  });
+
+  test("nativeStyle.hitSlop sets hit slop with object", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("View");
+    const slop = { top: 10, bottom: 10, left: 20, right: 20 };
+    const renderable = nativeStyle.hitSlop(slop);
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.props.hitSlop).toEqual(slop);
+    clear(true);
+  });
+});
+
+describe("ViewStyle - gap and aspectRatio", () => {
+  test("applies gap styles", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("View");
+    const renderable = applyStyle({
+      gap: 16,
+      rowGap: 8,
+      columnGap: 12,
+    });
+    const clear = renderable.render(viewCtx);
+    const node = bridge.getNode(viewCtx.handle)!;
+    expect(node.styles.gap).toBe(16);
+    expect(node.styles.rowGap).toBe(8);
+    expect(node.styles.columnGap).toBe(12);
+    clear(true);
+  });
+
+  test("applies aspectRatio style", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("Image");
+    const renderable = applyStyle({ aspectRatio: 16 / 9 });
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.styles.aspectRatio).toBeCloseTo(
+      1.778,
+      2,
+    );
+    clear(true);
+  });
+
+  test("applies backfaceVisibility style", () => {
+    const { bridge, ctx } = createTestContext();
+    const viewCtx = ctx.makeChildView("View");
+    const renderable = applyStyle({ backfaceVisibility: "hidden" });
+    const clear = renderable.render(viewCtx);
+    expect(bridge.getNode(viewCtx.handle)!.styles.backfaceVisibility).toBe(
+      "hidden",
+    );
+    clear(true);
+  });
+});
