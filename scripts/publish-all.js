@@ -27,6 +27,12 @@ const PACKAGES = [
     dependencies: ["@tempots/core"],
   },
   {
+    name: "@tempots/native",
+    dir: "packages/tempots-native",
+    priority: 3,
+    dependencies: ["@tempots/core"],
+  },
+  {
     name: "@tempots/ui",
     dir: "packages/tempots-ui",
     priority: 8,

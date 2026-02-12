@@ -32,6 +32,12 @@ export interface ViewStyle {
     | "stretch"
     | "space-between"
     | "space-around";
+  /** Gap between flex children (shorthand for rowGap + columnGap). */
+  gap?: number;
+  /** Gap between rows in a flex container. */
+  rowGap?: number;
+  /** Gap between columns in a flex container. */
+  columnGap?: number;
 
   // Sizing
   width?: number | string;
@@ -40,6 +46,8 @@ export interface ViewStyle {
   minHeight?: number | string;
   maxWidth?: number | string;
   maxHeight?: number | string;
+  /** Aspect ratio of the view (width / height). */
+  aspectRatio?: number;
 
   // Spacing
   margin?: number | string;
@@ -70,6 +78,8 @@ export interface ViewStyle {
   opacity?: number;
   overflow?: "visible" | "hidden" | "scroll";
   display?: "flex" | "none";
+  /** Whether the back face is visible when rotated (for flip animations). */
+  backfaceVisibility?: "visible" | "hidden";
 
   // Borders
   borderWidth?: number;
@@ -94,6 +104,7 @@ export interface ViewStyle {
   shadowOffset?: { width: number; height: number };
   shadowOpacity?: number;
   shadowRadius?: number;
+  /** Android shadow elevation. */
   elevation?: number;
 
   // Transforms
@@ -145,6 +156,19 @@ export interface TextStyle extends ViewStyle {
   textShadowColor?: string;
   textShadowOffset?: { width: number; height: number };
   textShadowRadius?: number;
+}
+
+/**
+ * Style properties for image views.
+ * @public
+ */
+export interface ImageStyle extends ViewStyle {
+  /** How the image should be resized to fit its container. */
+  resizeMode?: "cover" | "contain" | "stretch" | "repeat" | "center";
+  /** Tint color applied to the image (iOS: tintColor, Android: colorFilter). */
+  tintColor?: string;
+  /** Overlay color drawn on top of the image (Android only). */
+  overlayColor?: string;
 }
 
 /**

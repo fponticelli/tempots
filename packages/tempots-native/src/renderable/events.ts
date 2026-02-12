@@ -9,6 +9,12 @@ import type {
   TextSubmitEvent,
   FocusEvent,
   LayoutEvent,
+  ValueChangeEvent,
+  RefreshEvent,
+  EndReachedEvent,
+  ContentSizeChangeEvent,
+  MomentumScrollEndEvent,
+  ScrollDragEvent,
 } from "../types/event-types";
 
 /**
@@ -69,4 +75,34 @@ export const nativeOn = {
   /** Listen for layout events. */
   layout: (handler: (e: LayoutEvent) => void): NativeRenderable =>
     onEvent("layout", handler),
+
+  /** Listen for value change events (e.g. Switch toggle). */
+  valueChange: (handler: (e: ValueChangeEvent) => void): NativeRenderable =>
+    onEvent("valueChange", handler),
+
+  /** Listen for refresh events (e.g. pull-to-refresh). */
+  refresh: (handler: (e: RefreshEvent) => void): NativeRenderable =>
+    onEvent("refresh", handler),
+
+  /** Listen for end-reached events (FlatList/SectionList infinite scroll). */
+  endReached: (handler: (e: EndReachedEvent) => void): NativeRenderable =>
+    onEvent("endReached", handler),
+
+  /** Listen for content size change events (auto-growing TextInput). */
+  contentSizeChange: (
+    handler: (e: ContentSizeChangeEvent) => void,
+  ): NativeRenderable => onEvent("contentSizeChange", handler),
+
+  /** Listen for momentum scroll end events (pagination / snap). */
+  momentumScrollEnd: (
+    handler: (e: MomentumScrollEndEvent) => void,
+  ): NativeRenderable => onEvent("momentumScrollEnd", handler),
+
+  /** Listen for scroll drag begin events. */
+  scrollBeginDrag: (handler: (e: ScrollDragEvent) => void): NativeRenderable =>
+    onEvent("scrollBeginDrag", handler),
+
+  /** Listen for scroll drag end events. */
+  scrollEndDrag: (handler: (e: ScrollDragEvent) => void): NativeRenderable =>
+    onEvent("scrollEndDrag", handler),
 };

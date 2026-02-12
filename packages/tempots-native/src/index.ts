@@ -9,7 +9,12 @@ export { NativeContext } from "./context/native-context";
 // Types
 export { NATIVE_RENDERABLE_TYPE, nativeRenderable } from "./types/domain";
 export type { NativeRenderable } from "./types/domain";
-export type { ViewStyle, TextStyle, ImageSource } from "./types/view-types";
+export type {
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
+  ImageSource,
+} from "./types/view-types";
 export type {
   PressEvent,
   LongPressEvent,
@@ -18,6 +23,12 @@ export type {
   TextSubmitEvent,
   FocusEvent,
   LayoutEvent,
+  ValueChangeEvent,
+  RefreshEvent,
+  EndReachedEvent,
+  ContentSizeChangeEvent,
+  MomentumScrollEndEvent,
+  ScrollDragEvent,
 } from "./types/event-types";
 
 // Shared renderables (from @tempots/render via native kit)

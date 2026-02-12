@@ -23,14 +23,23 @@ export interface MockNode {
  * @public
  */
 export class MockBridge implements JSIBridge {
-  private _nextHandle = 1;
+  private _nextHandle = 0;
   private readonly _nodes = new Map<NativeViewHandle, MockNode>();
   private _rafId = 0;
+
+  /**
+   * Global event target node (handle 0).
+   *
+   * Used by lifecycle signals (app state, keyboard, dimensions) to
+   * listen for app-level events that are not tied to a specific view.
+   */
+  readonly global: MockNode;
 
   /** The root node of the mock tree. */
   readonly root: MockNode;
 
   constructor() {
+    this.global = this._createNode("__global__");
     this.root = this._createNode("root");
   }
 

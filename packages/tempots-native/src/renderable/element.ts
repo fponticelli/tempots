@@ -27,48 +27,117 @@ export const NativeEl = (
     };
   });
 
+/** Helper type for a view factory function. */
+type ViewFactory = (
+  ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
+) => NativeRenderable;
+
 /**
- * Common native view types.
+ * Common native view types available on both iOS and Android.
+ *
+ * This interface defines all recognized native view types. Accessing
+ * an unknown property on the `view` proxy will cause a compile-time
+ * error, catching typos early. For custom native view types, use
+ * `view.custom('MyView', ...)` or call `NativeEl('MyView', ...)`
+ * directly.
+ *
  * @public
  */
 export type NativeViewTypes = {
-  View: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  Text: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  Image: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  ScrollView: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  FlatList: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  TextInput: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  TouchableOpacity: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  SafeAreaView: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  StatusBar: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  Modal: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  ActivityIndicator: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  Switch: (
-    ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-  KeyboardAvoidingView: (
+  // --- Core layout ---
+
+  /** Generic container view. */
+  View: ViewFactory;
+  /** Text display. */
+  Text: ViewFactory;
+  /** Image display (use `nativeStyle.source` for the image URI). */
+  Image: ViewFactory;
+  /** Image as a background with children rendered on top. */
+  ImageBackground: ViewFactory;
+
+  // --- Scrolling & lists ---
+
+  /** Scrollable container. */
+  ScrollView: ViewFactory;
+  /** Optimized scrollable list for large datasets. */
+  FlatList: ViewFactory;
+  /** Section-based list with headers. */
+  SectionList: ViewFactory;
+  /** Base virtualized list (used by FlatList/SectionList internally). */
+  VirtualizedList: ViewFactory;
+
+  // --- Input ---
+
+  /** Text input field. */
+  TextInput: ViewFactory;
+  /** Simple platform-styled button. */
+  Button: ViewFactory;
+  /** Toggle switch. */
+  Switch: ViewFactory;
+
+  // --- Pressables / touchables ---
+
+  /** Modern pressable view with configurable feedback (replaces Touchable* family). */
+  Pressable: ViewFactory;
+  /** Touchable view with opacity feedback. */
+  TouchableOpacity: ViewFactory;
+  /** Touchable with highlight feedback. */
+  TouchableHighlight: ViewFactory;
+  /** Touchable with no visual feedback. */
+  TouchableWithoutFeedback: ViewFactory;
+  /** Touchable with native platform feedback (ripple on Android). */
+  TouchableNativeFeedback: ViewFactory;
+
+  // --- Layout containers ---
+
+  /** Container that respects device safe areas (notch, status bar). */
+  SafeAreaView: ViewFactory;
+  /** Container that adjusts for the keyboard. */
+  KeyboardAvoidingView: ViewFactory;
+
+  // --- Overlays & feedback ---
+
+  /** Modal overlay. */
+  Modal: ViewFactory;
+  /** Status bar configuration. */
+  StatusBar: ViewFactory;
+  /** Loading spinner indicator. */
+  ActivityIndicator: ViewFactory;
+  /** Refresh control for pull-to-refresh. */
+  RefreshControl: ViewFactory;
+
+  // --- Android-specific views ---
+
+  /** Android drawer layout navigation. */
+  DrawerLayoutAndroid: ViewFactory;
+  /** Android toolbar / action bar. */
+  ToolbarAndroid: ViewFactory;
+
+  // --- iOS-specific views ---
+
+  /** iOS date/time picker. */
+  DatePickerIOS: ViewFactory;
+
+  // --- Escape hatch ---
+
+  /**
+   * Create a renderable for a custom native view type not in the
+   * built-in list.
+   *
+   * @example
+   * ```typescript
+   * view.custom('MapView',
+   *   nativeStyle.style({ flex: 1 }),
+   *   nativeStyle.prop('region', regionSignal),
+   * )
+   * ```
+   *
+   * @param viewType - The custom native view type name
+   * @param children - Child renderables
+   * @returns A NativeRenderable for the custom view type
+   */
+  custom: (
+    viewType: string,
     ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
   ) => NativeRenderable;
 };
@@ -86,19 +155,16 @@ export type NativeViewTypes = {
  *
  * @public
  */
-export const view = new Proxy(
-  {} as NativeViewTypes &
-    Record<
-      string,
-      (
-        ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-      ) => NativeRenderable
-    >,
-  {
-    get: (_, viewType: string) => {
+export const view = new Proxy({} as NativeViewTypes, {
+  get: (_, prop: string) => {
+    if (prop === "custom") {
       return (
+        viewType: string,
         ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
       ) => NativeEl(viewType, ...children);
-    },
+    }
+    return (
+      ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
+    ) => NativeEl(prop, ...children);
   },
-);
+});

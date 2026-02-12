@@ -105,7 +105,113 @@ export const nativeStyle = {
   /** Set the testID for testing. */
   testID: (id: string): NativeRenderable => applyProp("testID", id),
 
-  /** Set accessibility label. */
+  /** Set accessibility label (VoiceOver on iOS, TalkBack on Android). */
   accessibilityLabel: (label: Value<string>): NativeRenderable =>
     applyProp("accessibilityLabel", label),
+
+  /** Set accessibility hint text. */
+  accessibilityHint: (hint: Value<string>): NativeRenderable =>
+    applyProp("accessibilityHint", hint),
+
+  /**
+   * Set the accessibility role (e.g. 'button', 'header', 'link', 'image').
+   * Used by both VoiceOver (iOS) and TalkBack (Android).
+   */
+  accessibilityRole: (
+    role: Value<
+      | "none"
+      | "button"
+      | "link"
+      | "search"
+      | "image"
+      | "text"
+      | "adjustable"
+      | "header"
+      | "summary"
+      | "alert"
+      | "checkbox"
+      | "radio"
+      | "menu"
+      | "progressbar"
+      | "timer"
+    >,
+  ): NativeRenderable => applyProp("accessibilityRole", role),
+
+  /** Set whether the view is refreshing (for RefreshControl). */
+  refreshing: (value: Value<boolean>): NativeRenderable =>
+    applyProp("refreshing", value),
+
+  /** Set the return key type for TextInput. */
+  returnKeyType: (
+    type: Value<"done" | "go" | "next" | "search" | "send" | "default">,
+  ): NativeRenderable => applyProp("returnKeyType", type),
+
+  /** Set multiline mode for TextInput. */
+  multiline: (value: Value<boolean>): NativeRenderable =>
+    applyProp("multiline", value),
+
+  /** Set max length for TextInput. */
+  maxLength: (length: Value<number>): NativeRenderable =>
+    applyProp("maxLength", length),
+
+  /** Set auto-capitalize mode for TextInput. */
+  autoCapitalize: (
+    mode: Value<"none" | "sentences" | "words" | "characters">,
+  ): NativeRenderable => applyProp("autoCapitalize", mode),
+
+  /** Set auto-correct for TextInput. */
+  autoCorrect: (value: Value<boolean>): NativeRenderable =>
+    applyProp("autoCorrect", value),
+
+  // --- Image props ---
+
+  /** Set how the image should be resized to fit its container. */
+  resizeMode: (
+    mode: Value<"cover" | "contain" | "stretch" | "repeat" | "center">,
+  ): NativeRenderable => applyProp("resizeMode", mode),
+
+  // --- ScrollView / FlatList props ---
+
+  /** Set whether the list scrolls horizontally. */
+  horizontal: (value: Value<boolean>): NativeRenderable =>
+    applyProp("horizontal", value),
+
+  /** Show or hide the vertical scroll indicator. */
+  showsVerticalScrollIndicator: (value: Value<boolean>): NativeRenderable =>
+    applyProp("showsVerticalScrollIndicator", value),
+
+  /** Show or hide the horizontal scroll indicator. */
+  showsHorizontalScrollIndicator: (value: Value<boolean>): NativeRenderable =>
+    applyProp("showsHorizontalScrollIndicator", value),
+
+  /** Enable or disable paging for ScrollView. */
+  pagingEnabled: (value: Value<boolean>): NativeRenderable =>
+    applyProp("pagingEnabled", value),
+
+  /** Enable or disable scroll for ScrollView. */
+  scrollEnabled: (value: Value<boolean>): NativeRenderable =>
+    applyProp("scrollEnabled", value),
+
+  // --- View props ---
+
+  /**
+   * Controls whether the view can receive touch events.
+   * - 'auto': default behavior
+   * - 'none': touch passes through
+   * - 'box-none': view ignores touch but children can receive it
+   * - 'box-only': view receives touch but children cannot
+   */
+  pointerEvents: (
+    value: Value<"auto" | "none" | "box-none" | "box-only">,
+  ): NativeRenderable => applyProp("pointerEvents", value),
+
+  /**
+   * Extends the touchable area without changing the view's layout.
+   * Useful for making small buttons easier to tap.
+   */
+  hitSlop: (
+    value: Value<
+      number | { top?: number; right?: number; bottom?: number; left?: number }
+    >,
+  ): NativeRenderable => applyProp("hitSlop", value),
 };
