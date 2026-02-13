@@ -193,12 +193,12 @@ export function SideBar({ libraries, demos, pages }: Toc) {
         html.li(
           attr.class('mt-auto flex flex-col gap-2'),
           html.a(
-            attr.href('/tempo-docs.md'),
-            attr.download('tempo-docs.md'),
+            attr.href('/llms-full.txt'),
+            attr.download('llms-full.txt'),
             attr.class(
               'flex p-2 text-sm text-gray-600 justify-center hover:underline'
             ),
-            'Download docs (Markdown)'
+            'Download docs for LLMs'
           ),
           html.a(
             attr.target('_blank'),

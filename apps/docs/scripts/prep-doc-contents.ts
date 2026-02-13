@@ -26,7 +26,8 @@ const libraries = ['tempots-dom', 'tempots-std', 'tempots-ui', 'tempots-server',
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')
-const combinedMarkdownFile = path.join(pubFolder, 'tempo-docs.md')
+const llmsTxtFile = path.join(pubFolder, 'llms.txt')
+const llmsFullTxtFile = path.join(pubFolder, 'llms-full.txt')
 const cnameFile = path.join(pubFolder, 'CNAME')
 const nojekyll = path.join(pubFolder, '.nojekyll')
 
@@ -817,6 +818,67 @@ async function buildCombinedMarkdown(): Promise<string> {
   return `${header}\n\n${allDocs.join('\n\n---\n\n')}\n`
 }
 
+const SITE_URL = 'https://tempo-ts.com'
+
+function buildLlmsTxt(
+  pages: Page[],
+  librariesData: Library[],
+  api: Record<string, string[]>,
+  demos: Demo[]
+): string {
+  const lines: string[] = []
+
+  lines.push('# Tempo')
+  lines.push('')
+  lines.push('> A modern, open-source, and fast web framework written in TypeScript')
+  lines.push('')
+
+  // Documentation section
+  lines.push('## Documentation')
+  lines.push('')
+  for (const page of pages) {
+    if (page.path === 'index') continue
+    const desc = page.description ? `: ${page.description}` : ''
+    lines.push(`- [${page.title}](${SITE_URL}/page/${page.path}.html)${desc}`)
+  }
+  lines.push('')
+
+  // Libraries section
+  lines.push('## Libraries')
+  lines.push('')
+  for (const lib of librariesData) {
+    const desc = lib.description ? `: ${lib.description}` : ''
+    lines.push(`- [${lib.title}](${SITE_URL}/library/${lib.name}.html)${desc}`)
+  }
+  lines.push('')
+
+  // API Reference section
+  const libsWithApi = librariesData.filter(lib => lib.hasApiDocs && api[lib.name]?.length > 0)
+  if (libsWithApi.length > 0) {
+    lines.push('## API Reference')
+    lines.push('')
+    for (const lib of libsWithApi) {
+      lines.push(`- [${lib.title} API](${SITE_URL}/api/${lib.name}/index.html): API reference for ${lib.title}`)
+    }
+    lines.push('')
+  }
+
+  // Optional section
+  lines.push('## Optional')
+  lines.push('')
+  lines.push(`- [Full Documentation](${SITE_URL}/llms-full.txt): Complete documentation in a single file`)
+  if (demos.length > 0) {
+    for (const demo of demos) {
+      const desc = demo.description ? `: ${demo.description}` : ''
+      lines.push(`- [${demo.title}](${SITE_URL}/demo/${demo.path}.html)${desc}`)
+    }
+  }
+  lines.push(`- [GitHub](https://github.com/fponticelli/tempots): Source code repository`)
+  lines.push('')
+
+  return lines.join('\n')
+}
+
 async function main() {
   console.time('main')
 
@@ -933,7 +995,9 @@ async function main() {
   )
 
   await fsp.writeFile(tocFile, JSON.stringify(outputContent, null, 2))
-  await fsp.writeFile(combinedMarkdownFile, await buildCombinedMarkdown())
+  const combinedMarkdown = await buildCombinedMarkdown()
+  await fsp.writeFile(llmsFullTxtFile, combinedMarkdown)
+  await fsp.writeFile(llmsTxtFile, buildLlmsTxt(sections.pages, librariesData, api, demos))
 
   // CNAME
   await fsp.writeFile(cnameFile, 'tempo-ts.com')

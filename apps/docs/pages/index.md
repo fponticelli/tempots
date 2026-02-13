@@ -67,3 +67,10 @@ See Tempo in action with these demo applications:
 - [7GUIs](/demo/7guis.html): Implementation of the 7GUIs benchmark
 - [TodoMVC](/demo/todomvc.html): The classic TodoMVC example
 - [Counter Demo](/demo/counter.html): A simple counter application
+
+## LLM-Friendly Documentation
+
+This documentation is available in LLM-optimized formats following the [llms.txt](https://llmstxt.org/) convention:
+
+- [`llms.txt`](/llms.txt) — Documentation index for AI tools
+- [`llms-full.txt`](/llms-full.txt) — Complete documentation in a single file
