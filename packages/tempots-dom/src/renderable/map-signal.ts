@@ -29,6 +29,7 @@ export const MapSignal = <T>(
     return domRenderable((ctx: DOMContext) => {
       ctx = ctx.makeRef()
 
+      // eslint-disable-next-line tempots/no-renderable-signal-map
       const mountableSignal = signal.map(v => renderableOfTNode(fn(v)))
       let previousClear: Clear = () => {}
       const clear = mountableSignal.on(child => {
@@ -36,6 +37,8 @@ export const MapSignal = <T>(
         previousClear = child.render(ctx)
       })
       return removeTree => {
+        // TODO is this necessary?
+        // mountableSignal.dispose()
         clear()
         previousClear(removeTree)
       }
