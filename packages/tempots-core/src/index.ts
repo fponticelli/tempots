@@ -83,6 +83,13 @@ export {
   bind,
   coalesce,
   syncProp,
+  and,
+  or,
+  not,
+  notNil,
+  throttleSignal,
+  distinctUntilChanged,
+  accumulateSignal,
 } from './signal-utils'
 
 export type { StoredPropOptions, SyncPropOptions } from './signal-utils'

@@ -15,6 +15,14 @@ const PACKAGES = [
     dependencies: [],
   },
   {
+    name: "@tempots/render",
+    dir: "packages/tempots-render",
+    priority: 1.5,
+    dependencies: ["@tempots/core"],
+    // Pre-built package: no src, no build step, version lives in dist/package.json
+    distOnly: true,
+  },
+  {
     name: "@tempots/std",
     dir: "packages/tempots-std",
     priority: 4,
@@ -31,6 +39,24 @@ const PACKAGES = [
     dir: "packages/tempots-ui",
     priority: 8,
     dependencies: ["@tempots/dom", "@tempots/std"],
+  },
+  {
+    name: "@tempots/server",
+    dir: "packages/tempots-server",
+    priority: 5,
+    dependencies: ["@tempots/core", "@tempots/dom"],
+  },
+  {
+    name: "@tempots/client",
+    dir: "packages/tempots-client",
+    priority: 5,
+    dependencies: ["@tempots/core", "@tempots/dom"],
+  },
+  {
+    name: "@tempots/vite",
+    dir: "packages/tempots-vite",
+    priority: 6,
+    dependencies: ["@tempots/dom", "@tempots/server"],
   },
   {
     name: "@tempots/eslint-plugin",
@@ -51,7 +77,7 @@ function question(query) {
 
 async function getPublishChoice(packageInfo, currentVersion) {
   console.log(`\n${"=".repeat(60)}`);
-  console.log(`📦 ${packageInfo.name}`);
+  console.log(`📦 ${packageInfo.name}${packageInfo.distOnly ? " (dist-only)" : ""}`);
   console.log(`   Current version: ${currentVersion}`);
   console.log(`${"=".repeat(60)}`);
 
@@ -87,13 +113,50 @@ async function getPublishChoice(packageInfo, currentVersion) {
   }
 }
 
-function updatePackageVersions(packageDir, newVersion, updatedDependencies) {
-  const packagePath = path.join(process.cwd(), packageDir, "package.json");
-  const packageLibPath = path.join(
-    process.cwd(),
-    packageDir,
-    "package.lib.json"
-  );
+/**
+ * Resolves the path to the package.json used for reading the current version.
+ * For dist-only packages, this is dist/package.json.
+ * For regular packages, this is package.json at the package root.
+ */
+function getPackageJsonPath(pkg) {
+  if (pkg.distOnly) {
+    return path.join(process.cwd(), pkg.dir, "dist", "package.json");
+  }
+  return path.join(process.cwd(), pkg.dir, "package.json");
+}
+
+function updatePackageVersions(pkg, newVersion, updatedDependencies) {
+  if (pkg.distOnly) {
+    // For dist-only packages, update dist/package.json directly
+    const distPackagePath = path.join(process.cwd(), pkg.dir, "dist", "package.json");
+    const packageJson = JSON.parse(fs.readFileSync(distPackagePath, "utf8"));
+    packageJson.version = newVersion;
+
+    // Update dependencies with new versions of @tempots/* packages
+    if (packageJson.dependencies) {
+      for (const [depName, depVersion] of Object.entries(updatedDependencies)) {
+        if (packageJson.dependencies[depName]) {
+          packageJson.dependencies[depName] = `^${depVersion}`;
+          console.log(`   Updated dependency ${depName} to ^${depVersion}`);
+        }
+      }
+    }
+    if (packageJson.peerDependencies) {
+      for (const [depName, depVersion] of Object.entries(updatedDependencies)) {
+        if (packageJson.peerDependencies[depName]) {
+          packageJson.peerDependencies[depName] = `^${depVersion}`;
+          console.log(`   Updated peerDependency ${depName} to ^${depVersion}`);
+        }
+      }
+    }
+
+    fs.writeFileSync(distPackagePath, JSON.stringify(packageJson, null, 2) + "\n");
+    return;
+  }
+
+  // Regular package: update both package.json and package.lib.json
+  const packagePath = path.join(process.cwd(), pkg.dir, "package.json");
+  const packageLibPath = path.join(process.cwd(), pkg.dir, "package.lib.json");
 
   // Update package.json
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
@@ -115,6 +178,16 @@ function updatePackageVersions(packageDir, newVersion, updatedDependencies) {
       }
     }
 
+    // Update dependencies with new versions of @tempots/* packages
+    if (packageLibJson.dependencies) {
+      for (const [depName, depVersion] of Object.entries(updatedDependencies)) {
+        if (packageLibJson.dependencies[depName]) {
+          packageLibJson.dependencies[depName] = `^${depVersion}`;
+          console.log(`   Updated dependency ${depName} to ^${depVersion}`);
+        }
+      }
+    }
+
     fs.writeFileSync(
       packageLibPath,
       JSON.stringify(packageLibJson, null, 2) + "\n"
@@ -122,9 +195,14 @@ function updatePackageVersions(packageDir, newVersion, updatedDependencies) {
   }
 }
 
-function buildPackage(packageDir, packageName) {
-  console.log(`\n🔨 Building ${packageName}...`);
-  const absolutePackageDir = path.join(process.cwd(), packageDir);
+function buildPackage(pkg) {
+  if (pkg.distOnly) {
+    console.log(`\n⏭️  Skipping build for ${pkg.name} (dist-only)`);
+    return true;
+  }
+
+  console.log(`\n🔨 Building ${pkg.name}...`);
+  const absolutePackageDir = path.join(process.cwd(), pkg.dir);
   try {
     execSync("pnpm build", { cwd: absolutePackageDir, stdio: "inherit" });
 
@@ -140,7 +218,7 @@ function buildPackage(packageDir, packageName) {
 
     return true;
   } catch (error) {
-    console.error(`❌ Build failed for ${packageName}`);
+    console.error(`❌ Build failed for ${pkg.name}`);
     return false;
   }
 }
@@ -159,7 +237,8 @@ async function confirmPublish(publishPlan) {
 
   console.log("\nPackages to publish:");
   toPublish.forEach((p) => {
-    console.log(`  • ${p.name}: ${p.oldVersion} → ${p.newVersion} (${p.type})`);
+    const suffix = p.distOnly ? " (dist-only)" : "";
+    console.log(`  • ${p.name}: ${p.oldVersion} → ${p.newVersion} (${p.type})${suffix}`);
   });
 
   console.log("\nPackages to skip:");
@@ -177,9 +256,9 @@ async function confirmPublish(publishPlan) {
   return answer.trim().toLowerCase() === "y";
 }
 
-async function publishPackage(packageDir, packageName) {
-  console.log(`\n🚀 Publishing ${packageName}...`);
-  const absolutePackageDir = path.join(process.cwd(), packageDir);
+async function publishPackage(pkg) {
+  console.log(`\n🚀 Publishing ${pkg.name}...`);
+  const absolutePackageDir = path.join(process.cwd(), pkg.dir);
 
   try {
     const distDir = path.join(absolutePackageDir, "dist");
@@ -200,10 +279,10 @@ async function publishPackage(packageDir, packageName) {
     const publishCommand = `pnpm publish ${publishDir} ${args.join(" ")}`;
     execSync(publishCommand, { cwd: absolutePackageDir, stdio: "inherit" });
 
-    console.log(`✅ Successfully published ${packageName}@${version}`);
+    console.log(`✅ Successfully published ${pkg.name}@${version}`);
     return true;
   } catch (error) {
-    console.error(`❌ Publish failed for ${packageName}`);
+    console.error(`❌ Publish failed for ${pkg.name}`);
     return false;
   }
 }
@@ -216,7 +295,7 @@ async function main() {
   const publishPlan = [];
 
   for (const pkg of PACKAGES) {
-    const packagePath = path.join(process.cwd(), pkg.dir, "package.json");
+    const packagePath = getPackageJsonPath(pkg);
     const currentVersion = getVersion(packagePath);
 
     const choice = await getPublishChoice(pkg, currentVersion);
@@ -249,7 +328,7 @@ async function main() {
     if (plan.type === "skip") continue;
 
     console.log(`\n📝 Updating ${plan.name} to ${plan.newVersion}...`);
-    updatePackageVersions(plan.dir, plan.newVersion, updatedVersions);
+    updatePackageVersions(plan, plan.newVersion, updatedVersions);
     updatedVersions[plan.name] = plan.newVersion;
   }
 
@@ -261,14 +340,14 @@ async function main() {
   for (const plan of publishPlan) {
     if (plan.type === "skip") continue;
 
-    const buildSuccess = buildPackage(plan.dir, plan.name);
+    const buildSuccess = buildPackage(plan);
     if (!buildSuccess) {
       console.error(`\n❌ Stopping due to build failure in ${plan.name}`);
       rl.close();
       process.exit(1);
     }
 
-    const publishSuccess = await publishPackage(plan.dir, plan.name);
+    const publishSuccess = await publishPackage(plan);
     if (!publishSuccess) {
       console.error(`\n❌ Stopping due to publish failure in ${plan.name}`);
       rl.close();

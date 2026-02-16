@@ -836,3 +836,173 @@ export const syncProp = <T>(
 
   return dispose
 }
+
+/**
+ * Creates a computed signal that emits true if all input signals are true.
+ *
+ * @param args - The input signals.
+ * @returns - The computed signal.
+ * @public
+ */
+export function and(...args: Value<boolean>[]) {
+  return computedOf(...args)((...values) => values.every(v => v))
+}
+
+/**
+ * Creates a computed signal that emits true if any input signal is true.
+ *
+ * @param args - The input signals.
+ * @returns - The computed signal.
+ * @public
+ */
+export function or(...args: Value<boolean>[]) {
+  return computedOf(...args)((...values) => values.some(v => v))
+}
+
+/**
+ * Creates a signal or value that is the boolean negation of the input.
+ * If the input is a Signal, returns a mapped Signal. If it is a literal, returns the negated value.
+ *
+ * @param arg - A boolean value or signal.
+ * @returns The negated value or signal.
+ * @public
+ */
+export function not(arg: Value<boolean>) {
+  return Value.map(arg, v => !v)
+}
+
+/**
+ * Creates a signal or value that is `true` when the input is not `null` or `undefined`.
+ * If the input is a Signal, returns a mapped Signal. If it is a literal, returns the boolean result.
+ *
+ * @typeParam T - The type of the input value.
+ * @param arg - A value or signal to check.
+ * @returns A value or signal that emits `true` when the input is not nil.
+ * @public
+ */
+export function notNil<T>(arg: Value<T>) {
+  return Value.map(arg, v => v != null)
+}
+
+/**
+ * Creates a signal that throttles the input signal, emitting at most once per interval.
+ * The first change is emitted immediately, then subsequent changes within the interval
+ * are batched — the most recent value is emitted when the interval expires.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param signal - The input signal to throttle.
+ * @param ms - The minimum interval between emissions in milliseconds.
+ * @returns A new signal that emits throttled values.
+ * @public
+ */
+export const throttleSignal = <T>(signal: Signal<T>, ms: number): Signal<T> => {
+  const newSignal = prop(signal.get())
+  let timeout: ReturnType<typeof setTimeout> | null = null
+  let lastEmit = 0
+  let pending: { value: T } | null = null
+
+  const dispose = signal.on(
+    value => {
+      const now = Date.now()
+      const elapsed = now - lastEmit
+
+      if (elapsed >= ms) {
+        lastEmit = now
+        newSignal.set(value)
+      } else {
+        pending = { value }
+        if (timeout == null) {
+          timeout = setTimeout(() => {
+            timeout = null
+            if (pending != null) {
+              lastEmit = Date.now()
+              newSignal.set(pending.value)
+              pending = null
+            }
+          }, ms - elapsed)
+        }
+      }
+    },
+    { skipInitial: true, noAutoDispose: true }
+  )
+
+  newSignal.onDispose(() => {
+    dispose()
+    if (timeout != null) clearTimeout(timeout)
+  })
+
+  return newSignal
+}
+
+/**
+ * Creates a signal that only emits when the value changes according to the
+ * provided equality function. Useful downstream of `.map()` chains where
+ * a transformation may produce the same output for different inputs.
+ *
+ * @typeParam T - The type of the signal value.
+ * @param signal - The input signal.
+ * @param equals - Equality function to compare consecutive values. Defaults to `===`.
+ * @returns A new signal that skips consecutive equal values.
+ * @public
+ */
+export const distinctUntilChanged = <T>(
+  signal: Signal<T>,
+  equals: (a: T, b: T) => boolean = (a, b) => a === b
+): Signal<T> => {
+  const newSignal = prop(signal.get(), equals)
+
+  const dispose = signal.on(
+    value => {
+      newSignal.set(value)
+    },
+    { skipInitial: true, noAutoDispose: true }
+  )
+
+  newSignal.onDispose(dispose)
+
+  return newSignal
+}
+
+/**
+ * Creates a signal that accumulates values over time using a reducer function,
+ * similar to `Array.reduce` but reactive. Each time the source signal changes,
+ * the reducer is called with the current accumulator and the new value.
+ *
+ * @example
+ * ```typescript
+ * const clicks = prop(0)
+ * const total = accumulateSignal(clicks, (sum, n) => sum + n, 0)
+ * clicks.set(5)  // total.value === 5
+ * clicks.set(3)  // total.value === 8
+ * ```
+ *
+ * @typeParam T - The type of the source signal values.
+ * @typeParam A - The type of the accumulated value.
+ * @param signal - The source signal.
+ * @param reducer - Function that takes the accumulator and the new value, returns the next accumulator.
+ * @param initial - The initial accumulator value.
+ * @param equals - Equality function for the accumulator. Defaults to `===`.
+ * @returns A new signal that emits the accumulated value.
+ * @public
+ */
+export const accumulateSignal = <T, A>(
+  signal: Signal<T>,
+  reducer: (acc: A, value: T) => A,
+  initial: A,
+  equals: (a: A, b: A) => boolean = (a, b) => a === b
+): Signal<A> => {
+  let acc = reducer(initial, signal.get())
+  const newSignal = prop(acc, equals)
+
+  const dispose = signal.on(
+    value => {
+      acc = reducer(acc, value)
+      newSignal.set(acc)
+    },
+    { skipInitial: true, noAutoDispose: true }
+  )
+
+  newSignal.onDispose(dispose)
+
+  return newSignal
+}
