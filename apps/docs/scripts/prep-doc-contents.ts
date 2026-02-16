@@ -22,7 +22,7 @@ const demoFolderDst = path.join(pubFolder, 'demos')
 const pagesFolderSrc = path.join(docsFolder, 'pages')
 const pagesFolderDst = path.join(pubFolder, 'pages')
 const librariesFolderSrc = path.join(rootFolder, 'packages')
-const libraries = ['tempots-dom', 'tempots-std', 'tempots-ui', 'tempots-server', 'tempots-client', 'tempots-vite']
+const libraries = ['tempots-core', 'tempots-render', 'tempots-dom', 'tempots-native', 'tempots-std', 'tempots-ui', 'tempots-server', 'tempots-client', 'tempots-vite', 'tempots-eslint-plugin']
 const apiFolderDst = path.join(pubFolder, 'api')
 
 const tocFile = path.join(pubFolder, 'toc.json')
