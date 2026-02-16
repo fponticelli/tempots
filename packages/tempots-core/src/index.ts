@@ -87,6 +87,10 @@ export {
 
 export type { StoredPropOptions, SyncPropOptions } from './signal-utils'
 
+// History / Undo-Redo
+export { propHistory } from './prop-history'
+export type { PropHistory, PropHistoryOptions } from './prop-history'
+
 // Interpolation utilities
 export {
   interpolateNumber,
