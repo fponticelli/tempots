@@ -2,7 +2,6 @@
 
 const path = require("path");
 const fs = require("fs");
-const readline = require("readline");
 const { execSync } = require("child_process");
 const { getVersion, incrementVersion } = require("./version");
 
@@ -70,53 +69,6 @@ const PACKAGES = [
   },
 ];
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-function question(query) {
-  return new Promise((resolve) => rl.question(query, resolve));
-}
-
-async function getPublishChoice(packageInfo, currentVersion) {
-  console.log(`\n${"=".repeat(60)}`);
-  console.log(`📦 ${packageInfo.name}${packageInfo.distOnly ? " (dist-only)" : ""}`);
-  console.log(`   Current version: ${currentVersion}`);
-  console.log(`${"=".repeat(60)}`);
-
-  const choices = {
-    patch: incrementVersion(currentVersion, "patch"),
-    minor: incrementVersion(currentVersion, "minor"),
-    major: incrementVersion(currentVersion, "major"),
-    next: incrementVersion(currentVersion, "next"),
-  };
-
-  console.log("\nVersion options:");
-  console.log(`  1) patch → ${choices.patch}`);
-  console.log(`  2) minor → ${choices.minor}`);
-  console.log(`  3) major → ${choices.major}`);
-  console.log(`  4) next  → ${choices.next}`);
-  console.log(`  5) skip (don't publish)`);
-
-  const answer = await question("\nYour choice (1-5, default: 5): ");
-  const choice = answer.trim() || "5";
-
-  switch (choice) {
-    case "1":
-      return { type: "patch", newVersion: choices.patch };
-    case "2":
-      return { type: "minor", newVersion: choices.minor };
-    case "3":
-      return { type: "major", newVersion: choices.major };
-    case "4":
-      return { type: "next", newVersion: choices.next };
-    case "5":
-    default:
-      return { type: "skip", newVersion: null };
-  }
-}
-
 /**
  * Resolves the path to the package.json used for reading the current version.
  * For dist-only packages, this is dist/package.json.
@@ -136,7 +88,6 @@ function updatePackageVersions(pkg, newVersion, updatedDependencies) {
     const packageJson = JSON.parse(fs.readFileSync(distPackagePath, "utf8"));
     packageJson.version = newVersion;
 
-    // Update dependencies with new versions of @tempots/* packages
     if (packageJson.dependencies) {
       for (const [depName, depVersion] of Object.entries(updatedDependencies)) {
         if (packageJson.dependencies[depName]) {
@@ -162,17 +113,14 @@ function updatePackageVersions(pkg, newVersion, updatedDependencies) {
   const packagePath = path.join(process.cwd(), pkg.dir, "package.json");
   const packageLibPath = path.join(process.cwd(), pkg.dir, "package.lib.json");
 
-  // Update package.json
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   packageJson.version = newVersion;
   fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + "\n");
 
-  // Update package.lib.json if it exists
   if (fs.existsSync(packageLibPath)) {
     const packageLibJson = JSON.parse(fs.readFileSync(packageLibPath, "utf8"));
     packageLibJson.version = newVersion;
 
-    // Update peerDependencies with new versions of @tempots/* packages
     if (packageLibJson.peerDependencies) {
       for (const [depName, depVersion] of Object.entries(updatedDependencies)) {
         if (packageLibJson.peerDependencies[depName]) {
@@ -182,7 +130,6 @@ function updatePackageVersions(pkg, newVersion, updatedDependencies) {
       }
     }
 
-    // Update dependencies with new versions of @tempots/* packages
     if (packageLibJson.dependencies) {
       for (const [depName, depVersion] of Object.entries(updatedDependencies)) {
         if (packageLibJson.dependencies[depName]) {
@@ -201,16 +148,22 @@ function updatePackageVersions(pkg, newVersion, updatedDependencies) {
 
 function buildPackage(pkg) {
   if (pkg.distOnly) {
-    console.log(`\n⏭️  Skipping build for ${pkg.name} (dist-only)`);
+    console.log(`\n  Skipping build for ${pkg.name} (dist-only)`);
     return true;
   }
 
-  console.log(`\n🔨 Building ${pkg.name}...`);
   const absolutePackageDir = path.join(process.cwd(), pkg.dir);
+  const packageJson = JSON.parse(fs.readFileSync(path.join(absolutePackageDir, "package.json"), "utf8"));
+
+  if (!packageJson.scripts || !packageJson.scripts.build) {
+    console.log(`\n  Skipping build for ${pkg.name} (no build script)`);
+    return true;
+  }
+
+  console.log(`\n  Building ${pkg.name}...`);
   try {
     execSync("pnpm build", { cwd: absolutePackageDir, stdio: "inherit" });
 
-    // Copy README if it exists
     const readmePath = path.join(absolutePackageDir, "README.md");
     const distPath = path.join(absolutePackageDir, "dist");
     if (fs.existsSync(readmePath) && fs.existsSync(distPath)) {
@@ -222,57 +175,20 @@ function buildPackage(pkg) {
 
     return true;
   } catch (error) {
-    console.error(`❌ Build failed for ${pkg.name}`);
+    console.error(`  Build failed for ${pkg.name}`);
     return false;
   }
 }
 
-async function confirmPublish(publishPlan) {
-  console.log("\n" + "=".repeat(60));
-  console.log("📋 PUBLISH PLAN SUMMARY");
-  console.log("=".repeat(60));
-
-  const toPublish = publishPlan.filter((p) => p.type !== "skip");
-
-  if (toPublish.length === 0) {
-    console.log("\n⚠️  No packages selected for publishing.");
-    return false;
-  }
-
-  console.log("\nPackages to publish:");
-  toPublish.forEach((p) => {
-    const suffix = p.distOnly ? " (dist-only)" : "";
-    console.log(`  • ${p.name}: ${p.oldVersion} → ${p.newVersion} (${p.type})${suffix}`);
-  });
-
-  console.log("\nPackages to skip:");
-  const skipped = publishPlan.filter((p) => p.type === "skip");
-  if (skipped.length > 0) {
-    skipped.forEach((p) => {
-      console.log(`  • ${p.name}: ${p.oldVersion} (no change)`);
-    });
-  } else {
-    console.log("  (none)");
-  }
-
-  console.log("\n" + "=".repeat(60));
-  const answer = await question("\n✅ Proceed with publishing? (y/N): ");
-  return answer.trim().toLowerCase() === "y";
-}
-
-async function publishPackage(pkg) {
-  console.log(`\n🚀 Publishing ${pkg.name}...`);
+function publishPackage(pkg) {
+  console.log(`\n  Publishing ${pkg.name}...`);
   const absolutePackageDir = path.join(process.cwd(), pkg.dir);
 
   try {
     const distDir = path.join(absolutePackageDir, "dist");
     const publishDir = fs.existsSync(distDir) ? "dist" : ".";
 
-    const packagePath = path.join(
-      absolutePackageDir,
-      publishDir,
-      "package.json"
-    );
+    const packagePath = path.join(absolutePackageDir, publishDir, "package.json");
     const version = getVersion(packagePath);
 
     const args = ["--access public", "--no-git-checks"];
@@ -283,98 +199,153 @@ async function publishPackage(pkg) {
     const publishCommand = `pnpm publish ${publishDir} ${args.join(" ")}`;
     execSync(publishCommand, { cwd: absolutePackageDir, stdio: "inherit" });
 
-    console.log(`✅ Successfully published ${pkg.name}@${version}`);
+    console.log(`  Published ${pkg.name}@${version}`);
     return true;
   } catch (error) {
-    console.error(`❌ Publish failed for ${pkg.name}`);
+    console.error(`  Publish failed for ${pkg.name}`);
     return false;
   }
 }
 
 async function main() {
-  console.log("🎯 Interactive Package Publishing Tool");
-  console.log("=".repeat(60));
+  // Dynamic import for ESM-only inquirer
+  const { default: inquirer } = await import("inquirer");
 
-  // Step 1: Collect publish choices for each package
+  console.log("\n  Tempo Package Publisher\n");
+
+  // Step 1: Load versions for all packages
+  const packagesWithVersions = PACKAGES.map((pkg) => {
+    const packagePath = getPackageJsonPath(pkg);
+    const version = getVersion(packagePath);
+    return { ...pkg, currentVersion: version };
+  });
+
+  // Step 2: Select which packages to publish (checkbox multi-select)
+  const { selected } = await inquirer.prompt([
+    {
+      type: "checkbox",
+      name: "selected",
+      message: "Select packages to publish:",
+      choices: packagesWithVersions.map((pkg) => ({
+        name: `${pkg.name}  (${pkg.currentVersion})`,
+        value: pkg.name,
+        short: pkg.name,
+      })),
+      validate: (answer) =>
+        answer.length > 0 || "Select at least one package.",
+    },
+  ]);
+
+  const selectedPackages = packagesWithVersions.filter((pkg) =>
+    selected.includes(pkg.name)
+  );
+
+  // Step 3: For each selected package, pick a version bump type
   const publishPlan = [];
 
-  for (const pkg of PACKAGES) {
-    const packagePath = getPackageJsonPath(pkg);
-    const currentVersion = getVersion(packagePath);
+  for (const pkg of selectedPackages) {
+    const choices = {
+      patch: incrementVersion(pkg.currentVersion, "patch"),
+      minor: incrementVersion(pkg.currentVersion, "minor"),
+      major: incrementVersion(pkg.currentVersion, "major"),
+      next: incrementVersion(pkg.currentVersion, "next"),
+    };
 
-    const choice = await getPublishChoice(pkg, currentVersion);
+    const { bumpType } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "bumpType",
+        message: `${pkg.name} (${pkg.currentVersion}) — version bump:`,
+        choices: [
+          { name: `patch  ${choices.patch}`, value: "patch" },
+          { name: `minor  ${choices.minor}`, value: "minor" },
+          { name: `major  ${choices.major}`, value: "major" },
+          { name: `next   ${choices.next}`, value: "next" },
+        ],
+        default: "patch",
+      },
+    ]);
 
     publishPlan.push({
       ...pkg,
-      type: choice.type,
-      oldVersion: currentVersion,
-      newVersion: choice.newVersion,
+      type: bumpType,
+      oldVersion: pkg.currentVersion,
+      newVersion: choices[bumpType],
     });
   }
 
-  // Step 2: Show summary and confirm
-  const confirmed = await confirmPublish(publishPlan);
+  // Step 4: Show summary and confirm
+  console.log("\n" + "=".repeat(60));
+  console.log("  PUBLISH PLAN");
+  console.log("=".repeat(60));
+
+  for (const p of publishPlan) {
+    console.log(`  ${p.name}:  ${p.oldVersion}  ->  ${p.newVersion}  (${p.type})`);
+  }
+
+  const skipped = packagesWithVersions.filter(
+    (pkg) => !selected.includes(pkg.name)
+  );
+  if (skipped.length > 0) {
+    console.log("\n  Skipping:");
+    for (const p of skipped) {
+      console.log(`  ${p.name}  (${p.currentVersion})`);
+    }
+  }
+
+  console.log("\n" + "=".repeat(60));
+
+  const { confirmed } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "confirmed",
+      message: "Proceed with publishing?",
+      default: false,
+    },
+  ]);
 
   if (!confirmed) {
-    console.log("\n❌ Publishing cancelled.");
-    rl.close();
+    console.log("\n  Publishing cancelled.\n");
     process.exit(0);
   }
 
-  // Step 3: Update versions and build packages
-  console.log("\n" + "=".repeat(60));
-  console.log("📝 UPDATING VERSIONS");
-  console.log("=".repeat(60));
-
+  // Step 5: Update versions
+  console.log("\n  Updating versions...\n");
   const updatedVersions = {};
 
   for (const plan of publishPlan) {
-    if (plan.type === "skip") continue;
-
-    console.log(`\n📝 Updating ${plan.name} to ${plan.newVersion}...`);
+    console.log(`  ${plan.name} -> ${plan.newVersion}`);
     updatePackageVersions(plan, plan.newVersion, updatedVersions);
     updatedVersions[plan.name] = plan.newVersion;
   }
 
-  // Step 4: Build and publish packages in order
-  console.log("\n" + "=".repeat(60));
-  console.log("🔨 BUILDING AND PUBLISHING");
-  console.log("=".repeat(60));
+  // Step 6: Build and publish in order
+  console.log("\n  Building and publishing...\n");
 
   for (const plan of publishPlan) {
-    if (plan.type === "skip") continue;
-
     const buildSuccess = buildPackage(plan);
     if (!buildSuccess) {
-      console.error(`\n❌ Stopping due to build failure in ${plan.name}`);
-      rl.close();
+      console.error(`\n  Stopping due to build failure in ${plan.name}`);
       process.exit(1);
     }
 
-    const publishSuccess = await publishPackage(plan);
+    const publishSuccess = publishPackage(plan);
     if (!publishSuccess) {
-      console.error(`\n❌ Stopping due to publish failure in ${plan.name}`);
-      rl.close();
+      console.error(`\n  Stopping due to publish failure in ${plan.name}`);
       process.exit(1);
     }
   }
 
-  // Step 5: Summary
+  // Step 7: Summary
   console.log("\n" + "=".repeat(60));
-  console.log("✅ PUBLISHING COMPLETE");
-  console.log("=".repeat(60));
-
-  const published = publishPlan.filter((p) => p.type !== "skip");
-  console.log(`\nSuccessfully published ${published.length} package(s):`);
-  published.forEach((p) => {
-    console.log(`  ✅ ${p.name}@${p.newVersion}`);
-  });
-
-  rl.close();
+  console.log("  DONE\n");
+  for (const p of publishPlan) {
+    console.log(`  ${p.name}@${p.newVersion}`);
+  }
+  console.log("\n" + "=".repeat(60) + "\n");
 }
 
 main().catch((error) => {
-  console.error("\n❌ Error:", error);
-  rl.close();
+  console.error("\n  Error:", error);
   process.exit(1);
 });

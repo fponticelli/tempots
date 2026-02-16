@@ -1,6 +1,6 @@
 {
   "name": "@tempots/render",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -14,7 +14,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@tempots/core": "^2.0.4"
+    "@tempots/core": "^2.1.0"
   },
   "description": "Platform-agnostic shared renderables for the Tempo framework",
   "keywords": [

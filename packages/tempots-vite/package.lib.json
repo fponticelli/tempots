@@ -1,7 +1,7 @@
 {
   "name": "@tempots/vite",
   "private": false,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Vite plugin for Tempo SSR, SSG, and Islands architecture",
   "keywords": [
     "tempo",
@@ -37,8 +37,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@tempots/dom": "^35.0.0",
-    "@tempots/server": "^1.0.0"
+    "@tempots/dom": "^36.0.0",
+    "@tempots/server": "^0.0.1"
   },
   "peerDependencies": {
     "vite": "^5.0.0 || ^6.0.0 || ^7.0.0"
