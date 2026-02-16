@@ -1,7 +1,7 @@
 {
   "name": "@tempots/native",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "priority": 2,
   "description": "Native iOS/Android rendering for the Tempo framework via JSI bridge",
   "keywords": [
