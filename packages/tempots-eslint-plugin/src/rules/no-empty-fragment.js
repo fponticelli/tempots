@@ -62,7 +62,7 @@ export default {
   },
 
   create(context) {
-    const sourceCode = context.getSourceCode()
+    const sourceCode = context.sourceCode
     const tempotsDomImport = findTempotsDomImport(sourceCode)
 
     return {

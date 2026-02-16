@@ -7,6 +7,20 @@ import {
   Task,
   Value,
 } from '@tempots/dom'
+// monaco-editor 0.55+ deprecated monaco.languages.typescript in types
+// (typed as { deprecated: true }) but the runtime API is unchanged.
+// Define the subset of the TS namespace we need.
+type MonacoTSDefaults = {
+  setCompilerOptions(options: Record<string, unknown>): void
+  addExtraLib(content: string, filePath?: string): { dispose(): void }
+}
+type MonacoTSNamespace = {
+  typescriptDefaults: MonacoTSDefaults
+  ScriptTarget: { ES2020: number }
+  ModuleResolutionKind: { NodeJs: number }
+  ModuleKind: { ESNext: number }
+  JsxEmit: { React: number }
+}
 
 function throttle<T extends (...args: unknown[]) => void>(
   fn: T,
@@ -180,16 +194,20 @@ export function MonacoEditor({
           const monaco = (window as any)
             .monaco as typeof import('monaco-editor')
 
+          // monaco-editor 0.55+ deprecated the languages.typescript namespace
+          // in its public types, but the runtime API is unchanged.
+          // Cast to our local type to access it safely.
+          const ts = monaco.languages.typescript as unknown as MonacoTSNamespace
+
           // Configure TypeScript compiler options
-          monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-            target: monaco.languages.typescript.ScriptTarget.ES2020,
+          ts.typescriptDefaults.setCompilerOptions({
+            target: ts.ScriptTarget.ES2020,
             allowNonTsExtensions: true,
-            moduleResolution:
-              monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-            module: monaco.languages.typescript.ModuleKind.ESNext,
+            moduleResolution: ts.ModuleResolutionKind.NodeJs,
+            module: ts.ModuleKind.ESNext,
             noEmit: true,
             typeRoots: ['node_modules/@types'],
-            jsx: monaco.languages.typescript.JsxEmit.React,
+            jsx: ts.JsxEmit.React,
             jsxFactory: 'html',
             allowSyntheticDefaultImports: true,
             esModuleInterop: true,
@@ -199,7 +217,7 @@ export function MonacoEditor({
           const typeDefinition = createTempotsTypeDefinition()
 
           // Add the type definition to Monaco
-          monaco.languages.typescript.typescriptDefaults.addExtraLib(
+          ts.typescriptDefaults.addExtraLib(
             typeDefinition,
             'file:///node_modules/@tempots/dom/index.d.ts'
           )
@@ -216,7 +234,7 @@ export function MonacoEditor({
           `
 
           // Add this as a helper module
-          monaco.languages.typescript.typescriptDefaults.addExtraLib(
+          ts.typescriptDefaults.addExtraLib(
             moduleContent,
             'file:///node_modules/@tempots/dom-helper.ts'
           )

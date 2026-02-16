@@ -53,7 +53,7 @@ export default {
   create(context) {
     // Track which variables are signals
     const signalVariables = new Map() // variable name -> scope
-    const sourceCode = context.sourceCode || context.getSourceCode()
+    const sourceCode = context.sourceCode
 
     /**
      * Check if a node is a signal creation call

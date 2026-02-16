@@ -21,8 +21,8 @@
     "publish": "node scripts/publish-all.js"
   },
   "devDependencies": {
-    "inquirer": "^12",
-    "turbo": "2.5.4"
+    "inquirer": "^13.2.5",
+    "turbo": "2.8.9"
   },
   "packageManager": "pnpm@9.15.9"
 }

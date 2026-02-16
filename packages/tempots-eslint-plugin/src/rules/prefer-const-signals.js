@@ -101,7 +101,7 @@ export default {
           if (declarator.id.type !== 'Identifier') continue
 
           if (isSignalCreation(declarator.init)) {
-            const sourceCode = context.getSourceCode()
+            const sourceCode = context.sourceCode
 
             context.report({
               node: declarator,

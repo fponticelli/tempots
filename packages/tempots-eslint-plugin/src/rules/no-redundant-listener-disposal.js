@@ -63,7 +63,7 @@ export default {
           // Pattern: OnDispose(signal.on(...)) or OnDispose(signal.onChange(...))
           const method = isSignalListenerCall(arg)
           if (method) {
-            const sourceCode = context.getSourceCode()
+            const sourceCode = context.sourceCode
 
             context.report({
               node,

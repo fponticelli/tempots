@@ -14,9 +14,6 @@ export interface RenderNativeOptions {
   rootHandle?: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const globalThis: any;
-
 /**
  * Mounts a Tempo renderable into the native view tree.
  *
@@ -32,7 +29,9 @@ export function renderNative(
   renderable: Renderable<NativeContext, typeof NATIVE_RENDERABLE_TYPE>,
   options: RenderNativeOptions = {},
 ): Clear {
-  const bridge: JSIBridge = options.bridge ?? globalThis.__TEMPO_JSI_BRIDGE;
+  const bridge: JSIBridge =
+    options.bridge ??
+    ((globalThis as Record<string, unknown>).__TEMPO_JSI_BRIDGE as JSIBridge);
 
   if (!bridge) {
     throw new Error(
