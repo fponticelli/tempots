@@ -1,28 +1,19 @@
-import type { Renderable } from '../types/domain'
-import { DOMContext } from '../dom/dom-context'
-import { domRenderable } from '../types/domain'
+import type { DOMContext } from '../dom/dom-context'
+import type {
+  DisposeCallback as BaseDisposeCallback,
+  WithDispose as BaseWithDispose,
+} from '@tempots/render'
 
-export type DisposeCallback = (removeTree: boolean, ctx: DOMContext) => void
-export type WithDispose = {
-  dispose: DisposeCallback
-}
+export { OnDispose } from './shared'
 
 /**
- * Creates a renderable object that will be called when the component is unmounted.
- * @param fns - The function(s) to be called when the component is unmounted.
- * @returns A renderable object that takes a DOMContext and returns a function that takes a boolean indicating whether to remove the tree.
+ * Callback invoked on dispose, specialized for DOMContext.
  * @public
  */
-export const OnDispose = (
-  ...fns: (DisposeCallback | WithDispose)[]
-): Renderable =>
-  domRenderable(
-    (ctx: DOMContext) => (removeTree: boolean) =>
-      fns.forEach(disposable => {
-        if (typeof disposable === 'function') {
-          disposable(removeTree, ctx)
-        } else {
-          disposable.dispose(removeTree, ctx)
-        }
-      })
-  )
+export type DisposeCallback = BaseDisposeCallback<DOMContext>
+
+/**
+ * Object with a dispose method, specialized for DOMContext.
+ * @public
+ */
+export type WithDispose = BaseWithDispose<DOMContext>

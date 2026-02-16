@@ -13,7 +13,7 @@ export function OpenGraph(options: OpenGraphOptions) {
   const imageSignal =
     Value.maybeToSignal<string | undefined>(image) ??
     signal(undefined as string | undefined)
-  const card = Value.map(imageSignal, image => {
+  const card = Value.map(imageSignal, (image): string => {
     return image == null ? 'summary' : 'summary_large_image'
   })
 

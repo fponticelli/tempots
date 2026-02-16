@@ -1,6 +1,6 @@
 {
   "name": "@tempots/server",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",

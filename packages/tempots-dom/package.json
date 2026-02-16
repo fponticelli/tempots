@@ -43,7 +43,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@tempots/core": "workspace:*"
+    "@tempots/core": "workspace:*",
+    "@tempots/render": "workspace:*"
   },
   "scripts": {
     "build": "vite build && cp package.lib.json dist/package.json",

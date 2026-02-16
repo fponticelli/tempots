@@ -103,3 +103,8 @@ export * from './renderable/with-element'
 export * from './renderable/with-headless-ctx'
 export * from './renderable/with-scope'
 export * from './renderable/provider'
+
+// Re-export from @tempots/render for downstream consumers
+export type { BaseRenderContext } from '@tempots/render'
+export { createRenderKit } from '@tempots/render'
+export type { RenderKitConfig, RenderKit } from '@tempots/render'

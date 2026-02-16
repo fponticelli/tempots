@@ -1,0 +1,22 @@
+name: TempoDemo
+options:
+  bundleIdPrefix: com.tempots
+  deploymentTarget:
+    iOS: "15.0"
+  xcodeVersion: "16.0"
+targets:
+  TempoDemo:
+    type: application
+    platform: iOS
+    sources:
+      - path: TempoDemo
+      - path: dist/bundle.js
+        buildPhase: resources
+        type: file
+    settings:
+      base:
+        INFOPLIST_FILE: TempoDemo/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.tempots.demo
+        DEVELOPMENT_TEAM: ""
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"

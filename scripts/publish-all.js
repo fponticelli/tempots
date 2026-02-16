@@ -19,8 +19,6 @@ const PACKAGES = [
     dir: "packages/tempots-render",
     priority: 1.5,
     dependencies: ["@tempots/core"],
-    // Pre-built package: no src, no build step, version lives in dist/package.json
-    distOnly: true,
   },
   {
     name: "@tempots/std",
@@ -33,6 +31,12 @@ const PACKAGES = [
     dir: "packages/tempots-dom",
     priority: 2,
     dependencies: ["@tempots/core"],
+  },
+  {
+    name: "@tempots/native",
+    dir: "packages/tempots-native",
+    priority: 3,
+    dependencies: ["@tempots/core", "@tempots/render"],
   },
   {
     name: "@tempots/ui",
