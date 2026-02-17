@@ -5,8 +5,7 @@ import {
   on,
   prop,
   ForEach,
-  WithBrowserCtx,
-  OnDispose,
+  delegate,
   aria,
 } from '@tempots/dom'
 import type { Renderable, Signal } from '@tempots/dom'
@@ -32,10 +31,7 @@ function ActionButton(
 function Row(item: Signal<RowData>): Renderable {
   return html.tr(
     html.td(attr.class('col-md-1'), item.map(d => String(d.id))),
-    html.td(
-      attr.class('col-md-4'),
-      html.a(item.map(d => d.label))
-    ),
+    html.td(attr.class('col-md-4'), html.a(item.map(d => d.label))),
     html.td(
       attr.class('col-md-1'),
       html.a(
@@ -116,46 +112,24 @@ function App(): Renderable {
       attr.class('table table-hover table-striped test-data'),
       html.tbody(
         attr.id('tbody'),
-        // Event delegation for selection and deletion
-        WithBrowserCtx(ctx => {
-          const tbody = ctx.element
-          tbody.addEventListener('click', (e: Event) => {
-            const target = e.target as HTMLElement
-            const a = target.closest('a')
-            if (!a) return
-
-            const tr = a.closest('tr')
-            if (!tr) return
-
-            const td = a.parentElement
-            if (!td) return
-
-            if (td.className === 'col-md-4') {
-              // Select row
-              if (selectedTr) selectedTr.className = ''
-              selectedTr = tr as HTMLTableRowElement
-              selectedTr.className = 'danger'
-            } else if (
-              td.className === 'col-md-1' &&
-              a.querySelector('.glyphicon-remove')
-            ) {
-              // Delete row - read ID from first cell
-              const id = parseInt(
-                (tr.children[0] as HTMLElement).textContent!,
-                10
-              )
-              const d = data.value
-              const idx = d.findIndex(r => r.id === id)
-              if (idx >= 0) {
-                if (selectedTr === tr) {
-                  selectedTr.className = ''
-                  selectedTr = null
-                }
-                data.set([...d.slice(0, idx), ...d.slice(idx + 1)])
-              }
-            }
-          })
-          return OnDispose(() => {})
+        delegate.click('td.col-md-4 a', e => {
+          const tr = (e.target as Element).closest('tr')!
+          if (selectedTr) selectedTr.className = ''
+          selectedTr = tr as HTMLTableRowElement
+          selectedTr.className = 'danger'
+        }),
+        delegate.click('td.col-md-1 a', e => {
+          const tr = (e.target as Element).closest('tr')!
+          const id = parseInt((tr.children[0] as HTMLElement).textContent!, 10)
+          if (selectedTr === tr) {
+            selectedTr.className = ''
+            selectedTr = null
+          }
+          const d = data.value
+          const idx = d.findIndex(r => r.id === id)
+          if (idx >= 0) {
+            data.set([...d.slice(0, idx), ...d.slice(idx + 1)])
+          }
         }),
         ForEach(data, (item: Signal<RowData>) => Row(item))
       )
