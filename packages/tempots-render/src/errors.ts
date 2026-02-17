@@ -1,4 +1,4 @@
-import type { ProviderMark } from "@tempots/core";
+import type { ProviderMark } from '@tempots/core'
 
 /**
  * Error thrown when a provider is not found.
@@ -7,6 +7,6 @@ import type { ProviderMark } from "@tempots/core";
  */
 export class ProviderNotFoundError extends Error {
   constructor(mark: ProviderMark<unknown>) {
-    super(`Provider not found: ${mark.description}`);
+    super(`Provider not found: ${mark.description}`)
   }
 }

@@ -1,15 +1,15 @@
-import { type Plugin, type ResolvedConfig, build } from "vite";
-import { renderToString, renderToStaticMarkup } from "@tempots/server";
-import type { Renderable } from "@tempots/dom";
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { pathToFileURL } from "node:url";
+import { type Plugin, type ResolvedConfig, build } from 'vite'
+import { renderToString, renderToStaticMarkup } from '@tempots/server'
+import type { Renderable } from '@tempots/dom'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 /**
  * Rendering mode for the Tempo Vite plugin.
  * @public
  */
-export type TempoMode = "ssg" | "ssr" | "islands" | "hybrid";
+export type TempoMode = 'ssg' | 'ssr' | 'islands' | 'hybrid'
 
 /**
  * Route configuration for SSG.
@@ -19,12 +19,12 @@ export interface RouteConfig {
   /**
    * The URL path for this route (e.g., "/", "/about", "/blog/my-post").
    */
-  path: string;
+  path: string
 
   /**
    * Optional output file path. Defaults to path + "/index.html".
    */
-  output?: string;
+  output?: string
 }
 
 /**
@@ -41,7 +41,7 @@ export interface TempoViteOptions {
    *
    * @default "ssg"
    */
-  mode?: TempoMode;
+  mode?: TempoMode
 
   /**
    * Routes to pre-render for SSG mode.
@@ -55,69 +55,69 @@ export interface TempoViteOptions {
     | string[]
     | RouteConfig[]
     | (() => Promise<string[] | RouteConfig[]>)
-    | "crawl";
+    | 'crawl'
 
   /**
    * Seed routes for crawl mode. Crawling starts from these URLs.
    * @default ['/']
    */
-  seedRoutes?: string[];
+  seedRoutes?: string[]
 
   /**
    * Path to the client entry file.
    * @default "src/entry-client.ts"
    */
-  entry?: string;
+  entry?: string
 
   /**
    * Path to the server entry file for SSR/SSG.
    * Should export `render(url)` function or `App` component.
    * @default "src/entry-server.ts"
    */
-  ssrEntry?: string;
+  ssrEntry?: string
 
   /**
    * Path to the HTML template file.
    * @default "index.html"
    */
-  template?: string;
+  template?: string
 
   /**
    * Selector for the app container in the template.
    * @default "#app"
    */
-  container?: string;
+  container?: string
 
   /**
    * Whether to generate hydration markers in the HTML.
    * Required for client-side hydration.
    * @default true for "ssr" and "islands" modes, false for "ssg"
    */
-  hydrate?: boolean;
+  hydrate?: boolean
 
   /**
    * Output directory for SSG.
    * @default "dist"
    */
-  outDir?: string;
+  outDir?: string
 }
 
 /**
  * Normalizes route configuration to RouteConfig objects.
  */
 function normalizeRoutes(
-  routes: string[] | RouteConfig[] | undefined,
+  routes: string[] | RouteConfig[] | undefined
 ): RouteConfig[] {
   if (!routes) {
-    return [{ path: "/" }];
+    return [{ path: '/' }]
   }
 
-  return routes.map((route) => {
-    if (typeof route === "string") {
-      return { path: route };
+  return routes.map(route => {
+    if (typeof route === 'string') {
+      return { path: route }
     }
-    return route;
-  });
+    return route
+  })
 }
 
 /**
@@ -125,18 +125,18 @@ function normalizeRoutes(
  */
 function getOutputPath(route: RouteConfig, outDir: string): string {
   if (route.output) {
-    return path.join(outDir, route.output);
+    return path.join(outDir, route.output)
   }
 
   // Convert /path to /path/index.html
-  let outputPath = route.path;
-  if (outputPath.endsWith("/")) {
-    outputPath += "index.html";
-  } else if (!outputPath.endsWith(".html")) {
-    outputPath += "/index.html";
+  let outputPath = route.path
+  if (outputPath.endsWith('/')) {
+    outputPath += 'index.html'
+  } else if (!outputPath.endsWith('.html')) {
+    outputPath += '/index.html'
   }
 
-  return path.join(outDir, outputPath);
+  return path.join(outDir, outputPath)
 }
 
 /**
@@ -145,35 +145,35 @@ function getOutputPath(route: RouteConfig, outDir: string): string {
  * and excludes static assets (URLs containing a dot in the path).
  */
 function extractInternalLinks(html: string): string[] {
-  const hrefRegex = /href=["']([^"']+)["']/g;
-  const links = new Set<string>();
-  let match;
+  const hrefRegex = /href=["']([^"']+)["']/g
+  const links = new Set<string>()
+  let match
 
   while ((match = hrefRegex.exec(html)) !== null) {
-    const href = match[1];
+    const href = match[1]
 
     // Must start with / but not // (protocol-relative)
-    if (!href.startsWith("/") || href.startsWith("//")) {
-      continue;
+    if (!href.startsWith('/') || href.startsWith('//')) {
+      continue
     }
 
     // Remove hash and query string
-    const cleanPath = href.split("#")[0].split("?")[0];
+    const cleanPath = href.split('#')[0].split('?')[0]
 
     // Skip static assets (paths with file extensions in the last segment)
     // e.g., /assets/style.css, /images/logo.png
     // But allow /page.html style routes
-    const lastSegment = cleanPath.split("/").pop() || "";
-    if (lastSegment.includes(".") && !lastSegment.endsWith(".html")) {
-      continue;
+    const lastSegment = cleanPath.split('/').pop() || ''
+    if (lastSegment.includes('.') && !lastSegment.endsWith('.html')) {
+      continue
     }
 
     if (cleanPath) {
-      links.add(cleanPath);
+      links.add(cleanPath)
     }
   }
 
-  return Array.from(links);
+  return Array.from(links)
 }
 
 /**
@@ -183,39 +183,39 @@ function extractInternalLinks(html: string): string[] {
 async function crawlRoutes(
   renderFn: (url: string) => Promise<string>,
   seedRoutes: string[],
-  logger: { log: (msg: string) => void },
+  logger: { log: (msg: string) => void }
 ): Promise<string[]> {
-  const discovered = new Set<string>();
-  const queue = [...seedRoutes];
-  const failed = new Set<string>();
+  const discovered = new Set<string>()
+  const queue = [...seedRoutes]
+  const failed = new Set<string>()
 
-  logger.log(`[tempo] Crawling routes starting from: ${seedRoutes.join(", ")}`);
+  logger.log(`[tempo] Crawling routes starting from: ${seedRoutes.join(', ')}`)
 
   while (queue.length > 0) {
-    const url = queue.shift()!;
+    const url = queue.shift()!
 
     if (discovered.has(url) || failed.has(url)) {
-      continue;
+      continue
     }
 
     try {
-      const html = await renderFn(url);
-      discovered.add(url);
+      const html = await renderFn(url)
+      discovered.add(url)
 
-      const links = extractInternalLinks(html);
+      const links = extractInternalLinks(html)
       for (const link of links) {
         if (!discovered.has(link) && !failed.has(link)) {
-          queue.push(link);
+          queue.push(link)
         }
       }
     } catch (error) {
-      failed.add(url);
-      logger.log(`  ⚠ Failed to render ${url}: ${error}`);
+      failed.add(url)
+      logger.log(`  ⚠ Failed to render ${url}: ${error}`)
     }
   }
 
-  logger.log(`[tempo] Discovered ${discovered.size} routes`);
-  return Array.from(discovered);
+  logger.log(`[tempo] Discovered ${discovered.size} routes`)
+  return Array.from(discovered)
 }
 
 /**
@@ -242,77 +242,77 @@ async function crawlRoutes(
  */
 export function tempo(options: TempoViteOptions = {}): Plugin[] {
   const {
-    mode = "ssg",
-    routes: routesOption = "crawl",
-    seedRoutes = ["/"],
+    mode = 'ssg',
+    routes: routesOption = 'crawl',
+    seedRoutes = ['/'],
     // entry is accepted for configuration but handled by Vite's default behavior
-    entry: _entry = "src/entry-client.ts",
-    ssrEntry = "src/entry-server.ts",
-    template = "index.html",
-    container = "#app",
-    hydrate = mode === "ssr" || mode === "islands",
-    outDir = "dist",
-  } = options;
+    entry: _entry = 'src/entry-client.ts',
+    ssrEntry = 'src/entry-server.ts',
+    template = 'index.html',
+    container = '#app',
+    hydrate = mode === 'ssr' || mode === 'islands',
+    outDir = 'dist',
+  } = options
 
   // Suppress unused variable warning - entry is for configuration documentation
-  void _entry;
+  void _entry
 
-  let config: ResolvedConfig;
+  let config: ResolvedConfig
 
   const mainPlugin: Plugin = {
-    name: "tempo",
+    name: 'tempo',
 
     configResolved(resolvedConfig) {
-      config = resolvedConfig;
+      config = resolvedConfig
     },
-  };
+  }
 
   // SSG plugin - generates static HTML at build time
   const ssgPlugin: Plugin = {
-    name: "tempo:ssg",
-    apply: "build",
+    name: 'tempo:ssg',
+    apply: 'build',
 
     async closeBundle() {
-      if (mode !== "ssg" && mode !== "hybrid") {
-        return;
+      if (mode !== 'ssg' && mode !== 'hybrid') {
+        return
       }
 
       // Read from the built output (has Vite-processed script tags)
-      const builtTemplatePath = path.resolve(config.root, outDir, "index.html");
+      const builtTemplatePath = path.resolve(config.root, outDir, 'index.html')
       if (!fs.existsSync(builtTemplatePath)) {
-        console.error(`[tempo] Built template not found: ${builtTemplatePath}`);
-        return;
+        console.error(`[tempo] Built template not found: ${builtTemplatePath}`)
+        return
       }
-      const templateHtml = fs.readFileSync(builtTemplatePath, "utf-8");
+      const templateHtml = fs.readFileSync(builtTemplatePath, 'utf-8')
 
-      const ssrOutDir = path.resolve(config.root, outDir, ".ssr-temp");
-      const ssrEntryPath = path.resolve(config.root, ssrEntry);
+      const ssrOutDir = path.resolve(config.root, outDir, '.ssr-temp')
+      const ssrEntryPath = path.resolve(config.root, ssrEntry)
 
       // Check if SSR entry exists
       if (!fs.existsSync(ssrEntryPath)) {
         console.error(
           `\n[tempo] SSR entry not found: ${ssrEntry}\n` +
-            `  Create an entry-server.ts that exports { render } or { App }`,
-        );
-        return;
+            `  Create an entry-server.ts that exports { render } or { App }`
+        )
+        return
       }
 
-      console.log(`\n[tempo] Building SSR module...`);
+      console.log(`\n[tempo] Building SSR module...`)
 
       // Build the SSR entry module
       try {
         await build({
           configFile: false,
           root: config.root,
-          logLevel: "warn",
+          logLevel: 'warn',
           build: {
             ssr: ssrEntryPath,
             outDir: ssrOutDir,
             emptyOutDir: true,
             rollupOptions: {
               output: {
-                format: "esm",
-                entryFileNames: "entry-server.mjs",
+                format: 'esm',
+                entryFileNames: 'entry-server.mjs',
               },
             },
           },
@@ -327,198 +327,198 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
             clearScreen: () => {},
             hasErrorLogged: config.logger.hasErrorLogged,
           },
-        });
+        })
       } catch (error) {
-        console.error(`[tempo] SSR build failed:`, error);
-        return;
+        console.error(`[tempo] SSR build failed:`, error)
+        return
       }
 
       // Import the built SSR module
-      const ssrModulePath = path.join(ssrOutDir, "entry-server.mjs");
-      const ssrModuleUrl = pathToFileURL(ssrModulePath).href;
+      const ssrModulePath = path.join(ssrOutDir, 'entry-server.mjs')
+      const ssrModuleUrl = pathToFileURL(ssrModulePath).href
 
       let ssrModule: {
-        render?: (url: string) => Promise<string>;
-        App?: (options: { url?: string }) => Renderable;
-      };
+        render?: (url: string) => Promise<string>
+        App?: (options: { url?: string }) => Renderable
+      }
 
       try {
         // Add cache-busting query to avoid module caching issues
-        ssrModule = await import(`${ssrModuleUrl}?t=${Date.now()}`);
+        ssrModule = await import(`${ssrModuleUrl}?t=${Date.now()}`)
       } catch (error) {
-        console.error(`[tempo] Failed to load SSR module:`, error);
-        return;
+        console.error(`[tempo] Failed to load SSR module:`, error)
+        return
       }
 
       // Get the render function - support both patterns
-      let renderFn: (url: string) => Promise<string>;
+      let renderFn: (url: string) => Promise<string>
 
-      if (typeof ssrModule.render === "function") {
+      if (typeof ssrModule.render === 'function') {
         // Pattern 1: createRenderer() style - exports { render }
-        renderFn = ssrModule.render;
-      } else if (typeof ssrModule.App === "function") {
+        renderFn = ssrModule.render
+      } else if (typeof ssrModule.App === 'function') {
         // Pattern 2: Direct App export - wrap with renderToString
-        const App = ssrModule.App;
+        const App = ssrModule.App
         renderFn = async (url: string) => {
-          const renderable = App({ url });
+          const renderable = App({ url })
           if (hydrate) {
-            return renderToString(renderable, { generatePlaceholders: true });
+            return renderToString(renderable, { generatePlaceholders: true })
           }
-          return renderToStaticMarkup(renderable);
-        };
+          return renderToStaticMarkup(renderable)
+        }
       } else {
         console.error(
-          `[tempo] SSR entry must export 'render' function or 'App' component`,
-        );
-        return;
+          `[tempo] SSR entry must export 'render' function or 'App' component`
+        )
+        return
       }
 
       // Resolve routes - support crawl mode, explicit arrays, and async functions
-      let routes: RouteConfig[];
-      const logger = { log: console.log };
+      let routes: RouteConfig[]
+      const logger = { log: console.log }
 
-      if (routesOption === "crawl") {
+      if (routesOption === 'crawl') {
         // Crawl mode: discover routes by following links
-        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger);
-        routes = discoveredPaths.map((p) => ({ path: p }));
-      } else if (typeof routesOption === "function") {
+        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger)
+        routes = discoveredPaths.map(p => ({ path: p }))
+      } else if (typeof routesOption === 'function') {
         // Async function mode
-        const resolvedRoutes = await routesOption();
-        routes = normalizeRoutes(resolvedRoutes);
+        const resolvedRoutes = await routesOption()
+        routes = normalizeRoutes(resolvedRoutes)
       } else if (Array.isArray(routesOption)) {
         // Explicit array mode
-        routes = normalizeRoutes(routesOption);
+        routes = normalizeRoutes(routesOption)
       } else {
         // Fallback to crawl if no routes specified
-        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger);
-        routes = discoveredPaths.map((p) => ({ path: p }));
+        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger)
+        routes = discoveredPaths.map(p => ({ path: p }))
       }
 
-      console.log(`[tempo] Generating ${routes.length} static pages...`);
+      console.log(`[tempo] Generating ${routes.length} static pages...`)
 
       // Extract container ID for injection
-      const containerId = container.replace("#", "");
+      const containerId = container.replace('#', '')
       const containerRegex = new RegExp(
-        `(<[^>]*id="${containerId}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`,
-      );
+        `(<[^>]*id="${containerId}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`
+      )
 
       for (const route of routes) {
         try {
           // Render the app for this route
-          const appHtml = await renderFn(route.path);
+          const appHtml = await renderFn(route.path)
 
           // Inject rendered HTML into template
-          const html = templateHtml.replace(containerRegex, `$1${appHtml}$3`);
+          const html = templateHtml.replace(containerRegex, `$1${appHtml}$3`)
 
           // Write to output file
           const outputPath = getOutputPath(
             route,
-            path.resolve(config.root, outDir),
-          );
+            path.resolve(config.root, outDir)
+          )
 
-          const outputDir = path.dirname(outputPath);
+          const outputDir = path.dirname(outputPath)
           if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
+            fs.mkdirSync(outputDir, { recursive: true })
           }
 
-          fs.writeFileSync(outputPath, html);
-          console.log(`  ✓ ${route.path}`);
+          fs.writeFileSync(outputPath, html)
+          console.log(`  ✓ ${route.path}`)
         } catch (error) {
-          console.error(`  ✗ ${route.path}:`, error);
+          console.error(`  ✗ ${route.path}:`, error)
         }
       }
 
       // Clean up temporary SSR build
       try {
-        fs.rmSync(ssrOutDir, { recursive: true, force: true });
+        fs.rmSync(ssrOutDir, { recursive: true, force: true })
       } catch {
         // Ignore cleanup errors
       }
 
-      console.log(`[tempo] SSG complete!\n`);
+      console.log(`[tempo] SSG complete!\n`)
     },
-  };
+  }
 
   // SSR middleware plugin for development
   const ssrDevPlugin: Plugin = {
-    name: "tempo:ssr-dev",
-    apply: "serve",
+    name: 'tempo:ssr-dev',
+    apply: 'serve',
 
     configureServer(server) {
-      if (mode !== "ssr" && mode !== "hybrid") {
-        return;
+      if (mode !== 'ssr' && mode !== 'hybrid') {
+        return
       }
 
       server.middlewares.use(async (req, res, next) => {
-        const url = req.url;
+        const url = req.url
 
         // Skip static assets and Vite internal requests
         if (
           !url ||
-          url.startsWith("/@") ||
-          url.startsWith("/__") ||
-          url.includes(".")
+          url.startsWith('/@') ||
+          url.startsWith('/__') ||
+          url.includes('.')
         ) {
-          return next();
+          return next()
         }
 
         try {
           // Load the template
-          const templatePath = path.resolve(config.root, template);
-          let templateHtml = fs.readFileSync(templatePath, "utf-8");
+          const templatePath = path.resolve(config.root, template)
+          let templateHtml = fs.readFileSync(templatePath, 'utf-8')
 
           // Apply Vite HTML transforms
-          templateHtml = await server.transformIndexHtml(url, templateHtml);
+          templateHtml = await server.transformIndexHtml(url, templateHtml)
 
           // Load the SSR entry module
           const ssrModule = await server.ssrLoadModule(
-            path.resolve(config.root, ssrEntry),
-          );
+            path.resolve(config.root, ssrEntry)
+          )
 
           // Get the render function - support both patterns
-          let appHtml: string;
+          let appHtml: string
 
-          if (typeof ssrModule.render === "function") {
+          if (typeof ssrModule.render === 'function') {
             // Pattern 1: createRenderer() style - exports { render }
-            appHtml = await ssrModule.render(url);
+            appHtml = await ssrModule.render(url)
           } else {
             // Pattern 2: Direct App export
-            const App = ssrModule.default || ssrModule.App;
+            const App = ssrModule.default || ssrModule.App
 
-            if (typeof App !== "function") {
+            if (typeof App !== 'function') {
               console.warn(
-                "[tempo] SSR entry must export 'render' function or 'App' component",
-              );
-              return next();
+                "[tempo] SSR entry must export 'render' function or 'App' component"
+              )
+              return next()
             }
 
             appHtml = await renderToString(App({ url }) as Renderable, {
               generatePlaceholders: hydrate,
-            });
+            })
           }
 
           // Inject the rendered HTML into the template
           const html = templateHtml.replace(
             new RegExp(
-              `(<[^>]*id="${container.replace("#", "")}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`,
+              `(<[^>]*id="${container.replace('#', '')}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`
             ),
-            `$1${appHtml}$3`,
-          );
+            `$1${appHtml}$3`
+          )
 
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "text/html");
-          res.end(html);
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'text/html')
+          res.end(html)
         } catch (error) {
           // Pass errors to Vite's error handler
-          server.ssrFixStacktrace(error as Error);
-          console.error("[tempo] SSR Error:", error);
-          next(error);
+          server.ssrFixStacktrace(error as Error)
+          console.error('[tempo] SSR Error:', error)
+          next(error)
         }
-      });
+      })
     },
-  };
+  }
 
-  return [mainPlugin, ssgPlugin, ssrDevPlugin];
+  return [mainPlugin, ssgPlugin, ssrDevPlugin]
 }
 
 /**
@@ -532,19 +532,19 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
  */
 export async function renderApp(
   app: Renderable,
-  options: { hydrate?: boolean } = {},
+  options: { hydrate?: boolean } = {}
 ): Promise<string> {
-  const { hydrate = true } = options;
+  const { hydrate = true } = options
 
   if (hydrate) {
-    return renderToString(app, { generatePlaceholders: true });
+    return renderToString(app, { generatePlaceholders: true })
   }
 
-  return renderToStaticMarkup(app);
+  return renderToStaticMarkup(app)
 }
 
 // Re-export types for convenience
-export type { Renderable };
+export type { Renderable }
 
 // Export utilities for testing
-export { extractInternalLinks, crawlRoutes };
+export { extractInternalLinks, crawlRoutes }

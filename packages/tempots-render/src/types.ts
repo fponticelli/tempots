@@ -4,12 +4,12 @@ import type {
   Clear,
   ProviderMark,
   Value,
-} from "@tempots/core";
-import type { Signal, ElementPosition } from "@tempots/core";
-import type { BaseRenderContext } from "./context";
+} from '@tempots/core'
+import type { Signal, ElementPosition } from '@tempots/core'
+import type { BaseRenderContext } from './context'
 
 // Re-export core types for convenience
-export type { Clear, ProviderMark, Value };
+export type { Clear, ProviderMark, Value }
 
 /**
  * Represents the options for an async task.
@@ -22,10 +22,10 @@ export type TaskOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  pending?: () => TNode<CTX, TType>;
-  then: (value: T) => TNode<CTX, TType>;
-  error?: (error: unknown) => TNode<CTX, TType>;
-};
+  pending?: () => TNode<CTX, TType>
+  then: (value: T) => TNode<CTX, TType>
+  error?: (error: unknown) => TNode<CTX, TType>
+}
 
 /**
  * Options for the `Async` component.
@@ -37,10 +37,10 @@ export type AsyncOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  pending?: () => TNode<CTX, TType>;
-  then: (value: T) => TNode<CTX, TType>;
-  error?: (error: unknown) => TNode<CTX, TType>;
-};
+  pending?: () => TNode<CTX, TType>
+  then: (value: T) => TNode<CTX, TType>
+  error?: (error: unknown) => TNode<CTX, TType>
+}
 
 /**
  * Represents a set of options for a one-of type.
@@ -52,8 +52,8 @@ export type OneOfOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  [KK in keyof T]: (value: Signal<T[KK]>) => TNode<CTX, TType>;
-};
+  [KK in keyof T]: (value: Signal<T[KK]>) => TNode<CTX, TType>
+}
 
 /**
  * Converts an object to a union of its keys.
@@ -61,8 +61,8 @@ export type OneOfOptions<
  * @public
  */
 export type ObjectToUnion<T> = {
-  [K in keyof T]: { [P in K]: T[K] };
-}[keyof T];
+  [K in keyof T]: { [P in K]: T[K] }
+}[keyof T]
 
 /**
  * Represents the options for a one-of field.
@@ -70,7 +70,7 @@ export type ObjectToUnion<T> = {
  */
 export type OneOfFieldOptions<
   T extends {
-    [_ in K]: string;
+    [_ in K]: string
   },
   K extends string,
   CTX extends BaseRenderContext = BaseRenderContext,
@@ -79,13 +79,13 @@ export type OneOfFieldOptions<
   [KK in T[K]]: (
     value: Signal<
       T extends {
-        [_ in K]: KK;
+        [_ in K]: KK
       }
         ? T
         : never
-    >,
-  ) => TNode<CTX, TType>;
-};
+    >
+  ) => TNode<CTX, TType>
+}
 
 /**
  * The options for a one-of kind field.
@@ -93,21 +93,21 @@ export type OneOfFieldOptions<
  */
 export type OneOfKindOptions<
   T extends {
-    kind: string;
+    kind: string
   },
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  [KK in T["kind"]]: (
+  [KK in T['kind']]: (
     value: Signal<
       T extends {
-        kind: KK;
+        kind: KK
       }
         ? T
         : never
-    >,
-  ) => TNode<CTX, TType>;
-};
+    >
+  ) => TNode<CTX, TType>
+}
 
 /**
  * Represents a mapping of keys to functions that accept a value of type `Signal<V>`
@@ -120,8 +120,8 @@ export type OneOfTupleOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  [KK in T]: (value: Signal<V>) => TNode<CTX, TType>;
-};
+  [KK in T]: (value: Signal<V>) => TNode<CTX, TType>
+}
 
 /**
  * Represents a mapping of types to rendering functions.
@@ -132,10 +132,10 @@ export type OneOfTypeOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  [KK in T["type"]]: (
-    value: Signal<T extends { type: KK } ? T : never>,
-  ) => TNode<CTX, TType>;
-};
+  [KK in T['type']]: (
+    value: Signal<T extends { type: KK } ? T : never>
+  ) => TNode<CTX, TType>
+}
 
 /**
  * Represents a set of options for a one-of value.
@@ -146,8 +146,8 @@ export type OneOfValueOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  [KK in T]: () => TNode<CTX, TType>;
-};
+  [KK in T]: () => TNode<CTX, TType>
+}
 
 /**
  * Options for configuring a conjunction.
@@ -157,35 +157,35 @@ export type ConjunctionOptions<
   CTX extends BaseRenderContext = BaseRenderContext,
   TType extends symbol = symbol,
 > = {
-  lastSeparator?: () => TNode<CTX, TType>;
-  firstSeparator?: () => TNode<CTX, TType>;
-};
+  lastSeparator?: () => TNode<CTX, TType>
+  firstSeparator?: () => TNode<CTX, TType>
+}
 
 /**
  * Callback invoked on dispose.
  * @public
  */
 export type DisposeCallback<CTX extends BaseRenderContext = BaseRenderContext> =
-  (removeTree: boolean, ctx: CTX) => void;
+  (removeTree: boolean, ctx: CTX) => void
 
 /**
  * Object with a dispose method.
  * @public
  */
 export type WithDispose<CTX extends BaseRenderContext = BaseRenderContext> = {
-  dispose: DisposeCallback<CTX>;
-};
+  dispose: DisposeCallback<CTX>
+}
 
 export type NillifyValue<T> =
   | Value<T | null | undefined>
   | Value<T | undefined>
-  | Value<T | null>;
+  | Value<T | null>
 
-export type Id<T> = {} & { [P in keyof T]: T[P] };
-export type Merge<A, B> = Id<A & B>;
+export type Id<T> = {} & { [P in keyof T]: T[P] }
+export type Merge<A, B> = Id<A & B>
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type NonNillable<T> = Merge<T, {}>;
+export type NonNillable<T> = Merge<T, {}>
 
 /**
  * Converts an array of `Provider` types `T` into an array of their corresponding types.
@@ -197,7 +197,7 @@ export type ToProviderTypes<T extends unknown[]> = T extends []
     ? [K]
     : T extends [Provider<infer K>, ...infer R]
       ? [K, ...ToProviderTypes<R>]
-      : never;
+      : never
 
 /**
  * Represents a provider for a specific type `T`.
@@ -209,16 +209,16 @@ export type Provider<
   O = any, // eslint-disable-line @typescript-eslint/no-explicit-any
   CTX extends BaseRenderContext = BaseRenderContext,
 > = {
-  mark: ProviderMark<T>;
+  mark: ProviderMark<T>
   create: (
     options: O | undefined,
-    ctx: CTX,
+    ctx: CTX
   ) => {
-    value: T;
-    dispose: () => void;
-    onUse?: () => void;
-  };
-};
+    value: T
+    dispose: () => void
+    onUse?: () => void
+  }
+}
 
 /**
  * Represents an object with provider options.
@@ -227,10 +227,10 @@ export type Provider<
 export type ProviderOptions<CTX extends BaseRenderContext = BaseRenderContext> =
   {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    use: <T, O = any>(provider: Provider<T, O, CTX>) => T;
+    use: <T, O = any>(provider: Provider<T, O, CTX>) => T
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    set: <T, O = any>(provider: Provider<T, O, CTX>, options?: O) => void;
-  };
+    set: <T, O = any>(provider: Provider<T, O, CTX>, options?: O) => void
+  }
 
 /**
  * Type alias for a renderable in a specific context.
@@ -239,7 +239,7 @@ export type ProviderOptions<CTX extends BaseRenderContext = BaseRenderContext> =
 export type RenderableOf<
   CTX extends BaseRenderContext,
   TType extends symbol,
-> = Renderable<CTX, TType>;
+> = Renderable<CTX, TType>
 
 /**
  * Type alias for a TNode in a specific context.
@@ -248,10 +248,10 @@ export type RenderableOf<
 export type TNodeOf<
   CTX extends BaseRenderContext,
   TType extends symbol,
-> = TNode<CTX, TType>;
+> = TNode<CTX, TType>
 
 /**
  * Type alias for an ElementPosition signal.
  * @public
  */
-export type { Signal, Renderable, TNode, ElementPosition };
+export type { Signal, Renderable, TNode, ElementPosition }

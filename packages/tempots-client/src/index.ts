@@ -1,11 +1,12 @@
-import { DisposalScope, withScope } from "@tempots/core";
-import type { Renderable, Providers, ProviderMark, Clear } from "@tempots/dom";
+import { DisposalScope, withScope } from '@tempots/core'
+import type { Renderable, Providers, ProviderMark, Clear } from '@tempots/dom'
 import {
   BrowserContext,
   DOMContext,
   HYDRATION_ID_ATTR,
   HeadlessContext,
-} from "@tempots/dom";
+  type HandlerOptions,
+} from '@tempots/dom'
 
 /**
  * Options for client-side hydration.
@@ -15,13 +16,13 @@ export interface HydrateOptions {
   /**
    * Providers to inject during hydration.
    */
-  providers?: Providers;
+  providers?: Providers
 
   /**
    * Whether to remove hydration markers after hydration completes.
    * Defaults to true.
    */
-  removeMarkers?: boolean;
+  removeMarkers?: boolean
 }
 
 /**
@@ -52,15 +53,15 @@ export interface HydrateOptions {
 export function hydrate(
   renderable: Renderable,
   container: HTMLElement,
-  options: HydrateOptions = {},
+  options: HydrateOptions = {}
 ): () => void {
-  const { providers = {}, removeMarkers = true } = options;
+  const { providers = {}, removeMarkers = true } = options
 
   // Build a map of hydration IDs to elements
-  const hydrationMap = buildHydrationMap(container);
+  const hydrationMap = buildHydrationMap(container)
 
   // Create a disposal scope for automatic signal tracking
-  const scope = new DisposalScope();
+  const scope = new DisposalScope()
 
   // Create the hydration context
   const ctx = new HydrationContext(
@@ -69,21 +70,21 @@ export function hydrate(
     undefined,
     providers,
     hydrationMap,
-    0,
-  );
+    0
+  )
 
   // Execute the renderable within the scope
-  const clear = withScope(scope, () => renderable.render(ctx));
+  const clear = withScope(scope, () => renderable.render(ctx))
 
   // Remove hydration markers if requested
   if (removeMarkers) {
-    removeHydrationMarkers(container);
+    removeHydrationMarkers(container)
   }
 
   return (removeTree: boolean = false) => {
-    scope.dispose();
-    clear(removeTree);
-  };
+    scope.dispose()
+    clear(removeTree)
+  }
 }
 
 /**
@@ -94,17 +95,17 @@ export function hydrate(
  * @internal
  */
 function buildHydrationMap(container: HTMLElement): Map<string, HTMLElement> {
-  const map = new Map<string, HTMLElement>();
-  const elements = container.querySelectorAll(`[${HYDRATION_ID_ATTR}]`);
+  const map = new Map<string, HTMLElement>()
+  const elements = container.querySelectorAll(`[${HYDRATION_ID_ATTR}]`)
 
-  elements.forEach((el) => {
-    const id = el.getAttribute(HYDRATION_ID_ATTR);
+  elements.forEach(el => {
+    const id = el.getAttribute(HYDRATION_ID_ATTR)
     if (id) {
-      map.set(id, el as HTMLElement);
+      map.set(id, el as HTMLElement)
     }
-  });
+  })
 
-  return map;
+  return map
 }
 
 /**
@@ -114,11 +115,11 @@ function buildHydrationMap(container: HTMLElement): Map<string, HTMLElement> {
  * @internal
  */
 function removeHydrationMarkers(container: HTMLElement): void {
-  const elements = container.querySelectorAll(`[${HYDRATION_ID_ATTR}]`);
-  elements.forEach((el) => {
-    el.removeAttribute(HYDRATION_ID_ATTR);
-    el.removeAttribute("data-tts-node");
-  });
+  const elements = container.querySelectorAll(`[${HYDRATION_ID_ATTR}]`)
+  elements.forEach(el => {
+    el.removeAttribute(HYDRATION_ID_ATTR)
+    el.removeAttribute('data-tts-node')
+  })
 }
 
 /**
@@ -137,7 +138,7 @@ export class HydrationContext implements DOMContext {
     readonly reference: Node | undefined,
     readonly providers: Providers,
     private readonly hydrationMap: Map<string, HTMLElement>,
-    private childIndex: number,
+    private childIndex: number
   ) {}
 
   /**
@@ -146,62 +147,62 @@ export class HydrationContext implements DOMContext {
    */
   readonly makeChildElement = (
     tagName: string,
-    namespace: string | undefined,
+    namespace: string | undefined
   ): DOMContext => {
     // Try to find an existing child element
-    const children = this.element.children;
+    const children = this.element.children
 
     for (let i = this.childIndex; i < children.length; i++) {
-      const child = children[i] as HTMLElement;
+      const child = children[i] as HTMLElement
 
       // Check if this element matches by tag name
       if (child.tagName.toLowerCase() === tagName.toLowerCase()) {
-        this.childIndex = i + 1;
+        this.childIndex = i + 1
         return new HydrationContext(
           this.document,
           child,
           undefined,
           this.providers,
           this.hydrationMap,
-          0,
-        );
+          0
+        )
       }
     }
 
     // Fallback: create a new element (hydration mismatch)
     console.warn(
-      `Hydration mismatch: could not find element <${tagName}> in container`,
-    );
+      `Hydration mismatch: could not find element <${tagName}> in container`
+    )
     const newElement =
       namespace !== undefined
         ? (this.document.createElementNS(namespace, tagName) as HTMLElement)
-        : this.document.createElement(tagName);
-    this.appendOrInsert(newElement);
+        : this.document.createElement(tagName)
+    this.appendOrInsert(newElement)
     return new HydrationContext(
       this.document,
       newElement,
       undefined,
       this.providers,
       this.hydrationMap,
-      0,
-    );
-  };
+      0
+    )
+  }
 
   /**
    * Finds the next text node instead of creating a new one.
    */
   readonly makeChildText = (text: string): DOMContext => {
     // Find the next text node in children
-    const childNodes = this.element.childNodes;
+    const childNodes = this.element.childNodes
 
     for (let i = this.childIndex; i < childNodes.length; i++) {
-      const child = childNodes[i];
+      const child = childNodes[i]
 
       if (child.nodeType === Node.TEXT_NODE) {
-        this.childIndex = i + 1;
+        this.childIndex = i + 1
         // Update the text content if needed
         if (child.textContent !== text) {
-          child.textContent = text;
+          child.textContent = text
         }
         return new HydrationContext(
           this.document,
@@ -209,80 +210,78 @@ export class HydrationContext implements DOMContext {
           child as Text,
           this.providers,
           this.hydrationMap,
-          this.childIndex,
-        );
+          this.childIndex
+        )
       }
     }
 
     // Fallback: create a new text node
-    const textNode = this.document.createTextNode(text);
-    this.appendOrInsert(textNode);
+    const textNode = this.document.createTextNode(text)
+    this.appendOrInsert(textNode)
     return new HydrationContext(
       this.document,
       this.element,
       textNode,
       this.providers,
       this.hydrationMap,
-      this.childIndex,
-    );
-  };
+      this.childIndex
+    )
+  }
 
   readonly setText = (text: string): void => {
     if (this.reference) {
-      this.reference.nodeValue = text;
+      this.reference.nodeValue = text
     }
-  };
+  }
 
   readonly getText = (): string => {
-    return this.reference?.nodeValue ?? this.element.textContent ?? "";
-  };
+    return this.reference?.nodeValue ?? this.element.textContent ?? ''
+  }
 
   readonly makeRef = (): DOMContext => {
     // Find an existing empty text node or create one
-    const childNodes = this.element.childNodes;
+    const childNodes = this.element.childNodes
 
     for (let i = this.childIndex; i < childNodes.length; i++) {
-      const child = childNodes[i];
+      const child = childNodes[i]
 
       if (
         child.nodeType === Node.TEXT_NODE &&
-        (child.textContent === "" || child.textContent === null)
+        (child.textContent === '' || child.textContent === null)
       ) {
-        this.childIndex = i + 1;
+        this.childIndex = i + 1
         return new HydrationContext(
           this.document,
           this.element,
           child as Text,
           this.providers,
           this.hydrationMap,
-          this.childIndex,
-        );
+          this.childIndex
+        )
       }
     }
 
     // Create a new empty text node
-    const ref = this.document.createTextNode("");
-    this.appendOrInsert(ref);
+    const ref = this.document.createTextNode('')
+    this.appendOrInsert(ref)
     return new HydrationContext(
       this.document,
       this.element,
       ref,
       this.providers,
       this.hydrationMap,
-      this.childIndex,
-    );
-  };
+      this.childIndex
+    )
+  }
 
   readonly makePortal = (selector: string | HTMLElement): DOMContext => {
     const target =
-      typeof selector === "string"
+      typeof selector === 'string'
         ? (this.document.querySelector(selector) as HTMLElement | null)
-        : selector;
+        : selector
 
     if (target == null) {
-      throw new Error(
-        `Cannot find element by selector for portal: ${selector}`,
-      );
+      throw new Error(`Cannot find element by selector for portal: ${selector}`)
     }
 
     return new HydrationContext(
@@ -291,22 +290,22 @@ export class HydrationContext implements DOMContext {
       undefined,
       this.providers,
       this.hydrationMap,
-      0,
-    );
-  };
+      0
+    )
+  }
 
   private readonly appendOrInsert = (child: Node): void => {
     if (this.reference === undefined) {
-      this.element.appendChild(child);
+      this.element.appendChild(child)
     } else {
-      this.element.insertBefore(child, this.reference);
+      this.element.insertBefore(child, this.reference)
     }
-  };
+  }
 
   readonly setProvider = <T>(
     mark: ProviderMark<T>,
     value: T,
-    onUse: undefined | (() => void),
+    onUse: undefined | (() => void)
   ): DOMContext =>
     new HydrationContext(
       this.document,
@@ -314,85 +313,104 @@ export class HydrationContext implements DOMContext {
       this.reference,
       { ...this.providers, [mark]: [value, onUse] },
       this.hydrationMap,
-      this.childIndex,
-    );
+      this.childIndex
+    )
 
   readonly getProvider = <T>(mark: ProviderMark<T>) => {
     if (this.providers[mark] === undefined) {
-      throw new Error(`Provider not found: ${String(mark)}`);
+      throw new Error(`Provider not found: ${String(mark)}`)
     }
     const [value, onUse] = this.providers[mark]! as [
       T,
       undefined | (() => void),
-    ];
-    return { value, onUse };
-  };
+    ]
+    return { value, onUse }
+  }
 
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
       if (this.reference !== undefined) {
-        this.reference.parentNode?.removeChild(this.reference);
+        this.reference.parentNode?.removeChild(this.reference)
       } else {
-        this.element.parentNode?.removeChild(this.element);
+        this.element.parentNode?.removeChild(this.element)
       }
     }
-  };
+  }
 
   readonly addClasses = (tokens: string[]): void => {
-    this.element.classList.add(...tokens);
-  };
+    this.element.classList.add(...tokens)
+  }
 
   readonly removeClasses = (tokens: string[]): void => {
-    this.element.classList.remove(...tokens);
-  };
+    this.element.classList.remove(...tokens)
+  }
 
   readonly getClasses = (): string[] => {
-    return Array.from(this.element.classList);
-  };
+    return Array.from(this.element.classList)
+  }
 
   readonly on = <E>(
     event: string,
-    listener: (event: E, ctx: HydrationContext) => void,
-    options?: AddEventListenerOptions,
+    listener: (event: E, ctx: DOMContext) => void,
+    options?: HandlerOptions
   ): Clear => {
-    const handler = (event: Event) => listener(event as E, this);
-    this.element.addEventListener(event, handler, options);
+    const handler = (event: Event) => listener(event as E, this)
+    this.element.addEventListener(event, handler, options)
     return (removeTree: boolean) => {
       if (removeTree) {
-        this.element.removeEventListener(event, handler, options);
+        this.element.removeEventListener(event, handler, options)
       }
-    };
-  };
+    }
+  }
 
   // HydrationContext runs in a browser environment, so isBrowser() returns true
   // to ensure browser-specific code paths (like Location provider) work correctly.
   // Note: isBrowserDOM returns false since this is not a BrowserContext instance.
-  readonly isBrowserDOM = (): this is BrowserContext => false;
-  readonly isBrowser = (): this is BrowserContext => true as never;
-  readonly isHeadlessDOM = (): this is HeadlessContext => false;
-  readonly isHeadless = (): this is HeadlessContext => false;
+  readonly isBrowserDOM = (): this is BrowserContext => false
+  readonly isBrowser = (): this is BrowserContext => true as never
+  readonly isHeadlessDOM = (): this is HeadlessContext => false
+  readonly isHeadless = (): this is HeadlessContext => false
 
   readonly setStyle = (name: string, value: string): void => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.element.style[name as any] = value;
-  };
+    this.element.style[name as any] = value
+  }
 
   readonly getStyle = (name: string): string => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.element.style[name as any];
-  };
+    return this.element.style[name as any]
+  }
 
   readonly makeAccessors = (
-    name: string,
+    name: string
   ): { get(): unknown; set(value: unknown): void } => {
-    const el = this.element as unknown as Record<string, unknown>;
+    const el = this.element as unknown as Record<string, unknown>
     return {
       get: () => el[name],
       set: (value: unknown) => {
-        el[name] = value;
+        el[name] = value
       },
-    };
-  };
+    }
+  }
+
+  readonly moveRangeBefore = (
+    startRef: DOMContext,
+    endRef: DOMContext,
+    targetRef: DOMContext
+  ): void => {
+    const start = (startRef as HydrationContext).reference!
+    const end = (endRef as HydrationContext).reference!
+    const target = (targetRef as HydrationContext).reference!
+    const parent = this.element
+
+    let current: Node | null = start
+    while (current !== null) {
+      const next: Node | null = current.nextSibling
+      parent.insertBefore(current, target)
+      if (current === end) break
+      current = next
+    }
+  }
 }
 
 // ============================================================================
@@ -403,19 +421,19 @@ export class HydrationContext implements DOMContext {
  * Attribute name for island markers.
  * @public
  */
-export const ISLAND_ATTR = "data-tempo-island";
+export const ISLAND_ATTR = 'data-tempo-island'
 
 /**
  * Attribute name for island hydration strategy.
  * @public
  */
-export const ISLAND_HYDRATE_ATTR = "data-tempo-hydrate";
+export const ISLAND_HYDRATE_ATTR = 'data-tempo-hydrate'
 
 /**
  * Attribute name for serialized island options.
  * @public
  */
-export const ISLAND_OPTIONS_ATTR = "data-tempo-options";
+export const ISLAND_OPTIONS_ATTR = 'data-tempo-options'
 
 /**
  * Hydration strategy for islands.
@@ -428,10 +446,10 @@ export const ISLAND_OPTIONS_ATTR = "data-tempo-options";
  * @public
  */
 export type HydrationStrategy =
-  | "immediate"
-  | "idle"
-  | "visible"
-  | { media: string };
+  | 'immediate'
+  | 'idle'
+  | 'visible'
+  | { media: string }
 
 /**
  * Options for island hydration.
@@ -441,7 +459,7 @@ export interface IslandHydrateOptions {
   /**
    * Providers to inject during hydration.
    */
-  providers?: Providers;
+  providers?: Providers
 }
 
 /**
@@ -460,14 +478,14 @@ export interface IslandHydrateOptions {
  * ```
  * @public
  */
-export type IslandComponent = (options: unknown) => Renderable;
+export type IslandComponent = (options: unknown) => Renderable
 
 /**
  * Island component registry type.
  * Maps island names to their component factories.
  * @public
  */
-export type IslandRegistry = Record<string, IslandComponent>;
+export type IslandRegistry = Record<string, IslandComponent>
 
 /**
  * Hydrates a single island element with the given component.
@@ -498,26 +516,26 @@ export function hydrateIsland<O>(
   element: HTMLElement,
   component: (options: O) => Renderable,
   componentOptions: O,
-  hydrateOptions: IslandHydrateOptions = {},
+  hydrateOptions: IslandHydrateOptions = {}
 ): () => void {
   // Clear the server-rendered placeholder content
-  element.innerHTML = "";
+  element.innerHTML = ''
 
   // Create a fresh BrowserContext and render the component
   const ctx = new BrowserContext(
     element.ownerDocument,
     element,
     undefined,
-    hydrateOptions.providers ?? {},
-  );
+    hydrateOptions.providers ?? {}
+  )
 
-  const scope = new DisposalScope();
-  const clear = withScope(scope, () => component(componentOptions).render(ctx));
+  const scope = new DisposalScope()
+  const clear = withScope(scope, () => component(componentOptions).render(ctx))
 
   return (removeTree: boolean = false) => {
-    scope.dispose();
-    clear(removeTree);
-  };
+    scope.dispose()
+    clear(removeTree)
+  }
 }
 
 /**
@@ -532,61 +550,61 @@ export function hydrateIsland<O>(
 function scheduleHydration(
   element: HTMLElement,
   strategy: HydrationStrategy,
-  hydrateCallback: () => void,
+  hydrateCallback: () => void
 ): () => void {
-  if (strategy === "immediate") {
-    hydrateCallback();
-    return () => {};
+  if (strategy === 'immediate') {
+    hydrateCallback()
+    return () => {}
   }
 
-  if (strategy === "idle") {
-    if ("requestIdleCallback" in window) {
-      const id = requestIdleCallback(hydrateCallback);
-      return () => cancelIdleCallback(id);
+  if (strategy === 'idle') {
+    if ('requestIdleCallback' in window) {
+      const id = requestIdleCallback(hydrateCallback)
+      return () => cancelIdleCallback(id)
     } else {
       // Fallback for browsers without requestIdleCallback
-      const id = setTimeout(hydrateCallback, 1);
-      return () => clearTimeout(id);
+      const id = setTimeout(hydrateCallback, 1)
+      return () => clearTimeout(id)
     }
   }
 
-  if (strategy === "visible") {
+  if (strategy === 'visible') {
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            observer.disconnect();
-            hydrateCallback();
-            break;
+            observer.disconnect()
+            hydrateCallback()
+            break
           }
         }
       },
-      { rootMargin: "50px" },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
+      { rootMargin: '50px' }
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
   }
 
-  if (typeof strategy === "object" && "media" in strategy) {
-    const mediaQuery = window.matchMedia(strategy.media);
+  if (typeof strategy === 'object' && 'media' in strategy) {
+    const mediaQuery = window.matchMedia(strategy.media)
     if (mediaQuery.matches) {
-      hydrateCallback();
-      return () => {};
+      hydrateCallback()
+      return () => {}
     }
 
     const handler = (e: MediaQueryListEvent) => {
       if (e.matches) {
-        mediaQuery.removeEventListener("change", handler);
-        hydrateCallback();
+        mediaQuery.removeEventListener('change', handler)
+        hydrateCallback()
       }
-    };
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
+    }
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
   }
 
   // Default to immediate
-  hydrateCallback();
-  return () => {};
+  hydrateCallback()
+  return () => {}
 }
 
 /**
@@ -597,19 +615,19 @@ function scheduleHydration(
  * @internal
  */
 function parseStrategy(value: string | null): HydrationStrategy {
-  if (!value || value === "immediate" || value === "load") {
-    return "immediate";
+  if (!value || value === 'immediate' || value === 'load') {
+    return 'immediate'
   }
-  if (value === "idle") {
-    return "idle";
+  if (value === 'idle') {
+    return 'idle'
   }
-  if (value === "visible") {
-    return "visible";
+  if (value === 'visible') {
+    return 'visible'
   }
-  if (value.startsWith("media:")) {
-    return { media: value.slice(6).trim() };
+  if (value.startsWith('media:')) {
+    return { media: value.slice(6).trim() }
   }
-  return "immediate";
+  return 'immediate'
 }
 
 /**
@@ -641,45 +659,45 @@ function parseStrategy(value: string | null): HydrationStrategy {
  */
 export function initIslands(
   registry: IslandRegistry,
-  options: IslandHydrateOptions = {},
+  options: IslandHydrateOptions = {}
 ): () => void {
-  const cleanups: Array<() => void> = [];
-  const elements = document.querySelectorAll(`[${ISLAND_ATTR}]`);
+  const cleanups: Array<() => void> = []
+  const elements = document.querySelectorAll(`[${ISLAND_ATTR}]`)
 
-  elements.forEach((el) => {
-    const element = el as HTMLElement;
-    const islandName = element.getAttribute(ISLAND_ATTR);
+  elements.forEach(el => {
+    const element = el as HTMLElement
+    const islandName = element.getAttribute(ISLAND_ATTR)
 
     if (!islandName) {
-      console.warn("[Tempo Islands] Element missing island name:", element);
-      return;
+      console.warn('[Tempo Islands] Element missing island name:', element)
+      return
     }
 
-    const component = registry[islandName];
+    const component = registry[islandName]
     if (!component) {
       console.warn(
-        `[Tempo Islands] Component "${islandName}" not found in registry`,
-      );
-      return;
+        `[Tempo Islands] Component "${islandName}" not found in registry`
+      )
+      return
     }
 
     // Parse options from data attribute
-    const optionsStr = element.getAttribute(ISLAND_OPTIONS_ATTR);
-    let componentOptions: unknown = {};
+    const optionsStr = element.getAttribute(ISLAND_OPTIONS_ATTR)
+    let componentOptions: unknown = {}
     if (optionsStr) {
       try {
-        componentOptions = JSON.parse(optionsStr);
+        componentOptions = JSON.parse(optionsStr)
       } catch (e) {
         console.warn(
           `[Tempo Islands] Failed to parse options for "${islandName}":`,
-          e,
-        );
+          e
+        )
       }
     }
 
     // Parse hydration strategy
-    const strategyStr = element.getAttribute(ISLAND_HYDRATE_ATTR);
-    const strategy = parseStrategy(strategyStr);
+    const strategyStr = element.getAttribute(ISLAND_HYDRATE_ATTR)
+    const strategy = parseStrategy(strategyStr)
 
     // Schedule hydration
     const cancelSchedule = scheduleHydration(element, strategy, () => {
@@ -687,22 +705,22 @@ export function initIslands(
         element,
         component,
         componentOptions,
-        options,
-      );
-      cleanups.push(cleanup);
+        options
+      )
+      cleanups.push(cleanup)
 
       // Remove island markers after hydration
-      element.removeAttribute(ISLAND_ATTR);
-      element.removeAttribute(ISLAND_HYDRATE_ATTR);
-      element.removeAttribute(ISLAND_OPTIONS_ATTR);
-    });
+      element.removeAttribute(ISLAND_ATTR)
+      element.removeAttribute(ISLAND_HYDRATE_ATTR)
+      element.removeAttribute(ISLAND_OPTIONS_ATTR)
+    })
 
-    cleanups.push(cancelSchedule);
-  });
+    cleanups.push(cancelSchedule)
+  })
 
   return () => {
-    cleanups.forEach((cleanup) => cleanup());
-  };
+    cleanups.forEach(cleanup => cleanup())
+  }
 }
 
 /**
@@ -731,16 +749,16 @@ export function initIslands(
 export function islandMarker(
   name: string,
   options: unknown = {},
-  strategy: HydrationStrategy = "visible",
+  strategy: HydrationStrategy = 'visible'
 ): Array<{ name: string; value: string }> {
   const strategyStr =
-    typeof strategy === "object" ? `media:${strategy.media}` : strategy;
+    typeof strategy === 'object' ? `media:${strategy.media}` : strategy
 
   return [
     { name: ISLAND_ATTR, value: name },
     { name: ISLAND_OPTIONS_ATTR, value: JSON.stringify(options) },
     { name: ISLAND_HYDRATE_ATTR, value: strategyStr },
-  ];
+  ]
 }
 
 // ============================================================================
@@ -756,30 +774,30 @@ export interface ClientOptions<R extends IslandRegistry> {
    * App component for client-only rendering.
    * If provided and no SSR content is detected, this will be rendered.
    */
-  app?: () => Renderable;
+  app?: () => Renderable
 
   /**
    * Island component registry.
    * Maps island names to their component factories.
    */
-  islands: R;
+  islands: R
 
   /**
    * Container selector or element.
    * @default "#app"
    */
-  container?: string | HTMLElement;
+  container?: string | HTMLElement
 
   /**
    * Providers to inject during hydration.
    */
-  providers?: Providers;
+  providers?: Providers
 
   /**
    * Enable debug logging.
    * @default false
    */
-  debug?: boolean;
+  debug?: boolean
 }
 
 /**
@@ -822,76 +840,76 @@ export interface ClientOptions<R extends IslandRegistry> {
  * @public
  */
 export function startClient<R extends IslandRegistry>(
-  options: ClientOptions<R>,
+  options: ClientOptions<R>
 ): () => void {
   const {
     app,
     islands,
-    container: containerOption = "#app",
+    container: containerOption = '#app',
     providers = {},
     debug = false,
-  } = options;
+  } = options
 
   const log = debug
     ? (message: string) => console.log(`[Tempo] ${message}`)
-    : () => {};
+    : () => {}
 
   // Find container
   const container =
-    typeof containerOption === "string"
+    typeof containerOption === 'string'
       ? document.querySelector<HTMLElement>(containerOption)
-      : containerOption;
+      : containerOption
 
   if (!container) {
     const selector =
-      typeof containerOption === "string" ? containerOption : "(element)";
-    console.error(`[Tempo] Could not find container: ${selector}`);
-    return () => {};
+      typeof containerOption === 'string' ? containerOption : '(element)'
+    console.error(`[Tempo] Could not find container: ${selector}`)
+    return () => {}
   }
 
   // Detect SSR mode by checking for island markers
-  const hasSSRContent = container.querySelector(`[${ISLAND_ATTR}]`) !== null;
+  const hasSSRContent = container.querySelector(`[${ISLAND_ATTR}]`) !== null
 
-  let cleanup: () => void;
+  let cleanup: () => void
 
   if (hasSSRContent) {
     // SSR mode: Just initialize islands, don't re-render the app
-    log("SSR mode: Initializing islands...");
-    cleanup = initIslands(islands, { providers });
-    log("Islands initialized! Static content stays static.");
+    log('SSR mode: Initializing islands...')
+    cleanup = initIslands(islands, { providers })
+    log('Islands initialized! Static content stays static.')
   } else if (app) {
     // Client-only mode: Render the full app, then initialize islands
-    log("Client-only mode: Rendering app...");
-    const ctx = new BrowserContext(document, container, undefined, providers);
-    const scope = new DisposalScope();
-    const clear = withScope(scope, () => app().render(ctx));
-    const islandCleanup = initIslands(islands, { providers });
+    log('Client-only mode: Rendering app...')
+    const ctx = new BrowserContext(document, container, undefined, providers)
+    const scope = new DisposalScope()
+    const clear = withScope(scope, () => app().render(ctx))
+    const islandCleanup = initIslands(islands, { providers })
 
     cleanup = () => {
-      islandCleanup();
-      scope.dispose();
-      clear(true);
-    };
-    log("App rendered and islands initialized!");
+      islandCleanup()
+      scope.dispose()
+      clear(true)
+    }
+    log('App rendered and islands initialized!')
   } else {
     // No SSR content and no app provided - just initialize any islands
-    log("No SSR content detected, initializing islands only...");
-    cleanup = initIslands(islands, { providers });
+    log('No SSR content detected, initializing islands only...')
+    cleanup = initIslands(islands, { providers })
   }
 
   // Set up HMR cleanup if available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hot = (import.meta as any).hot;
+  const hot = (import.meta as any).hot
   if (hot) {
     hot.dispose(() => {
-      log("HMR cleanup...");
-      cleanup();
-    });
+      log('HMR cleanup...')
+      cleanup()
+    })
   }
 
-  return cleanup;
+  return cleanup
 }
 
 // Re-export useful types
-export type { Renderable, Providers };
-export { HYDRATION_ID_ATTR };
+export type { Renderable, Providers }
+export { HYDRATION_ID_ATTR }

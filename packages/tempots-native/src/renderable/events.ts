@@ -1,6 +1,6 @@
-import type { NativeRenderable } from "../types/domain";
-import { nativeRenderable } from "../types/domain";
-import type { NativeContext } from "../context/native-context";
+import type { NativeRenderable } from '../types/domain'
+import { nativeRenderable } from '../types/domain'
+import type { NativeContext } from '../context/native-context'
 import type {
   PressEvent,
   LongPressEvent,
@@ -15,7 +15,7 @@ import type {
   ContentSizeChangeEvent,
   MomentumScrollEndEvent,
   ScrollDragEvent,
-} from "../types/event-types";
+} from '../types/event-types'
 
 /**
  * Creates a renderable that attaches an event listener to the current view.
@@ -27,9 +27,9 @@ import type {
  */
 const onEvent = <E>(event: string, handler: (e: E) => void): NativeRenderable =>
   nativeRenderable((ctx: NativeContext) => {
-    const clear = ctx.on(event, handler);
-    return () => clear();
-  });
+    const clear = ctx.on(event, handler)
+    return () => clear()
+  })
 
 /**
  * Event listeners for native views.
@@ -38,71 +38,71 @@ const onEvent = <E>(event: string, handler: (e: E) => void): NativeRenderable =>
 export const nativeOn = {
   /** Listen for press events. */
   press: (handler: (e: PressEvent) => void): NativeRenderable =>
-    onEvent("press", handler),
+    onEvent('press', handler),
 
   /** Listen for long press events. */
   longPress: (handler: (e: LongPressEvent) => void): NativeRenderable =>
-    onEvent("longPress", handler),
+    onEvent('longPress', handler),
 
   /** Listen for press-in events. */
   pressIn: (handler: (e: PressEvent) => void): NativeRenderable =>
-    onEvent("pressIn", handler),
+    onEvent('pressIn', handler),
 
   /** Listen for press-out events. */
   pressOut: (handler: (e: PressEvent) => void): NativeRenderable =>
-    onEvent("pressOut", handler),
+    onEvent('pressOut', handler),
 
   /** Listen for scroll events. */
   scroll: (handler: (e: ScrollEvent) => void): NativeRenderable =>
-    onEvent("scroll", handler),
+    onEvent('scroll', handler),
 
   /** Listen for text change events. */
   changeText: (handler: (e: TextChangeEvent) => void): NativeRenderable =>
-    onEvent("changeText", handler),
+    onEvent('changeText', handler),
 
   /** Listen for text submit events. */
   submitEditing: (handler: (e: TextSubmitEvent) => void): NativeRenderable =>
-    onEvent("submitEditing", handler),
+    onEvent('submitEditing', handler),
 
   /** Listen for focus events. */
   focus: (handler: (e: FocusEvent) => void): NativeRenderable =>
-    onEvent("focus", handler),
+    onEvent('focus', handler),
 
   /** Listen for blur events. */
   blur: (handler: (e: FocusEvent) => void): NativeRenderable =>
-    onEvent("blur", handler),
+    onEvent('blur', handler),
 
   /** Listen for layout events. */
   layout: (handler: (e: LayoutEvent) => void): NativeRenderable =>
-    onEvent("layout", handler),
+    onEvent('layout', handler),
 
   /** Listen for value change events (e.g. Switch toggle). */
   valueChange: (handler: (e: ValueChangeEvent) => void): NativeRenderable =>
-    onEvent("valueChange", handler),
+    onEvent('valueChange', handler),
 
   /** Listen for refresh events (e.g. pull-to-refresh). */
   refresh: (handler: (e: RefreshEvent) => void): NativeRenderable =>
-    onEvent("refresh", handler),
+    onEvent('refresh', handler),
 
   /** Listen for end-reached events (FlatList/SectionList infinite scroll). */
   endReached: (handler: (e: EndReachedEvent) => void): NativeRenderable =>
-    onEvent("endReached", handler),
+    onEvent('endReached', handler),
 
   /** Listen for content size change events (auto-growing TextInput). */
   contentSizeChange: (
-    handler: (e: ContentSizeChangeEvent) => void,
-  ): NativeRenderable => onEvent("contentSizeChange", handler),
+    handler: (e: ContentSizeChangeEvent) => void
+  ): NativeRenderable => onEvent('contentSizeChange', handler),
 
   /** Listen for momentum scroll end events (pagination / snap). */
   momentumScrollEnd: (
-    handler: (e: MomentumScrollEndEvent) => void,
-  ): NativeRenderable => onEvent("momentumScrollEnd", handler),
+    handler: (e: MomentumScrollEndEvent) => void
+  ): NativeRenderable => onEvent('momentumScrollEnd', handler),
 
   /** Listen for scroll drag begin events. */
   scrollBeginDrag: (handler: (e: ScrollDragEvent) => void): NativeRenderable =>
-    onEvent("scrollBeginDrag", handler),
+    onEvent('scrollBeginDrag', handler),
 
   /** Listen for scroll drag end events. */
   scrollEndDrag: (handler: (e: ScrollDragEvent) => void): NativeRenderable =>
-    onEvent("scrollEndDrag", handler),
-};
+    onEvent('scrollEndDrag', handler),
+}

@@ -1,9 +1,9 @@
-import type { TNode } from "@tempots/core";
-import type { NativeRenderable } from "../types/domain";
-import { nativeRenderable, NATIVE_RENDERABLE_TYPE } from "../types/domain";
-import type { NativeContext } from "../context/native-context";
-import type { PressEvent } from "../types/event-types";
-import { renderableOfTNode } from "./shared";
+import type { TNode } from '@tempots/core'
+import type { NativeRenderable } from '../types/domain'
+import { nativeRenderable, NATIVE_RENDERABLE_TYPE } from '../types/domain'
+import type { NativeContext } from '../context/native-context'
+import type { PressEvent } from '../types/event-types'
+import { renderableOfTNode } from './shared'
 
 /**
  * Options for the Pressable component.
@@ -11,9 +11,9 @@ import { renderableOfTNode } from "./shared";
  */
 export interface PressableOptions {
   /** Opacity when the view is pressed. Defaults to 0.7. */
-  activeOpacity?: number;
+  activeOpacity?: number
   /** Whether the pressable is disabled. Defaults to false. */
-  disabled?: boolean;
+  disabled?: boolean
 }
 
 /**
@@ -33,36 +33,36 @@ export function Pressable(
   options: PressableOptions,
   ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
 ): NativeRenderable {
-  const activeOpacity = options.activeOpacity ?? 0.7;
-  const disabled = options.disabled ?? false;
+  const activeOpacity = options.activeOpacity ?? 0.7
+  const disabled = options.disabled ?? false
 
   return nativeRenderable((ctx: NativeContext) => {
-    const newCtx = ctx.makeChildView("View");
+    const newCtx = ctx.makeChildView('View')
 
-    const clears = children.map((child) =>
-      renderableOfTNode(child).render(newCtx),
-    );
+    const clears = children.map(child =>
+      renderableOfTNode(child).render(newCtx)
+    )
 
-    let pressCleanup: (() => void) | undefined;
-    let pressInCleanup: (() => void) | undefined;
-    let pressOutCleanup: (() => void) | undefined;
+    let pressCleanup: (() => void) | undefined
+    let pressInCleanup: (() => void) | undefined
+    let pressOutCleanup: (() => void) | undefined
 
     if (!disabled) {
-      pressCleanup = newCtx.on<PressEvent>("press", onPress);
-      pressInCleanup = newCtx.on("pressIn", () => {
-        newCtx.setStyle({ opacity: activeOpacity });
-      });
-      pressOutCleanup = newCtx.on("pressOut", () => {
-        newCtx.setStyle({ opacity: 1 });
-      });
+      pressCleanup = newCtx.on<PressEvent>('press', onPress)
+      pressInCleanup = newCtx.on('pressIn', () => {
+        newCtx.setStyle({ opacity: activeOpacity })
+      })
+      pressOutCleanup = newCtx.on('pressOut', () => {
+        newCtx.setStyle({ opacity: 1 })
+      })
     }
 
     return (removeTree: boolean) => {
-      pressCleanup?.();
-      pressInCleanup?.();
-      pressOutCleanup?.();
-      clears.forEach((clear) => clear(false));
-      newCtx.clear(removeTree);
-    };
-  });
+      pressCleanup?.()
+      pressInCleanup?.()
+      pressOutCleanup?.()
+      clears.forEach(clear => clear(false))
+      newCtx.clear(removeTree)
+    }
+  })
 }
