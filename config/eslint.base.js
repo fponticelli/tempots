@@ -1,6 +1,6 @@
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 /**
  * Creates the base ESLint configuration for Tempo packages.
@@ -23,7 +23,7 @@ export function createBaseConfig({ tsconfigRootDir, useTempotsPlugin = true }) {
         },
       },
     },
-  ];
+  ]
 
   // Add Tempo plugin if requested
   if (useTempotsPlugin) {
@@ -31,12 +31,12 @@ export function createBaseConfig({ tsconfigRootDir, useTempotsPlugin = true }) {
     const tempotsPluginPath = new URL(
       '../packages/tempots-eslint-plugin/src/index.js',
       import.meta.url
-    ).pathname;
+    ).pathname
     // Note: This will be imported by the consuming package
     configs.push({
       name: 'tempots-plugin-placeholder',
       // Packages should add: tempots.configs.recommended
-    });
+    })
   }
 
   // Common ignores
@@ -52,9 +52,9 @@ export function createBaseConfig({ tsconfigRootDir, useTempotsPlugin = true }) {
       'dist/',
       'scripts/',
     ],
-  });
+  })
 
-  return tseslint.config(...configs);
+  return tseslint.config(...configs)
 }
 
 /**
@@ -69,6 +69,5 @@ export function createPackageConfig(dirname, options = {}) {
   return createBaseConfig({
     tsconfigRootDir: dirname,
     ...options,
-  });
+  })
 }
-
