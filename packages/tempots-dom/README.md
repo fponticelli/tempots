@@ -101,6 +101,26 @@ const button = html.button(
 )
 ```
 
+### Delegated Events
+
+For containers with many similar children (e.g., lists rendered with `ForEach`), use `delegate` to attach a single event listener on the container instead of one per child:
+
+```typescript
+import { html, delegate, ForEach, prop } from '@tempots/dom'
+
+const items = prop(['Apple', 'Banana', 'Cherry'])
+
+html.ul(
+  delegate.click('li', (event) => {
+    const li = (event.target as Element).closest('li')!
+    console.log('Clicked:', li.textContent)
+  }),
+  ForEach(items, (item) => html.li(item))
+)
+```
+
+`delegate` uses the same proxy pattern as `on` — all standard events are available. It matches children using `Element.closest()` with a CSS selector. Non-bubbling events (`focus`, `blur`, `mouseenter`, `mouseleave`) should use `on` instead.
+
 ### Conditional Rendering
 
 Render content conditionally:

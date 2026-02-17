@@ -228,6 +228,111 @@ describe('delegate', () => {
     clear()
   })
 
+  test('should pass container DOMContext to handler', () => {
+    let receivedCtx: unknown = null
+
+    const clear = render(
+      html.ul(
+        delegate.click('li', (_event, ctx) => {
+          receivedCtx = ctx
+        }),
+        html.li('Item')
+      ),
+      document.body
+    )
+
+    const li = document.querySelector('li')!
+    li.click()
+
+    expect(receivedCtx).not.toBeNull()
+    expect(receivedCtx).toHaveProperty('element')
+    // ctx should refer to the <ul> container, not the <li>
+    expect((receivedCtx as { element: Element }).element.tagName).toBe('UL')
+    clear()
+  })
+
+  test('should match when selector matches the container itself', () => {
+    const handler = vi.fn()
+
+    const clear = render(
+      html.div(
+        attr.class('clickable'),
+        delegate.click('.clickable', handler),
+        html.span('Inner')
+      ),
+      document.body
+    )
+
+    // Direct click on the container div
+    const div = document.querySelector('.clickable')!
+    ;(div as HTMLElement).click()
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    clear()
+  })
+
+  test('should respect once option', () => {
+    const handler = vi.fn()
+
+    const clear = render(
+      html.ul(
+        delegate.click('li', handler, { once: true }),
+        html.li('Item')
+      ),
+      document.body
+    )
+
+    const li = document.querySelector('li')!
+    li.click()
+    li.click()
+
+    // once: true means the listener fires at most once
+    expect(handler).toHaveBeenCalledTimes(1)
+    clear()
+  })
+
+  test('should respect passive option', () => {
+    const handler = vi.fn()
+
+    const clear = render(
+      html.ul(
+        delegate.click('li', handler, { passive: true }),
+        html.li('Item')
+      ),
+      document.body
+    )
+
+    const li = document.querySelector('li')!
+    li.click()
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    clear()
+  })
+
+  test('should respect signal option for aborting', () => {
+    const handler = vi.fn()
+    const controller = new AbortController()
+
+    const clear = render(
+      html.ul(
+        delegate.click('li', handler, { signal: controller.signal }),
+        html.li('Item')
+      ),
+      document.body
+    )
+
+    const li = document.querySelector('li')!
+    li.click()
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    // Abort should remove the listener
+    controller.abort()
+    li.click()
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    clear()
+  })
+
   test('should be a no-op in headless environment', () => {
     const handler = vi.fn()
 
