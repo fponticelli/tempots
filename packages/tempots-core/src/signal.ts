@@ -163,17 +163,17 @@ export class Signal<T> implements ReadSignal<T> {
   /**
    * @internal
    */
-  protected readonly _derivatives: Array<Computed<unknown>> = []
+  protected _derivatives: Array<Computed<unknown>> | null = null
   /**
    * @internal
    */
-  protected readonly _onValueListeners: Array<
+  protected _onValueListeners: Array<
     (value: T, previousValue: T | undefined) => void
-  > = []
+  > | null = null
   /**
    * @internal
    */
-  protected readonly _onDisposeListeners: Array<() => void> = []
+  protected _onDisposeListeners: Array<() => void> | null = null
 
   /**
    * Represents a signal with a value of type T.
@@ -208,7 +208,8 @@ export class Signal<T> implements ReadSignal<T> {
    * @returns `true` if the signal has listeners, `false` otherwise.
    */
   readonly hasListeners = () =>
-    this._onValueListeners.length > 0 || this._derivatives.length > 0
+    (this._onValueListeners !== null && this._onValueListeners.length > 0) ||
+    (this._derivatives !== null && this._derivatives.length > 0)
 
   /**
    * Registers a listener function to be called whenever the value of the signal changes.
@@ -251,8 +252,10 @@ export class Signal<T> implements ReadSignal<T> {
           listener(value, previousValue)
         }
       : listener
+    if (this._onValueListeners === null) this._onValueListeners = []
     this._onValueListeners.push(actualListener)
     const clear = () => {
+      if (this._onValueListeners === null) return
       const index = this._onValueListeners.indexOf(actualListener)
       if (index !== -1) {
         this._onValueListeners.splice(index, 1)
@@ -306,8 +309,14 @@ export class Signal<T> implements ReadSignal<T> {
     const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
-      this._derivatives.forEach(d => d.setDirty())
-      this._onValueListeners.forEach(l => l(newV, currentValue))
+      if (this._derivatives !== null) {
+        for (let i = 0; i < this._derivatives.length; i++)
+          this._derivatives[i].setDirty()
+      }
+      if (this._onValueListeners !== null) {
+        for (let i = 0; i < this._onValueListeners.length; i++)
+          this._onValueListeners[i](newV, currentValue)
+      }
     }
   }
 
@@ -328,6 +337,7 @@ export class Signal<T> implements ReadSignal<T> {
    * @returns A function that can be called to remove the listener.
    */
   readonly onDispose = (listener: () => void) => {
+    if (this._onDisposeListeners === null) this._onDisposeListeners = []
     this._onDisposeListeners.push(listener)
   }
 
@@ -338,10 +348,13 @@ export class Signal<T> implements ReadSignal<T> {
   readonly dispose = () => {
     if (this._disposed) return
     this._disposed = true
-    this._onDisposeListeners.forEach(l => l())
-    this._onDisposeListeners.length = 0
-    this._derivatives.length = 0
-    this._onValueListeners.length = 0
+    if (this._onDisposeListeners !== null) {
+      for (let i = 0; i < this._onDisposeListeners.length; i++)
+        this._onDisposeListeners[i]()
+      this._onDisposeListeners = null
+    }
+    this._derivatives = null
+    this._onValueListeners = null
   }
 
   /**
@@ -722,22 +735,36 @@ export class Signal<T> implements ReadSignal<T> {
    * @param computed - The computed value to add as a derivative.
    */
   readonly setDerivative = <O>(computed: Computed<O>) => {
+    if (this._derivatives === null) this._derivatives = []
     this._derivatives.push(computed as Computed<unknown>)
     computed.onDispose(() => {
-      this._derivatives.splice(
-        this._derivatives.indexOf(computed as Computed<unknown>),
-        1
-      )
+      if (this._derivatives === null) return
+      const idx = this._derivatives.indexOf(computed as Computed<unknown>)
+      if (idx !== -1) this._derivatives.splice(idx, 1)
     })
     this.onDispose(computed.dispose)
   }
 }
 
 /* c8 ignore next 4 */
-const queue =
+const _queueMicrotask =
   typeof queueMicrotask === 'function'
     ? queueMicrotask
     : (fn: () => void) => Promise.resolve().then(fn)
+
+let _batch: Array<() => void> | null = null
+const queue = (fn: () => void) => {
+  if (_batch === null) {
+    _batch = [fn]
+    _queueMicrotask(() => {
+      const fns = _batch!
+      _batch = null
+      for (let i = 0; i < fns.length; i++) fns[i]()
+    })
+  } else {
+    _batch.push(fn)
+  }
+}
 
 /**
  * Represents a computed signal that derives its value from a function.
@@ -813,7 +840,10 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
   readonly setDirty = () => {
     if (this._isDirty || this._disposed) return
     this._isDirty = true
-    this._derivatives.forEach(d => d.setDirty())
+    if (this._derivatives !== null) {
+      for (let i = 0; i < this._derivatives.length; i++)
+        this._derivatives[i].setDirty()
+    }
     this._scheduleNotify()
   }
 
@@ -862,10 +892,13 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     this._scheduleCount++
     // Mark as disposed and clean up listeners and derivatives
     this._disposed = true
-    this._onDisposeListeners.forEach(l => l())
-    this._onDisposeListeners.length = 0
-    this._derivatives.length = 0
-    this._onValueListeners.length = 0
+    if (this._onDisposeListeners !== null) {
+      for (let i = 0; i < this._onDisposeListeners.length; i++)
+        this._onDisposeListeners[i]()
+      this._onDisposeListeners = null
+    }
+    this._derivatives = null
+    this._onValueListeners = null
   }
 }
 

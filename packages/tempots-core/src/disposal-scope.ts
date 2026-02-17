@@ -12,7 +12,7 @@ import { ValueTypes } from './types'
  * @public
  */
 export class DisposalScope {
-  private _signals: Set<AnySignal> = new Set()
+  private _signals: AnySignal[] = []
   private _callbacks: Array<() => void> = []
   private _disposed: boolean = false
 
@@ -31,7 +31,7 @@ export class DisposalScope {
     if (signal.isDisposed()) {
       throw new Error('Cannot track already disposed signal')
     }
-    this._signals.add(signal)
+    this._signals.push(signal)
   }
 
   /**
@@ -74,10 +74,10 @@ export class DisposalScope {
     this._callbacks.length = 0
 
     // Then dispose all signals
-    for (const signal of this._signals) {
-      signal.dispose()
+    for (let i = 0; i < this._signals.length; i++) {
+      this._signals[i].dispose()
     }
-    this._signals.clear()
+    this._signals.length = 0
   }
 
   /**
