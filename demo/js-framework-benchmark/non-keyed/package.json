@@ -1,0 +1,21 @@
+{
+  "name": "js-framework-benchmark-non-keyed",
+  "title": "JS Framework Benchmark (Non-Keyed)",
+  "description": "js-framework-benchmark non-keyed implementation using TempoTS",
+  "priority": 10,
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tempots/dom": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
