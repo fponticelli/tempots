@@ -482,7 +482,6 @@ export function createRenderKit<
           type KeyedEntry = {
             key: K
             valueProp: Prop<T>
-            indexProp: Prop<number>
             position: KeyedPosition
             scope: DisposalScope
             clear: Clear
@@ -504,8 +503,7 @@ export function createRenderKit<
           ): KeyedEntry => {
             const k = key(value)
             const valueProp = prop(value)
-            const indexProp = prop(index)
-            const position = new KeyedPosition(indexProp, totalProp)
+            const position = new KeyedPosition(index, totalProp)
 
             // Create start marker
             const startRef = ctx.makeChildText('') as CTX
@@ -526,7 +524,6 @@ export function createRenderKit<
             return {
               key: k,
               valueProp,
-              indexProp,
               position,
               scope,
               clear,
@@ -535,20 +532,42 @@ export function createRenderKit<
             }
           }
 
-          const removeEntry = (entry: KeyedEntry) => {
+          const removeEntry = (entry: KeyedEntry, removeTree = true) => {
             entry.scope.dispose()
-            entry.clear(true)
-            entry.startRef.clear(true)
-            entry.endRef.clear(true)
+            entry.clear(removeTree)
+            entry.startRef.clear(removeTree)
+            entry.endRef.clear(removeTree)
             entry.position.dispose()
             entry.valueProp.dispose()
-            entry.indexProp.dispose()
             // Remove separator if present
             if (entry.sepClear) {
               entry.sepScope?.dispose()
-              entry.sepClear(true)
-              entry.sepStartRef?.clear(true)
+              entry.sepClear(removeTree)
+              entry.sepStartRef?.clear(removeTree)
             }
+          }
+
+          /**
+           * Fast path for removing all entries at once.
+           * Disposes signals without individual DOM node removal,
+           * then removes the entire DOM range in one operation.
+           */
+          const removeAllEntries = () => {
+            if (entries.length === 0) return
+            // 1. Remove all DOM nodes in one sweep (from first start to last end)
+            const firstEntry = entries[0]
+            const lastEntry = entries[entries.length - 1]
+            const rangeEnd = lastEntry.sepStartRef ?? lastEntry.endRef
+            ctx.removeRange(
+              firstEntry.sepStartRef ?? firstEntry.startRef,
+              rangeEnd
+            )
+            // 2. Dispose all signals (skip DOM removal — nodes already removed)
+            for (let i = 0; i < entries.length; i++) {
+              removeEntry(entries[i], false)
+            }
+            entries.length = 0
+            keyToEntry.clear()
           }
 
           const renderSeparator = (
@@ -584,6 +603,13 @@ export function createRenderKit<
 
           const disposeSignal = arrSignal.on(
             newArr => {
+              // Fast path: clear all entries when new array is empty
+              if (newArr.length === 0 && entries.length > 0) {
+                removeAllEntries()
+                totalProp.set(0)
+                return
+              }
+
               const newKeys = newArr.map(key)
               const newKeySet = new Set(newKeys)
 
@@ -608,7 +634,7 @@ export function createRenderKit<
                 if (entry) {
                   // Update value and index
                   entry.valueProp.set(newArr[i])
-                  entry.indexProp.set(i)
+                  entry.position.setIndex(i)
                 } else {
                   // Create new entry at the end (before outerRef)
                   entry = createEntry(newArr[i], i, outerRef)
@@ -695,11 +721,15 @@ export function createRenderKit<
 
           return (removeTree: boolean) => {
             disposeSignal()
-            for (const entry of entries) {
-              removeEntry(entry)
+            if (removeTree && entries.length > 0) {
+              removeAllEntries()
+            } else {
+              for (let i = 0; i < entries.length; i++) {
+                removeEntry(entries[i])
+              }
+              entries.length = 0
+              keyToEntry.clear()
             }
-            entries.length = 0
-            keyToEntry.clear()
             totalProp.dispose()
             outerRef.clear(removeTree)
           }
@@ -713,8 +743,7 @@ export function createRenderKit<
         return Fragment(
           ...arr.map((val, i) => {
             const valueSig = signal(val)
-            const indexProp = prop(i)
-            const position = new KeyedPosition(indexProp, totalSig)
+            const position = new KeyedPosition(i, totalSig)
 
             if (separator && i > 0) {
               return Fragment(

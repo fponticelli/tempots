@@ -233,4 +233,23 @@ export class NativeContext implements BaseRenderContext {
       this.bridge.moveView(children[i], target)
     }
   }
+
+  readonly removeRange = (
+    startRef: BaseRenderContext,
+    endRef: BaseRenderContext
+  ): void => {
+    const start = (startRef as NativeContext).handle
+    const end = (endRef as NativeContext).handle
+    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+
+    const children = this.bridge.getChildren(parentHandle)
+    const startIdx = children.indexOf(start)
+    const endIdx = children.indexOf(end)
+
+    if (startIdx < 0 || endIdx < 0) return
+
+    for (let i = endIdx; i >= startIdx; i--) {
+      this.bridge.removeView(children[i])
+    }
+  }
 }

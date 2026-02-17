@@ -608,6 +608,18 @@ export class HeadlessContext implements DOMContext {
     // Insert before target
     children.splice(targetIndex, 0, ...range)
   }
+
+  readonly removeRange = (startRef: DOMContext, endRef: DOMContext): void => {
+    const start = (startRef as HeadlessContext).reference!
+    const end = (endRef as HeadlessContext).reference!
+    const children = this.element.children
+
+    const startIndex = children.indexOf(start)
+    const endIndex = children.indexOf(end)
+    const count = endIndex - startIndex + 1
+
+    children.splice(startIndex, count)
+  }
 }
 
 const attributesWithNoValue = new Set([

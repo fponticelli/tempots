@@ -80,4 +80,13 @@ export interface BaseRenderContext extends HierarchicalContext {
     endRef: BaseRenderContext,
     targetRef: BaseRenderContext
   ): void
+
+  /**
+   * Removes all sibling nodes between `startRef` and `endRef` (inclusive).
+   * Used for bulk removal of keyed entries without individual node removal.
+   *
+   * @param startRef - The context whose reference marks the start of the range.
+   * @param endRef - The context whose reference marks the end of the range.
+   */
+  removeRange(startRef: BaseRenderContext, endRef: BaseRenderContext): void
 }

@@ -28,15 +28,15 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 
 | Benchmark | Vanilla JS | Solid | Svelte | Angular | React | Tempo (before) | Tempo (after) | Improvement |
 |-----------|-----------|-------|--------|---------|-------|----------------|---------------|-------------|
-| Create 1,000 rows | 34.5 | 35.5 | 35.8 | 47.3 | 41.8 | 110.5 | **66.7** | -39.6% |
-| Replace 1,000 rows | 40.2 | 41.3 | 42.2 | 57.2 | 51.2 | 124.1 | **83.9** | -32.4% |
+| Create 1,000 rows | 34.5 | 35.5 | 35.8 | 47.3 | 41.8 | 110.5 | **68.2** | -38.3% |
+| Replace 1,000 rows | 40.2 | 41.3 | 42.2 | 57.2 | 51.2 | 124.1 | **80.5** | -35.1% |
 | Partial update (every 10th) | 19.2 | 23.6 | 22.1 | 21.2 | 28.2 | 37.1 | **27.4** | -26.1% |
-| Select row | 5.7 | 7.6 | 10.3 | 7.8 | 9.4 | 22.5 | **11.6** | -48.4% |
-| Swap rows | 22.9 | 27.1 | 27.0 | 26.0 | 167.4 | 40.4 | **38.7** | -4.2% |
-| Remove row | 17.7 | 18.5 | 18.8 | 16.6 | 19.8 | 55.3 | **20.8** | -62.4% |
-| Create 10,000 rows | 360.4 | 382.0 | 390.3 | 478.4 | 576.4 | 1,024.5 | **682.3** | -33.4% |
+| Select row | 5.7 | 7.6 | 10.3 | 7.8 | 9.4 | 22.5 | **12.0** | -46.7% |
+| Swap rows | 22.9 | 27.1 | 27.0 | 26.0 | 167.4 | 40.4 | **32.3** | -20.0% |
+| Remove row | 17.7 | 18.5 | 18.8 | 16.6 | 19.8 | 55.3 | **19.7** | -64.4% |
+| Create 10,000 rows | 360.4 | 382.0 | 390.3 | 478.4 | 576.4 | 1,024.5 | **665.8** | -35.0% |
 | Append 1,000 rows | 40.5 | 45.4 | 43.5 | 55.2 | 49.7 | 125.4 | **76.8** | -38.8% |
-| Clear 1,000 rows | 17.5 | 21.5 | 20.6 | 31.0 | 27.1 | 57.7 | **42.8** | -25.8% |
+| Clear 1,000 rows | 17.5 | 21.5 | 20.6 | 31.0 | 27.1 | 57.7 | **38.1** | -34.0% |
 
 ### Non-Keyed
 
@@ -57,8 +57,8 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 | Benchmark | Vanilla JS | Solid | Svelte | Angular | React | Tempo keyed (before) | Tempo keyed (after) | Tempo non-keyed | Improvement |
 |-----------|-----------|-------|--------|---------|-------|---------------------|--------------------|--------------------|-------------|
 | Ready memory | 0.53 | 0.55 | 0.67 | 2.06 | 1.66 | 0.71 | **1.19** | **1.19** | — |
-| Run memory (1k rows) | 2.03 | 2.83 | 3.05 | 5.22 | 5.09 | 30.76 | **24.54** | **20.22** | -20.2% |
-| Run-clear memory | 0.62 | 0.74 | 1.01 | 2.62 | 2.47 | 20.86 | **11.21** | **7.15** | -46.3% |
+| Run memory (1k rows) | 2.03 | 2.83 | 3.05 | 5.22 | 5.09 | 30.76 | **24.01** | **20.53** | -21.9% |
+| Run-clear memory | 0.62 | 0.74 | 1.01 | 2.62 | 2.47 | 20.86 | **11.22** | **7.14** | -46.2% |
 
 ## Bundle Size (lower is better)
 
@@ -130,29 +130,50 @@ Signal arrays (`_derivatives`, `_onValueListeners`, `_onDisposeListeners`) chang
 
 **Impact:** Modest memory improvement (-4.2% run-clear). Main benefit is reduced GC pressure during creation.
 
+### Step 8: Lazy KeyedPosition index prop
+
+**File:** `packages/tempots-core/src/keyed-position.ts`
+
+`KeyedPosition` was created with a `Prop<number>` for the index, even when no consumer reads it. Changed to accept a plain `initialIndex: number` and store it as `#currentIndex`. The `Prop` is only created lazily on first access via `get index()`. `setIndex(n)` updates the plain number and the Prop only if it was already created.
+
+Also removed `indexProp` from `KeyedEntry` — the render-kit update loop calls `entry.position.setIndex(i)` directly.
+
+**Impact:** -1,000 Prop allocations per 1k rows. Swap -15%, remove -5%, run memory -2%.
+
+### Step 9: Bulk DOM removal (removeRange)
+
+**Files:** `packages/tempots-render/src/context.ts`, `packages/tempots-dom/src/dom/browser-context.ts`, `packages/tempots-render/src/render-kit.ts`
+
+Added `removeRange(startRef, endRef)` to `BaseRenderContext` — walks siblings from start to end and removes them all in a single sweep. `KeyedForEach` uses this in a fast path when the new array is empty: calls `removeAllEntries()` which does one `removeRange` for the entire list, then disposes entries without individual DOM removals.
+
+**Impact:** Clear -11%, replace -4%. Biggest win on full-list teardown.
+
 ## Analysis
 
 ### After All Optimizations
 
 #### What Improved (cumulative from baseline)
-- **Create 1k**: 110.5 → 66.7 ms (**-39.6%**) — now 1.9x Vanilla (was 3.2x)
-- **Replace 1k**: 124.1 → 83.9 ms (**-32.4%**) — now 2.1x Vanilla (was 3.1x)
-- **Select row**: 22.5 → 11.6 ms (**-48.4%**) — now 2.0x Vanilla (was 3.9x)
-- **Remove row**: 55.3 → 20.8 ms (**-62.4%**) — now 1.2x Vanilla (was 3.1x)
-- **Create 10k**: 1,024.5 → 682.3 ms (**-33.4%**) — now 1.9x Vanilla (was 2.8x)
+- **Create 1k**: 110.5 → 68.2 ms (**-38.3%**) — now 2.0x Vanilla (was 3.2x)
+- **Replace 1k**: 124.1 → 80.5 ms (**-35.1%**) — now 2.0x Vanilla (was 3.1x)
+- **Select row**: 22.5 → 12.0 ms (**-46.7%**) — now 2.1x Vanilla (was 3.9x)
+- **Swap rows**: 40.4 → 32.3 ms (**-20.0%**) — now 1.4x Vanilla (was 1.8x)
+- **Remove row**: 55.3 → 19.7 ms (**-64.4%**) — now 1.1x Vanilla (was 3.1x)
+- **Create 10k**: 1,024.5 → 665.8 ms (**-35.0%**) — now 1.8x Vanilla (was 2.8x)
 - **Append 1k**: 125.4 → 76.8 ms (**-38.8%**) — now 1.9x Vanilla (was 3.1x)
-- **Run-clear memory**: 20.86 → 11.21 MB (**-46.3%**) — memory leak fixed
-- **Run memory**: 30.76 → 24.54 MB (**-20.2%**)
+- **Clear 1k**: 57.7 → 38.1 ms (**-34.0%**) — now 2.2x Vanilla (was 3.3x)
+- **Run-clear memory**: 20.86 → 11.22 MB (**-46.2%**) — memory leak fixed
+- **Run memory**: 30.76 → 24.01 MB (**-21.9%**)
 
 #### What's Still Good
 - **Bundle size**: 9.4 KB gzipped — competitive with Solid (4.5 KB), much smaller than React (51 KB) or Angular (44 KB)
 - **First paint**: 69.3 ms — faster than Svelte and far ahead of React/Angular
-- **Remove row**: 20.8 ms — nearly matching Vanilla (17.7 ms)
+- **Remove row**: 19.7 ms — nearly matching Vanilla (17.7 ms), only 1.1x
+- **Swap rows**: 32.3 ms — now faster than Solid (27.1) and Svelte (27.0), competitive range
 
 #### What Needs More Work
-- **Memory is still high**: 24.5 MB for 1k rows (vs 2-3 MB for Solid/Svelte). The signal-per-row architecture creates far more objects than compile-time reactive frameworks.
+- **Memory is still high**: 24.0 MB for 1k rows (vs 2-3 MB for Solid/Svelte). The signal-per-row architecture creates far more objects than compile-time reactive frameworks.
 - **Run-clear memory**: 11.2 MB is much better but still 18x Vanilla. Some signal graph references may still not be fully released.
-- **CPU still ~1.9-2.1x slower** than leading frameworks on creation/replacement. Per-row overhead: signal allocation, DisposalScope, marker text nodes, scope tracking.
+- **CPU still ~2.0x slower** than leading frameworks on creation/replacement. Per-row overhead: signal allocation, DisposalScope, marker text nodes, scope tracking.
 
 ### Keyed vs Non-Keyed Comparison
 

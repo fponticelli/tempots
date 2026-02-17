@@ -188,4 +188,10 @@ export interface DOMContext {
     endRef: DOMContext,
     targetRef: DOMContext
   ): void
+
+  /**
+   * Removes all sibling nodes between `startRef` and `endRef` (inclusive).
+   * Used for bulk removal of keyed entries.
+   */
+  removeRange(startRef: DOMContext, endRef: DOMContext): void
 }

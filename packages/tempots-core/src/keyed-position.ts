@@ -1,5 +1,5 @@
 import type { Prop, Signal } from './signal'
-import { computed } from './signal'
+import { computed, prop } from './signal'
 
 /**
  * Represents the position of an element in a keyed collection.
@@ -10,33 +10,57 @@ import { computed } from './signal'
  * fields (`counter`, `isFirst`, `isEven`, `isOdd`, `isLast`) update
  * automatically.
  *
- * Derived fields are created lazily — only when first accessed — to avoid
- * unnecessary signal overhead when they are not used.
+ * The index signal and all derived fields are created lazily — only when first
+ * accessed — to avoid unnecessary signal overhead when they are not used.
  *
  * @public
  */
 export class KeyedPosition {
+  #indexProp: Prop<number> | null = null
   #counterSignal: Signal<number> | undefined
   #isFirstSignal: Signal<boolean> | undefined
   #isEvenSignal: Signal<boolean> | undefined
   #isOddSignal: Signal<boolean> | undefined
   #isLastSignal: Signal<boolean> | undefined
+  #currentIndex: number
 
   /**
    * Creates a new instance of `KeyedPosition`.
-   * @param index - A reactive signal representing the current index of the element.
+   * @param initialIndex - The initial index of the element.
    * @param total - A reactive signal representing the total number of elements in the collection.
    */
   constructor(
-    /**
-     * The reactive index of the element.
-     */
-    readonly index: Signal<number>,
+    initialIndex: number,
     /**
      * The reactive total number of elements in the collection.
      */
     readonly total: Signal<number>
-  ) {}
+  ) {
+    this.#currentIndex = initialIndex
+  }
+
+  /**
+   * Updates the stored index. If the index signal has been created (because
+   * user code accessed it), the signal is also updated reactively.
+   * @internal
+   */
+  readonly setIndex = (index: number) => {
+    this.#currentIndex = index
+    if (this.#indexProp !== null) {
+      this.#indexProp.set(index)
+    }
+  }
+
+  /**
+   * The reactive index of the element.
+   * Created lazily on first access.
+   */
+  get index(): Signal<number> {
+    if (this.#indexProp === null) {
+      this.#indexProp = prop(this.#currentIndex)
+    }
+    return this.#indexProp
+  }
 
   /**
    * The 1-based counter (index + 1).
@@ -101,6 +125,7 @@ export class KeyedPosition {
    * backward compatibility and edge cases.
    */
   readonly dispose = () => {
+    this.#indexProp?.dispose()
     this.#counterSignal?.dispose()
     this.#isFirstSignal?.dispose()
     this.#isEvenSignal?.dispose()
