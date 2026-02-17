@@ -6,8 +6,10 @@ import {
   prop,
   Value,
   ElementPosition,
+  KeyedPosition,
   DisposalScope,
   withScope,
+  Prop,
 } from "@tempots/core";
 import type { BaseRenderContext } from "./context";
 import type {
@@ -70,6 +72,12 @@ export interface RenderKit<
     value: Value<T[]>,
     item: (value: Signal<T>, position: ElementPosition) => TNode<CTX, TType>,
     separator?: (pos: ElementPosition) => TNode<CTX, TType>,
+  ) => Renderable<CTX, TType>;
+  KeyedForEach: <T, K>(
+    value: Value<T[]>,
+    key: (item: T) => K,
+    item: (value: Signal<T>, position: KeyedPosition) => TNode<CTX, TType>,
+    separator?: (pos: KeyedPosition) => TNode<CTX, TType>,
   ) => Renderable<CTX, TType>;
   Repeat: (
     times: Value<number>,
@@ -420,6 +428,306 @@ export function createRenderKit<
       separator,
     );
   };
+
+  // --- LIS helper (Longest Increasing Subsequence) ---
+  // Returns indices into `arr` that form the longest strictly increasing subsequence.
+  const _lis = (arr: number[]): number[] => {
+    const n = arr.length;
+    if (n === 0) return [];
+
+    // tails[i] = smallest tail element for IS of length i+1
+    const tails: number[] = [];
+    // tailIndices[i] = index in arr of tails[i]
+    const tailIndices: number[] = [];
+    // prev[i] = index in arr of predecessor of arr[i] in the LIS
+    const prev: number[] = new Array(n).fill(-1);
+
+    for (let i = 0; i < n; i++) {
+      const val = arr[i];
+      // Binary search for the position
+      let lo = 0,
+        hi = tails.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (tails[mid] < val) lo = mid + 1;
+        else hi = mid;
+      }
+      tails[lo] = val;
+      tailIndices[lo] = i;
+      prev[i] = lo > 0 ? tailIndices[lo - 1] : -1;
+    }
+
+    // Reconstruct
+    const result: number[] = new Array(tails.length);
+    let k = tailIndices[tails.length - 1];
+    for (let i = tails.length - 1; i >= 0; i--) {
+      result[i] = k;
+      k = prev[k];
+    }
+    return result;
+  };
+
+  const KeyedForEach = <T, K>(
+    value: Value<T[]>,
+    key: (item: T) => K,
+    item: (value: Signal<T>, position: KeyedPosition) => TNode<CTX, TType>,
+    separator?: (pos: KeyedPosition) => TNode<CTX, TType>,
+  ): Renderable<CTX, TType> =>
+    handleValueOrSignal(
+      value,
+      (arrSignal) =>
+        create((ctx: CTX) => {
+          const outerRef = ctx.makeRef() as CTX;
+          const totalProp = prop(0);
+
+          type KeyedEntry = {
+            key: K;
+            valueProp: Prop<T>;
+            indexProp: Prop<number>;
+            position: KeyedPosition;
+            scope: DisposalScope;
+            clear: Clear;
+            startRef: CTX;
+            endRef: CTX;
+            // Separator state (if separator is provided)
+            sepScope?: DisposalScope;
+            sepClear?: Clear;
+            sepStartRef?: CTX;
+          };
+
+          const entries: KeyedEntry[] = [];
+          const keyToEntry = new Map<K, KeyedEntry>();
+
+          const createEntry = (
+            value: T,
+            index: number,
+            insertBefore: CTX,
+          ): KeyedEntry => {
+            const k = key(value);
+            const valueProp = prop(value);
+            const indexProp = prop(index);
+            const position = new KeyedPosition(indexProp, totalProp);
+
+            // Create start marker
+            const startRef = ctx.makeChildText("") as CTX;
+            // Move it before the target
+            ctx.moveRangeBefore(startRef, startRef, insertBefore);
+
+            // Create end marker
+            const endRef = ctx.makeChildText("") as CTX;
+            ctx.moveRangeBefore(endRef, endRef, insertBefore);
+
+            // Render content between start and end markers.
+            // endRef acts as the insertion point — content is placed before it.
+            const scope = new DisposalScope();
+            const clear = withScope(scope, () =>
+              renderableOfTNode(item(valueProp, position)).render(endRef),
+            );
+
+            return {
+              key: k,
+              valueProp,
+              indexProp,
+              position,
+              scope,
+              clear,
+              startRef,
+              endRef,
+            };
+          };
+
+          const removeEntry = (entry: KeyedEntry) => {
+            entry.scope.dispose();
+            entry.clear(true);
+            entry.startRef.clear(true);
+            entry.endRef.clear(true);
+            entry.position.dispose();
+            entry.valueProp.dispose();
+            entry.indexProp.dispose();
+            // Remove separator if present
+            if (entry.sepClear) {
+              entry.sepScope?.dispose();
+              entry.sepClear(true);
+              entry.sepStartRef?.clear(true);
+            }
+          };
+
+          const renderSeparator = (
+            entry: KeyedEntry,
+            insertBefore: CTX,
+          ): void => {
+            if (!separator) return;
+
+            // Create separator marker before the entry's start marker
+            const sepStartRef = ctx.makeChildText("") as CTX;
+            ctx.moveRangeBefore(sepStartRef, sepStartRef, insertBefore);
+
+            const sepScope = new DisposalScope();
+            const sepClear = withScope(sepScope, () =>
+              renderableOfTNode(separator(entry.position)).render(insertBefore),
+            );
+
+            entry.sepStartRef = sepStartRef;
+            entry.sepScope = sepScope;
+            entry.sepClear = sepClear;
+          };
+
+          const removeSeparator = (entry: KeyedEntry): void => {
+            if (entry.sepClear) {
+              entry.sepScope?.dispose();
+              entry.sepClear(true);
+              entry.sepStartRef?.clear(true);
+              entry.sepScope = undefined;
+              entry.sepClear = undefined;
+              entry.sepStartRef = undefined;
+            }
+          };
+
+          const disposeSignal = arrSignal.on(
+            (newArr) => {
+              const newKeys = newArr.map(key);
+              const newKeySet = new Set(newKeys);
+
+              // 1. Remove entries whose keys are no longer present
+              for (let i = entries.length - 1; i >= 0; i--) {
+                const entry = entries[i];
+                if (!newKeySet.has(entry.key)) {
+                  removeEntry(entry);
+                  keyToEntry.delete(entry.key);
+                  entries.splice(i, 1);
+                }
+              }
+
+              // 2. Build old key order for surviving entries
+              const oldKeyOrder = entries.map((e) => e.key);
+
+              // 3. Update values and create new entries
+              const newEntries: KeyedEntry[] = [];
+              for (let i = 0; i < newArr.length; i++) {
+                const k = newKeys[i];
+                let entry = keyToEntry.get(k);
+                if (entry) {
+                  // Update value and index
+                  entry.valueProp.set(newArr[i]);
+                  entry.indexProp.set(i);
+                } else {
+                  // Create new entry at the end (before outerRef)
+                  entry = createEntry(newArr[i], i, outerRef);
+                  keyToEntry.set(k, entry);
+                }
+                newEntries.push(entry);
+              }
+
+              // 4. Compute moves using LIS
+              // Map old keys to their old indices
+              const oldKeyIndex = new Map<K, number>();
+              for (let i = 0; i < oldKeyOrder.length; i++) {
+                oldKeyIndex.set(oldKeyOrder[i], i);
+              }
+
+              // For each item in new order, get its old index (-1 if new)
+              const oldIndices = newEntries.map((e) =>
+                oldKeyIndex.has(e.key) ? oldKeyIndex.get(e.key)! : -1,
+              );
+
+              // Filter to only surviving items (old index >= 0) for LIS
+              const survivingIndices: { newIdx: number; oldIdx: number }[] = [];
+              for (let i = 0; i < oldIndices.length; i++) {
+                if (oldIndices[i] >= 0) {
+                  survivingIndices.push({ newIdx: i, oldIdx: oldIndices[i] });
+                }
+              }
+
+              const lisResult = _lis(survivingIndices.map((s) => s.oldIdx));
+              const lisSet = new Set(
+                lisResult.map((i) => survivingIndices[i].newIdx),
+              );
+
+              // Also mark newly created entries as needing placement
+              // (they were already appended at the end, need to be moved to correct position)
+              for (let i = 0; i < newEntries.length; i++) {
+                if (oldIndices[i] < 0) {
+                  // New entry — already at the end, needs to be moved
+                  // Don't add to LIS set
+                }
+              }
+
+              // 5. Reorder right-to-left
+              // Items in the LIS stay in place; everything else moves.
+              let nextRef = outerRef;
+              for (let i = newEntries.length - 1; i >= 0; i--) {
+                const entry = newEntries[i];
+                if (!lisSet.has(i)) {
+                  // Move this entry's range before nextRef
+                  // If entry has separator, move that too
+                  if (entry.sepStartRef) {
+                    ctx.moveRangeBefore(
+                      entry.sepStartRef,
+                      entry.startRef,
+                      nextRef,
+                    );
+                  }
+                  ctx.moveRangeBefore(entry.startRef, entry.endRef, nextRef);
+                }
+                nextRef = entry.sepStartRef ?? entry.startRef;
+              }
+
+              // 6. Handle separators
+              if (separator) {
+                for (let i = 0; i < newEntries.length; i++) {
+                  const entry = newEntries[i];
+                  if (i === 0) {
+                    // First item should have no separator
+                    removeSeparator(entry);
+                  } else if (!entry.sepClear) {
+                    // Needs a separator but doesn't have one
+                    renderSeparator(entry, entry.startRef);
+                  }
+                }
+              }
+
+              // 7. Update entries array and total
+              entries.length = 0;
+              entries.push(...newEntries);
+              totalProp.set(newArr.length);
+            },
+            { noAutoDispose: true },
+          );
+
+          return (removeTree: boolean) => {
+            disposeSignal();
+            for (const entry of entries) {
+              removeEntry(entry);
+            }
+            entries.length = 0;
+            keyToEntry.clear();
+            totalProp.dispose();
+            outerRef.clear(removeTree);
+          };
+        }),
+      // Static array — just render once
+      (literal) => {
+        const arr = literal;
+        if (arr.length === 0) return Empty;
+
+        const totalSig = signal(arr.length);
+        return Fragment(
+          ...arr.map((val, i) => {
+            const valueSig = signal(val);
+            const indexProp = prop(i);
+            const position = new KeyedPosition(indexProp, totalSig);
+
+            if (separator && i > 0) {
+              return Fragment(
+                renderableOfTNode(separator(position)),
+                renderableOfTNode(item(valueSig, position)),
+              );
+            }
+            return renderableOfTNode(item(valueSig, position));
+          }),
+        );
+      },
+    );
 
   const OneOf = <T extends Record<string, unknown>>(
     match: Value<T>,
@@ -854,6 +1162,7 @@ export function createRenderKit<
     When,
     Unless,
     ForEach,
+    KeyedForEach,
     Repeat,
     OneOf,
     OneOfField,

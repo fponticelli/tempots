@@ -64,4 +64,20 @@ export interface BaseRenderContext extends HierarchicalContext {
     value: T,
     onUse: undefined | (() => void),
   ): BaseRenderContext;
+
+  /**
+   * Moves a range of sibling nodes (from `startRef` to `endRef` inclusive)
+   * before `targetRef`. All three refs must be children of the same parent.
+   *
+   * Used by `KeyedForEach` to reorder keyed items without recreating DOM nodes.
+   *
+   * @param startRef - The context whose reference marks the start of the range.
+   * @param endRef - The context whose reference marks the end of the range.
+   * @param targetRef - The context before which the range will be inserted.
+   */
+  moveRangeBefore(
+    startRef: BaseRenderContext,
+    endRef: BaseRenderContext,
+    targetRef: BaseRenderContext,
+  ): void;
 }

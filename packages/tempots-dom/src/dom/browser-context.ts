@@ -427,4 +427,23 @@ export class BrowserContext implements DOMContext {
   readonly getWindow = () => {
     return this.document.defaultView!
   }
+
+  readonly moveRangeBefore = (
+    startRef: DOMContext,
+    endRef: DOMContext,
+    targetRef: DOMContext
+  ): void => {
+    const start = (startRef as BrowserContext).reference!
+    const end = (endRef as BrowserContext).reference!
+    const target = (targetRef as BrowserContext).reference!
+    const parent = this.element
+
+    let current: Node | null = start
+    while (current !== null) {
+      const next: Node | null = current.nextSibling
+      parent.insertBefore(current, target)
+      if (current === end) break
+      current = next
+    }
+  }
 }

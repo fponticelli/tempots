@@ -355,6 +355,40 @@ NotEmpty(
 )
 ```
 
+### KeyedForEach
+
+When list items have stable identities (e.g., database IDs), `KeyedForEach` provides efficient reconciliation by tracking items by key rather than by index. When items are reordered, existing DOM nodes are **moved** rather than recreated, and signal identities are preserved.
+
+```ts
+const todos = prop([
+  { id: 1, text: 'Buy groceries' },
+  { id: 2, text: 'Walk the dog' },
+  { id: 3, text: 'Read a book' },
+])
+
+html.ul(
+  KeyedForEach(
+    todos,
+    (todo) => todo.id,                    // key function
+    (todo, pos) => html.li(               // item renderer
+      todo.map((t) => t.text)
+    ),
+    () => html.hr()                       // optional separator
+  )
+)
+```
+
+The key differences between `ForEach` and `KeyedForEach`:
+
+| | `ForEach` | `KeyedForEach` |
+|---|---|---|
+| **Tracking** | By index (position) | By key (identity) |
+| **Reorder** | Signals at each position update with new values | DOM nodes move; signals keep their identity |
+| **Position** | `ElementPosition` (static `index`) | `KeyedPosition` (reactive `index`, all fields update) |
+| **Best for** | Simple lists, append-only, rarely reordered | Sortable lists, drag-and-drop, items with stable IDs |
+
+Each item's callback receives a `KeyedPosition` with fully reactive fields: `index`, `counter`, `isFirst`, `isLast`, `isEven`, `isOdd`, and `total`. All of these update automatically when an item moves to a new position.
+
 `Repeat` takes a signal that represents the number of times to repeat the renderable. It is useful when you want to repeat a renderable a fixed number of times.
 
 ```ts

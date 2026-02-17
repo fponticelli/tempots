@@ -114,6 +114,34 @@ export class MockBridge implements JSIBridge {
     this._nodes.delete(handle);
   }
 
+  moveView(handle: NativeViewHandle, before: NativeViewHandle): void {
+    const node = this._getNode(handle);
+    const beforeNode = this._getNode(before);
+    const parent = node.parent;
+    if (!parent) {
+      throw new Error("MockBridge: cannot move a root node");
+    }
+
+    // Remove from current position
+    const idx = parent.children.indexOf(node);
+    if (idx >= 0) {
+      parent.children.splice(idx, 1);
+    }
+
+    // Insert before target
+    const beforeIdx = parent.children.indexOf(beforeNode);
+    if (beforeIdx >= 0) {
+      parent.children.splice(beforeIdx, 0, node);
+    } else {
+      parent.children.push(node);
+    }
+  }
+
+  getChildren(parent: NativeViewHandle): NativeViewHandle[] {
+    const node = this._getNode(parent);
+    return node.children.map((c) => c.handle);
+  }
+
   setViewProp(handle: NativeViewHandle, name: string, value: unknown): void {
     const node = this._getNode(handle);
     (node.props as Record<string, unknown>)[name] = value;

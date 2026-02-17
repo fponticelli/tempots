@@ -201,4 +201,36 @@ export class NativeContext implements BaseRenderContext {
   readonly setStyle = (styles: Record<string, unknown>): void => {
     this.bridge.setStyle(this.handle, styles);
   };
+
+  /**
+   * Moves a range of sibling views (from `startRef` to `endRef` inclusive)
+   * before `targetRef`. All three refs must be children of the same parent.
+   *
+   * Used by `KeyedForEach` to reorder keyed items without recreating views.
+   *
+   * @param startRef - The context whose handle marks the start of the range.
+   * @param endRef - The context whose handle marks the end of the range.
+   * @param targetRef - The context before which the range will be inserted.
+   */
+  readonly moveRangeBefore = (
+    startRef: BaseRenderContext,
+    endRef: BaseRenderContext,
+    targetRef: BaseRenderContext,
+  ): void => {
+    const start = (startRef as NativeContext).handle;
+    const end = (endRef as NativeContext).handle;
+    const target = (targetRef as NativeContext).handle;
+    const parentHandle = this._isRef ? this._parentHandle! : this.handle;
+
+    const children = this.bridge.getChildren(parentHandle);
+    const startIdx = children.indexOf(start);
+    const endIdx = children.indexOf(end);
+
+    if (startIdx < 0 || endIdx < 0) return;
+
+    // Move each handle in the range before target (in order preserves relative ordering)
+    for (let i = startIdx; i <= endIdx; i++) {
+      this.bridge.moveView(children[i], target);
+    }
+  };
 }

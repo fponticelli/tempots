@@ -35,6 +35,7 @@ export const {
   When,
   Unless,
   ForEach,
+  KeyedForEach,
   Repeat,
   OneOf,
   OneOfField,

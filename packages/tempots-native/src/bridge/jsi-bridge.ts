@@ -31,6 +31,12 @@ export interface JSIBridge {
   /** Remove a view from its parent and destroy it. */
   removeView(handle: NativeViewHandle): void;
 
+  /** Move a view to a new position under the same parent, before the given sibling. */
+  moveView(handle: NativeViewHandle, before: NativeViewHandle): void;
+
+  /** Get the child view handles of a parent view, in order. */
+  getChildren(parent: NativeViewHandle): NativeViewHandle[];
+
   /** Set a single property on a view. */
   setViewProp(handle: NativeViewHandle, name: string, value: unknown): void;
 

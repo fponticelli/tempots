@@ -151,6 +151,33 @@ const items = prop(['Apple', 'Banana', 'Cherry'])
 const list = html.ul(ForEach(items, item => html.li(item)))
 ```
 
+### Keyed Lists
+
+When list items have stable identities (e.g., database IDs), use `KeyedForEach` for efficient reconciliation. Unlike `ForEach` which tracks items by index, `KeyedForEach` tracks items by a user-provided key function — reusing both DOM nodes and signal identities across reorders:
+
+```typescript
+import { html, KeyedForEach, prop } from '@tempots/dom'
+
+const todos = prop([
+  { id: 1, text: 'Buy groceries' },
+  { id: 2, text: 'Walk the dog' },
+  { id: 3, text: 'Read a book' },
+])
+
+const list = html.ul(
+  KeyedForEach(
+    todos,
+    (todo) => todo.id,                    // key function
+    (todo, pos) => html.li(               // item renderer
+      todo.map((t) => t.text)
+    ),
+    () => html.hr()                       // optional separator
+  )
+)
+```
+
+When `todos` is reordered, `KeyedForEach` moves existing DOM elements instead of recreating them. Each item receives a `KeyedPosition` with fully reactive position fields (`index`, `counter`, `isFirst`, `isLast`, `isEven`, `isOdd`) that update automatically when items move.
+
 ### Storage-Backed Props
 
 Tempo provides helpers that persist reactive state to Web Storage through `storedProp`,

@@ -53,6 +53,7 @@ export {
   guessInterpolate,
   createRenderable,
   ElementPosition,
+  KeyedPosition,
 } from '@tempots/core'
 export type {
   AnySignal,
@@ -82,6 +83,7 @@ export * from './renderable/element'
 export * from './renderable/empty'
 export * from './renderable/ensure'
 export * from './renderable/foreach'
+export * from './renderable/keyed-foreach'
 export * from './renderable/fragment'
 export * from './renderable/on'
 export * from './renderable/on-dispose'
