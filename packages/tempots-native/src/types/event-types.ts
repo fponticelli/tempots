@@ -3,11 +3,11 @@
  * @public
  */
 export interface PressEvent {
-  readonly locationX: number;
-  readonly locationY: number;
-  readonly pageX: number;
-  readonly pageY: number;
-  readonly timestamp: number;
+  readonly locationX: number
+  readonly locationY: number
+  readonly pageX: number
+  readonly pageY: number
+  readonly timestamp: number
 }
 
 /**
@@ -15,7 +15,7 @@ export interface PressEvent {
  * @public
  */
 export interface LongPressEvent extends PressEvent {
-  readonly duration: number;
+  readonly duration: number
 }
 
 /**
@@ -23,9 +23,9 @@ export interface LongPressEvent extends PressEvent {
  * @public
  */
 export interface ScrollEvent {
-  readonly contentOffset: { x: number; y: number };
-  readonly contentSize: { width: number; height: number };
-  readonly layoutMeasurement: { width: number; height: number };
+  readonly contentOffset: { x: number; y: number }
+  readonly contentSize: { width: number; height: number }
+  readonly layoutMeasurement: { width: number; height: number }
 }
 
 /**
@@ -33,7 +33,7 @@ export interface ScrollEvent {
  * @public
  */
 export interface TextChangeEvent {
-  readonly text: string;
+  readonly text: string
 }
 
 /**
@@ -41,7 +41,7 @@ export interface TextChangeEvent {
  * @public
  */
 export interface TextSubmitEvent {
-  readonly text: string;
+  readonly text: string
 }
 
 /**
@@ -49,7 +49,7 @@ export interface TextSubmitEvent {
  * @public
  */
 export interface FocusEvent {
-  readonly focused: boolean;
+  readonly focused: boolean
 }
 
 /**
@@ -57,10 +57,10 @@ export interface FocusEvent {
  * @public
  */
 export interface LayoutEvent {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
+  readonly x: number
+  readonly y: number
+  readonly width: number
+  readonly height: number
 }
 
 /**
@@ -68,7 +68,7 @@ export interface LayoutEvent {
  * @public
  */
 export interface ValueChangeEvent {
-  readonly value: boolean;
+  readonly value: boolean
 }
 
 /**
@@ -76,7 +76,7 @@ export interface ValueChangeEvent {
  * @public
  */
 export interface RefreshEvent {
-  readonly refreshing: boolean;
+  readonly refreshing: boolean
 }
 
 /**
@@ -85,7 +85,7 @@ export interface RefreshEvent {
  * @public
  */
 export interface EndReachedEvent {
-  readonly distanceFromEnd: number;
+  readonly distanceFromEnd: number
 }
 
 /**
@@ -93,8 +93,8 @@ export interface EndReachedEvent {
  * @public
  */
 export interface ContentSizeChangeEvent {
-  readonly contentWidth: number;
-  readonly contentHeight: number;
+  readonly contentWidth: number
+  readonly contentHeight: number
 }
 
 /**
@@ -103,11 +103,11 @@ export interface ContentSizeChangeEvent {
  * Same shape as ScrollEvent.
  * @public
  */
-export type MomentumScrollEndEvent = ScrollEvent;
+export type MomentumScrollEndEvent = ScrollEvent
 
 /**
  * Event emitted when the user starts or stops dragging the scroll view.
  * Same shape as ScrollEvent.
  * @public
  */
-export type ScrollDragEvent = ScrollEvent;
+export type ScrollDragEvent = ScrollEvent

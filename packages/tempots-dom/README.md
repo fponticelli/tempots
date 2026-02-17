@@ -101,6 +101,26 @@ const button = html.button(
 )
 ```
 
+### Delegated Events
+
+For containers with many similar children (e.g., lists rendered with `ForEach`), use `delegate` to attach a single event listener on the container instead of one per child:
+
+```typescript
+import { html, delegate, ForEach, prop } from '@tempots/dom'
+
+const items = prop(['Apple', 'Banana', 'Cherry'])
+
+html.ul(
+  delegate.click('li', (event) => {
+    const li = (event.target as Element).closest('li')!
+    console.log('Clicked:', li.textContent)
+  }),
+  ForEach(items, (item) => html.li(item))
+)
+```
+
+`delegate` uses the same proxy pattern as `on` — all standard events are available. It matches children using `Element.closest()` with a CSS selector. Non-bubbling events (`focus`, `blur`, `mouseenter`, `mouseleave`) should use `on` instead.
+
 ### Conditional Rendering
 
 Render content conditionally:
@@ -130,6 +150,33 @@ const items = prop(['Apple', 'Banana', 'Cherry'])
 
 const list = html.ul(ForEach(items, item => html.li(item)))
 ```
+
+### Keyed Lists
+
+When list items have stable identities (e.g., database IDs), use `KeyedForEach` for efficient reconciliation. Unlike `ForEach` which tracks items by index, `KeyedForEach` tracks items by a user-provided key function — reusing both DOM nodes and signal identities across reorders:
+
+```typescript
+import { html, KeyedForEach, prop } from '@tempots/dom'
+
+const todos = prop([
+  { id: 1, text: 'Buy groceries' },
+  { id: 2, text: 'Walk the dog' },
+  { id: 3, text: 'Read a book' },
+])
+
+const list = html.ul(
+  KeyedForEach(
+    todos,
+    (todo) => todo.id,                    // key function
+    (todo, pos) => html.li(               // item renderer
+      todo.map((t) => t.text)
+    ),
+    () => html.hr()                       // optional separator
+  )
+)
+```
+
+When `todos` is reordered, `KeyedForEach` moves existing DOM elements instead of recreating them. Each item receives a `KeyedPosition` with fully reactive position fields (`index`, `counter`, `isFirst`, `isLast`, `isEven`, `isOdd`) that update automatically when items move.
 
 ### Storage-Backed Props
 

@@ -1,13 +1,13 @@
-import { prop, Signal } from "@tempots/core";
-import type { JSIBridge } from "../bridge/jsi-bridge";
+import { prop, Signal } from '@tempots/core'
+import type { JSIBridge } from '../bridge/jsi-bridge'
 
 /**
  * Keyboard visibility state.
  * @public
  */
 export interface KeyboardState {
-  readonly visible: boolean;
-  readonly height: number;
+  readonly visible: boolean
+  readonly height: number
 }
 
 /**
@@ -18,16 +18,16 @@ export interface KeyboardState {
  * @public
  */
 export function createKeyboardSignal(bridge: JSIBridge): Signal<KeyboardState> {
-  const keyboard = prop<KeyboardState>({ visible: false, height: 0 });
+  const keyboard = prop<KeyboardState>({ visible: false, height: 0 })
 
-  bridge.addEventListener(0, "keyboardShow", (e: unknown) => {
-    const data = e as { height: number };
-    keyboard.set({ visible: true, height: data.height });
-  });
+  bridge.addEventListener(0, 'keyboardShow', (e: unknown) => {
+    const data = e as { height: number }
+    keyboard.set({ visible: true, height: data.height })
+  })
 
-  bridge.addEventListener(0, "keyboardHide", () => {
-    keyboard.set({ visible: false, height: 0 });
-  });
+  bridge.addEventListener(0, 'keyboardHide', () => {
+    keyboard.set({ visible: false, height: 0 })
+  })
 
-  return keyboard;
+  return keyboard
 }

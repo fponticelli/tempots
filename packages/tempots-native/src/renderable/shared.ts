@@ -1,6 +1,6 @@
-import { createRenderKit } from "@tempots/render";
-import { NativeContext } from "../context/native-context";
-import { NATIVE_RENDERABLE_TYPE, nativeRenderable } from "../types/domain";
+import { createRenderKit } from '@tempots/render'
+import { NativeContext } from '../context/native-context'
+import { NATIVE_RENDERABLE_TYPE, nativeRenderable } from '../types/domain'
 
 /**
  * The native render kit, which provides shared renderables configured
@@ -18,7 +18,7 @@ export const nativeKit = createRenderKit<
 >({
   type: NATIVE_RENDERABLE_TYPE,
   create: nativeRenderable,
-});
+})
 
 /**
  * Shared renderables for native rendering.
@@ -35,6 +35,7 @@ export const {
   When,
   Unless,
   ForEach,
+  KeyedForEach,
   Repeat,
   OneOf,
   OneOfField,
@@ -58,4 +59,4 @@ export const {
   handleValueOrSignal,
   createReactiveRenderable,
   renderableOfTNode,
-} = nativeKit;
+} = nativeKit

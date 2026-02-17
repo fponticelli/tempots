@@ -584,6 +584,30 @@ export class HeadlessContext implements DOMContext {
     name: string
   ): { get(): unknown; set(value: unknown): void } =>
     this.element.makeAccessors(name)
+
+  readonly moveRangeBefore = (
+    startRef: DOMContext,
+    endRef: DOMContext,
+    targetRef: DOMContext
+  ): void => {
+    const start = (startRef as HeadlessContext).reference!
+    const end = (endRef as HeadlessContext).reference!
+    const target = (targetRef as HeadlessContext).reference!
+    const children = this.element.children
+
+    const startIndex = children.indexOf(start)
+    const endIndex = children.indexOf(end)
+    const count = endIndex - startIndex + 1
+
+    // Extract the range
+    const range = children.splice(startIndex, count)
+
+    // Find the new target index (after extraction, indices shifted)
+    const targetIndex = children.indexOf(target)
+
+    // Insert before target
+    children.splice(targetIndex, 0, ...range)
+  }
 }
 
 const attributesWithNoValue = new Set([

@@ -1,8 +1,8 @@
-import type { TNode } from "@tempots/core";
-import type { NativeRenderable } from "../types/domain";
-import { nativeRenderable, NATIVE_RENDERABLE_TYPE } from "../types/domain";
-import { NativeContext } from "../context/native-context";
-import { renderableOfTNode } from "./shared";
+import type { TNode } from '@tempots/core'
+import type { NativeRenderable } from '../types/domain'
+import { nativeRenderable, NATIVE_RENDERABLE_TYPE } from '../types/domain'
+import { NativeContext } from '../context/native-context'
+import { renderableOfTNode } from './shared'
 
 /**
  * Creates a native view renderable.
@@ -17,20 +17,20 @@ export const NativeEl = (
   ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
 ): NativeRenderable =>
   nativeRenderable((ctx: NativeContext) => {
-    const newCtx = ctx.makeChildView(viewType);
-    const clears = children.map((child) =>
-      renderableOfTNode(child).render(newCtx),
-    );
+    const newCtx = ctx.makeChildView(viewType)
+    const clears = children.map(child =>
+      renderableOfTNode(child).render(newCtx)
+    )
     return (removeTree: boolean) => {
-      clears.forEach((clear) => clear(false));
-      newCtx.clear(removeTree);
-    };
-  });
+      clears.forEach(clear => clear(false))
+      newCtx.clear(removeTree)
+    }
+  })
 
 /** Helper type for a view factory function. */
 type ViewFactory = (
   ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-) => NativeRenderable;
+) => NativeRenderable
 
 /**
  * Common native view types available on both iOS and Android.
@@ -47,76 +47,76 @@ export type NativeViewTypes = {
   // --- Core layout ---
 
   /** Generic container view. */
-  View: ViewFactory;
+  View: ViewFactory
   /** Text display. */
-  Text: ViewFactory;
+  Text: ViewFactory
   /** Image display (use `nativeStyle.source` for the image URI). */
-  Image: ViewFactory;
+  Image: ViewFactory
   /** Image as a background with children rendered on top. */
-  ImageBackground: ViewFactory;
+  ImageBackground: ViewFactory
 
   // --- Scrolling & lists ---
 
   /** Scrollable container. */
-  ScrollView: ViewFactory;
+  ScrollView: ViewFactory
   /** Optimized scrollable list for large datasets. */
-  FlatList: ViewFactory;
+  FlatList: ViewFactory
   /** Section-based list with headers. */
-  SectionList: ViewFactory;
+  SectionList: ViewFactory
   /** Base virtualized list (used by FlatList/SectionList internally). */
-  VirtualizedList: ViewFactory;
+  VirtualizedList: ViewFactory
 
   // --- Input ---
 
   /** Text input field. */
-  TextInput: ViewFactory;
+  TextInput: ViewFactory
   /** Simple platform-styled button. */
-  Button: ViewFactory;
+  Button: ViewFactory
   /** Toggle switch. */
-  Switch: ViewFactory;
+  Switch: ViewFactory
 
   // --- Pressables / touchables ---
 
   /** Modern pressable view with configurable feedback (replaces Touchable* family). */
-  Pressable: ViewFactory;
+  Pressable: ViewFactory
   /** Touchable view with opacity feedback. */
-  TouchableOpacity: ViewFactory;
+  TouchableOpacity: ViewFactory
   /** Touchable with highlight feedback. */
-  TouchableHighlight: ViewFactory;
+  TouchableHighlight: ViewFactory
   /** Touchable with no visual feedback. */
-  TouchableWithoutFeedback: ViewFactory;
+  TouchableWithoutFeedback: ViewFactory
   /** Touchable with native platform feedback (ripple on Android). */
-  TouchableNativeFeedback: ViewFactory;
+  TouchableNativeFeedback: ViewFactory
 
   // --- Layout containers ---
 
   /** Container that respects device safe areas (notch, status bar). */
-  SafeAreaView: ViewFactory;
+  SafeAreaView: ViewFactory
   /** Container that adjusts for the keyboard. */
-  KeyboardAvoidingView: ViewFactory;
+  KeyboardAvoidingView: ViewFactory
 
   // --- Overlays & feedback ---
 
   /** Modal overlay. */
-  Modal: ViewFactory;
+  Modal: ViewFactory
   /** Status bar configuration. */
-  StatusBar: ViewFactory;
+  StatusBar: ViewFactory
   /** Loading spinner indicator. */
-  ActivityIndicator: ViewFactory;
+  ActivityIndicator: ViewFactory
   /** Refresh control for pull-to-refresh. */
-  RefreshControl: ViewFactory;
+  RefreshControl: ViewFactory
 
   // --- Android-specific views ---
 
   /** Android drawer layout navigation. */
-  DrawerLayoutAndroid: ViewFactory;
+  DrawerLayoutAndroid: ViewFactory
   /** Android toolbar / action bar. */
-  ToolbarAndroid: ViewFactory;
+  ToolbarAndroid: ViewFactory
 
   // --- iOS-specific views ---
 
   /** iOS date/time picker. */
-  DatePickerIOS: ViewFactory;
+  DatePickerIOS: ViewFactory
 
   // --- Escape hatch ---
 
@@ -139,8 +139,8 @@ export type NativeViewTypes = {
   custom: (
     viewType: string,
     ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-  ) => NativeRenderable;
-};
+  ) => NativeRenderable
+}
 
 /**
  * A convenience object to create renderables for native views.
@@ -157,14 +157,14 @@ export type NativeViewTypes = {
  */
 export const view = new Proxy({} as NativeViewTypes, {
   get: (_, prop: string) => {
-    if (prop === "custom") {
+    if (prop === 'custom') {
       return (
         viewType: string,
         ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-      ) => NativeEl(viewType, ...children);
+      ) => NativeEl(viewType, ...children)
     }
     return (
       ...children: TNode<NativeContext, typeof NATIVE_RENDERABLE_TYPE>[]
-    ) => NativeEl(prop, ...children);
+    ) => NativeEl(prop, ...children)
   },
-});
+})

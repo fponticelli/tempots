@@ -160,6 +160,36 @@ on.submit(
 )
 ```
 
+### Delegated Events
+
+For containers with many similar children (such as lists rendered with `ForEach`), attaching individual `on` handlers to each item creates one listener per element. The `delegate` object provides an alternative: a single event listener on the **container** that matches children by CSS selector using `Element.closest()`.
+
+```ts
+import { html, delegate, ForEach, prop } from '@tempots/dom'
+
+const items = prop(['Apple', 'Banana', 'Cherry'])
+
+html.ul(
+  delegate.click('li', (event) => {
+    const li = (event.target as Element).closest('li')!
+    console.log('Clicked:', li.textContent)
+  }),
+  ForEach(items, (item) => html.li(item))
+)
+```
+
+`delegate` uses the same proxy pattern as `on`, so all standard events are available (`delegate.click`, `delegate.input`, `delegate.keydown`, etc.). It accepts an optional third argument for `HandlerOptions` (`once`, `passive`, `signal`).
+
+**When to use `delegate` vs `on`:**
+
+| Use `on` | Use `delegate` |
+| --- | --- |
+| Small/static number of elements | Large or dynamic lists (`ForEach`, `Repeat`) |
+| Need per-element context | One handler for many similar children |
+| Non-bubbling events (`focus`, `blur`, `mouseenter`, `mouseleave`) | Standard bubbling events (`click`, `input`, `keydown`, etc.) |
+
+> **Note:** Delegated events rely on event bubbling. Events that do not bubble (`focus`, `blur`, `mouseenter`, `mouseleave`) will not be captured by delegation. Use `on` for those.
+
 ## input elements
 
 When using `input` elements it is very common you want to specify the type of the input. Tempo provides a set of functions to create `input` elements with the correct type. For example, to create a `number` input, use `input.number()`.
@@ -324,6 +354,40 @@ NotEmpty(
   () => 'No items'
 )
 ```
+
+### KeyedForEach
+
+When list items have stable identities (e.g., database IDs), `KeyedForEach` provides efficient reconciliation by tracking items by key rather than by index. When items are reordered, existing DOM nodes are **moved** rather than recreated, and signal identities are preserved.
+
+```ts
+const todos = prop([
+  { id: 1, text: 'Buy groceries' },
+  { id: 2, text: 'Walk the dog' },
+  { id: 3, text: 'Read a book' },
+])
+
+html.ul(
+  KeyedForEach(
+    todos,
+    (todo) => todo.id,                    // key function
+    (todo, pos) => html.li(               // item renderer
+      todo.map((t) => t.text)
+    ),
+    () => html.hr()                       // optional separator
+  )
+)
+```
+
+The key differences between `ForEach` and `KeyedForEach`:
+
+| | `ForEach` | `KeyedForEach` |
+|---|---|---|
+| **Tracking** | By index (position) | By key (identity) |
+| **Reorder** | Signals at each position update with new values | DOM nodes move; signals keep their identity |
+| **Position** | `ElementPosition` (static `index`) | `KeyedPosition` (reactive `index`, all fields update) |
+| **Best for** | Simple lists, append-only, rarely reordered | Sortable lists, drag-and-drop, items with stable IDs |
+
+Each item's callback receives a `KeyedPosition` with fully reactive fields: `index`, `counter`, `isFirst`, `isLast`, `isEven`, `isOdd`, and `total`. All of these update automatically when an item moves to a new position.
 
 `Repeat` takes a signal that represents the number of times to repeat the renderable. It is useful when you want to repeat a renderable a fixed number of times.
 

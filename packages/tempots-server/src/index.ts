@@ -1,12 +1,12 @@
-import { Readable } from "stream";
-import { Value } from "@tempots/core";
-import type { Renderable, Providers } from "@tempots/dom";
+import { Readable } from 'stream'
+import { Value } from '@tempots/core'
+import type { Renderable, Providers } from '@tempots/dom'
 import {
   HeadlessContext,
   HeadlessPortal,
   runHeadless,
   type StreamOptions,
-} from "@tempots/dom";
+} from '@tempots/dom'
 
 /**
  * Options for server-side rendering.
@@ -16,29 +16,29 @@ export interface RenderOptions {
   /**
    * Streaming lifecycle callbacks.
    */
-  onShellReady?: () => void;
-  onAllReady?: () => void;
-  onError?: (error: Error) => void;
+  onShellReady?: () => void
+  onAllReady?: () => void
+  onError?: (error: Error) => void
 
   /**
    * Initial URL for routing (defaults to 'https://example.com').
    */
-  url?: string;
+  url?: string
 
   /**
    * The selector used to find the root element (defaults to 'body').
    */
-  selector?: string;
+  selector?: string
 
   /**
    * Whether to generate hydration placeholder attributes.
    */
-  generatePlaceholders?: boolean;
+  generatePlaceholders?: boolean
 
   /**
    * Providers to inject during rendering.
    */
-  providers?: Providers;
+  providers?: Providers
 }
 
 /**
@@ -49,17 +49,17 @@ export interface HeadlessRenderResult {
   /**
    * The root portal containing the rendered content.
    */
-  root: HeadlessPortal;
+  root: HeadlessPortal
 
   /**
    * Function to clear/dispose the rendered content.
    */
-  clear: (removeTree?: boolean) => void;
+  clear: (removeTree?: boolean) => void
 
   /**
    * Current URL signal (useful for routing).
    */
-  currentURL: ReturnType<typeof Value.toSignal>["deriveProp"];
+  currentURL: ReturnType<typeof Value.toSignal>['deriveProp']
 }
 
 /**
@@ -93,26 +93,26 @@ export interface HeadlessRenderResult {
  */
 export function renderToStream(
   renderable: Renderable,
-  options: RenderOptions = {},
+  options: RenderOptions = {}
 ): Readable {
   const {
-    url = "https://example.com",
-    selector = "body",
+    url = 'https://example.com',
+    selector = 'body',
     generatePlaceholders = false,
     providers = {},
     onShellReady,
     onAllReady,
     onError,
-  } = options;
+  } = options
 
-  const streamOptions: StreamOptions = { generatePlaceholders };
+  const streamOptions: StreamOptions = { generatePlaceholders }
 
   // Track render result (deferred to first read)
   let renderResult: {
-    root: HeadlessPortal;
-    clear: (removeTree?: boolean) => void;
-  } | null = null;
-  let renderError: Error | null = null;
+    root: HeadlessPortal
+    clear: (removeTree?: boolean) => void
+  } | null = null
+  let renderError: Error | null = null
 
   // Try to render synchronously, but capture any errors for the stream
   try {
@@ -120,9 +120,9 @@ export function renderToStream(
       startUrl: url,
       selector,
       providers,
-    });
+    })
   } catch (error) {
-    renderError = error instanceof Error ? error : new Error(String(error));
+    renderError = error instanceof Error ? error : new Error(String(error))
   }
 
   // Create a readable stream that yields HTML chunks
@@ -131,39 +131,39 @@ export function renderToStream(
       try {
         // If rendering failed, emit the error to the stream
         if (renderError) {
-          throw renderError;
+          throw renderError
         }
 
         if (!renderResult) {
-          throw new Error("Render result is null");
+          throw new Error('Render result is null')
         }
 
-        const { root, clear } = renderResult;
+        const { root, clear } = renderResult
 
         // Notify shell is ready (opening tags and initial content)
-        onShellReady?.();
+        onShellReady?.()
 
         // Stream all portal content
         for await (const chunk of streamPortalContent(root, streamOptions)) {
-          this.push(chunk);
+          this.push(chunk)
         }
 
         // Signal completion
-        onAllReady?.();
-        this.push(null);
+        onAllReady?.()
+        this.push(null)
 
         // Cleanup
-        clear(false);
+        clear(false)
       } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        onError?.(err);
-        this.destroy(err);
-        renderResult?.clear(false);
+        const err = error instanceof Error ? error : new Error(String(error))
+        onError?.(err)
+        this.destroy(err)
+        renderResult?.clear(false)
       }
     },
-  });
+  })
 
-  return stream;
+  return stream
 }
 
 /**
@@ -192,15 +192,15 @@ export function renderToStream(
  */
 export async function renderToString(
   renderable: Renderable,
-  options: Omit<RenderOptions, "onShellReady" | "onAllReady"> = {},
+  options: Omit<RenderOptions, 'onShellReady' | 'onAllReady'> = {}
 ): Promise<string> {
   const {
-    url = "https://example.com",
-    selector = "body",
+    url = 'https://example.com',
+    selector = 'body',
     generatePlaceholders = false,
     providers = {},
     onError,
-  } = options;
+  } = options
 
   try {
     // Render to headless context
@@ -208,19 +208,19 @@ export async function renderToString(
       startUrl: url,
       selector,
       providers,
-    });
+    })
 
     // Collect all HTML from portals
-    const html = collectPortalHTML(root, generatePlaceholders);
+    const html = collectPortalHTML(root, generatePlaceholders)
 
     // Cleanup
-    clear(false);
+    clear(false)
 
-    return html;
+    return html
   } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
-    onError?.(err);
-    throw err;
+    const err = error instanceof Error ? error : new Error(String(error))
+    onError?.(err)
+    throw err
   }
 }
 
@@ -252,13 +252,13 @@ export async function renderToStaticMarkup(
   renderable: Renderable,
   options: Omit<
     RenderOptions,
-    "onShellReady" | "onAllReady" | "generatePlaceholders"
-  > = {},
+    'onShellReady' | 'onAllReady' | 'generatePlaceholders'
+  > = {}
 ): Promise<string> {
   return renderToString(renderable, {
     ...options,
     generatePlaceholders: false,
-  });
+  })
 }
 
 /**
@@ -271,15 +271,15 @@ export async function renderToStaticMarkup(
  */
 async function* streamPortalContent(
   root: HeadlessPortal,
-  options: StreamOptions,
+  options: StreamOptions
 ): AsyncGenerator<string> {
   // Stream the root portal's direct content
-  yield* root.contentToHTMLStream(options);
+  yield* root.contentToHTMLStream(options)
 
   // Stream nested portals
-  const nestedPortals = root.getPortals().filter((p) => p !== root);
+  const nestedPortals = root.getPortals().filter(p => p !== root)
   for (const portal of nestedPortals) {
-    yield* portal.contentToHTMLStream(options);
+    yield* portal.contentToHTMLStream(options)
   }
 }
 
@@ -293,20 +293,20 @@ async function* streamPortalContent(
  */
 function collectPortalHTML(
   root: HeadlessPortal,
-  generatePlaceholders: boolean,
+  generatePlaceholders: boolean
 ): string {
-  const parts: string[] = [];
+  const parts: string[] = []
 
   // Collect root portal content
-  parts.push(root.contentToHTML(generatePlaceholders));
+  parts.push(root.contentToHTML(generatePlaceholders))
 
   // Collect nested portal content
-  const nestedPortals = root.getPortals().filter((p) => p !== root);
+  const nestedPortals = root.getPortals().filter(p => p !== root)
   for (const portal of nestedPortals) {
-    parts.push(portal.contentToHTML(generatePlaceholders));
+    parts.push(portal.contentToHTML(generatePlaceholders))
   }
 
-  return parts.join("");
+  return parts.join('')
 }
 
 // ============================================================================
@@ -322,24 +322,24 @@ export interface RendererOptions<O extends Record<string, unknown>> {
    * Generate hydration placeholders in the output.
    * @default true
    */
-  hydrate?: boolean;
+  hydrate?: boolean
 
   /**
    * Function to get initial data for each request.
    * The returned object will be passed to the App component.
    */
-  getData?: (url: string) => O | Promise<O>;
+  getData?: (url: string) => O | Promise<O>
 
   /**
    * The selector used to find the root element.
    * @default "body"
    */
-  selector?: string;
+  selector?: string
 
   /**
    * Providers to inject during rendering.
    */
-  providers?: Providers;
+  providers?: Providers
 }
 
 /**
@@ -350,12 +350,12 @@ export interface Renderer {
   /**
    * Renders the app to an HTML string.
    */
-  render: (url: string) => Promise<string>;
+  render: (url: string) => Promise<string>
 
   /**
    * Renders the app to a Node.js Readable stream.
    */
-  renderStream: (url: string) => Readable;
+  renderStream: (url: string) => Readable
 }
 
 /**
@@ -395,27 +395,22 @@ export interface Renderer {
  */
 export function createRenderer<O extends Record<string, unknown>>(
   App: (options: O) => Renderable,
-  options: RendererOptions<O> = {},
+  options: RendererOptions<O> = {}
 ): Renderer {
-  const {
-    hydrate = true,
-    getData,
-    selector = "body",
-    providers = {},
-  } = options;
+  const { hydrate = true, getData, selector = 'body', providers = {} } = options
 
   /**
    * Renders the app to an HTML string.
    */
   async function render(url: string): Promise<string> {
-    const data = getData ? await getData(url) : ({} as O);
+    const data = getData ? await getData(url) : ({} as O)
 
     return renderToString(App(data), {
       url,
       selector,
       providers,
       generatePlaceholders: hydrate,
-    });
+    })
   }
 
   /**
@@ -427,29 +422,29 @@ export function createRenderer<O extends Record<string, unknown>>(
     if (getData) {
       const passThrough = new Readable({
         read() {},
-      });
+      })
 
       // Start async data fetch, then pipe the real stream
       Promise.resolve(getData(url))
-        .then((data) => {
+        .then(data => {
           const realStream = renderToStream(App(data), {
             url,
             selector,
             providers,
             generatePlaceholders: hydrate,
-          });
+          })
 
-          realStream.on("data", (chunk) => passThrough.push(chunk));
-          realStream.on("end", () => passThrough.push(null));
-          realStream.on("error", (err) => passThrough.destroy(err));
+          realStream.on('data', chunk => passThrough.push(chunk))
+          realStream.on('end', () => passThrough.push(null))
+          realStream.on('error', err => passThrough.destroy(err))
         })
-        .catch((err) => {
+        .catch(err => {
           passThrough.destroy(
-            err instanceof Error ? err : new Error(String(err)),
-          );
-        });
+            err instanceof Error ? err : new Error(String(err))
+          )
+        })
 
-      return passThrough;
+      return passThrough
     }
 
     // No getData, render synchronously
@@ -458,15 +453,15 @@ export function createRenderer<O extends Record<string, unknown>>(
       selector,
       providers,
       generatePlaceholders: hydrate,
-    });
+    })
   }
 
   return {
     render,
     renderStream: renderStreamFn,
-  };
+  }
 }
 
 // Re-export useful types from @tempots/dom for convenience
-export type { Renderable, Providers, StreamOptions };
-export { runHeadless, HeadlessContext, HeadlessPortal };
+export type { Renderable, Providers, StreamOptions }
+export { runHeadless, HeadlessContext, HeadlessPortal }

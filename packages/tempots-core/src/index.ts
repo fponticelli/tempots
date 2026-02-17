@@ -111,3 +111,6 @@ export type { Interpolate } from './interpolate'
 
 // Element position
 export { ElementPosition } from './element-position'
+
+// Keyed position
+export { KeyedPosition } from './keyed-position'

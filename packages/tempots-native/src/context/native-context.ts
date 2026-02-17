@@ -1,7 +1,7 @@
-import type { ProviderMark } from "@tempots/core";
-import type { BaseRenderContext, Providers } from "@tempots/render";
-import { ProviderNotFoundError } from "@tempots/render";
-import type { JSIBridge, NativeViewHandle } from "../bridge/jsi-bridge";
+import type { ProviderMark } from '@tempots/core'
+import type { BaseRenderContext, Providers } from '@tempots/render'
+import { ProviderNotFoundError } from '@tempots/render'
+import type { JSIBridge, NativeViewHandle } from '../bridge/jsi-bridge'
 
 /**
  * Rendering context for native views.
@@ -23,7 +23,7 @@ export class NativeContext implements BaseRenderContext {
     /** Whether this context manages a ref (placeholder) node. */
     private readonly _isRef: boolean = false,
     /** Handle to the parent view (set when this is a ref context). */
-    private readonly _parentHandle?: NativeViewHandle,
+    private readonly _parentHandle?: NativeViewHandle
   ) {}
 
   // --- BaseRenderContext (HierarchicalContext) ---
@@ -34,9 +34,9 @@ export class NativeContext implements BaseRenderContext {
    */
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
-      this.bridge.removeView(this.handle);
+      this.bridge.removeView(this.handle)
     }
-  };
+  }
 
   /**
    * Creates a reference (marker) context.
@@ -49,14 +49,14 @@ export class NativeContext implements BaseRenderContext {
    */
   makeRef(): this {
     // Create an invisible marker view (zero-size view)
-    const refHandle = this.bridge.createView("__ref__", this.handle);
+    const refHandle = this.bridge.createView('__ref__', this.handle)
     return new NativeContext(
       this.bridge,
       refHandle,
       this._providers,
       true,
-      this.handle, // remember the parent so children go into parent, before the ref
-    ) as this;
+      this.handle // remember the parent so children go into parent, before the ref
+    ) as this
   }
 
   // --- BaseRenderContext (text) ---
@@ -74,26 +74,26 @@ export class NativeContext implements BaseRenderContext {
     const textHandle = this.bridge.createTextView(
       text,
       this._isRef ? this._parentHandle! : this.handle,
-      this._isRef ? this.handle : undefined,
-    );
-    return new NativeContext(this.bridge, textHandle, this._providers);
-  };
+      this._isRef ? this.handle : undefined
+    )
+    return new NativeContext(this.bridge, textHandle, this._providers)
+  }
 
   /**
    * Updates the text content of this context's text view.
    * @param text - The new text content
    */
   readonly setText = (text: string): void => {
-    this.bridge.setTextContent(this.handle, text);
-  };
+    this.bridge.setTextContent(this.handle, text)
+  }
 
   /**
    * Reads the text content of this context's text view.
    * @returns The current text content
    */
   readonly getText = (): string => {
-    return this.bridge.getTextContent(this.handle);
-  };
+    return this.bridge.getTextContent(this.handle)
+  }
 
   // --- BaseRenderContext (providers) ---
 
@@ -104,14 +104,14 @@ export class NativeContext implements BaseRenderContext {
    * @throws {ProviderNotFoundError} If the provider is not found
    */
   readonly getProvider = <T>(
-    mark: ProviderMark<T>,
+    mark: ProviderMark<T>
   ): { value: T; onUse?: () => void } => {
-    const entry = this._providers[mark as ProviderMark<unknown>];
+    const entry = this._providers[mark as ProviderMark<unknown>]
     if (entry == null) {
-      throw new ProviderNotFoundError(mark);
+      throw new ProviderNotFoundError(mark)
     }
-    return { value: entry[0] as T, onUse: entry[1] };
-  };
+    return { value: entry[0] as T, onUse: entry[1] }
+  }
 
   /**
    * Creates a new context with an additional provider value.
@@ -128,20 +128,20 @@ export class NativeContext implements BaseRenderContext {
   readonly setProvider = <T>(
     mark: ProviderMark<T>,
     value: T,
-    onUse: undefined | (() => void),
+    onUse: undefined | (() => void)
   ): NativeContext => {
     const newProviders = {
       ...this._providers,
       [mark as ProviderMark<unknown>]: [value, onUse],
-    } as Providers;
+    } as Providers
     return new NativeContext(
       this.bridge,
       this.handle,
       newProviders,
       this._isRef,
-      this._parentHandle,
-    );
-  };
+      this._parentHandle
+    )
+  }
 
   // --- Native-specific methods ---
 
@@ -158,10 +158,10 @@ export class NativeContext implements BaseRenderContext {
     const childHandle = this.bridge.createView(
       viewType,
       this._isRef ? this._parentHandle! : this.handle,
-      this._isRef ? this.handle : undefined,
-    );
-    return new NativeContext(this.bridge, childHandle, this._providers);
-  };
+      this._isRef ? this.handle : undefined
+    )
+    return new NativeContext(this.bridge, childHandle, this._providers)
+  }
 
   /**
    * Adds an event listener to the current view.
@@ -173,9 +173,9 @@ export class NativeContext implements BaseRenderContext {
     return this.bridge.addEventListener(
       this.handle,
       event,
-      handler as (e: unknown) => void,
-    );
-  };
+      handler as (e: unknown) => void
+    )
+  }
 
   /**
    * Sets a property on the current view.
@@ -183,22 +183,54 @@ export class NativeContext implements BaseRenderContext {
    * @param value - The property value
    */
   readonly setProp = (name: string, value: unknown): void => {
-    this.bridge.setViewProp(this.handle, name, value);
-  };
+    this.bridge.setViewProp(this.handle, name, value)
+  }
 
   /**
    * Sets multiple properties on the current view.
    * @param props - A record of property names to values
    */
   readonly setProps = (props: Record<string, unknown>): void => {
-    this.bridge.setViewProps(this.handle, props);
-  };
+    this.bridge.setViewProps(this.handle, props)
+  }
 
   /**
    * Sets style properties on the current view.
    * @param styles - A record of style properties to values
    */
   readonly setStyle = (styles: Record<string, unknown>): void => {
-    this.bridge.setStyle(this.handle, styles);
-  };
+    this.bridge.setStyle(this.handle, styles)
+  }
+
+  /**
+   * Moves a range of sibling views (from `startRef` to `endRef` inclusive)
+   * before `targetRef`. All three refs must be children of the same parent.
+   *
+   * Used by `KeyedForEach` to reorder keyed items without recreating views.
+   *
+   * @param startRef - The context whose handle marks the start of the range.
+   * @param endRef - The context whose handle marks the end of the range.
+   * @param targetRef - The context before which the range will be inserted.
+   */
+  readonly moveRangeBefore = (
+    startRef: BaseRenderContext,
+    endRef: BaseRenderContext,
+    targetRef: BaseRenderContext
+  ): void => {
+    const start = (startRef as NativeContext).handle
+    const end = (endRef as NativeContext).handle
+    const target = (targetRef as NativeContext).handle
+    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+
+    const children = this.bridge.getChildren(parentHandle)
+    const startIdx = children.indexOf(start)
+    const endIdx = children.indexOf(end)
+
+    if (startIdx < 0 || endIdx < 0) return
+
+    // Move each handle in the range before target (in order preserves relative ordering)
+    for (let i = startIdx; i <= endIdx; i++) {
+      this.bridge.moveView(children[i], target)
+    }
+  }
 }

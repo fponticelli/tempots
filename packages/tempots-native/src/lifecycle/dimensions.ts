@@ -1,15 +1,15 @@
-import { prop, Signal } from "@tempots/core";
-import type { JSIBridge } from "../bridge/jsi-bridge";
+import { prop, Signal } from '@tempots/core'
+import type { JSIBridge } from '../bridge/jsi-bridge'
 
 /**
  * Screen dimensions.
  * @public
  */
 export interface ScreenDimensions {
-  readonly width: number;
-  readonly height: number;
-  readonly scale: number;
-  readonly fontScale: number;
+  readonly width: number
+  readonly height: number
+  readonly scale: number
+  readonly fontScale: number
 }
 
 /**
@@ -30,14 +30,14 @@ export function createDimensionsSignal(
     height: 812,
     scale: 3,
     fontScale: 1,
-  },
+  }
 ): Signal<ScreenDimensions> {
-  const dimensions = prop(initial);
+  const dimensions = prop(initial)
 
-  bridge.addEventListener(0, "dimensionsChange", (e: unknown) => {
-    const newDims = e as ScreenDimensions;
-    dimensions.set(newDims);
-  });
+  bridge.addEventListener(0, 'dimensionsChange', (e: unknown) => {
+    const newDims = e as ScreenDimensions
+    dimensions.set(newDims)
+  })
 
-  return dimensions;
+  return dimensions
 }

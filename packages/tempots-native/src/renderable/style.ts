@@ -1,8 +1,8 @@
-import { Signal, Value } from "@tempots/core";
-import type { NativeRenderable } from "../types/domain";
-import { nativeRenderable } from "../types/domain";
-import type { NativeContext } from "../context/native-context";
-import type { ViewStyle, TextStyle, ImageSource } from "../types/view-types";
+import { Signal, Value } from '@tempots/core'
+import type { NativeRenderable } from '../types/domain'
+import { nativeRenderable } from '../types/domain'
+import type { NativeContext } from '../context/native-context'
+import type { ViewStyle, TextStyle, ImageSource } from '../types/view-types'
 
 /**
  * Applies static or reactive styles to the current native view.
@@ -12,18 +12,18 @@ import type { ViewStyle, TextStyle, ImageSource } from "../types/view-types";
  * @public
  */
 export const applyStyle = (
-  styles: Value<ViewStyle | TextStyle>,
+  styles: Value<ViewStyle | TextStyle>
 ): NativeRenderable =>
   nativeRenderable((ctx: NativeContext) => {
     if (Signal.is(styles)) {
-      const sig = styles as Signal<ViewStyle | TextStyle>;
-      const dispose = sig.on((s) => ctx.setStyle(s as Record<string, unknown>));
-      return () => dispose();
+      const sig = styles as Signal<ViewStyle | TextStyle>
+      const dispose = sig.on(s => ctx.setStyle(s as Record<string, unknown>))
+      return () => dispose()
     } else {
-      ctx.setStyle(styles as Record<string, unknown>);
-      return () => {};
+      ctx.setStyle(styles as Record<string, unknown>)
+      return () => {}
     }
-  });
+  })
 
 /**
  * Applies a single view property reactively.
@@ -35,18 +35,18 @@ export const applyStyle = (
  */
 export const applyProp = (
   name: string,
-  value: Value<unknown>,
+  value: Value<unknown>
 ): NativeRenderable =>
   nativeRenderable((ctx: NativeContext) => {
     if (Signal.is(value)) {
-      const sig = value as Signal<unknown>;
-      const dispose = sig.on((v) => ctx.setProp(name, v));
-      return () => dispose();
+      const sig = value as Signal<unknown>
+      const dispose = sig.on(v => ctx.setProp(name, v))
+      return () => dispose()
     } else {
-      ctx.setProp(name, value);
-      return () => {};
+      ctx.setProp(name, value)
+      return () => {}
     }
-  });
+  })
 
 /**
  * Convenience object for applying common native style properties.
@@ -61,57 +61,57 @@ export const nativeStyle = {
 
   /** Set the image source. */
   source: (source: Value<ImageSource>): NativeRenderable =>
-    applyProp("source", source),
+    applyProp('source', source),
 
   /** Set the placeholder text for TextInput. */
   placeholder: (text: Value<string>): NativeRenderable =>
-    applyProp("placeholder", text),
+    applyProp('placeholder', text),
 
   /** Set whether a view is disabled. */
   disabled: (value: Value<boolean>): NativeRenderable =>
-    applyProp("disabled", value),
+    applyProp('disabled', value),
 
   /** Set whether a view is editable. */
   editable: (value: Value<boolean>): NativeRenderable =>
-    applyProp("editable", value),
+    applyProp('editable', value),
 
   /** Set the content for a TextInput. */
-  value: (text: Value<string>): NativeRenderable => applyProp("value", text),
+  value: (text: Value<string>): NativeRenderable => applyProp('value', text),
 
   /** Set the number of lines for Text. */
   numberOfLines: (lines: Value<number>): NativeRenderable =>
-    applyProp("numberOfLines", lines),
+    applyProp('numberOfLines', lines),
 
   /** Set whether a ScrollView bounces. */
   bounces: (value: Value<boolean>): NativeRenderable =>
-    applyProp("bounces", value),
+    applyProp('bounces', value),
 
   /** Set the keyboard type for TextInput. */
   keyboardType: (
     type: Value<
-      | "default"
-      | "numeric"
-      | "email-address"
-      | "phone-pad"
-      | "decimal-pad"
-      | "url"
-    >,
-  ): NativeRenderable => applyProp("keyboardType", type),
+      | 'default'
+      | 'numeric'
+      | 'email-address'
+      | 'phone-pad'
+      | 'decimal-pad'
+      | 'url'
+    >
+  ): NativeRenderable => applyProp('keyboardType', type),
 
   /** Set whether text input is secure (password). */
   secureTextEntry: (value: Value<boolean>): NativeRenderable =>
-    applyProp("secureTextEntry", value),
+    applyProp('secureTextEntry', value),
 
   /** Set the testID for testing. */
-  testID: (id: string): NativeRenderable => applyProp("testID", id),
+  testID: (id: string): NativeRenderable => applyProp('testID', id),
 
   /** Set accessibility label (VoiceOver on iOS, TalkBack on Android). */
   accessibilityLabel: (label: Value<string>): NativeRenderable =>
-    applyProp("accessibilityLabel", label),
+    applyProp('accessibilityLabel', label),
 
   /** Set accessibility hint text. */
   accessibilityHint: (hint: Value<string>): NativeRenderable =>
-    applyProp("accessibilityHint", hint),
+    applyProp('accessibilityHint', hint),
 
   /**
    * Set the accessibility role (e.g. 'button', 'header', 'link', 'image').
@@ -119,78 +119,78 @@ export const nativeStyle = {
    */
   accessibilityRole: (
     role: Value<
-      | "none"
-      | "button"
-      | "link"
-      | "search"
-      | "image"
-      | "text"
-      | "adjustable"
-      | "header"
-      | "summary"
-      | "alert"
-      | "checkbox"
-      | "radio"
-      | "menu"
-      | "progressbar"
-      | "timer"
-    >,
-  ): NativeRenderable => applyProp("accessibilityRole", role),
+      | 'none'
+      | 'button'
+      | 'link'
+      | 'search'
+      | 'image'
+      | 'text'
+      | 'adjustable'
+      | 'header'
+      | 'summary'
+      | 'alert'
+      | 'checkbox'
+      | 'radio'
+      | 'menu'
+      | 'progressbar'
+      | 'timer'
+    >
+  ): NativeRenderable => applyProp('accessibilityRole', role),
 
   /** Set whether the view is refreshing (for RefreshControl). */
   refreshing: (value: Value<boolean>): NativeRenderable =>
-    applyProp("refreshing", value),
+    applyProp('refreshing', value),
 
   /** Set the return key type for TextInput. */
   returnKeyType: (
-    type: Value<"done" | "go" | "next" | "search" | "send" | "default">,
-  ): NativeRenderable => applyProp("returnKeyType", type),
+    type: Value<'done' | 'go' | 'next' | 'search' | 'send' | 'default'>
+  ): NativeRenderable => applyProp('returnKeyType', type),
 
   /** Set multiline mode for TextInput. */
   multiline: (value: Value<boolean>): NativeRenderable =>
-    applyProp("multiline", value),
+    applyProp('multiline', value),
 
   /** Set max length for TextInput. */
   maxLength: (length: Value<number>): NativeRenderable =>
-    applyProp("maxLength", length),
+    applyProp('maxLength', length),
 
   /** Set auto-capitalize mode for TextInput. */
   autoCapitalize: (
-    mode: Value<"none" | "sentences" | "words" | "characters">,
-  ): NativeRenderable => applyProp("autoCapitalize", mode),
+    mode: Value<'none' | 'sentences' | 'words' | 'characters'>
+  ): NativeRenderable => applyProp('autoCapitalize', mode),
 
   /** Set auto-correct for TextInput. */
   autoCorrect: (value: Value<boolean>): NativeRenderable =>
-    applyProp("autoCorrect", value),
+    applyProp('autoCorrect', value),
 
   // --- Image props ---
 
   /** Set how the image should be resized to fit its container. */
   resizeMode: (
-    mode: Value<"cover" | "contain" | "stretch" | "repeat" | "center">,
-  ): NativeRenderable => applyProp("resizeMode", mode),
+    mode: Value<'cover' | 'contain' | 'stretch' | 'repeat' | 'center'>
+  ): NativeRenderable => applyProp('resizeMode', mode),
 
   // --- ScrollView / FlatList props ---
 
   /** Set whether the list scrolls horizontally. */
   horizontal: (value: Value<boolean>): NativeRenderable =>
-    applyProp("horizontal", value),
+    applyProp('horizontal', value),
 
   /** Show or hide the vertical scroll indicator. */
   showsVerticalScrollIndicator: (value: Value<boolean>): NativeRenderable =>
-    applyProp("showsVerticalScrollIndicator", value),
+    applyProp('showsVerticalScrollIndicator', value),
 
   /** Show or hide the horizontal scroll indicator. */
   showsHorizontalScrollIndicator: (value: Value<boolean>): NativeRenderable =>
-    applyProp("showsHorizontalScrollIndicator", value),
+    applyProp('showsHorizontalScrollIndicator', value),
 
   /** Enable or disable paging for ScrollView. */
   pagingEnabled: (value: Value<boolean>): NativeRenderable =>
-    applyProp("pagingEnabled", value),
+    applyProp('pagingEnabled', value),
 
   /** Enable or disable scroll for ScrollView. */
   scrollEnabled: (value: Value<boolean>): NativeRenderable =>
-    applyProp("scrollEnabled", value),
+    applyProp('scrollEnabled', value),
 
   // --- View props ---
 
@@ -202,8 +202,8 @@ export const nativeStyle = {
    * - 'box-only': view receives touch but children cannot
    */
   pointerEvents: (
-    value: Value<"auto" | "none" | "box-none" | "box-only">,
-  ): NativeRenderable => applyProp("pointerEvents", value),
+    value: Value<'auto' | 'none' | 'box-none' | 'box-only'>
+  ): NativeRenderable => applyProp('pointerEvents', value),
 
   /**
    * Extends the touchable area without changing the view's layout.
@@ -212,6 +212,6 @@ export const nativeStyle = {
   hitSlop: (
     value: Value<
       number | { top?: number; right?: number; bottom?: number; left?: number }
-    >,
-  ): NativeRenderable => applyProp("hitSlop", value),
-};
+    >
+  ): NativeRenderable => applyProp('hitSlop', value),
+}
