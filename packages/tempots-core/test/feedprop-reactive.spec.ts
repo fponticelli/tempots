@@ -253,15 +253,27 @@ describe('feedProp reactive updates', () => {
         )?._onValueListeners ?? []
       ).map(listener => listener.name || 'anonymous')
 
-    expect(getListenerNames()).toContain('setDirty')
+    // Derivatives are now notified via _derivatives array in _setAndNotify,
+    // not via on(setDirty) in _onValueListeners
+    const getDerivativeCount = () =>
+      (
+        (
+          base as unknown as {
+            _derivatives: Array<unknown>
+          }
+        )?._derivatives ?? []
+      ).length
+
+    expect(getDerivativeCount()).toBe(1) // comp is a derivative of base
 
     const clearDisplay = base.on(() => {}, { skipInitial: true })
 
-    expect(getListenerNames()).toEqual(['setDirty', 'anonymous'])
+    expect(getListenerNames()).toEqual(['anonymous'])
 
     clearDisplay()
 
-    expect(getListenerNames()).toEqual(['setDirty'])
+    expect(getListenerNames()).toEqual([])
+    expect(getDerivativeCount()).toBe(1) // derivative still there
   })
 
   it('should update dependent cells when values change (cells demo regression)', async () => {

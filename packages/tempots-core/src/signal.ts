@@ -207,7 +207,8 @@ export class Signal<T> implements ReadSignal<T> {
    * Checks if the signal has any registered listeners.
    * @returns `true` if the signal has listeners, `false` otherwise.
    */
-  readonly hasListeners = () => this._onValueListeners.length > 0
+  readonly hasListeners = () =>
+    this._onValueListeners.length > 0 || this._derivatives.length > 0
 
   /**
    * Registers a listener function to be called whenever the value of the signal changes.
@@ -305,6 +306,7 @@ export class Signal<T> implements ReadSignal<T> {
     const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
+      this._derivatives.forEach(d => d.setDirty())
       this._onValueListeners.forEach(l => l(newV, currentValue))
     }
   }
@@ -727,8 +729,6 @@ export class Signal<T> implements ReadSignal<T> {
         1
       )
     })
-    // Use noAutoDispose because we're explicitly managing the lifecycle
-    computed.onDispose(this.on(computed.setDirty, { noAutoDispose: true }))
     this.onDispose(computed.dispose)
   }
 }
