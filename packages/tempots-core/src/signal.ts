@@ -309,13 +309,14 @@ export class Signal<T> implements ReadSignal<T> {
     const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
-      if (this._derivatives !== null) {
-        for (let i = 0; i < this._derivatives.length; i++)
-          this._derivatives[i].setDirty()
+      const derivatives = this._derivatives
+      if (derivatives !== null) {
+        for (let i = 0; i < derivatives.length; i++) derivatives[i].setDirty()
       }
-      if (this._onValueListeners !== null) {
-        for (let i = 0; i < this._onValueListeners.length; i++)
-          this._onValueListeners[i](newV, currentValue)
+      const listeners = this._onValueListeners
+      if (listeners !== null) {
+        for (let i = 0; i < listeners.length; i++)
+          listeners[i](newV, currentValue)
       }
     }
   }
@@ -348,13 +349,13 @@ export class Signal<T> implements ReadSignal<T> {
   readonly dispose = () => {
     if (this._disposed) return
     this._disposed = true
-    if (this._onDisposeListeners !== null) {
-      for (let i = 0; i < this._onDisposeListeners.length; i++)
-        this._onDisposeListeners[i]()
-      this._onDisposeListeners = null
-    }
+    const disposeListeners = this._onDisposeListeners
+    this._onDisposeListeners = null
     this._derivatives = null
     this._onValueListeners = null
+    if (disposeListeners !== null) {
+      for (let i = 0; i < disposeListeners.length; i++) disposeListeners[i]()
+    }
   }
 
   /**
@@ -759,7 +760,13 @@ const queue = (fn: () => void) => {
     _queueMicrotask(() => {
       const fns = _batch!
       _batch = null
-      for (let i = 0; i < fns.length; i++) fns[i]()
+      for (let i = 0; i < fns.length; i++) {
+        try {
+          fns[i]()
+        } catch (e) {
+          console.error(e)
+        }
+      }
     })
   } else {
     _batch.push(fn)
@@ -840,9 +847,9 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
   readonly setDirty = () => {
     if (this._isDirty || this._disposed) return
     this._isDirty = true
-    if (this._derivatives !== null) {
-      for (let i = 0; i < this._derivatives.length; i++)
-        this._derivatives[i].setDirty()
+    const derivatives = this._derivatives
+    if (derivatives !== null) {
+      for (let i = 0; i < derivatives.length; i++) derivatives[i].setDirty()
     }
     this._scheduleNotify()
   }
@@ -892,13 +899,13 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     this._scheduleCount++
     // Mark as disposed and clean up listeners and derivatives
     this._disposed = true
-    if (this._onDisposeListeners !== null) {
-      for (let i = 0; i < this._onDisposeListeners.length; i++)
-        this._onDisposeListeners[i]()
-      this._onDisposeListeners = null
-    }
+    const disposeListeners = this._onDisposeListeners
+    this._onDisposeListeners = null
     this._derivatives = null
     this._onValueListeners = null
+    if (disposeListeners !== null) {
+      for (let i = 0; i < disposeListeners.length; i++) disposeListeners[i]()
+    }
   }
 }
 
