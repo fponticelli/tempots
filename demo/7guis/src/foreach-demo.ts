@@ -5,7 +5,7 @@ import {
   on,
   prop,
   html,
-  ForEach,
+  KeyedForEach,
   OnDispose,
   animateSignals,
 } from '@tempots/dom'
@@ -105,8 +105,9 @@ export function ForEachDemo(): Renderable {
     ),
     flex.col(
       attr.class('gap-2'),
-      ForEach(
+      KeyedForEach(
         accounts,
+        account => account.name,
         account => {
           const duration = Math.random() * 2000 + 1000
           const newBalance = animateSignals(

@@ -6,7 +6,7 @@ import {
   on,
   computed,
   prop,
-  ForEach,
+  KeyedForEach,
   emitValue,
 } from '@tempots/dom'
 import { Button, InputText, Select } from './ui'
@@ -150,17 +150,21 @@ export function Crud(): Renderable {
               person.set(db.value[value])
             })
           ),
-          ForEach(filteredList, el => {
-            const id = el.map(el => el[0])
-            const label = el.map(el => `${el[1].name}, ${el[1].surname}`)
-            return html.option(
-              attr.selected(
-                computed(() => currentId.value === id.value, [currentId, id])
-              ),
-              attr.value(id),
-              label
-            )
-          })
+          KeyedForEach(
+            filteredList,
+            el => el[0],
+            el => {
+              const id = el.map(el => el[0])
+              const label = el.map(el => `${el[1].name}, ${el[1].surname}`)
+              return html.option(
+                attr.selected(
+                  computed(() => currentId.value === id.value, [currentId, id])
+                ),
+                attr.value(id),
+                label
+              )
+            }
+          )
         )
       )
     )

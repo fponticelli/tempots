@@ -1,7 +1,7 @@
 import {
   attr,
   computed,
-  ForEach,
+  KeyedForEach,
   Fragment,
   html,
   input,
@@ -90,8 +90,9 @@ export const App = () => {
           ),
           html.ul(
             attr.class('todo-list'),
-            ForEach(
+            KeyedForEach(
               state.map(({ todos, filter }) => todos.filter(filterF(filter))),
+              todo => todo.id,
               (item: Signal<Todo>) => {
                 const isEditing = computed(
                   (): boolean =>
