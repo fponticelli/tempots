@@ -12,6 +12,36 @@
  * @param {import('eslint').Rule.RuleContext} context - The ESLint rule context
  * @returns {import('typescript').TypeChecker | null}
  */
+const SIGNAL_TYPE_NAMES = new Set(['Signal', 'Computed', 'Prop'])
+
+/**
+ * Check if a TypeScript type is a Signal, Computed, or Prop.
+ * Returns false for any/unknown types.
+ *
+ * @param {import('typescript').Type} type - The TypeScript type to check
+ * @returns {boolean}
+ */
+export function isSignalType(type) {
+  if (!type) return false
+
+  const flags = type.flags ?? 0
+  // Skip any (1) or unknown (2)
+  if ((flags & 1) === 1 || (flags & 2) === 2) return false
+
+  const symbol = type.getSymbol?.() ?? type.symbol ?? type.aliasSymbol
+  const name = symbol?.getName?.()
+  if (name && SIGNAL_TYPE_NAMES.has(name)) return true
+
+  const aliasName = type.aliasSymbol?.getName?.()
+  if (aliasName && SIGNAL_TYPE_NAMES.has(aliasName)) return true
+
+  if (type.isUnion?.()) {
+    return type.types.some(t => isSignalType(t))
+  }
+
+  return false
+}
+
 export function getTypeChecker(context) {
   const parserServices =
     context.sourceCode?.parserServices ?? context.parserServices

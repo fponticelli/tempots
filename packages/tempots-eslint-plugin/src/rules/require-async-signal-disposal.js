@@ -6,35 +6,14 @@
  * the renderable has returned. These signals must be manually disposed using
  * scope.track() or scope.onDispose().
  *
- * This rule warns about signal creation in async contexts and suggests proper
- * disposal patterns.
+ * This rule requires TypeScript type information (type-checked linting).
+ * Without it, the rule is silently disabled to avoid false positives from
+ * Array.map() / Array.filter() being confused with Signal transforms.
  *
  * @type {import('eslint').Rule.RuleModule}
  */
 
-const SIGNAL_CREATION_METHODS = new Set([
-  'prop',
-  'signal',
-  'computed',
-  'computedOf',
-])
-
-const SIGNAL_TRANSFORM_METHODS = new Set([
-  'map',
-  'filter',
-  'flatMap',
-  'filterMap',
-  'scan',
-  'debounce',
-  'throttle',
-  'distinct',
-  'distinctUntilChanged',
-  'take',
-  'takeWhile',
-  'skip',
-  'skipWhile',
-  'deriveProp',
-])
+import { getTypeChecker, isSignalType } from '../utils/type-utils.js'
 
 export default {
   meta: {
@@ -55,17 +34,27 @@ export default {
   },
 
   create(context) {
+    const checker = getTypeChecker(context)
+    const parserServices =
+      context.sourceCode?.parserServices ?? context.parserServices
+
+    // Without type information, this rule cannot reliably distinguish
+    // signal creation from array methods, so it is silently disabled.
+    if (!checker || !parserServices?.esTreeNodeToTSNodeMap) {
+      return {}
+    }
+
     let asyncDepth = 0
     const asyncContextStack = []
+    let untrackedDepth = 0
+    const untrackedStack = []
 
     /**
-     * Check if a function is async context
+     * Check if a function is in an async context.
      */
     function isAsyncContext(node) {
-      // Async function
       if (node.async) return true
 
-      // Promise callback: .then(), .catch(), .finally()
       const parent = node.parent
       if (
         parent &&
@@ -79,7 +68,6 @@ export default {
         }
       }
 
-      // setTimeout, setInterval, requestAnimationFrame
       if (
         parent &&
         parent.type === 'CallExpression' &&
@@ -102,42 +90,36 @@ export default {
     }
 
     /**
-     * Check if a call expression is a signal creation
+     * Check if a function is a callback to untracked().
      */
-    function isSignalCreation(node) {
-      if (node.type !== 'CallExpression') return false
-
-      // Direct creation: prop(), signal(), computed()
-      if (
-        node.callee.type === 'Identifier' &&
-        SIGNAL_CREATION_METHODS.has(node.callee.name)
-      ) {
-        return true
-      }
-
-      // Transformation: signal.map(), signal.filter()
-      if (
-        node.callee.type === 'MemberExpression' &&
-        node.callee.property.type === 'Identifier' &&
-        SIGNAL_TRANSFORM_METHODS.has(node.callee.property.name)
-      ) {
-        return true
-      }
-
-      return false
+    function isUntrackedCallback(node) {
+      const parent = node.parent
+      return (
+        parent?.type === 'CallExpression' &&
+        parent.callee?.type === 'Identifier' &&
+        parent.callee.name === 'untracked'
+      )
     }
 
     /**
-     * Check if wrapped in untracked()
+     * Check if a node is an untracked() call.
      */
-    function isUntracked(node) {
-      const parent = node.parent
+    function isUntrackedCall(node) {
       return (
-        parent &&
-        parent.type === 'CallExpression' &&
-        parent.callee.type === 'Identifier' &&
-        parent.callee.name === 'untracked'
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'untracked'
       )
+    }
+
+    /**
+     * Check if a node's type is a Signal type via the type checker.
+     */
+    function nodeIsSignalType(node) {
+      const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node)
+      if (!tsNode) return false
+      const type = checker.getTypeAtLocation(tsNode)
+      return isSignalType(type)
     }
 
     return {
@@ -145,70 +127,69 @@ export default {
       ':function'(node) {
         const isAsync = isAsyncContext(node)
         asyncContextStack.push(isAsync)
-        if (isAsync) {
-          asyncDepth++
-        }
+        if (isAsync) asyncDepth++
+
+        const isUntracked = isUntrackedCallback(node)
+        untrackedStack.push(isUntracked)
+        if (isUntracked) untrackedDepth++
       },
 
       // Track async context exit
       ':function:exit'() {
         const wasAsync = asyncContextStack.pop()
-        if (wasAsync) {
-          asyncDepth--
-        }
+        if (wasAsync) asyncDepth--
+
+        const wasUntracked = untrackedStack.pop()
+        if (wasUntracked) untrackedDepth--
       },
 
-      // Check signal creation
+      // Check signal creation in variable declarations
       VariableDeclarator(node) {
-        if (asyncDepth === 0) return
+        if (asyncDepth === 0 || untrackedDepth > 0) return
         if (!node.init) return
 
-        // Check if this is a signal creation
-        if (isSignalCreation(node.init)) {
-          // Skip if wrapped in untracked()
-          if (isUntracked(node.init)) {
-            return
-          }
+        // Skip if wrapped in untracked()
+        if (isUntrackedCall(node.init)) return
 
-          // Report the issue
-          if (node.id.type === 'Identifier') {
-            context.report({
-              node,
-              messageId: 'asyncSignalDisposal',
-              data: { name: node.id.name },
-            })
-          } else {
-            context.report({
-              node,
-              messageId: 'asyncSignalDisposalGeneric',
-            })
-          }
-        }
-      },
+        // Use the type checker to determine if the init produces a Signal
+        if (!nodeIsSignalType(node.init)) return
 
-      // Also check inline signal creation in async contexts
-      CallExpression(node) {
-        if (asyncDepth === 0) return
-
-        if (isSignalCreation(node)) {
-          // Skip if wrapped in untracked()
-          if (isUntracked(node)) {
-            return
-          }
-
-          // Skip if it's part of a variable declaration (already handled)
-          if (
-            node.parent.type === 'VariableDeclarator' &&
-            node.parent.init === node
-          ) {
-            return
-          }
-
+        if (node.id.type === 'Identifier') {
+          context.report({
+            node,
+            messageId: 'asyncSignalDisposal',
+            data: { name: node.id.name },
+          })
+        } else {
           context.report({
             node,
             messageId: 'asyncSignalDisposalGeneric',
           })
         }
+      },
+
+      // Check inline signal creation in async contexts
+      CallExpression(node) {
+        if (asyncDepth === 0 || untrackedDepth > 0) return
+
+        // Skip if it's part of a variable declaration (already handled)
+        if (
+          node.parent.type === 'VariableDeclarator' &&
+          node.parent.init === node
+        ) {
+          return
+        }
+
+        // Skip untracked() calls
+        if (isUntrackedCall(node)) return
+
+        // Use the type checker to determine if this produces a Signal
+        if (!nodeIsSignalType(node)) return
+
+        context.report({
+          node,
+          messageId: 'asyncSignalDisposalGeneric',
+        })
       },
     }
   },

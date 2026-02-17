@@ -207,6 +207,22 @@ function publishPackage(pkg) {
   }
 }
 
+async function ensureNpmAuth() {
+  try {
+    execSync("npm whoami", { stdio: "pipe" });
+  } catch {
+    console.log("\n  Not logged in to npm. Running `npm login`...\n");
+    execSync("npm login", { stdio: "inherit" });
+    // Verify login succeeded
+    try {
+      execSync("npm whoami", { stdio: "pipe" });
+    } catch {
+      console.error("\n  npm login failed. Aborting.\n");
+      process.exit(1);
+    }
+  }
+}
+
 async function main() {
   // Dynamic import for ESM-only inquirer
   const { default: inquirer } = await import("inquirer");
@@ -253,7 +269,7 @@ async function main() {
 
     const { bumpType } = await inquirer.prompt([
       {
-        type: "list",
+        type: "select",
         name: "bumpType",
         message: `${pkg.name} (${pkg.currentVersion}) — version bump:`,
         choices: [
@@ -308,6 +324,8 @@ async function main() {
     console.log("\n  Publishing cancelled.\n");
     process.exit(0);
   }
+
+  await ensureNpmAuth();
 
   // Step 5: Update versions
   console.log("\n  Updating versions...\n");

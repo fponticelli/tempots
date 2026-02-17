@@ -885,6 +885,31 @@ export function notNil<T>(arg: Value<T>) {
 }
 
 /**
+ * Creates a signal or value that is `true` when the input is not empty.
+ * If the input is a Signal, returns a mapped Signal. If it is a literal, returns the boolean result.
+ *
+ * @typeParam T - The type of the input value.
+ * @param arg - A value or signal to check.
+ * @returns A value or signal that emits `true` when the input is not empty.
+ * @public
+ */
+export function notEmpty<T extends { length: number }>(arg: Value<T>) {
+  return Value.map(arg, v => v.length > 0)
+}
+
+/**
+ * Creates a signal or value that is `true` when the input is not `0`.
+ * If the input is a Signal, returns a mapped Signal. If it is a literal, returns the boolean result.
+ *
+ * @param arg - A number value or signal.
+ * @returns A value or signal that emits `true` when the input is not `0`.
+ * @public
+ */
+export function notZero(arg: Value<number>) {
+  return Value.map(arg, v => v !== 0)
+}
+
+/**
  * Creates a signal that throttles the input signal, emitting at most once per interval.
  * The first change is emitted immediately, then subsequent changes within the interval
  * are batched — the most recent value is emitted when the interval expires.
