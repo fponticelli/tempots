@@ -865,6 +865,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     this._onDisposeListeners.forEach(l => l())
     this._onDisposeListeners.length = 0
     this._derivatives.length = 0
+    this._onValueListeners.length = 0
   }
 }
 

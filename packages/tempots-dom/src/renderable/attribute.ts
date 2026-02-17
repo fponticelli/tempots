@@ -20,47 +20,24 @@ const staticClassName = (value: string[]): Renderable =>
 
 const signalClassName = (signal: Signal<string>): Renderable =>
   domRenderable((ctx: DOMContext) => {
-    let previousSet = new Set<string>()
+    let previous: string[] = []
     // Use noAutoDispose because we're explicitly managing the lifecycle in the returned clear function
     const clear = signal.on(
       v => {
-        const newClasses = (v ?? '').split(' ').filter(v => v.length > 0)
-        const newSet = new Set(newClasses)
-
-        // Compute diff: only remove classes that are no longer present
-        const toRemove: string[] = []
-        for (const cls of previousSet) {
-          if (!newSet.has(cls)) {
-            toRemove.push(cls)
-          }
-        }
-
-        // Compute diff: only add classes that are new
-        const toAdd: string[] = []
-        for (const cls of newSet) {
-          if (!previousSet.has(cls)) {
-            toAdd.push(cls)
-          }
-        }
-
-        // Apply minimal changes
-        if (toRemove.length > 0) {
-          ctx.removeClasses(toRemove)
-        }
-        if (toAdd.length > 0) {
-          ctx.addClasses(toAdd)
-        }
-
-        previousSet = newSet
+        const next = (v ?? '').split(' ').filter(v => v.length > 0)
+        // classList.add/remove are idempotent, so no need for Set-based diffing
+        if (previous.length > 0) ctx.removeClasses(previous)
+        if (next.length > 0) ctx.addClasses(next)
+        previous = next
       },
       { noAutoDispose: true }
     )
     return (removeTree: boolean) => {
       clear()
       if (removeTree) {
-        ctx.removeClasses(Array.from(previousSet))
+        ctx.removeClasses(previous)
       }
-      previousSet.clear()
+      previous = []
     }
   })
 

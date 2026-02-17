@@ -10,29 +10,17 @@ import { computed } from './signal'
  * fields (`counter`, `isFirst`, `isEven`, `isOdd`, `isLast`) update
  * automatically.
  *
+ * Derived fields are created lazily — only when first accessed — to avoid
+ * unnecessary signal overhead when they are not used.
+ *
  * @public
  */
 export class KeyedPosition {
-  /**
-   * The 1-based counter (index + 1).
-   */
-  readonly counter: Signal<number>
-  /**
-   * Whether this is the first element in the collection.
-   */
-  readonly isFirst: Signal<boolean>
-  /**
-   * Whether the counter is even.
-   */
-  readonly isEven: Signal<boolean>
-  /**
-   * Whether the counter is odd.
-   */
-  readonly isOdd: Signal<boolean>
-  /**
-   * Whether this is the last element in the collection.
-   */
-  readonly isLast: Signal<boolean>
+  #counterSignal: Signal<number> | undefined
+  #isFirstSignal: Signal<boolean> | undefined
+  #isEvenSignal: Signal<boolean> | undefined
+  #isOddSignal: Signal<boolean> | undefined
+  #isLastSignal: Signal<boolean> | undefined
 
   /**
    * Creates a new instance of `KeyedPosition`.
@@ -48,15 +36,61 @@ export class KeyedPosition {
      * The reactive total number of elements in the collection.
      */
     readonly total: Signal<number>
-  ) {
-    this.counter = index.map(i => i + 1)
-    this.isFirst = index.map(i => i === 0)
-    this.isEven = index.map(i => i % 2 === 1)
-    this.isOdd = index.map(i => i % 2 === 0)
-    this.isLast = computed(
-      () => (index as Prop<number>).value + 1 === (total as Prop<number>).value,
-      [index, total]
-    )
+  ) {}
+
+  /**
+   * The 1-based counter (index + 1).
+   */
+  get counter(): Signal<number> {
+    if (this.#counterSignal == null) {
+      this.#counterSignal = this.index.map(i => i + 1)
+    }
+    return this.#counterSignal
+  }
+
+  /**
+   * Whether this is the first element in the collection.
+   */
+  get isFirst(): Signal<boolean> {
+    if (this.#isFirstSignal == null) {
+      this.#isFirstSignal = this.index.map(i => i === 0)
+    }
+    return this.#isFirstSignal
+  }
+
+  /**
+   * Whether the counter is even.
+   */
+  get isEven(): Signal<boolean> {
+    if (this.#isEvenSignal == null) {
+      this.#isEvenSignal = this.index.map(i => i % 2 === 1)
+    }
+    return this.#isEvenSignal
+  }
+
+  /**
+   * Whether the counter is odd.
+   */
+  get isOdd(): Signal<boolean> {
+    if (this.#isOddSignal == null) {
+      this.#isOddSignal = this.index.map(i => i % 2 === 0)
+    }
+    return this.#isOddSignal
+  }
+
+  /**
+   * Whether this is the last element in the collection.
+   */
+  get isLast(): Signal<boolean> {
+    if (this.#isLastSignal == null) {
+      this.#isLastSignal = computed(
+        () =>
+          (this.index as Prop<number>).value + 1 ===
+          (this.total as Prop<number>).value,
+        [this.index, this.total]
+      )
+    }
+    return this.#isLastSignal
   }
 
   /**
@@ -67,10 +101,10 @@ export class KeyedPosition {
    * backward compatibility and edge cases.
    */
   readonly dispose = () => {
-    this.counter.dispose()
-    this.isFirst.dispose()
-    this.isEven.dispose()
-    this.isOdd.dispose()
-    this.isLast.dispose()
+    this.#counterSignal?.dispose()
+    this.#isFirstSignal?.dispose()
+    this.#isEvenSignal?.dispose()
+    this.#isOddSignal?.dispose()
+    this.#isLastSignal?.dispose()
   }
 }

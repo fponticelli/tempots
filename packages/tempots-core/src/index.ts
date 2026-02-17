@@ -90,6 +90,7 @@ export {
   throttleSignal,
   distinctUntilChanged,
   accumulateSignal,
+  createSelector,
 } from './signal-utils'
 
 export type { StoredPropOptions, SyncPropOptions } from './signal-utils'

@@ -55,7 +55,6 @@ function ActionButton(
 function App(): Renderable {
   const data = prop<RowData[]>([])
   const selected = prop(0)
-
   const run = () => {
     selected.set(0)
     data.set(buildData(1000))

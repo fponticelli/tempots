@@ -54,6 +54,7 @@ export {
   createRenderable,
   ElementPosition,
   KeyedPosition,
+  createSelector,
 } from '@tempots/core'
 export type {
   AnySignal,
