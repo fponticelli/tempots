@@ -411,6 +411,20 @@ export class HydrationContext implements DOMContext {
       current = next
     }
   }
+
+  readonly removeRange = (startRef: DOMContext, endRef: DOMContext): void => {
+    const start = (startRef as HydrationContext).reference!
+    const end = (endRef as HydrationContext).reference!
+    const parent = this.element
+
+    let current: Node | null = start
+    while (current !== null) {
+      const next: Node | null = current.nextSibling
+      parent.removeChild(current)
+      if (current === end) break
+      current = next
+    }
+  }
 }
 
 // ============================================================================
