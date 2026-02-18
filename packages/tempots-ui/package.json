@@ -3,6 +3,7 @@
   "private": false,
   "version": "15.0.1",
   "type": "module",
+  "sideEffects": false,
   "priority": 8,
   "description": "Provides a higher level of renderables to help fast development with Tempo.",
   "files": [
@@ -67,10 +68,8 @@
     "npm:publish:major": "pnpm npm:prep && pnpm package:major && pnpm npm:publish:impl",
     "npm:publish:next": "pnpm npm:prep && pnpm package:next && pnpm npm:publish:impl"
   },
-  "dependencies": {
-    "@floating-ui/dom": "1.7.5"
-  },
   "peerDependencies": {
+    "@floating-ui/dom": "^1.7.1",
     "@tempots/dom": "^35.1.0",
     "@tempots/std": "^0.25.2"
   },

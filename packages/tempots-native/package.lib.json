@@ -2,6 +2,7 @@
   "name": "@tempots/native",
   "version": "0.0.2",
   "type": "module",
+  "sideEffects": false,
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",

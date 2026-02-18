@@ -2,6 +2,7 @@
   "name": "@tempots/dom",
   "version": "36.0.1",
   "type": "module",
+  "sideEffects": false,
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",

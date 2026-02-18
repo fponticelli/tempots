@@ -2,6 +2,7 @@
   "name": "@tempots/ui",
   "version": "15.0.1",
   "type": "module",
+  "sideEffects": false,
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",
@@ -37,10 +38,8 @@
     }
   },
   "license": "Apache-2.0",
-  "dependencies": {
-    "@floating-ui/dom": "^1.7.1"
-  },
   "peerDependencies": {
+    "@floating-ui/dom": "^1.7.1",
     "@tempots/dom": "^36.0.1",
     "@tempots/std": "^0.26.1"
   }
