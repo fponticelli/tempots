@@ -15,6 +15,7 @@ import {
   AnySignal,
 } from '@tempots/core'
 import type { BaseRenderContext } from './context'
+import type { TemplateEngine } from './template-engine'
 import type {
   TaskOptions,
   AsyncOptions,
@@ -49,6 +50,8 @@ export type RenderKitConfig<
   type: TType
   /** Factory function to create branded renderables */
   create: (renderFn: (ctx: CTX) => Clear) => Renderable<CTX, TType>
+  /** Optional template engine for cloneNode optimization in loops */
+  templateEngine?: TemplateEngine<CTX, TType>
 }
 
 /**
@@ -208,22 +211,31 @@ export function createRenderKit<
 
   // --- Internal text helpers ---
 
-  const _staticText = (text: Primitive): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
+  const _staticText = (text: Primitive): Renderable<CTX, TType> => {
+    const r = create((ctx: CTX) => {
       const newCtx = ctx.makeChildText(text)
       return (removeTree: boolean) => newCtx.clear(removeTree)
-    })
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'static-text'
+    r.text = String(text)
+    return r
+  }
 
-  const _signalText = (signal: Signal<Primitive>): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
-      const newCtx = ctx.makeChildText(signal.value)
+  const _signalText = (sig: Signal<Primitive>): Renderable<CTX, TType> => {
+    const r = create((ctx: CTX) => {
+      const newCtx = ctx.makeChildText(sig.value)
       // Use onChange to skip the redundant initial call (value already set via makeChildText)
-      const dispose = signal.onChange((v: Primitive) => newCtx.setText(v))
+      const dispose = sig.onChange((v: Primitive) => newCtx.setText(v))
       return (removeTree: boolean) => {
         dispose()
         newCtx.clear(removeTree)
       }
-    })
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'dynamic-text'
+    r.source = sig
+    r.transform = String
+    return r
+  }
 
   /**
    * Creates a text node that displays a transformed signal value without
@@ -237,15 +249,20 @@ export function createRenderKit<
   const MapText = <T>(
     source: Signal<T>,
     fn: (value: T) => string
-  ): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
+  ): Renderable<CTX, TType> => {
+    const r = create((ctx: CTX) => {
       const newCtx = ctx.makeChildText(fn(source.value))
       const dispose = source.onChange((v: T) => newCtx.setText(fn(v)))
       return (removeTree: boolean) => {
         dispose()
         newCtx.clear(removeTree)
       }
-    })
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'dynamic-text'
+    r.source = source
+    r.transform = fn
+    return r
+  }
 
   // --- Internal helpers ---
 
@@ -320,14 +337,22 @@ export function createRenderKit<
   // --- Renderables ---
 
   const Empty: Renderable<CTX, TType> = create(() => () => {})
+  ;(Empty as Renderable<CTX, TType> & Record<string, unknown>).kind = 'empty'
 
-  const Fragment = (...children: TNode<CTX, TType>[]): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
-      const clears = children.map(child => renderableOfTNode(child).render(ctx))
+  const Fragment = (
+    ...children: TNode<CTX, TType>[]
+  ): Renderable<CTX, TType> => {
+    const normalized = children.map(renderableOfTNode)
+    const r = create((ctx: CTX) => {
+      const clears = normalized.map(child => child.render(ctx))
       return (removeTree: boolean) => {
         clears.forEach(clear => clear(removeTree))
       }
-    })
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'fragment'
+    r.children = normalized
+    return r
+  }
 
   const When = (
     condition: Value<boolean>,
@@ -393,6 +418,15 @@ export function createRenderKit<
           const clears: Clear[] = []
           const scopes: DisposalScope[] = []
 
+          // Template cache for cloneNode optimization
+          const rEngine = config.templateEngine
+          let rTmplCache: {
+            compiled: unknown
+            fp: string
+            verified: boolean
+          } | null = null
+          let rTmplDisabled = !rEngine
+
           length.on(newLength => {
             const toRemove = clears.splice(newLength)
             const scopesToDispose = scopes.splice(newLength)
@@ -411,9 +445,45 @@ export function createRenderKit<
               scopes.push(scope)
 
               clears.push(
-                withScope(scope, () =>
-                  renderableOfTNode(element(pos)).render(newCtx)
-                )
+                withScope(scope, () => {
+                  const renderable = renderableOfTNode(element(pos))
+                  if (rTmplDisabled) return renderable.render(newCtx)
+
+                  if (rTmplCache === null) {
+                    const fp = rEngine!.fingerprint(renderable)
+                    if (fp === null) {
+                      rTmplDisabled = true
+                      return renderable.render(newCtx)
+                    }
+                    const compiled = rEngine!.build(renderable, newCtx)
+                    if (!compiled) {
+                      rTmplDisabled = true
+                      return renderable.render(newCtx)
+                    }
+                    rTmplCache = { compiled, fp, verified: false }
+                    return rEngine!.cloneAndHydrate(
+                      compiled,
+                      newCtx,
+                      rEngine!.extractSlots(renderable)
+                    )
+                  }
+
+                  if (!rTmplCache.verified) {
+                    const fp = rEngine!.fingerprint(renderable)
+                    if (fp !== rTmplCache.fp) {
+                      rTmplDisabled = true
+                      rTmplCache = null
+                      return renderable.render(newCtx)
+                    }
+                    rTmplCache.verified = true
+                  }
+
+                  return rEngine!.cloneAndHydrate(
+                    rTmplCache.compiled,
+                    newCtx,
+                    rEngine!.extractSlots(renderable)
+                  )
+                })
               )
             }
           })
@@ -558,7 +628,61 @@ export function createRenderKit<
 
           const entries: KeyedEntry[] = []
           const keyToEntry = new Map<K, KeyedEntry>()
-          const positionUsed = item.length >= 2
+          const positionUsed = item.length >= 2 || separator != null
+
+          // Template cache for cloneNode optimization
+          const engine = config.templateEngine
+          let tmplCache: {
+            compiled: unknown
+            fp: string
+            verified: boolean
+          } | null = null
+          let tmplDisabled = !engine
+
+          const renderMaybeTemplate = (
+            renderable: Renderable<CTX, TType>,
+            renderCtx: CTX
+          ): Clear => {
+            if (tmplDisabled) return renderable.render(renderCtx)
+
+            if (tmplCache === null) {
+              // First item: build template
+              const fp = engine!.fingerprint(renderable)
+              if (fp === null) {
+                tmplDisabled = true
+                return renderable.render(renderCtx)
+              }
+              const compiled = engine!.build(renderable, renderCtx)
+              if (!compiled) {
+                tmplDisabled = true
+                return renderable.render(renderCtx)
+              }
+              tmplCache = { compiled, fp, verified: false }
+              return engine!.cloneAndHydrate(
+                compiled,
+                renderCtx,
+                engine!.extractSlots(renderable)
+              )
+            }
+
+            if (!tmplCache.verified) {
+              // Second item: fingerprint guard
+              const fp = engine!.fingerprint(renderable)
+              if (fp !== tmplCache.fp) {
+                tmplDisabled = true
+                tmplCache = null
+                return renderable.render(renderCtx)
+              }
+              tmplCache.verified = true
+            }
+
+            // Verified: clone
+            return engine!.cloneAndHydrate(
+              tmplCache.compiled,
+              renderCtx,
+              engine!.extractSlots(renderable)
+            )
+          }
 
           const createEntry = (
             value: T,
@@ -596,9 +720,8 @@ export function createRenderKit<
             const scope = makeLightScope(entry)
             pushScope(scope)
             try {
-              entry.clear = renderableOfTNode(item(valueProp, position!)).render(
-                endRef
-              )
+              const renderable = renderableOfTNode(item(valueProp, position!))
+              entry.clear = renderMaybeTemplate(renderable, endRef)
             } finally {
               popScope()
             }
@@ -662,7 +785,7 @@ export function createRenderKit<
             pushScope(sepScope)
             let sepClear: Clear
             try {
-              sepClear = renderableOfTNode(separator(entry.position)).render(
+              sepClear = renderableOfTNode(separator(entry.position!)).render(
                 insertBefore
               )
             } finally {

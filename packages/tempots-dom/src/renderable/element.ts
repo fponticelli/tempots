@@ -18,15 +18,21 @@ export { renderableOfTNode }
  * @returns A renderable object that creates and appends the HTML element to the DOM.
  * @public
  */
-export const El = (tagName: string, ...children: TNode[]): Renderable =>
-  domRenderable((ctx: DOMContext) => {
+export const El = (tagName: string, ...children: TNode[]): Renderable => {
+  const kids = children.map(renderableOfTNode)
+  const renderable = domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, undefined)
-    const clears = children.map(fn => renderableOfTNode(fn).render(newCtx))
+    const clears = kids.map(fn => fn.render(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       newCtx.clear(removeTree)
     }
-  })
+  }) as Renderable & Record<string, unknown>
+  renderable.kind = 'element'
+  renderable.tag = tagName
+  renderable.children = kids
+  return renderable
+}
 
 /**
  * Creates a renderable object that represents an element in the DOM with a specified namespace.
@@ -41,15 +47,22 @@ export const ElNS = (
   tagName: string,
   namespace: string,
   ...children: TNode[]
-): Renderable =>
-  domRenderable((ctx: DOMContext) => {
+): Renderable => {
+  const kids = children.map(renderableOfTNode)
+  const renderable = domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildElement(tagName, namespace)
-    const clears = children.map(fn => renderableOfTNode(fn).render(newCtx))
+    const clears = kids.map(fn => fn.render(newCtx))
     return (removeTree: boolean) => {
       clears.forEach(clear => clear(false))
       newCtx.clear(removeTree)
     }
-  })
+  }) as Renderable & Record<string, unknown>
+  renderable.kind = 'element'
+  renderable.tag = tagName
+  renderable.ns = namespace
+  renderable.children = kids
+  return renderable
+}
 
 /**
  * A convenience object to create Renderables for HTML elements.
@@ -67,7 +80,7 @@ export const html = new Proxy(
      */
     get: (_, tagName: keyof HTMLTags) => {
       return (...children: TNode[]) => {
-        return El(tagName, children.flatMap(renderableOfTNode))
+        return El(tagName, ...children)
       }
     },
   }
@@ -132,7 +145,7 @@ export const svg = new Proxy(
      */
     get: (_, tagName: keyof SVGTags) => {
       return (...children: TNode[]) => {
-        return ElNS(tagName, NS_SVG, children.flatMap(renderableOfTNode))
+        return ElNS(tagName, NS_SVG, ...children)
       }
     },
   }
@@ -167,7 +180,7 @@ export const math = new Proxy(
      */
     get: (_, tagName: keyof MathMLTags) => {
       return (...children: TNode[]) => {
-        return ElNS(tagName, NS_MATH, children.flatMap(renderableOfTNode))
+        return ElNS(tagName, NS_MATH, ...children)
       }
     },
   }
