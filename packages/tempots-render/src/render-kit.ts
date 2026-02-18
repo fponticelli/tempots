@@ -515,7 +515,7 @@ export function createRenderKit<
           type KeyedEntry = {
             key: K
             valueProp: Prop<T>
-            position: KeyedPosition
+            position: KeyedPosition | null
             tracked: AnySignal[] | null
             disposeCallbacks: Array<() => void> | null
             clear: Clear
@@ -558,6 +558,7 @@ export function createRenderKit<
 
           const entries: KeyedEntry[] = []
           const keyToEntry = new Map<K, KeyedEntry>()
+          const positionUsed = item.length >= 2
 
           const createEntry = (
             value: T,
@@ -566,7 +567,9 @@ export function createRenderKit<
           ): KeyedEntry => {
             const k = key(value)
             const valueProp = prop(value)
-            const position = new KeyedPosition(index, totalProp)
+            const position = positionUsed
+              ? new KeyedPosition(index, totalProp)
+              : null
 
             // Create start marker (Comment node — cheaper than text node)
             const startRef = ctx.makeMarker() as CTX
@@ -593,7 +596,7 @@ export function createRenderKit<
             const scope = makeLightScope(entry)
             pushScope(scope)
             try {
-              entry.clear = renderableOfTNode(item(valueProp, position)).render(
+              entry.clear = renderableOfTNode(item(valueProp, position!)).render(
                 endRef
               )
             } finally {
@@ -608,7 +611,7 @@ export function createRenderKit<
             entry.clear(removeTree)
             entry.startRef.clear(removeTree)
             entry.endRef.clear(removeTree)
-            entry.position.dispose()
+            entry.position?.dispose()
             entry.valueProp.dispose()
             // Remove separator if present
             if (entry.sepClear) {
@@ -694,14 +697,29 @@ export function createRenderKit<
                 return
               }
 
+              const newKeys = newArr.map(key)
+              const newKeySet = new Set(newKeys)
+
+              // Fast path: full replacement (no surviving keys) — bulk DOM removal
+              if (entries.length > 0) {
+                let hasSurvivor = false
+                for (let i = 0; i < entries.length; i++) {
+                  if (newKeySet.has(entries[i].key)) {
+                    hasSurvivor = true
+                    break
+                  }
+                }
+                if (!hasSurvivor) {
+                  removeAllEntries() // entries.length → 0, DOM cleared via Range API
+                }
+              }
+
               // Detach from DOM during full create/replace to avoid layout thrashing
               const wasBulkCreate = entries.length === 0 && newArr.length > 0
               if (wasBulkCreate) ctx.detach()
 
-              const newKeys = newArr.map(key)
-              const newKeySet = new Set(newKeys)
-
               // 1. Remove entries whose keys are no longer present
+              // (after full replacement, this loop is a no-op since entries is empty)
               for (let i = entries.length - 1; i >= 0; i--) {
                 const entry = entries[i]
                 if (!newKeySet.has(entry.key)) {
@@ -722,7 +740,7 @@ export function createRenderKit<
                 if (entry) {
                   // Update value and index
                   entry.valueProp.set(newArr[i])
-                  entry.position.setIndex(i)
+                  entry.position?.setIndex(i)
                 } else {
                   // Create new entry at the end (before outerRef)
                   entry = createEntry(newArr[i], i, outerRef)

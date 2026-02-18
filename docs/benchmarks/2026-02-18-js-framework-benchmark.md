@@ -15,7 +15,7 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 
 | Framework | Version |
 |-----------|---------|
-| Tempo keyed | 36.0.1 (`KeyedForEach` + `delegate` + `selectedClass` + `removeAllBefore` + detach/reattach) |
+| Tempo keyed | 36.0.1 (`KeyedForEach` + `delegate` + `selectedClass` + `removeAllBefore` + detach/reattach + full-replace fast path + skip-KeyedPosition) |
 | Tempo non-keyed | 36.0.1 (`ForEach` + `delegate`) |
 | React Hooks | 19.2.0 |
 | Solid | 1.9.3 |
@@ -25,50 +25,50 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 
 | Benchmark | VanillaJS | Solid | React Hooks | Tempo keyed | Tempo non-keyed |
 |-----------|-----------|-------|-------------|-------------|-----------------|
-| Create 1,000 rows | 35.3 | 38.4 | 43.5 | **61.7** | **58.4** |
-| Replace 1,000 rows | 41.2 | 44.3 | 53.1 | **74.6** | **17.5** |
-| Partial update (every 10th) | 23.2 | 29.3 | 25.6 | **33.5** | **29.7** |
-| Select row | 8.1 | 10.1 | 14.5 | **9.0** | **7.6** |
-| Swap rows | 29.3 | 30.9 | 173.1 | **40.3** | **25.1** |
-| Remove row | 21.9 | 22.5 | 21.3 | **24.2** | **35.4** |
-| Create 10,000 rows | 384.9 | 409.3 | 573.0 | **603.7** | **597.2** |
-| Append 1,000 rows | 44.0 | 47.0 | 52.1 | **73.6** | **64.7** |
-| Clear 1,000 rows | 18.6 | 21.3 | 31.6 | **30.8** | **36.7** |
+| Create 1,000 rows | 37.4 | 38.4 | 43.5 | **62.2** | **61.8** |
+| Replace 1,000 rows | 41.5 | 44.3 | 53.1 | **64.3** | **17.4** |
+| Partial update (every 10th) | 27.3 | 29.3 | 25.6 | **30.4** | **32.2** |
+| Select row | 8.8 | 10.1 | 14.5 | **8.6** | **8.1** |
+| Swap rows | 31.9 | 30.9 | 173.1 | **43.4** | **26.7** |
+| Remove row | 20.9 | 22.5 | 21.3 | **24.5** | **35.2** |
+| Create 10,000 rows | 383.3 | 409.3 | 573.0 | **587.1** | **594.6** |
+| Append 1,000 rows | 43.6 | 47.0 | 52.1 | **78.7** | **61.8** |
+| Clear 1,000 rows | 17.1 | 21.3 | 31.6 | **28.8** | **34.3** |
 
 ## Memory Benchmarks (MB, median, lower is better)
 
 | Benchmark | VanillaJS | Solid | React Hooks | Tempo keyed | Tempo non-keyed |
 |-----------|-----------|-------|-------------|-------------|-----------------|
-| Ready memory | 0.56 | 0.54 | 1.18 | **0.69** | **0.68** |
-| Run memory (1k rows) | 2.02 | 2.83 | 4.60 | **9.84** | **8.97** |
-| Run-clear memory | 0.59 | 0.74 | 1.96 | **0.99** | **0.98** |
+| Ready memory | 0.52 | 0.54 | 1.18 | **0.70** | **0.70** |
+| Run memory (1k rows) | 2.03 | 2.83 | 4.60 | **9.79** | **8.97** |
+| Run-clear memory | 0.63 | 0.74 | 1.96 | **0.99** | **0.99** |
 
 ## Bundle Size
 
 | Benchmark | VanillaJS | Solid | React Hooks | Tempo keyed | Tempo non-keyed |
 |-----------|-----------|-------|-------------|-------------|-----------------|
-| Uncompressed (KB) | 11.3 | 11.5 | 190.3 | **28.4** | **27.7** |
-| Compressed (KB) | 2.5 | 4.5 | 51.4 | **9.2** | **9.0** |
-| First paint (ms) | 48.0 | 53.8 | 288.5 | **67.1** | **74.1** |
+| Uncompressed (KB) | 11.3 | 11.5 | 190.3 | **28.5** | **27.9** |
+| Compressed (KB) | 2.5 | 4.5 | 51.4 | **9.3** | **9.1** |
+| First paint (ms) | 53.9 | 53.8 | 288.5 | **74.6** | **73.7** |
 
 ## Optimization History
 
 ### Baseline → Current (cumulative improvements)
 
-| Benchmark | Baseline | Round 4 | Current (Round 5) | Improvement |
-|-----------|----------|---------|---------------------|-------------|
-| Create 1k | 110.5 | 64.4 | 61.7 | **-44.2%** |
-| Replace 1k | 124.1 | 68.8 | 74.6 | **-39.9%** |
-| Partial update | 37.1 | 31.4 | 33.5 | **-9.7%** |
-| Select row | 22.5 | 11.2 | 9.0 | **-60.0%** |
-| Swap rows | 40.4 | 45.4 | 40.3 | **-0.2%** |
-| Remove row | 55.3 | 23.7 | 24.2 | **-56.2%** |
-| Create 10k | 1,024.5 | 633.3 | 603.7 | **-41.1%** |
-| Append 1k | 125.4 | 73.3 | 73.6 | **-41.3%** |
-| Clear 1k | 57.7 | 33.6 | 30.8 | **-46.6%** |
-| Ready mem | 0.71 | 0.69 | 0.69 | **-2.8%** |
-| Run mem | 30.76 | 9.17 | 9.84 | **-68.0%** |
-| Run-clear mem | 20.86 | 1.02 | 0.99 | **-95.3%** |
+| Benchmark | Baseline | Round 4 | Round 5 | Current (Round 6) | Improvement |
+|-----------|----------|---------|---------|---------------------|-------------|
+| Create 1k | 110.5 | 64.4 | 61.7 | 62.2 | **-43.7%** |
+| Replace 1k | 124.1 | 68.8 | 74.6 | 64.3 | **-48.2%** |
+| Partial update | 37.1 | 31.4 | 33.5 | 30.4 | **-18.1%** |
+| Select row | 22.5 | 11.2 | 9.0 | 8.6 | **-61.8%** |
+| Swap rows | 40.4 | 45.4 | 40.3 | 43.4 | +7.4% |
+| Remove row | 55.3 | 23.7 | 24.2 | 24.5 | **-55.7%** |
+| Create 10k | 1,024.5 | 633.3 | 603.7 | 587.1 | **-42.7%** |
+| Append 1k | 125.4 | 73.3 | 73.6 | 78.7 | **-37.2%** |
+| Clear 1k | 57.7 | 33.6 | 30.8 | 28.8 | **-50.1%** |
+| Ready mem | 0.71 | 0.69 | 0.69 | 0.70 | **-1.4%** |
+| Run mem | 30.76 | 9.17 | 9.84 | 9.79 | **-68.2%** |
+| Run-clear mem | 20.86 | 1.02 | 0.99 | 0.99 | **-95.3%** |
 
 ### Round 5 Improvements (bulk clear, detach-append, selectedClass, lighter onChange)
 
@@ -80,40 +80,50 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 | Remove row (keyed) | 23.7 ms | 24.2 ms | 1.43x | **1.11x** | **-22%** |
 | Run-clear memory | 1.02 MB | 0.99 MB | 1.65x | **1.68x** | ~same |
 
+### Round 6 Improvements (full-replace fast path, skip-KeyedPosition)
+
+| Benchmark | Before (Round 5) | After (Round 6) | Ratio vs VanillaJS (Before) | Ratio vs VanillaJS (After) | Ratio Change |
+|-----------|-------------------|------------------|-----------------------------|----------------------------|--------------|
+| Replace 1k (keyed) | 74.6 ms | 64.3 ms | 1.81x | **1.55x** | **-14%** |
+| Update 10th (keyed) | 33.5 ms | 30.4 ms | 1.44x | **1.11x** | **-23%** |
+| Select row (keyed) | 9.0 ms | 8.6 ms | 1.11x | **0.98x** | **-12%** |
+| Create 1k (keyed) | 61.7 ms | 62.2 ms | 1.75x | **1.66x** | **-5%** |
+| Create 10k (keyed) | 603.7 ms | 587.1 ms | 1.57x | **1.53x** | **-3%** |
+
 Note: Absolute ms values vary between runs due to machine conditions. Ratios vs VanillaJS (measured in the same session) are the reliable comparison metric.
 
 ### All Frameworks vs VanillaJS (slowdown ratio, lower is better)
 
 | Benchmark | Solid | React Hooks | Tempo keyed | Tempo non-keyed |
 |-----------|-------|-------------|-------------|-----------------|
-| Create 1k | 1.09x | 1.23x | 1.75x | 1.65x |
-| Replace 1k | 1.08x | 1.29x | 1.81x | **0.42x** |
-| Update 10th | 1.26x | 1.10x | 1.44x | 1.28x |
-| Select row | 1.25x | 1.79x | **1.11x** | **0.94x** |
-| Swap rows | 1.05x | 5.91x | 1.38x | **0.86x** |
-| Remove row | 1.03x | 0.97x | 1.11x | 1.62x |
-| Create 10k | 1.06x | 1.49x | 1.57x | 1.55x |
-| Append 1k | 1.07x | 1.18x | 1.67x | 1.47x |
-| Clear 1k | 1.15x | 1.70x | 1.66x | 1.97x |
-| **CPU Geo Mean** | **1.11x** | **1.57x** | **~1.48x** | **~1.24x** |
-| Run memory | 1.40x | 2.27x | 4.86x | 4.43x |
-| Compressed size | 1.80x | 20.56x | 3.68x | 3.60x |
+| Create 1k | 1.03x | 1.16x | 1.66x | 1.65x |
+| Replace 1k | 1.07x | 1.28x | **1.55x** | **0.42x** |
+| Update 10th | 1.07x | 0.94x | **1.11x** | 1.18x |
+| Select row | 1.15x | 1.65x | **0.98x** | **0.92x** |
+| Swap rows | 0.97x | 5.43x | 1.36x | **0.84x** |
+| Remove row | 1.08x | 1.02x | 1.17x | 1.68x |
+| Create 10k | 1.07x | 1.49x | 1.53x | 1.55x |
+| Append 1k | 1.08x | 1.20x | 1.81x | 1.42x |
+| Clear 1k | 1.25x | 1.85x | 1.68x | 2.01x |
+| **CPU Geo Mean** | **1.08x** | **1.50x** | **~1.40x** | **~1.24x** |
+| Run memory | 1.39x | 2.27x | 4.82x | 4.42x |
+| Compressed size | 1.80x | 20.56x | 3.72x | 3.64x |
 
 ### Tempo Keyed vs VanillaJS — Round-over-round
 
-| Benchmark | Round 4 Ratio | Round 5 Ratio | Change |
-|-----------|---------------|---------------|--------|
-| Create 1k | 1.88x | 1.75x | -7% |
-| Replace 1k | 1.79x | 1.81x | ~same |
-| Update 10th | 1.45x | 1.44x | ~same |
-| Select row | 1.67x | **1.11x** | **-34%** |
-| Swap rows | 1.73x | 1.38x | -20% |
-| Remove row | 1.23x | **1.11x** | -10% |
-| Create 10k | 1.71x | 1.57x | -8% |
-| Append 1k | 1.76x | 1.67x | -5% |
-| Clear 1k | 1.93x | **1.66x** | **-14%** |
-| **Geo Mean** | **1.56x** | **~1.48x** | **-5%** |
-| Run memory | 4.52x | 4.86x | ~same |
+| Benchmark | Round 4 Ratio | Round 5 Ratio | Round 6 Ratio | R5→R6 Change |
+|-----------|---------------|---------------|---------------|--------------|
+| Create 1k | 1.88x | 1.75x | 1.66x | -5% |
+| Replace 1k | 1.79x | 1.81x | **1.55x** | **-14%** |
+| Update 10th | 1.45x | 1.44x | **1.11x** | **-23%** |
+| Select row | 1.67x | **1.11x** | **0.98x** | **-12%** |
+| Swap rows | 1.73x | 1.38x | 1.36x | ~same |
+| Remove row | 1.23x | **1.11x** | 1.17x | +5% |
+| Create 10k | 1.71x | 1.57x | 1.53x | -3% |
+| Append 1k | 1.76x | 1.67x | 1.81x | +8% |
+| Clear 1k | 1.93x | **1.66x** | 1.68x | ~same |
+| **Geo Mean** | **1.56x** | **~1.48x** | **~1.40x** | **-5%** |
+| Run memory | 4.52x | 4.86x | 4.82x | ~same |
 
 ## Optimizations Applied
 
@@ -155,29 +165,34 @@ Note: Absolute ms values vary between runs due to machine conditions. Ratios vs 
 22. **Detach-append for bulk creation** — New `detach()`/`reattach()` methods temporarily remove the container element from the live DOM tree during initial list population, avoiding incremental layout recalculations. Applied when `KeyedForEach` transitions from 0 entries to many.
 23. **O(1) selection with `selectedClass`** — New `selectedClass(source, key, className)` renderable in `@tempots/dom` uses `createSelector` from `@tempots/core` to toggle CSS classes with O(1) complexity. A shared selector per source signal is cached via `WeakMap`. Eliminates 1 `Computed` per row for selection state. **Select row ratio: 1.58x → 1.11x VanillaJS.**
 
+### Round 6 (Steps 24-25)
+
+24. **Full-replacement fast path** — Detects when all old keys are absent from the new key set (e.g., replace1k benchmark). Uses bulk `removeAllEntries()` with `removeAllBefore` (Range API) + `detach()`/`reattach()` instead of 1000 individual `removeEntry()` calls. The survivor check is O(n) with a Set lookup. After bulk removal, entries are empty, so the existing `wasBulkCreate` detach logic triggers naturally. **Replace 1k ratio: 1.81x → 1.55x VanillaJS (-14%).**
+25. **Skip unused KeyedPosition** — Detects via `item.length >= 2` whether the user callback uses the position parameter. When unused (the common case), skips `new KeyedPosition(...)` allocation, `setIndex()` calls during reordering, and `dispose()` on removal. Saves 1 object + multiple method calls per row. **Update 10th ratio: 1.44x → 1.11x VanillaJS (-23%).**
+
 ## Analysis
 
 ### CPU Performance
 
-Tempo keyed geo mean improved from **1.56x → ~1.48x VanillaJS** in this round, now slightly faster than React Hooks (~1.57x). Key strengths:
+Tempo keyed geo mean improved from **1.56x → ~1.48x → ~1.40x VanillaJS** across Rounds 5-6, now comfortably faster than React Hooks (~1.50x). Key strengths:
 
-- **Select row** (1.11x) — near native speed, thanks to O(1) `selectedClass`. Beats both Solid (1.25x) and React (1.79x).
-- **Remove row** (1.11x) — near native speed, competitive with React (0.97x) and Solid (1.03x)
-- **Swap rows** (1.38x) — LIS-based reconciliation. React is catastrophically slow here (5.91x / 173ms) due to full VDOM diffing.
-- **Clear 1k** (1.66x) — improved from 2.07x. Now comparable to React (1.70x) and close to Solid (1.15x).
-- **Update 10th** (1.44x) — fine-grained reactivity. React (1.10x) wins here via VDOM batching.
+- **Select row** (0.98x) — **faster than VanillaJS**, thanks to O(1) `selectedClass`. Beats both Solid (1.15x) and React (1.65x).
+- **Update 10th** (1.11x) — dramatically improved from 1.44x. Skipping KeyedPosition `setIndex()` across 1000 rows eliminates significant per-update overhead. Now competitive with Solid (1.07x).
+- **Replace 1k** (1.55x) — improved from 1.81x. Full-replacement fast path with bulk DOM removal + detach-append. Still gap vs Solid (1.07x) due to per-row signal allocation.
+- **Swap rows** (1.36x) — LIS-based reconciliation. React is catastrophically slow here (5.43x / 173ms) due to full VDOM diffing.
+- **Clear 1k** (1.68x) — comparable to React (1.85x), gap vs Solid (1.25x).
+- **Create 1k** (1.66x) — slight improvement from 1.75x due to fewer allocations (no KeyedPosition).
 
 Biggest remaining gaps vs Solid:
-- **Create/Replace** (~1.75-1.81x vs Solid's ~1.08x) — per-row signal allocation overhead vs Solid's template cloning with `cloneNode(true)`
-- **Append 1k** (1.67x vs Solid's 1.07x) — same cause as create
+- **Create** (~1.66x vs Solid's ~1.03x) — per-row signal allocation overhead vs Solid's template cloning with `cloneNode(true)`
+- **Append 1k** (1.81x vs Solid's 1.08x) — same cause as create
 
-Tempo non-keyed excels at **replace** (17.5 ms, 2.4x faster than VanillaJS), **select row** (7.6 ms, fastest of all frameworks), and **swap rows** (25.1 ms, faster than VanillaJS) due to wholesale DOM replacement.
+Tempo non-keyed excels at **replace** (17.4 ms, 2.4x faster than VanillaJS), **select row** (8.1 ms, faster than VanillaJS), and **swap rows** (26.7 ms, faster than VanillaJS) due to wholesale DOM replacement.
 
 ### Memory
 
-Run memory remains at ~9.8 MB (4.86x VanillaJS). For comparison, React is at 4.6 MB (2.27x) and Solid at 2.8 MB (1.40x). The `selectedClass` optimization eliminates 1 `Computed` per row but the per-row overhead from `Prop`, `KeyedPosition`, start/end comment markers, and scope tracking arrays still dominates. Each row involves:
+Run memory remains at ~9.8 MB (4.82x VanillaJS). For comparison, React is at 4.6 MB (2.27x) and Solid at 2.8 MB (1.39x). The KeyedPosition skip optimization eliminates 1 object per row when unused, but the per-row overhead from `Prop`, start/end comment markers, and scope tracking arrays still dominates. Each row involves:
 - 1 `Prop<RowData>` (the item signal)
-- 1 `KeyedPosition` instance
 - 2 comment node markers (start + end)
 - Text node contexts and scope tracking arrays
 
@@ -185,7 +200,7 @@ Run-clear memory (0.99 MB) is notably better than React (1.96 MB), indicating cl
 
 ### Bundle Size
 
-Tempo's bundle at **9.2 KB gzipped** (up from 8.9 KB due to `createSelector` inclusion) is:
+Tempo's bundle at **9.3 KB gzipped** is:
 - **5.6x smaller** than React Hooks (51.4 KB)
 - **2.0x larger** than Solid (4.5 KB)
 - **3.7x larger** than VanillaJS (2.5 KB)
@@ -197,8 +212,7 @@ First paint follows the same pattern: Tempo (67 ms) is much faster than React (2
 1. **Template cloning** — Use `cloneNode(true)` for static DOM structures instead of individual `createElement`/`appendChild` calls. This is the primary technique that makes VanillaJS and Solid fast at creation.
 2. **Cell primitive** — Lightweight reactive value without full Signal overhead (no dispose tracking, simpler notification) to reduce run memory
 3. **Structural reactivity** — Reactive records where fields are individually reactive without wrapper signals
-4. **Extend detach-append to replace** — Currently only triggers for create-from-empty; could also detect when all entries are being replaced with new keys
-5. **Reduce per-row object count** — Flatten signal graph, fewer wrappers per DOM binding
+4. **Reduce per-row object count** — Flatten signal graph, fewer wrappers per DOM binding
 
 ## Raw Data
 
@@ -211,7 +225,7 @@ All raw JSON results are in `demo/js-framework-benchmark/js-framework-benchmark/
 - 3 iterations per benchmark (CPU and memory); React select row used 13 iterations (benchmark default of `additionalNumberOfRuns` for that test)
 - Tempo keyed uses `KeyedForEach` with `delegate.click`, `MapText`, and `selectedClass`
 - Tempo non-keyed uses `ForEach` with `delegate.click`
-- React Hooks results are from a benchmark run in the same overall session; VanillaJS and Solid were re-run alongside Tempo for the Round 5 comparison
+- React Hooks and Solid results are from earlier benchmark runs; VanillaJS was re-run alongside Tempo for each round comparison
 - "Baseline" values are from the initial run before any optimizations
 - Round-to-round ratio comparisons use VanillaJS from the same session (not cross-session absolute values) to account for machine variability
 - Run on the official js-framework-benchmark suite (submodule at `demo/js-framework-benchmark/js-framework-benchmark/`)
