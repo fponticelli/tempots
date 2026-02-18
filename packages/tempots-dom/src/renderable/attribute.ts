@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from '../types/html-attributes'
 import type { Renderable, SplitNValue } from '../types/domain'
 import type { AriaAttributes } from '../types/aria-attributes'
-import { Signal } from '@tempots/core'
+import { Signal, createSelector } from '@tempots/core'
 import { DOMContext } from '../dom/dom-context'
 import { SVGAttributes } from '../types/svg-attributes'
 import { Value } from '@tempots/core'
@@ -379,3 +379,75 @@ export const mathAttr = new Proxy(
         MathAttr(name, value),
   }
 )
+
+const _selectorCache = new WeakMap<
+  Signal<unknown>,
+  (key: unknown) => Signal<boolean>
+>()
+
+function _getOrCreateSelector<T>(
+  source: Signal<T>,
+  equals?: (a: T, b: T) => boolean
+): (key: T) => Signal<boolean> {
+  let selector = _selectorCache.get(source as Signal<unknown>) as
+    | ((key: T) => Signal<boolean>)
+    | undefined
+  if (!selector) {
+    selector = createSelector(source, equals)
+    _selectorCache.set(
+      source as Signal<unknown>,
+      selector as (key: unknown) => Signal<boolean>
+    )
+  }
+  return selector
+}
+
+/**
+ * Creates a renderable that toggles a CSS class based on O(1) selection matching.
+ *
+ * Instead of creating a `computed` per row that re-evaluates when the source changes
+ * (O(n) for n rows), this uses `createSelector` from `@tempots/core` to only update
+ * the two rows that actually change (the previously selected and newly selected).
+ *
+ * A shared selector is automatically created per source signal and cached via WeakMap.
+ *
+ * @param source - The signal containing the currently selected value.
+ * @param key - The static key to compare against (e.g., the row's ID).
+ * @param activeClass - The CSS class(es) to toggle (space-separated). Defaults to `'danger'`.
+ * @param equals - Optional equality function. Defaults to `===`.
+ * @returns A renderable that adds/removes the class based on selection state.
+ *
+ * @example
+ * ```ts
+ * const selected = prop(0)
+ * html.tr(
+ *   selectedClass(selected, item.id, 'danger'),
+ *   // ...
+ * )
+ * ```
+ * @public
+ */
+export const selectedClass = <T>(
+  source: Signal<T>,
+  key: T,
+  activeClass: string = 'danger',
+  equals?: (a: T, b: T) => boolean
+): Renderable =>
+  domRenderable((ctx: DOMContext) => {
+    const isSelected = _getOrCreateSelector(source, equals)
+    const selectedSignal = isSelected(key)
+    const tokens = activeClass.split(' ').filter(s => s.length > 0)
+
+    const clear = selectedSignal.on(
+      selected => {
+        if (selected) ctx.addClasses(tokens)
+        else ctx.removeClasses(tokens)
+      },
+      { noAutoDispose: true }
+    )
+
+    return (removeTree: boolean) => {
+      clear()
+      if (removeTree) ctx.removeClasses(tokens)
+    }
+  })

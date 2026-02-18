@@ -252,4 +252,23 @@ export class NativeContext implements BaseRenderContext {
       this.bridge.removeView(children[i])
     }
   }
+
+  removeAllBefore(ref: BaseRenderContext): void {
+    const marker = (ref as NativeContext).handle
+    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+    const children = this.bridge.getChildren(parentHandle)
+    const markerIdx = children.indexOf(marker)
+    if (markerIdx <= 0) return
+    for (let i = markerIdx - 1; i >= 0; i--) {
+      this.bridge.removeView(children[i])
+    }
+  }
+
+  detach(): void {
+    // No-op: native bridge handles layout differently
+  }
+
+  reattach(): void {
+    // No-op: native bridge handles layout differently
+  }
 }

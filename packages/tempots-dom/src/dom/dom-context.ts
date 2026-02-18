@@ -200,4 +200,21 @@ export interface DOMContext {
    * Creates a lightweight marker node (Comment node) as a boundary reference.
    */
   makeMarker(): DOMContext
+
+  /**
+   * Removes all sibling nodes before the given reference marker in one
+   * operation. Used as a fast path for clearing entire lists.
+   */
+  removeAllBefore(ref: DOMContext): void
+
+  /**
+   * Detaches the context's container element from the live DOM tree.
+   * Use before bulk insertions to avoid incremental layout recalculations.
+   */
+  detach(): void
+
+  /**
+   * Re-attaches the container element after a detach.
+   */
+  reattach(): void
 }

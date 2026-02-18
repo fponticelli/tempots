@@ -101,4 +101,27 @@ export interface BaseRenderContext extends HierarchicalContext {
    * @returns A new context with a reference to the marker node.
    */
   makeMarker(): BaseRenderContext
+
+  /**
+   * Removes all sibling nodes before the given reference marker in one
+   * operation. Used as a fast path for clearing entire lists when the
+   * marker node at the end must be preserved.
+   *
+   * @param ref - The context whose reference marks the boundary. All nodes
+   *   before this reference (within the same parent) are removed.
+   */
+  removeAllBefore(ref: BaseRenderContext): void
+
+  /**
+   * Detaches the context's container element from the live DOM tree.
+   * Use before bulk insertions to avoid incremental layout recalculations.
+   * Call {@link reattach} when done. No-op on platforms without a layout engine.
+   */
+  detach(): void
+
+  /**
+   * Re-attaches the container element to the DOM tree after a {@link detach}.
+   * No-op if the element was not previously detached.
+   */
+  reattach(): void
 }

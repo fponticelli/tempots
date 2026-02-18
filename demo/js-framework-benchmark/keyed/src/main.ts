@@ -4,22 +4,17 @@ import {
   attr,
   on,
   prop,
-  computed,
   delegate,
   KeyedForEach,
   aria,
+  selectedClass,
 } from "@tempots/dom";
 import type { Renderable, Signal } from "@tempots/dom";
 import { buildData, RowData } from "./data.ts";
 
 function Row(item: Signal<RowData>, selected: Signal<number>): Renderable {
   return html.tr(
-    attr.class(
-      computed(
-        (): string => (item.value.id === selected.value ? "danger" : ""),
-        [item, selected],
-      ),
-    ),
+    selectedClass(selected, item.value.id, "danger"),
     html.td(attr.class("col-md-1"), item.$.id),
     html.td(attr.class("col-md-4"), html.a(item.$.label)),
     html.td(

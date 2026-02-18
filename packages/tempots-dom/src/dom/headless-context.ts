@@ -672,6 +672,23 @@ export class HeadlessContext implements DOMContext {
 
     children.splice(startIndex, count)
   }
+
+  removeAllBefore(ref: DOMContext): void {
+    const marker = (ref as HeadlessContext).reference!
+    const children = this.element.children
+    const markerIndex = children.indexOf(marker)
+    if (markerIndex > 0) {
+      children.splice(0, markerIndex)
+    }
+  }
+
+  detach(): void {
+    // No-op: headless has no layout engine
+  }
+
+  reattach(): void {
+    // No-op: headless has no layout engine
+  }
 }
 
 const attributesWithNoValue = new Set([

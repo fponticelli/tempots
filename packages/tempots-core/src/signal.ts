@@ -303,13 +303,11 @@ export class Signal<T> implements ReadSignal<T> {
     listener: (value: T, previousValue: T) => void,
     options: ListenerOptions = {}
   ) {
-    let count = 0
-    const actualListener = (value: T, previousValue: T | undefined) => {
-      if (count++ > 0) {
-        listener(value, previousValue!)
-      }
-    }
-    return this.on(actualListener, options)
+    options.skipInitial = true
+    return this.on(
+      listener as (value: T, previousValue: T | undefined) => void,
+      options
+    )
   }
 
   /**

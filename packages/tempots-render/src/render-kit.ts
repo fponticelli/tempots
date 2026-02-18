@@ -628,14 +628,8 @@ export function createRenderKit<
            */
           const removeAllEntries = () => {
             if (entries.length === 0) return
-            // 1. Remove all DOM nodes in one sweep (from first start to last end)
-            const firstEntry = entries[0]
-            const lastEntry = entries[entries.length - 1]
-            const rangeEnd = lastEntry.sepStartRef ?? lastEntry.endRef
-            ctx.removeRange(
-              firstEntry.sepStartRef ?? firstEntry.startRef,
-              rangeEnd
-            )
+            // 1. Remove all DOM nodes before the outer marker in one operation
+            ctx.removeAllBefore(outerRef)
             // 2. Dispose all signals (skip DOM removal — nodes already removed)
             for (let i = 0; i < entries.length; i++) {
               removeEntry(entries[i], false)
@@ -699,6 +693,10 @@ export function createRenderKit<
                 totalProp.set(0)
                 return
               }
+
+              // Detach from DOM during full create/replace to avoid layout thrashing
+              const wasBulkCreate = entries.length === 0 && newArr.length > 0
+              if (wasBulkCreate) ctx.detach()
 
               const newKeys = newArr.map(key)
               const newKeySet = new Set(newKeys)
@@ -805,6 +803,9 @@ export function createRenderKit<
               entries.length = 0
               entries.push(...newEntries)
               totalProp.set(newArr.length)
+
+              // Re-attach after bulk create (no-op if not detached)
+              if (wasBulkCreate) ctx.reattach()
             },
             { noAutoDispose: true }
           )
