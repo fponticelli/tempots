@@ -32,7 +32,7 @@ export class NativeContext implements BaseRenderContext {
    * Removes this view from the native view tree.
    * @param removeTree - If true, removes the view from its parent via the bridge
    */
-  readonly clear = (removeTree: boolean): void => {
+  clear(removeTree: boolean): void {
     if (removeTree) {
       this.bridge.removeView(this.handle)
     }
@@ -75,7 +75,7 @@ export class NativeContext implements BaseRenderContext {
    * @param text - The initial text content
    * @returns A new context for the text view
    */
-  readonly makeChildText = (text: string): NativeContext => {
+  makeChildText(text: string): NativeContext {
     const textHandle = this.bridge.createTextView(
       text,
       this._isRef ? this._parentHandle! : this.handle,
@@ -88,7 +88,7 @@ export class NativeContext implements BaseRenderContext {
    * Updates the text content of this context's text view.
    * @param text - The new text content
    */
-  readonly setText = (text: string): void => {
+  setText(text: string): void {
     this.bridge.setTextContent(this.handle, text)
   }
 
@@ -96,7 +96,7 @@ export class NativeContext implements BaseRenderContext {
    * Reads the text content of this context's text view.
    * @returns The current text content
    */
-  readonly getText = (): string => {
+  getText(): string {
     return this.bridge.getTextContent(this.handle)
   }
 
@@ -108,9 +108,7 @@ export class NativeContext implements BaseRenderContext {
    * @returns The provider value and optional onUse callback
    * @throws {ProviderNotFoundError} If the provider is not found
    */
-  readonly getProvider = <T>(
-    mark: ProviderMark<T>
-  ): { value: T; onUse?: () => void } => {
+  getProvider<T>(mark: ProviderMark<T>): { value: T; onUse?: () => void } {
     const entry = this._providers[mark as ProviderMark<unknown>]
     if (entry == null) {
       throw new ProviderNotFoundError(mark)
@@ -130,11 +128,11 @@ export class NativeContext implements BaseRenderContext {
    * @param onUse - Optional callback invoked when the provider is consumed
    * @returns A new context with the provider set
    */
-  readonly setProvider = <T>(
+  setProvider<T>(
     mark: ProviderMark<T>,
     value: T,
     onUse: undefined | (() => void)
-  ): NativeContext => {
+  ): NativeContext {
     const newProviders = {
       ...this._providers,
       [mark as ProviderMark<unknown>]: [value, onUse],
@@ -159,7 +157,7 @@ export class NativeContext implements BaseRenderContext {
    * @param viewType - The native view type (e.g. 'View', 'Text', 'Image')
    * @returns A new context for the child view
    */
-  readonly makeChildView = (viewType: string): NativeContext => {
+  makeChildView(viewType: string): NativeContext {
     const childHandle = this.bridge.createView(
       viewType,
       this._isRef ? this._parentHandle! : this.handle,
@@ -174,7 +172,7 @@ export class NativeContext implements BaseRenderContext {
    * @param handler - The event handler
    * @returns A cleanup function to remove the listener
    */
-  readonly on = <E>(event: string, handler: (e: E) => void): (() => void) => {
+  on<E>(event: string, handler: (e: E) => void): () => void {
     return this.bridge.addEventListener(
       this.handle,
       event,
@@ -187,7 +185,7 @@ export class NativeContext implements BaseRenderContext {
    * @param name - The property name
    * @param value - The property value
    */
-  readonly setProp = (name: string, value: unknown): void => {
+  setProp(name: string, value: unknown): void {
     this.bridge.setViewProp(this.handle, name, value)
   }
 
@@ -195,7 +193,7 @@ export class NativeContext implements BaseRenderContext {
    * Sets multiple properties on the current view.
    * @param props - A record of property names to values
    */
-  readonly setProps = (props: Record<string, unknown>): void => {
+  setProps(props: Record<string, unknown>): void {
     this.bridge.setViewProps(this.handle, props)
   }
 
@@ -203,7 +201,7 @@ export class NativeContext implements BaseRenderContext {
    * Sets style properties on the current view.
    * @param styles - A record of style properties to values
    */
-  readonly setStyle = (styles: Record<string, unknown>): void => {
+  setStyle(styles: Record<string, unknown>): void {
     this.bridge.setStyle(this.handle, styles)
   }
 
@@ -217,11 +215,11 @@ export class NativeContext implements BaseRenderContext {
    * @param endRef - The context whose handle marks the end of the range.
    * @param targetRef - The context before which the range will be inserted.
    */
-  readonly moveRangeBefore = (
+  moveRangeBefore(
     startRef: BaseRenderContext,
     endRef: BaseRenderContext,
     targetRef: BaseRenderContext
-  ): void => {
+  ): void {
     const start = (startRef as NativeContext).handle
     const end = (endRef as NativeContext).handle
     const target = (targetRef as NativeContext).handle
@@ -239,10 +237,7 @@ export class NativeContext implements BaseRenderContext {
     }
   }
 
-  readonly removeRange = (
-    startRef: BaseRenderContext,
-    endRef: BaseRenderContext
-  ): void => {
+  removeRange(startRef: BaseRenderContext, endRef: BaseRenderContext): void {
     const start = (startRef as NativeContext).handle
     const end = (endRef as NativeContext).handle
     const parentHandle = this._isRef ? this._parentHandle! : this.handle

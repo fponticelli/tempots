@@ -24,7 +24,10 @@ export const BindDate = (
   prop: Prop<Date>,
   handler: keyof typeof on = 'input'
 ): Renderable =>
-  Fragment(attr.valueAsDate(prop), on[handler](emitValueAsDate(prop.set)))
+  Fragment(
+    attr.valueAsDate(prop),
+    on[handler](emitValueAsDate(v => prop.set(v)))
+  )
 
 /**
  * Binds a `Date` property to an input element. The binding is two-way.
@@ -37,7 +40,10 @@ export const BindDateTime = (
   prop: Prop<Date>,
   handler: keyof typeof on = 'input'
 ): Renderable =>
-  Fragment(attr.valueAsDate(prop), on[handler](emitValueAsDateTime(prop.set)))
+  Fragment(
+    attr.valueAsDate(prop),
+    on[handler](emitValueAsDateTime(v => prop.set(v)))
+  )
 
 /**
  * Binds a `number` property to an input element. The binding is two-way.
@@ -50,7 +56,10 @@ export const BindNumber = (
   prop: Prop<number>,
   handler: keyof typeof on = 'input'
 ): Renderable =>
-  Fragment(attr.valueAsNumber(prop), on[handler](emitValueAsNumber(prop.set)))
+  Fragment(
+    attr.valueAsNumber(prop),
+    on[handler](emitValueAsNumber(v => prop.set(v)))
+  )
 
 /**
  * Binds a `string` property to an input element. The binding is two-way.
@@ -62,7 +71,8 @@ export const BindNumber = (
 export const BindText = (
   prop: Prop<string>,
   handler: keyof typeof on = 'input'
-): Renderable => Fragment(attr.value(prop), on[handler](emitValue(prop.set)))
+): Renderable =>
+  Fragment(attr.value(prop), on[handler](emitValue(v => prop.set(v))))
 
 /**
  * Binds a `boolean` property to the checked value of an input element. The binding is two-way.
@@ -72,4 +82,7 @@ export const BindText = (
  * @public
  */
 export const BindChecked = (prop: Prop<boolean>): Renderable =>
-  Fragment(attr.checked(prop), OnChecked(prop.set))
+  Fragment(
+    attr.checked(prop),
+    OnChecked(v => prop.set(v))
+  )

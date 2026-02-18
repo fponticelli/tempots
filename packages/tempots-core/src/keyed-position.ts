@@ -44,7 +44,7 @@ export class KeyedPosition {
    * user code accessed it), the signal is also updated reactively.
    * @internal
    */
-  readonly setIndex = (index: number) => {
+  setIndex(index: number) {
     this.#currentIndex = index
     if (this.#indexProp !== null) {
       this.#indexProp.set(index)
@@ -124,7 +124,7 @@ export class KeyedPosition {
    * when used within a disposal scope (e.g., inside a renderable). Kept for
    * backward compatibility and edge cases.
    */
-  readonly dispose = () => {
+  dispose() {
     this.#indexProp?.dispose()
     this.#counterSignal?.dispose()
     this.#isFirstSignal?.dispose()

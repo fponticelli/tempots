@@ -53,7 +53,7 @@ export class ElementPosition {
    * @returns `true` if the element is the last element, `false` otherwise.
    */
   get isLast() {
-    if (this.#lastSignal == null) {
+    if (this.#lastSignal == null || this.#lastSignal.isDisposed()) {
       this.#lastSignal = this.total.map(total => this.counter === total)
     }
     return this.#lastSignal
@@ -67,7 +67,7 @@ export class ElementPosition {
    * automatically tracked and disposed when the scope ends. This method is kept for
    * backward compatibility and for cases where ElementPosition is used outside a scope.
    */
-  readonly dispose = () => {
+  dispose() {
     // Note: The signal is now auto-disposed via scope tracking in most cases.
     // This manual disposal is kept for backward compatibility and edge cases.
     this.#lastSignal?.dispose()

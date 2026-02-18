@@ -10,7 +10,7 @@ import { domRenderable } from '../types/domain'
 export const _staticText = (text: string): Renderable =>
   domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(text)
-    return newCtx.clear
+    return (removeTree: boolean) => newCtx.clear(removeTree)
   })
 
 /**
@@ -19,7 +19,7 @@ export const _staticText = (text: string): Renderable =>
 export const _signalText = (signal: Signal<string>): Renderable =>
   domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(signal.value)
-    const dispose = signal.on(newCtx.setText)
+    const dispose = signal.on((v: string) => newCtx.setText(v))
     return (removeTree: boolean) => {
       dispose()
       newCtx.clear(removeTree)

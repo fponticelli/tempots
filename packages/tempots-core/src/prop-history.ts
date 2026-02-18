@@ -117,7 +117,7 @@ export function propHistory<T>(
     Prop.is(source) &&
     (setOrOptions === undefined || typeof setOrOptions === 'object')
   ) {
-    setter = source.set
+    setter = (v: T) => source.set(v)
     options = setOrOptions as PropHistoryOptions<T> | undefined
   } else {
     setter = setOrOptions as (value: T) => void

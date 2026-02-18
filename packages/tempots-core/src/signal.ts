@@ -200,7 +200,9 @@ export class Signal<T> implements ReadSignal<T> {
    * Gets the current value of the signal.
    * @returns The current value of the signal.
    */
-  readonly get = () => this._value
+  get() {
+    return this._value
+  }
 
   /**
    * Gets the value of the signal.
@@ -214,9 +216,12 @@ export class Signal<T> implements ReadSignal<T> {
    * Checks if the signal has any registered listeners.
    * @returns `true` if the signal has listeners, `false` otherwise.
    */
-  readonly hasListeners = () =>
-    (this._onValueListeners !== null && this._onValueListeners.length > 0) ||
-    (this._derivatives !== null && this._derivatives.length > 0)
+  hasListeners() {
+    return (
+      (this._onValueListeners !== null && this._onValueListeners.length > 0) ||
+      (this._derivatives !== null && this._derivatives.length > 0)
+    )
+  }
 
   /**
    * Registers a listener function to be called whenever the value of the signal changes.
@@ -246,10 +251,10 @@ export class Signal<T> implements ReadSignal<T> {
    * }
    * ```
    */
-  readonly on = (
+  on(
     listener: (value: T, previousValue: T | undefined) => void,
     options: ListenerOptions = {}
-  ) => {
+  ) {
     if (!options.skipInitial) {
       listener(this.get(), undefined)
     }
@@ -294,10 +299,10 @@ export class Signal<T> implements ReadSignal<T> {
    * @param listener - The listener function to be called when the value of the signal changes.
    * @param options - Options for the listener.
    */
-  readonly onChange = (
+  onChange(
     listener: (value: T, previousValue: T) => void,
     options: ListenerOptions = {}
-  ) => {
+  ) {
     let count = 0
     const actualListener = (value: T, previousValue: T | undefined) => {
       if (count++ > 0) {
@@ -310,7 +315,7 @@ export class Signal<T> implements ReadSignal<T> {
   /**
    * @internal
    */
-  protected readonly _setAndNotify = (newV: T) => {
+  protected _setAndNotify(newV: T) {
     if (this._disposed) return
     const currentValue = this._value
     const same = this.equals(currentValue, newV)
@@ -337,14 +342,16 @@ export class Signal<T> implements ReadSignal<T> {
    * Checks whether the signal is disposed.
    * @returns True if the signal is disposed, false otherwise.
    */
-  readonly isDisposed = () => this._disposed
+  isDisposed() {
+    return this._disposed
+  }
 
   /**
    * Adds a listener function to be called when the object is disposed.
    * @param listener - The listener function to be called when the object is disposed.
    * @returns A function that can be called to remove the listener.
    */
-  readonly onDispose = (listener: () => void) => {
+  onDispose(listener: () => void) {
     if (this._onDisposeListeners === null) this._onDisposeListeners = []
     this._onDisposeListeners.push(listener)
   }
@@ -353,7 +360,7 @@ export class Signal<T> implements ReadSignal<T> {
    * Disposes the signal, releasing any resources associated with it.
    * This clears all listeners, derivatives, and disposal callbacks.
    */
-  readonly dispose = () => {
+  dispose() {
     if (this._disposed) return
     this._disposed = true
     const disposeListeners = this._onDisposeListeners
@@ -427,10 +434,7 @@ export class Signal<T> implements ReadSignal<T> {
    * @param equals - Optional function to determine if two transformed values are equal (defaults to strict equality)
    * @returns A new computed signal with the transformed value (auto-registered with current scope)
    */
-  readonly map = <O>(
-    fn: (value: T) => O,
-    equals: (a: O, b: O) => boolean = strictEquals
-  ) => {
+  map<O>(fn: (value: T) => O, equals: (a: O, b: O) => boolean = strictEquals) {
     const comp = new Computed(() => {
       try {
         return fn(this.get())
@@ -453,10 +457,10 @@ export class Signal<T> implements ReadSignal<T> {
    *               Defaults to a strict equality check (===).
    * @returns A new Signal that emits the values of the resulting Signal.
    */
-  readonly flatMap = <O>(
+  flatMap<O>(
     fn: (value: T) => Signal<O>,
     equals: (a: O, b: O) => boolean = strictEquals
-  ) => {
+  ) {
     const computed = new Computed(() => {
       try {
         return fn(this.get()).get()
@@ -475,7 +479,7 @@ export class Signal<T> implements ReadSignal<T> {
    * @param fn - The callback function to be invoked with the current value of the signal.
    * @returns A new signal that emits the same value as the original signal and invokes the callback function.
    */
-  readonly tap = (fn: (value: T) => void) => {
+  tap(fn: (value: T) => void) {
     const comp = this.map(value => {
       fn(value)
       return value
@@ -491,8 +495,9 @@ export class Signal<T> implements ReadSignal<T> {
    * @param key - The key of the value to retrieve.
    * @returns A new Signal that emits the value at the specified key.
    */
-  readonly at = <K extends keyof T>(key: K): Signal<T[K]> =>
-    this.map(value => value[key])
+  at<K extends keyof T>(key: K): Signal<T[K]> {
+    return this.map(value => value[key])
+  }
 
   /**
    * @internal
@@ -509,7 +514,7 @@ export class Signal<T> implements ReadSignal<T> {
     }) as unknown as AtGetter<T>)
   }
 
-  readonly filter = (fn: (value: T) => boolean, startValue?: T) => {
+  filter(fn: (value: T) => boolean, startValue?: T) {
     let latestValue = startValue ?? this.get()
     const computed = new Computed(() => {
       try {
@@ -534,11 +539,11 @@ export class Signal<T> implements ReadSignal<T> {
    * @param equals - Optional equality function to determine if two values are equal.
    * @returns - A new Computed object with the mapped and filtered values.
    */
-  readonly filterMap = <O>(
+  filterMap<O>(
     fn: (value: T) => O | undefined | null,
     startValue: O,
     equals: (a: O, b: O) => boolean = strictEquals
-  ) => {
+  ) {
     let latestValue = startValue
     const computed = new Computed(() => {
       try {
@@ -567,12 +572,12 @@ export class Signal<T> implements ReadSignal<T> {
    * @param equals - The equality function to compare the mapped values for equality.
    * @returns A property that holds the mapped value and can be observed for changes.
    */
-  readonly mapAsync = <O>(
+  mapAsync<O>(
     fn: (value: T, options: { abortSignal: AbortSignal }) => Promise<O>,
     alt: O,
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = strictEquals
-  ) => {
+  ) {
     const p = prop(alt, equals)
     let count = 0
     let abortController = new AbortController()
@@ -641,7 +646,7 @@ export class Signal<T> implements ReadSignal<T> {
    * @param equals - Optional equality function to compare yielded values.
    * @returns A property that updates each time the generator yields a value.
    */
-  readonly mapAsyncGenerator = <O>(
+  mapAsyncGenerator<O>(
     fn: (
       value: T,
       options: { abortSignal: AbortSignal }
@@ -649,7 +654,7 @@ export class Signal<T> implements ReadSignal<T> {
     alt: O,
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = strictEquals
-  ) => {
+  ) {
     const p = prop(alt, equals)
     let count = 0
     let abortController = new AbortController()
@@ -688,8 +693,9 @@ export class Signal<T> implements ReadSignal<T> {
    * @param alt - The alternative value to use when the mapped value is `undefined` or `null`.
    * @returns A new signal containing the mapped values.
    */
-  readonly mapMaybe = <O>(fn: (value: T) => O | undefined | null, alt: O) =>
-    this.map(value => fn(value) ?? alt)
+  mapMaybe<O>(fn: (value: T) => O | undefined | null, alt: O) {
+    return this.map(value => fn(value) ?? alt)
+  }
 
   /**
    * Feeds a property into the signal and sets up disposal behavior.
@@ -697,14 +703,16 @@ export class Signal<T> implements ReadSignal<T> {
    * @param autoDisposeProp - Determines whether the property should be automatically disposed when the signal is disposed.
    * @returns The input property.
    */
-  readonly feedProp = (
+  feedProp(
     prop: Prop<T>,
     // istanbul ignore next
     autoDisposeProp = false
-  ) => {
-    const dispose = this.on(prop.set, { noAutoDispose: !autoDisposeProp })
+  ) {
+    const dispose = this.on(v => prop.set(v), {
+      noAutoDispose: !autoDisposeProp,
+    })
     prop.onDispose(dispose)
-    if (autoDisposeProp) this.onDispose(prop.dispose)
+    if (autoDisposeProp) this.onDispose(() => prop.dispose())
     else this.onDispose(dispose)
     return prop
   }
@@ -716,25 +724,29 @@ export class Signal<T> implements ReadSignal<T> {
    * @param options.equals - A function that determines if two values are equal.
    * @returns The derived property.
    */
-  readonly deriveProp = ({
+  deriveProp({
     autoDisposeProp = true,
     equals,
   }: {
     autoDisposeProp?: boolean
     equals?: (a: T, b: T) => boolean
-  } = {}) => this.feedProp(prop(this.get(), equals), autoDisposeProp)
+  } = {}) {
+    return this.feedProp(prop(this.get(), equals), autoDisposeProp)
+  }
 
   /**
    * Derives a new signal from the current signal. Useful to create a new signal that emits the same values as the current signal but can be disposed independently.
    * @returns A new signal that emits the same values as the current signal.
    */
-  readonly derive = () => this.map(v => v)
+  derive() {
+    return this.map(v => v)
+  }
 
   /**
    * Returns a signal that emits the count of values received so far.
    * @returns A signal that emits the count of values received so far.
    */
-  readonly count = () => {
+  count() {
     let count = 0
     return this.map(() => ++count)
   }
@@ -745,10 +757,10 @@ export class Signal<T> implements ReadSignal<T> {
    * Additionally, when the computed value is disposed, it sets the signal as dirty.
    * @param computed - The computed value to add as a derivative.
    */
-  readonly setDerivative = <O>(computed: Computed<O>) => {
+  setDerivative<O>(computed: Computed<O>) {
     if (this._derivatives === null) this._derivatives = []
     this._derivatives.push(computed as Computed<unknown>)
-    const parentDispose = computed.dispose
+    const parentDispose = () => computed.dispose()
     computed.onDispose(() => {
       if (this._derivatives !== null) {
         const idx = this._derivatives.indexOf(computed as Computed<unknown>)
@@ -863,7 +875,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
    * If the signal is already dirty or disposed, this method does nothing.
    * It also marks all dependent signals as dirty and schedules a notification to update their values.
    */
-  readonly setDirty = () => {
+  setDirty() {
     if (this._isDirty || this._disposed) return
     this._isDirty = true
     const derivatives = this._derivatives
@@ -882,7 +894,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
    * If the signal is dirty, it will be updated and notified.
    * @internal
    */
-  protected readonly _scheduleNotify = () => {
+  protected _scheduleNotify() {
     const count = ++this._scheduleCount
     queue(() => {
       if (this._scheduleCount !== count || this._disposed) return
@@ -898,14 +910,14 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
    * Used by computed() factory to ensure effects fire their initial computation.
    * @internal
    */
-  readonly scheduleIfDirty = () => {
+  scheduleIfDirty() {
     if (this._isDirty) {
       this._scheduleNotify()
     }
   }
 
   /** {@inheritDoc Signal.get} */
-  readonly get = () => {
+  get() {
     if (this._isDirty) {
       this._isDirty = false
       this._setAndNotify(this._fn())
@@ -922,7 +934,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
    * This override increments the schedule count to invalidate all pending
    * microtasks before disposing the signal.
    */
-  readonly dispose = () => {
+  dispose() {
     if (this._disposed) return
     // Increment schedule count to invalidate all pending recomputations
     // This ensures that any microtasks queued before disposal won't execute
@@ -934,7 +946,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     this._derivatives = null
     this._onValueListeners = null
     // Release the computation closure to free captured references (parent signals, DOM nodes)
-    ;(this as { _fn: (() => T) | null })._fn = null
+    ;(this as unknown as { _fn: (() => T) | null })._fn = null
     if (disposeListeners !== null) {
       for (let i = 0; i < disposeListeners.length; i++) disposeListeners[i]()
     }
@@ -1009,7 +1021,7 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
    *
    * @param value - The new value of the property.
    */
-  readonly set = (value: T) => {
+  set(value: T) {
     this._setAndNotify(value)
   }
 
@@ -1017,7 +1029,7 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
    * Updates the value of the signal by applying the provided function to the current value.
    * @param fn - The function to apply to the current value.
    */
-  readonly update = (fn: (value: T) => T) => {
+  update(fn: (value: T) => T) {
     this._setAndNotify(fn(this.get()))
   }
 
@@ -1027,10 +1039,7 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
    * @param effects - An array of effects to be executed after the state is updated.
    * @returns A dispatch function that can be used to update the state and trigger the effects.
    */
-  readonly reducer = <A>(
-    fn: (acc: T, value: A) => T,
-    ...effects: ReducerEffect<T, A>[]
-  ) => {
+  reducer<A>(fn: (acc: T, value: A) => T, ...effects: ReducerEffect<T, A>[]) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const signal = this
     return function dispatch(action: A) {
@@ -1059,11 +1068,11 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
    *                Defaults to a strict equality check (===).
    * @returns A Prop object representing the isomorphism.
    */
-  readonly iso = <O>(
+  iso<O>(
     to: (value: T) => O,
     from: (value: O) => T,
     equals: (a: O, b: O) => boolean = strictEquals
-  ) => {
+  ) {
     const prop = new Prop(to(this.get()), equals)
     prop.onDispose(this.on(value => prop.set(to(value))))
     prop.on(value => this._setAndNotify(from(value)))
@@ -1076,7 +1085,7 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
    * @param key - The key of the value to access.
    * @returns A `Prop` that represents the value at the specified key.
    */
-  readonly atProp = <K extends keyof T>(key: K): Prop<T[K]> => {
+  atProp<K extends keyof T>(key: K): Prop<T[K]> {
     return this.iso(
       value => value[key],
       value => ({ ...this.value, [key]: value })

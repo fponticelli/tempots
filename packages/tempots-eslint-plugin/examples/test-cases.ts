@@ -46,8 +46,8 @@ const BadComponent1 = ctx => {
   const doubled = count.map(x => x * 2)
 
   return Fragment(
-    OnDispose(count.dispose), // Will trigger: no-unnecessary-disposal
-    OnDispose(doubled.dispose), // Will trigger: no-unnecessary-disposal
+    OnDispose(() => count.dispose()), // Will trigger: no-unnecessary-disposal
+    OnDispose(() => doubled.dispose()), // Will trigger: no-unnecessary-disposal
     html.div(count, doubled)
   )
 }
@@ -76,7 +76,7 @@ const GoodComponent3 = ctx => {
   const untrackedSignal = untracked(() => prop(0))
 
   return Fragment(
-    OnDispose(untrackedSignal.dispose), // ✅ OK - untracked needs manual disposal
+    OnDispose(() => untrackedSignal.dispose()), // ✅ OK - untracked needs manual disposal
     html.div(untrackedSignal)
   )
 }
@@ -152,7 +152,7 @@ const GoodComponent5 = (ctx, scope) => {
 const GoodComponent8 = (ctx, scope) => {
   setTimeout(() => {
     const asyncSignal = prop(0)
-    scope.onDispose(asyncSignal.dispose) // ✅ Will be disposed
+    scope.onDispose(() => asyncSignal.dispose()) // ✅ Will be disposed
   }, 1000)
 
   return html.div('Hello')
@@ -309,6 +309,49 @@ const BadComponent13 = ctx => {
 // ✅ GOOD: Return the child directly
 const GoodComponent14 = ctx => {
   return html.div('hello')
+}
+
+// ============================================================================
+// Rule: no-method-reference
+// ============================================================================
+
+// ❌ BAD: Passing method by reference (loses `this` binding with prototype methods)
+const BadComponent14 = ctx => {
+  const count = prop(0)
+  const other = prop(1)
+
+  count.onDispose(other.dispose) // Will trigger: no-method-reference
+  count.on(other.set) // Will trigger: no-method-reference
+
+  return html.div(count)
+}
+
+// ❌ BAD: Assigning method to variable
+const BadComponent15 = ctx => {
+  const count = prop(0)
+  const getter = count.get // Will trigger: no-method-reference
+
+  return html.div(String(getter()))
+}
+
+// ✅ GOOD: Wrap method references in lambdas
+const GoodComponent15 = ctx => {
+  const count = prop(0)
+  const other = prop(1)
+
+  count.onDispose(() => other.dispose()) // ✅ Lambda preserves `this`
+  count.on(v => other.set(v)) // ✅ Lambda preserves `this`
+
+  return html.div(count)
+}
+
+// ✅ GOOD: Calling methods with dot notation is always fine
+const GoodComponent16 = ctx => {
+  const count = prop(0)
+  const value = count.get() // ✅ Dot notation call
+  count.dispose() // ✅ Dot notation call
+
+  return html.div(String(value))
 }
 
 // Helper function for examples

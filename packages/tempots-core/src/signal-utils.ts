@@ -463,10 +463,10 @@ export const animateSignals = <T>(
   animated.onDispose(() => {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame)
   })
-  animated.onDispose(computed.dispose)
+  animated.onDispose(() => computed.dispose())
   dependencies.forEach(signal => {
     signal.setDerivative(computed)
-    signal.onDispose(animated.dispose)
+    signal.onDispose(() => animated.dispose())
   })
   const changeEndValue = (value: T) => {
     endValue = value
@@ -549,7 +549,7 @@ export const animateSignal = <T>(
   return animateSignals(
     /* c8 ignore next 2 */
     initialValue ?? signal.get(),
-    signal.get,
+    () => signal.get(),
     [signal],
     rest
   )
@@ -1098,7 +1098,7 @@ export const createSelector = <T>(
     const result = prop(equals(key, currentValue))
 
     // Register with current disposal scope for automatic cleanup
-    getCurrentScope()?.onDispose(result.dispose)
+    getCurrentScope()?.onDispose(() => result.dispose())
 
     let subs = subscribers.get(key)
     if (!subs) {

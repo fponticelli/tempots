@@ -165,7 +165,7 @@ export const relativeTimeSignal = (
 ) => {
   const signal = relativeTimeMillisSignal(date, options)
   const diff = signal.map(timeDiffToString)
-  diff.onDispose(signal.dispose)
+  diff.onDispose(() => signal.dispose())
   return diff
 }
 
