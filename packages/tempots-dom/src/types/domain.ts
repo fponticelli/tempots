@@ -169,7 +169,11 @@ export const domRenderable = <CTX extends DOMContext = DOMContext>(
 export type TNode<CTX extends DOMContext = DOMContext> =
   | Renderable<CTX>
   | string
+  | number
+  | boolean
   | Signal<string>
+  | Signal<number>
+  | Signal<boolean>
   | undefined
   | null
   | Renderable<CTX>[]

@@ -1,4 +1,5 @@
 import { _NODE_PLACEHOLDER_ATTR } from '../renderable/render'
+import type { Primitive } from '@tempots/core'
 import { Prop } from '@tempots/core'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
@@ -524,8 +525,8 @@ export class HeadlessContext implements DOMContext {
       this.providers
     )
   }
-  makeChildText(text: string): DOMContext {
-    const childTxt = new HeadlessText(text)
+  makeChildText(text: Primitive): DOMContext {
+    const childTxt = new HeadlessText(String(text))
     this.appendOrInsert(childTxt)
     return new HeadlessContext(
       this.element,
@@ -534,9 +535,9 @@ export class HeadlessContext implements DOMContext {
       this.providers
     )
   }
-  setText(text: string): void {
+  setText(text: Primitive): void {
     if (this.reference && this.reference.isText()) {
-      this.reference.text = text
+      this.reference.text = String(text)
     }
   }
   getText(): string {

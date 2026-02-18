@@ -627,9 +627,8 @@ describe('createRenderKit', () => {
     })
 
     it('throws for unknown types', () => {
-      expect(() =>
-        kit.renderableOfTNode(123 as unknown as string)
-      ).toThrow('Unknown type')
+      const badValue = { notARenderable: true } as unknown as string
+      expect(() => kit.renderableOfTNode(badValue)).toThrow('Unknown type')
     })
   })
 

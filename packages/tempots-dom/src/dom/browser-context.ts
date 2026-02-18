@@ -1,4 +1,5 @@
 import type { Clear, ProviderMark, Providers } from '../types/domain'
+import type { Primitive } from '@tempots/core'
 import { _makeGetter, _makeSetter } from './attr'
 import { DOMContext, HandlerOptions } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
@@ -143,16 +144,16 @@ export class BrowserContext implements DOMContext {
    * @param text - The text content for the new text node.
    * @returns A new `Text` node with the specified text content.
    */
-  createText(text: string): Text {
-    return this.document.createTextNode(text)
+  createText(text: Primitive): Text {
+    return this.document.createTextNode(text as string)
   }
 
   /**
    * Creates a new text node with the specified text content and appends it to the current element.
-   * @param text - The text content for the new text node.
+   * @param text - The text content for the new text node. Primitives are coerced to strings by the DOM.
    * @returns A new `DOMContext` with a reference to the new text node.
    */
-  makeChildText(text: string): DOMContext {
+  makeChildText(text: Primitive): DOMContext {
     const textNode = this.createText(text)
     this.appendOrInsert(textNode)
     return this.withReference(textNode)
@@ -160,10 +161,10 @@ export class BrowserContext implements DOMContext {
 
   /**
    * Sets the text content of the current element.
-   * @param text - The text content to set.
+   * @param text - The text content to set. Primitives are coerced to strings by the DOM.
    */
-  setText(text: string) {
-    this.reference!.nodeValue = text
+  setText(text: Primitive) {
+    this.reference!.nodeValue = text as string
   }
 
   /**

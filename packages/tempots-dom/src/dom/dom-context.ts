@@ -1,4 +1,5 @@
 import type { Clear, ProviderMark } from '../types/domain'
+import type { Primitive } from '@tempots/core'
 import { makeProviderMark } from '@tempots/core'
 import { BrowserContext } from './browser-context'
 import { HeadlessContext } from './headless-context'
@@ -42,13 +43,13 @@ export interface DOMContext {
    * @param text - The text content for the new text node.
    * @returns A new `DOMContext` with a reference to the new text node.
    */
-  makeChildText(text: string): DOMContext
+  makeChildText(text: Primitive): DOMContext
 
   /**
    * Sets the text content of the current element.
    * @param text - The text content to set.
    */
-  setText(text: string): void
+  setText(text: Primitive): void
 
   /**
    * Gets the text content of the current element or text node.

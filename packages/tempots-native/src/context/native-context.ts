@@ -1,4 +1,4 @@
-import type { ProviderMark } from '@tempots/core'
+import type { Primitive, ProviderMark } from '@tempots/core'
 import type { BaseRenderContext, Providers } from '@tempots/render'
 import { ProviderNotFoundError } from '@tempots/render'
 import type { JSIBridge, NativeViewHandle } from '../bridge/jsi-bridge'
@@ -75,9 +75,9 @@ export class NativeContext implements BaseRenderContext {
    * @param text - The initial text content
    * @returns A new context for the text view
    */
-  makeChildText(text: string): NativeContext {
+  makeChildText(text: Primitive): NativeContext {
     const textHandle = this.bridge.createTextView(
-      text,
+      String(text),
       this._isRef ? this._parentHandle! : this.handle,
       this._isRef ? this.handle : undefined
     )
@@ -86,10 +86,10 @@ export class NativeContext implements BaseRenderContext {
 
   /**
    * Updates the text content of this context's text view.
-   * @param text - The new text content
+   * @param text - The new text content. Primitives are coerced to strings.
    */
-  setText(text: string): void {
-    this.bridge.setTextContent(this.handle, text)
+  setText(text: Primitive): void {
+    this.bridge.setTextContent(this.handle, String(text))
   }
 
   /**

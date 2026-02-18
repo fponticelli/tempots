@@ -1,4 +1,8 @@
-import type { HierarchicalContext, ProviderMark } from '@tempots/core'
+import type {
+  HierarchicalContext,
+  Primitive,
+  ProviderMark,
+} from '@tempots/core'
 
 /**
  * Represents a collection of providers.
@@ -28,13 +32,13 @@ export interface BaseRenderContext extends HierarchicalContext {
    * @param text - The text content for the new text node.
    * @returns A new context with a reference to the new text node.
    */
-  makeChildText(text: string): BaseRenderContext
+  makeChildText(text: Primitive): BaseRenderContext
 
   /**
    * Sets the text content of the current text node.
-   * @param text - The text content to set.
+   * @param text - The text content to set. Primitives are coerced to strings.
    */
-  setText(text: string): void
+  setText(text: Primitive): void
 
   /**
    * Gets the text content of the current element or text node.

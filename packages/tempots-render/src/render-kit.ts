@@ -1,4 +1,4 @@
-import type { Clear, Renderable, TNode, Scope } from '@tempots/core'
+import type { Clear, Primitive, Renderable, TNode, Scope } from '@tempots/core'
 import {
   Computed,
   Signal,
@@ -208,17 +208,17 @@ export function createRenderKit<
 
   // --- Internal text helpers ---
 
-  const _staticText = (text: string): Renderable<CTX, TType> =>
+  const _staticText = (text: Primitive): Renderable<CTX, TType> =>
     create((ctx: CTX) => {
       const newCtx = ctx.makeChildText(text)
       return (removeTree: boolean) => newCtx.clear(removeTree)
     })
 
-  const _signalText = (signal: Signal<string>): Renderable<CTX, TType> =>
+  const _signalText = (signal: Signal<Primitive>): Renderable<CTX, TType> =>
     create((ctx: CTX) => {
       const newCtx = ctx.makeChildText(signal.value)
       // Use onChange to skip the redundant initial call (value already set via makeChildText)
-      const dispose = signal.onChange((v: string) => newCtx.setText(v))
+      const dispose = signal.onChange((v: Primitive) => newCtx.setText(v))
       return (removeTree: boolean) => {
         dispose()
         newCtx.clear(removeTree)
@@ -268,10 +268,14 @@ export function createRenderKit<
       return Empty
     } else if (Array.isArray(child)) {
       return Fragment(...child.map(renderableOfTNode))
-    } else if (typeof child === 'string') {
+    } else if (
+      typeof child === 'string' ||
+      typeof child === 'number' ||
+      typeof child === 'boolean'
+    ) {
       return _staticText(child)
-    } else if (Signal.is(child as Signal<string>)) {
-      return _signalText(child as Signal<string>)
+    } else if (Signal.is(child as Signal<Primitive>)) {
+      return _signalText(child as Signal<Primitive>)
     } else if (
       typeof child === 'object' &&
       'render' in child &&

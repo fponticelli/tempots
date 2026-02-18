@@ -61,6 +61,7 @@ export type {
   AnySignal,
   AtGetter,
   ListenerOptions,
+  Primitive,
   StoredPropOptions,
   SyncPropOptions,
   RenderContext,
