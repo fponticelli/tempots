@@ -4,222 +4,227 @@
 
 Every row in `KeyedForEach` creates DOM nodes one at a time via individual `document.createElement()` + `appendChild()` calls. For the benchmark Row with 9 elements (tr, 4 td, 2 a, span) + 2 text nodes + 2 comment markers, that's 13 individual DOM API calls per row. At 1000 rows, **13,000 DOM calls** dominate creation time.
 
-This is the key architectural difference between Tempo (64.4 ms create 1k) and Solid (38.0 ms) / VanillaJS (34.3 ms). Solid pre-compiles static HTML templates at build time and uses `cloneNode(true)` to stamp out rows in a single native call.
+This is the key architectural difference between Tempo and frameworks like Solid (which pre-compiles static HTML templates at build time and uses `cloneNode(true)` to stamp out rows in a single native call).
 
 ## Concept
 
 Separate the static DOM structure from reactive bindings. Pre-build an HTML template once, clone it per row, then walk the clone to attach signal subscriptions at specific positions.
 
 ```
-Current:  createElement('tr') → appendChild(td1) → appendChild(td2) → ... × 1000
-Proposed: template.content.cloneNode(true) × 1000 → bind reactive slots
+Current:  createElement('tr') -> appendChild(td1) -> appendChild(td2) -> ... x 1000
+Proposed: template.content.cloneNode(true) x 1000 -> bind reactive slots
 ```
 
-## Current Pipeline
+## Prototype Results
 
-```
-html.tr(attr.class(signal), html.td(...), ...)
-  ↓
-El('tr', [signalClassName(signal), El('td', [...]), ...])   ← Definition (no DOM yet)
-  ↓
-render(ctx):
-  ctx.makeChildElement('tr')      ← createElement + appendChild
-  signalClassName.render(trCtx)   ← signal.on(...)
-  El('td').render(trCtx)          ← createElement + appendChild
-    MapText.render(tdCtx)         ← createTextNode + signal.onChange(...)
-  ...repeat for each child...
-  ↓
-returns clear()
-```
+A hand-written `TemplateRow` was implemented in the keyed benchmark to measure the ceiling. The prototype bypasses Tempo's renderable system for DOM creation (using raw `cloneNode(true)`) but still uses Tempo signals for reactivity.
 
-Every `El()` call creates a renderable closure. Every `.render()` call creates a DOM element, a BrowserContext, and a clear closure. For the benchmark row that's:
+### CPU (keyed, median of 3 runs)
 
-- 13 `createElement`/`createTextNode`/`createComment` calls
-- 11 BrowserContext allocations
-- ~12 closures
-- ~5 arrays
+| Benchmark | Before | Template Clone | Change |
+|-----------|--------|----------------|--------|
+| 01_run1k | 64.4 ms | **48.6 ms** | **-25%** |
+| 02_replace1k | 72.2 ms | **55.6 ms** | **-23%** |
+| 07_create10k | 604.1 ms | **466.3 ms** | **-23%** |
+| 08_create1k-after | 64.2 ms | 58.8 ms | -8% |
+| 03_update10th | 32.8 ms | 32.8 ms | same |
+| 04_select1k | 11.2 ms | 11.3 ms | same |
+| 05_swap1k | 39.2 ms | 40.1 ms | same |
+| 09_clear1k | 30.8 ms | 30.5 ms | same |
 
-## Proposed API
+### Memory
 
-### Option A: `Template()` renderable
+| Metric | Before | Template Clone | Change |
+|--------|--------|----------------|--------|
+| 22_run-memory | 9.17 MB | **4.65 MB** | **-49%** |
+| 21_ready-memory | 0.70 MB | 0.70 MB | same |
+| 25_run-clear-memory | 0.90 MB | 0.90 MB | same |
 
-A new renderable that accepts an HTML string and a binding function:
+Creation is ~25% faster and run memory is cut nearly in half. The memory savings come from eliminating per-row BrowserContext instances, intermediate closures, and `clears` arrays that the normal rendering pipeline creates.
+
+For reference: VanillaJS = 2.03 MB, Solid = 2.82 MB. Tempo went from 3.2x VanillaJS to 2.3x.
+
+### What the prototype does
 
 ```typescript
-import { Template, slot } from '@tempots/dom'
+const _tpl = document.createElement('template')
+_tpl.innerHTML = '<tr><td class="col-md-1">...</td>...</tr>'
 
-const RowTemplate = Template(
-  '<tr><td class="col-md-1"></td><td class="col-md-4"><a></a></td><td class="col-md-1"><a><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td><td class="col-md-6"></td></tr>',
-  (root, ctx) => {
-    // root is the cloned <tr> element
-    // Return binding disposers
-    const tr = root
-    const td1 = tr.children[0] as HTMLElement
-    const td2 = tr.children[1] as HTMLElement
-    const a2 = td2.children[0] as HTMLElement
+function TemplateRow(item: Signal<RowData>, selected: Signal<number>): Renderable {
+  return createRenderable(DOM_TYPE, (ctx: DOMContext): Clear => {
+    // 1. Clone entire row in one native call
+    const tr = _tpl.content.firstChild!.cloneNode(true) as HTMLElement
 
-    return {
-      // Reactive class on <tr>
-      class: (signal: Signal<string>) => signalClassName(signal).render(ctx.withElement(tr)),
-      // Text in td1
-      id: (signal: Signal<string>) => bindText(td1, signal),
-      // Text in a2
-      label: (signal: Signal<string>) => bindText(a2, signal),
+    // 2. Walk to binding points
+    const td0 = tr.children[0] as HTMLElement
+    const a1 = (tr.children[1] as HTMLElement).children[0] as HTMLElement
+
+    // 3. Insert into DOM (respecting reference markers)
+    const bc = ctx as any
+    if (bc.reference !== undefined) {
+      bc.element.insertBefore(tr, bc.reference)
+    } else {
+      bc.element.appendChild(tr)
     }
-  }
-)
 
-function Row(item: Signal<RowData>, selected: Signal<number>): Renderable {
-  return RowTemplate(root => {
-    root.class(computed(() => item.value.id === selected.value ? 'danger' : '', [item, selected]))
-    root.id(MapText(item, d => String(d.id)))
-    root.label(MapText(item, d => d.label))
+    // 4. Bind only reactive parts (3 signals per row, same as before)
+    const classSignal = computed(...)
+    const idSignal = item.map(d => d.id)
+    const labelSignal = item.map(d => d.label)
+
+    const d1 = classSignal.on(v => { tr.className = v })
+    const d2 = idSignal.on(v => { td0Text.nodeValue = v as any })
+    const d3 = labelSignal.on(v => { a1Text.nodeValue = v })
+
+    return (removeTree) => { /* dispose signals, optionally tr.remove() */ }
   })
 }
 ```
 
-**Pros:** Explicit, maximum performance, no magic.
-**Cons:** Manual slot wiring, HTML string is fragile, verbose.
+### What the prototype eliminates per row
 
-### Option B: `html.tr.template(...)` — automatic template extraction
+| Allocation | Normal path | Template clone | Saved |
+|------------|-------------|----------------|-------|
+| `createElement` calls | 8 | 0 | 8 |
+| `createTextNode` calls | 2 | 2 | 0 |
+| `createComment` calls | 2 | 0 | 2 |
+| `appendChild` calls | 12 | 1 | 11 |
+| BrowserContext instances | ~13 | 0 | ~13 |
+| Renderable closures | ~8 | 1 | ~7 |
+| `clears` arrays | ~5 | 0 | ~5 |
+| Signal subscriptions | 3 | 3 | 0 |
 
-Extend the `html` proxy so that on first render, the static structure is cached as a template. Subsequent renders clone the cached template.
+## Design Constraint
+
+**The current declarative API must be preserved.** Users should continue writing:
 
 ```typescript
-// Same API as today — no changes to user code
 function Row(item: Signal<RowData>, selected: Signal<number>): Renderable {
   return html.tr(
     attr.class(computed(...)),
-    html.td(attr.class('col-md-1'), MapText(item, d => String(d.id))),
-    html.td(attr.class('col-md-4'), html.a(MapText(item, d => d.label))),
-    html.td(attr.class('col-md-1'), html.a(html.span(attr.class('glyphicon glyphicon-remove'), aria.hidden(true)))),
+    html.td(attr.class('col-md-1'), item.$.id),
+    html.td(attr.class('col-md-4'), html.a(item.$.label)),
+    html.td(attr.class('col-md-1'), html.a(html.span(...))),
     html.td(attr.class('col-md-6'))
   )
 }
 ```
 
-Under the hood, `El()` marks each child as either static or dynamic. On first render:
-1. Build the full DOM tree normally
-2. Record the positions of dynamic bindings (e.g., "child 0 of <tr> needs signal class binding")
-3. Cache the static HTML as a `<template>` element
+An explicit `Template()` API (Option A in earlier drafts) was rejected because it fundamentally changes how users think about building renderables. Template cloning should be an internal optimization, not a user-facing paradigm shift.
 
-On subsequent renders:
-1. `template.content.cloneNode(true)` — one native call
-2. Walk the clone to the recorded positions
-3. Attach only the dynamic bindings
+## Where template cloning applies
 
-**Pros:** Zero API change, automatic, works for all elements.
-**Cons:** First render is slower (builds + caches), needs a way to identify "same structure" across renders, more complex implementation.
+Template cloning primarily benefits **repeated rendering of the same structure** — i.e., `ForEach`, `KeyedForEach`, and `Repeat`. These renderables call the same item callback N times, producing the same DOM shape each time with different signal bindings.
 
-### Option C: Compile-time template extraction (Vite plugin)
+One-off elements (the app shell, a modal, a form) don't benefit because they render once.
 
-A Vite plugin that transforms `html.tr(...)` calls at build time into optimized template + binding code.
+## The hard problem: conditionals
+
+When a row contains conditionals (`When`, `OneOf`, `MapSignal`, nested `ForEach`), the DOM shape can vary between items:
 
 ```typescript
-// Input (user writes this)
-html.tr(
-  attr.class(computed(...)),
-  html.td(attr.class('col-md-1'), MapText(item, d => String(d.id))),
+(item, pos) => html.tr(
+  html.td(item.$.id),
+  When(item.map(d => d.active),
+    () => html.td('Active'),
+    () => html.td('Inactive')
+  )
 )
-
-// Output (compiler generates this)
-const __tpl_1 = document.createElement('template')
-__tpl_1.innerHTML = '<tr><td class="col-md-1"></td></tr>'
-
-domRenderable(ctx => {
-  const clone = __tpl_1.content.cloneNode(true) as DocumentFragment
-  const tr = clone.firstChild as HTMLElement
-  const td1 = tr.children[0] as HTMLElement
-  ctx.appendOrInsert(tr)
-
-  // Dynamic bindings only
-  const c1 = signalClassName(computed(...)).render(ctx.withElement(tr))
-  const c2 = MapText(item, d => String(d.id)).render(ctx.withElement(td1))
-
-  return (removeTree) => { c1(false); c2(false); if (removeTree) tr.remove() }
-})
 ```
 
-**Pros:** Maximum performance, zero runtime overhead, best tree shaking.
-**Cons:** Requires build tooling, harder to debug, complex compiler.
+The template captured from item 1 (where `active=true`) would contain the "Active" td. But item 2 (where `active=false`) needs the "Inactive" td. The template is wrong.
 
-## Recommended Approach: Option A first, then Option B
+### Partial templates with comment markers as anchors
 
-Option A is the fastest to implement and gives the benchmark the maximum boost immediately. Option B can be layered on later for ergonomics.
+The solution is to **not template through conditionals**. The template contains only the guaranteed-static skeleton, with comment markers as holes where dynamic/conditional content renders normally:
 
-## Architecture: Template renderable
-
-```typescript
-// New file: packages/tempots-dom/src/renderable/template.ts
-
-type TemplateSlots<S> = {
-  // S is a user-defined slots object
-  // Each slot is a function that accepts a Signal and returns a Clear
-}
-
-type TemplateBinder<S> = (
-  root: HTMLElement,
-  ctx: DOMContext
-) => S
-
-function Template<S>(
-  html: string,
-  binder: TemplateBinder<S>
-): (setup: (slots: S) => void) => Renderable
+```html
+<!-- Template for the row above: -->
+<tr>
+  <td><!-- text binding: id --></td>
+  <!-- dynamic hole: When renders here -->
+</tr>
 ```
 
-Internal flow:
-1. **First call**: Parse HTML into a `<template>` element (cached globally)
-2. **Each render**: `template.content.cloneNode(true)`, call binder to get slot accessors, call setup to wire signals
-3. **Clear**: Dispose signal subscriptions, optionally remove cloned DOM
+After cloning:
+1. Walk to the text node placeholder, subscribe the id signal
+2. Walk to the comment marker, create a DOMContext with it as reference, render `When(...)` normally from that point
 
-### BrowserContext integration
+The `When` renderable doesn't know it's inside a template — it gets a context with the cloned comment as insertion reference and works exactly as today.
 
-Template-cloned elements bypass `makeChildElement`. Instead:
-- Clone produces a `DocumentFragment` with the full subtree
-- The fragment is inserted via `ctx.appendOrInsert(fragment.firstChild)`
-- A new `DOMContext` is created with `ctx.withElement(clonedRoot)` for dynamic bindings
-- Only reactive binding points need BrowserContext instances
+### Classifying renderables
 
-### KeyedForEach integration
+To build the template, we need to classify each child as **static** (bake into template) or **dynamic** (leave a comment hole):
 
-No changes needed. `KeyedForEach` calls `renderableOfTNode(item(valueProp, position)).render(endRef)`. If `item()` returns a Template renderable, it renders via cloning instead of createElement. The Clear lifecycle is identical.
+| Child type | Classification | In template |
+|------------|----------------|-------------|
+| `El('div', ...)` with only static children | Static element | Full element |
+| `El('div', ...)` with any dynamic children | Static shell | Element, with comment holes for dynamic children |
+| `attr.class('fixed')` | Static attribute | Baked into HTML |
+| `attr.class(signal)` | Dynamic attribute | Record binding point |
+| `'hello'` / `42` / `true` | Static text | Text node in template |
+| `Signal<string>` | Dynamic text | Text node placeholder + binding |
+| `When(...)`, `OneOf(...)`, `MapSignal(...)` | Dynamic renderable | Comment marker hole |
+| `ForEach(...)`, `KeyedForEach(...)` | Dynamic renderable | Comment marker hole |
+| Any opaque `Renderable` | Dynamic renderable | Comment marker hole |
 
-## Expected Impact
+The challenge: renderables are currently opaque (`{ type, render }` objects). There's no way to peek inside an `El` renderable to know its children, or to distinguish it from a `When` renderable, without actually rendering it.
 
-### Memory (per 1000 rows)
+## Possible approaches
 
-| Component | Current | With Template | Savings |
-|-----------|---------|---------------|---------|
-| BrowserContext instances | 13/row → 13,000 | ~4/row → 4,000 | **~500 KB** |
-| Closures | ~12/row → 12,000 | ~5/row → 5,000 | **~500 KB** |
-| `clears` arrays | ~5/row → 5,000 | ~2/row → 2,000 | **~150 KB** |
-| DOM nodes | ~12/row (unchanged) | ~12/row (unchanged) | 0 |
-| **Total** | ~9.17 MB | **~8.0 MB** | **~1.15 MB (-13%)** |
+### Approach 1: TNode tree analysis (pre-render)
 
-### CPU (create 1k rows)
+Analyze the TNode tree returned by the item callback *before* rendering it. Walk the tree structurally:
 
-| Operation | Current | With Template | Why |
-|-----------|---------|---------------|-----|
-| DOM creation | 13 calls/row | 1 `cloneNode` + 1 `appendChild` | Native bulk clone |
-| Context creation | 13/row | ~4/row | Only for reactive bindings |
-| Signal subscriptions | 3/row | 3/row (unchanged) | Still need per-instance reactivity |
-| **Estimated total** | 64.4 ms | **~40-50 ms** | ~25-40% faster creation |
+- `El('div', children...)` can be inspected because `El` returns a renderable with known structure
+- Static attrs, text, signals can be classified by type
+- Everything else is an opaque renderable -> comment hole
 
-The biggest CPU win is replacing 9+ `createElement` + `appendChild` calls with a single `cloneNode(true)`. Browser engines optimize `cloneNode` heavily — it copies the internal DOM representation without re-parsing.
+**Requires:** Tagging `El` renderables with structural metadata (e.g., a `_templateInfo` field containing tag name, namespace, children list) so the analyzer can walk into them. Attribute renderables would need similar tagging.
 
-## Files to Create/Modify
+**Flow:**
+1. First item: call `item(signal, position)` -> get TNode tree
+2. Walk tree, build template HTML + binding plan
+3. Render first item normally (or from the template immediately)
+4. Items 2-N: clone template, walk binding plan, apply bindings
 
-| File | Change |
-|------|--------|
-| `packages/tempots-dom/src/renderable/template.ts` | **New** — `Template()` renderable |
-| `packages/tempots-dom/src/index.ts` | Export `Template` |
-| `demo/js-framework-benchmark/keyed/src/main.ts` | Use `Template()` in Row function |
-| `packages/tempots-dom/test/template.spec.ts` | **New** — tests |
+**Concern:** Adds metadata to every `El` and `attr` renderable. This is per-renderable-definition, not per-instance, so the memory cost is minimal. But it changes the internal Renderable shape.
 
-## Open Questions
+### Approach 2: Recording BrowserContext (first-render capture)
 
-1. **SVG/MathML support**: `innerHTML` doesn't work for SVG. Need `createElementNS` approach or skip template cloning for namespaced elements.
-2. **Nested templates**: Should a Template inside a Template be supported? Or is it only for leaf row patterns?
-3. **SSR compatibility**: HeadlessContext doesn't have `cloneNode`. Template rendering would need a fallback path.
-4. **Provider access**: Template-cloned elements still need access to the provider chain for `Use()` within templates.
+Wrap BrowserContext during the first item's render. The wrapper intercepts all DOM calls, builds the real DOM AND records what happened:
+
+- `makeChildElement('tr')` -> create element + record "element at path [0]"
+- `makeChildText(signal.value)` -> create text node + record "text binding at path [0, 0]"
+- `makeRef()` -> create comment + record "dynamic hole at path [0, 1]"
+
+After the first render completes, extract the template from the recorded structure.
+
+**Concern:** Hard to distinguish "direct bindings" (signal subscriptions on elements the recording context created) from "conditional renders" (subscriptions created by opaque renderables like `When`). The recording context sees all DOM operations but doesn't know which come from `El` vs `When`.
+
+### Approach 3: Compile-time extraction (Vite plugin)
+
+A Vite plugin transforms `html.tr(...)` calls at build time. It can statically analyze the AST to separate static HTML from dynamic expressions.
+
+**Pros:** Maximum performance, no runtime overhead, no metadata on renderables.
+**Cons:** Requires build tooling, complex compiler, harder to debug, doesn't work for dynamic component patterns.
+
+## Recommendation
+
+**Approach 1 (TNode tree analysis)** is the most tractable for a runtime-only solution. It requires adding structural metadata to `El` and `attr` renderables, but:
+
+- The metadata is per-definition, not per-instance (negligible memory)
+- It's purely internal — no user-facing API changes
+- It degrades gracefully: any unrecognized renderable becomes a comment hole
+- It works with existing ForEach/KeyedForEach without changes to their API
+
+Approach 3 (compile-time) could be layered on later for maximum performance, using Approach 1 as the runtime fallback.
+
+## Open questions
+
+1. **Scope of metadata:** What exactly should `El` renderables carry? Tag name + namespace + classified children list? Or just a "template key" that groups identical structures?
+2. **Template cache keying:** How to identify "same structure" across item callback invocations? The item callback is a function — calling it with different signals produces renderables with the same structure but different signal instances. Could use the callback identity as cache key.
+3. **SVG/MathML:** `innerHTML` doesn't work for SVG. Need `createElementNS` approach or skip template cloning for namespaced elements.
+4. **SSR compatibility:** HeadlessContext doesn't have `cloneNode`. Template rendering would need a fallback path (render normally).
+5. **Provider access:** Template-cloned elements still need access to the provider chain. Bindings rendered into comment holes need the correct provider context.
+6. **Nested templates:** A `KeyedForEach` inside a row item — should the inner list also get its own template? Or only the outermost repeated structure?
