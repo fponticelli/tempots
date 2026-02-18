@@ -43,6 +43,41 @@ class MockContext implements BaseRenderContext {
     ) as this
   }
 
+  readonly makeMarker = (): BaseRenderContext => {
+    return this.makeRef()
+  }
+
+  readonly moveRangeBefore = (
+    startRef: BaseRenderContext,
+    endRef: BaseRenderContext,
+    targetRef: BaseRenderContext
+  ): void => {
+    const start = (startRef as MockContext).reference!
+    const end = (endRef as MockContext).reference!
+    const target = (targetRef as MockContext).reference!
+    const children = this.element.children
+    const startIdx = children.indexOf(start)
+    const endIdx = children.indexOf(end)
+    const targetIdx = children.indexOf(target)
+    if (startIdx < 0 || endIdx < 0 || targetIdx < 0) return
+    const range = children.splice(startIdx, endIdx - startIdx + 1)
+    const insertIdx = children.indexOf(target)
+    children.splice(insertIdx, 0, ...range)
+  }
+
+  readonly removeRange = (
+    startRef: BaseRenderContext,
+    endRef: BaseRenderContext
+  ): void => {
+    const start = (startRef as MockContext).reference!
+    const end = (endRef as MockContext).reference!
+    const children = this.element.children
+    const startIdx = children.indexOf(start)
+    const endIdx = children.indexOf(end)
+    if (startIdx < 0 || endIdx < 0) return
+    children.splice(startIdx, endIdx - startIdx + 1)
+  }
+
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
       if (this.reference) {

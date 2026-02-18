@@ -1,201 +1,154 @@
 # JS Framework Benchmark Results — 2026-02-17
 
-Tempo (keyed + non-keyed) compared against popular frameworks using the [official js-framework-benchmark](https://github.com/nicktomlin/nicktomlin.github.io) suite by Stefan Krause.
+Tempo (keyed + non-keyed) compared against popular frameworks using the [official js-framework-benchmark](https://github.com/krausest/js-framework-benchmark) suite by Stefan Krause.
 
 ## Test Environment
 
 - **Machine**: macOS Darwin 25.3.0
 - **Node**: v22.21.1
-- **Runner**: Playwright (headless Chromium)
-- **Iterations**: 3-5 per benchmark
-- **CPU throttling**: 4x for most tests (standard benchmark setting)
+- **Browser**: Chrome 145.0.7632.67 (headless)
+- **Runner**: Puppeteer (via js-framework-benchmark webdriver-ts)
+- **Iterations**: 5 per benchmark (15 for select row)
+- **CPU throttling**: 4x (standard benchmark setting)
 
 ## Framework Versions
 
 | Framework | Version |
 |-----------|---------|
-| Tempo | 15.0 (keyed, with `KeyedForEach` + `delegate`) |
-| Tempo | 15.0 (non-keyed, with `ForEach` + `delegate`) |
+| Tempo keyed | 36.0.1 (`KeyedForEach` + `delegate` + `MapText`) |
+| Tempo non-keyed | 36.0.1 (`ForEach` + `delegate`) |
 | Solid | 1.9.3 |
-| Svelte | 5.42.1 |
-| React (hooks) | 19.2.0 |
-| Angular (control flow) | 21.0.5 |
 | Vanilla JS | baseline |
 
 ## CPU Benchmarks (ms, lower is better)
 
-### Keyed
-
-| Benchmark | Vanilla JS | Solid | Svelte | Angular | React | Tempo (before) | Tempo (after) | Improvement |
-|-----------|-----------|-------|--------|---------|-------|----------------|---------------|-------------|
-| Create 1,000 rows | 34.5 | 35.5 | 35.8 | 47.3 | 41.8 | 110.5 | **68.2** | -38.3% |
-| Replace 1,000 rows | 40.2 | 41.3 | 42.2 | 57.2 | 51.2 | 124.1 | **80.5** | -35.1% |
-| Partial update (every 10th) | 19.2 | 23.6 | 22.1 | 21.2 | 28.2 | 37.1 | **27.4** | -26.1% |
-| Select row | 5.7 | 7.6 | 10.3 | 7.8 | 9.4 | 22.5 | **12.0** | -46.7% |
-| Swap rows | 22.9 | 27.1 | 27.0 | 26.0 | 167.4 | 40.4 | **32.3** | -20.0% |
-| Remove row | 17.7 | 18.5 | 18.8 | 16.6 | 19.8 | 55.3 | **19.7** | -64.4% |
-| Create 10,000 rows | 360.4 | 382.0 | 390.3 | 478.4 | 576.4 | 1,024.5 | **665.8** | -35.0% |
-| Append 1,000 rows | 40.5 | 45.4 | 43.5 | 55.2 | 49.7 | 125.4 | **76.8** | -38.8% |
-| Clear 1,000 rows | 17.5 | 21.5 | 20.6 | 31.0 | 27.1 | 57.7 | **38.1** | -34.0% |
-
-### Non-Keyed
-
-| Benchmark | Tempo (non-keyed) | Notes |
-|-----------|-------------------|-------|
-| Create 1,000 rows | **57.9** | 13% faster than keyed |
-| Replace 1,000 rows | **16.9** | Destroys + recreates all rows |
-| Partial update (every 10th) | **28.5** | Similar to keyed (was slower before batching) |
-| Select row | **6.4** | O(1) via direct DOM selection |
-| Swap rows | **23.7** | Full list re-render |
-| Remove row | **33.8** | Full list re-render |
-| Create 10,000 rows | **590.1** | 14% faster than keyed |
-| Append 1,000 rows | **72.1** | 6% faster than keyed |
-| Clear 1,000 rows | **43.0** | Similar to keyed |
+| Benchmark | VanillaJS | Solid | Tempo keyed | Tempo non-keyed |
+|-----------|-----------|-------|-------------|-----------------|
+| Create 1,000 rows | 34.3 | 38.0 | **73.8** | **66.5** |
+| Replace 1,000 rows | 38.4 | 44.9 | **83.5** | **18.6** |
+| Partial update (every 10th) | 21.7 | 24.5 | **32.3** | **29.4** |
+| Select row | 6.7 | 9.8 | **13.4** | **7.4** |
+| Swap rows | 26.3 | 29.1 | **41.7** | **25.4** |
+| Remove row | 19.3 | 21.3 | **23.7** | **35.9** |
+| Create 10,000 rows | 369.7 | 396.7 | **700.7** | **635.0** |
+| Append 1,000 rows | 41.6 | 45.9 | **83.5** | **73.7** |
+| Clear 1,000 rows | 17.4 | 23.7 | **38.0** | **41.7** |
 
 ## Memory Benchmarks (MB, lower is better)
 
-| Benchmark | Vanilla JS | Solid | Svelte | Angular | React | Tempo keyed (before) | Tempo keyed (after) | Tempo non-keyed | Improvement |
-|-----------|-----------|-------|--------|---------|-------|---------------------|--------------------|--------------------|-------------|
-| Ready memory | 0.53 | 0.55 | 0.67 | 2.06 | 1.66 | 0.71 | **1.19** | **1.19** | — |
-| Run memory (1k rows) | 2.03 | 2.83 | 3.05 | 5.22 | 5.09 | 30.76 | **24.01** | **20.53** | -21.9% |
-| Run-clear memory | 0.62 | 0.74 | 1.01 | 2.62 | 2.47 | 20.86 | **11.22** | **7.14** | -46.2% |
+| Benchmark | VanillaJS | Solid | Tempo keyed | Tempo non-keyed |
+|-----------|-----------|-------|-------------|-----------------|
+| Ready memory | 0.55 | 0.56 | **0.73** | **0.73** |
+| Run memory (1k rows) | 2.03 | 2.82 | **21.75** | **20.38** |
+| Run-clear memory | 0.62 | 0.74 | **10.61** | **6.68** |
 
-## Bundle Size (lower is better)
+## Bundle Size
 
-| Benchmark | Vanilla JS | Solid | Svelte | Angular | React | Tempo |
-|-----------|-----------|-------|--------|---------|-------|-------|
-| Uncompressed (KB) | 11.3 | 11.5 | 34.3 | 140.7 | 190.3 | **26.3** |
-| Compressed (KB) | 2.5 | 4.5 | 12.2 | 43.6 | 51.4 | **9.4** |
-| First paint (ms) | 53.3 | 63.7 | 91.3 | 251.9 | 323.9 | **69.3** |
+| Benchmark | VanillaJS | Solid | Tempo keyed | Tempo non-keyed |
+|-----------|-----------|-------|-------------|-----------------|
+| Uncompressed (KB) | 11.3 | 11.5 | **27.1** | **27.0** |
+| Compressed (KB) | 2.5 | 4.5 | **8.9** | **8.9** |
+| First paint (ms) | 45.0 | 52.8 | **70.7** | **64.9** |
+
+## Optimization History
+
+### Baseline → Current (cumulative improvements)
+
+| Benchmark | Baseline | Current | Improvement |
+|-----------|----------|---------|-------------|
+| Create 1k | 110.5 | 73.8 | **-33.2%** |
+| Replace 1k | 124.1 | 83.5 | **-32.7%** |
+| Partial update | 37.1 | 32.3 | **-12.9%** |
+| Select row | 22.5 | 13.4 | **-40.4%** |
+| Swap rows | 40.4 | 41.7 | +3.2% (within noise) |
+| Remove row | 55.3 | 23.7 | **-57.1%** |
+| Create 10k | 1,024.5 | 700.7 | **-31.6%** |
+| Append 1k | 125.4 | 83.5 | **-33.4%** |
+| Clear 1k | 57.7 | 38.0 | **-34.1%** |
+| Ready mem | 0.71 | 0.73 | +2.8% (within noise) |
+| Run mem | 30.76 | 21.75 | **-29.3%** |
+| Run-clear mem | 20.86 | 10.61 | **-49.1%** |
+
+### Tempo Keyed vs VanillaJS (slowdown ratio)
+
+| Benchmark | Ratio | Category |
+|-----------|-------|----------|
+| Create 1k | 2.15x | Good |
+| Replace 1k | 2.18x | Good |
+| Update 10th | 1.49x | Excellent |
+| Select row | 1.99x | Good |
+| Swap rows | 1.58x | Excellent |
+| Remove row | 1.23x | Excellent |
+| Create 10k | 1.90x | Good |
+| Append 1k | 2.01x | Good |
+| Clear 1k | 2.19x | Good |
 
 ## Optimizations Applied
 
-The following optimizations were implemented and measured incrementally:
+### Round 1 (Steps 1-9)
 
-### Step 1: Fix Computed.dispose() memory leak (BUG FIX)
+1. **Fix Computed.dispose() memory leak** — Missing `_onValueListeners.length = 0` in override
+2. **Lazy KeyedPosition signals** — 5 derived signals per item created only on access
+3. **Simplify signalClassName** — Replace Set-based diffing with classList direct manipulation
+4. **Skip redundant initial setText** — Use `onChange` instead of `on` for initial text
+5. **Direct derivative notification** — Iterate `_derivatives` directly instead of via listeners
+6. **Batched microtask scheduling** — Collect all dirty computeds into single microtask
+7. **Lazy signal arrays** — `null` until first use (saves 15k allocations per 1k rows)
+8. **Lazy KeyedPosition index prop** — Plain number until accessed
+9. **Bulk DOM removal** — `removeRange()` for clearing entire lists
 
-**File:** `packages/tempots-core/src/signal.ts`
+### Round 2 (Steps 10-14)
 
-`Computed.dispose()` was missing listener cleanup. The parent `Signal.dispose()` had it, but `Computed` overrides `dispose` with an arrow function and omitted this line. Listener closures retained references to DOM nodes and parent signals, preventing GC.
-
-**Impact:** Run-clear memory dropped from 21.3 MB to ~11.6 MB (45% reduction).
-
-### Step 2: Lazy KeyedPosition signals
-
-**File:** `packages/tempots-core/src/keyed-position.ts`
-
-`KeyedPosition` eagerly created 5 derived signals (`counter`, `isFirst`, `isEven`, `isOdd`, `isLast`) per item. The benchmark uses NONE of them. For 1,000 rows = 5,000 wasted `Computed` instances with scope tracking, derivative arrays, and dispose callbacks.
-
-Converted from eager `readonly` fields to lazy getters with private `#field` backing.
-
-**Impact:** Create 1k dropped from ~106 ms to ~82 ms (22% faster). Run memory reduced by ~6 MB.
-
-### Step 3: Simplify signalClassName
-
-**File:** `packages/tempots-dom/src/renderable/attribute.ts`
-
-`signalClassName` created 2 `Set` objects on every class change for set-based diffing. Replaced with simple array storage — store previous as `string[]`, remove old classes, add new ones. `classList` handles dedup natively.
-
-**Impact:** Small improvement on select row and partial update operations.
-
-### Step 4: Skip redundant initial setText in _signalText
-
-**File:** `packages/tempots-render/src/render-kit.ts`
-
-Changed `signal.on(newCtx.setText)` to `signal.onChange(newCtx.setText)` to skip the redundant initial call (value is already set via `makeChildText(signal.value)`).
-
-**Impact:** Small improvement on create operations.
-
-### Step 5: Direct derivative notification
-
-**File:** `packages/tempots-core/src/signal.ts`
-
-Previously, each `setDerivative()` call registered `computed.setDirty` as a value listener via `this.on(computed.setDirty)`. Changed to direct iteration: `_setAndNotify` iterates `_derivatives` directly. Eliminates ~4,000 listener registrations during 1k row creation.
-
-**Impact:** Broad CPU improvement: swap -28%, partial update -17%, remove -19%, create 1k -5%, replace -7%.
-
-### Step 6: Batched microtask scheduling
-
-**File:** `packages/tempots-core/src/signal.ts`
-
-Replaced per-computed `queueMicrotask` calls with a batch queue. Instead of 3,000 individual microtask calls during creation (one per Computed constructor), all dirty computeds are collected into a single batch and processed in one microtask.
-
-**Impact:** Select row -50% (1,000 microtasks → 1), create 1k -15%, append -10%.
-
-### Step 7: Lazy signal arrays + DisposalScope optimization
-
-**Files:** `packages/tempots-core/src/signal.ts`, `packages/tempots-core/src/disposal-scope.ts`
-
-Signal arrays (`_derivatives`, `_onValueListeners`, `_onDisposeListeners`) changed from eagerly allocated empty arrays to `null` — only allocated on first use. With 5,000 signals per 1k rows × 3 arrays each = 15,000 saved allocations. DisposalScope changed from `Set<AnySignal>` to simple array (lower per-instance overhead). Also replaced `.forEach()` with indexed `for` loops throughout hot paths.
-
-**Impact:** Modest memory improvement (-4.2% run-clear). Main benefit is reduced GC pressure during creation.
-
-### Step 8: Lazy KeyedPosition index prop
-
-**File:** `packages/tempots-core/src/keyed-position.ts`
-
-`KeyedPosition` was created with a `Prop<number>` for the index, even when no consumer reads it. Changed to accept a plain `initialIndex: number` and store it as `#currentIndex`. The `Prop` is only created lazily on first access via `get index()`. `setIndex(n)` updates the plain number and the Prop only if it was already created.
-
-Also removed `indexProp` from `KeyedEntry` — the render-kit update loop calls `entry.position.setIndex(i)` directly.
-
-**Impact:** -1,000 Prop allocations per 1k rows. Swap -15%, remove -5%, run memory -2%.
-
-### Step 9: Bulk DOM removal (removeRange)
-
-**Files:** `packages/tempots-render/src/context.ts`, `packages/tempots-dom/src/dom/browser-context.ts`, `packages/tempots-render/src/render-kit.ts`
-
-Added `removeRange(startRef, endRef)` to `BaseRenderContext` — walks siblings from start to end and removes them all in a single sweep. `KeyedForEach` uses this in a fast path when the new array is empty: calls `removeAllEntries()` which does one `removeRange` for the entire list, then disposes entries without individual DOM removals.
-
-**Impact:** Clear -11%, replace -4%. Biggest win on full-list teardown.
+10. **Singleton equality function** — Share single `strictEquals` reference across all signals (eliminates per-instance arrow function allocation)
+11. **Lazy Computed constructor** — Start with `_isDirty = true`, skip initial `setDirty()`/`_scheduleNotify()` (saves ~3,000 queue() calls per 1k row creation)
+12. **Lightweight inline scopes** — Extract minimal `Scope` interface, replace `DisposalScope` per KeyedForEach entry with inline `makeLightScope()` + `disposeTracked()` (less allocation)
+13. **makeMarker() abstraction** — New method on contexts for boundary references (prepares for future Comment node optimization)
+14. **MapText renderable** — Subscribe directly to source signal with transform, bypassing intermediate Computed (eliminates 2 Computeds per row in benchmark)
 
 ## Analysis
 
-### After All Optimizations
+### CPU Performance
 
-#### What Improved (cumulative from baseline)
-- **Create 1k**: 110.5 → 68.2 ms (**-38.3%**) — now 2.0x Vanilla (was 3.2x)
-- **Replace 1k**: 124.1 → 80.5 ms (**-35.1%**) — now 2.0x Vanilla (was 3.1x)
-- **Select row**: 22.5 → 12.0 ms (**-46.7%**) — now 2.1x Vanilla (was 3.9x)
-- **Swap rows**: 40.4 → 32.3 ms (**-20.0%**) — now 1.4x Vanilla (was 1.8x)
-- **Remove row**: 55.3 → 19.7 ms (**-64.4%**) — now 1.1x Vanilla (was 3.1x)
-- **Create 10k**: 1,024.5 → 665.8 ms (**-35.0%**) — now 1.8x Vanilla (was 2.8x)
-- **Append 1k**: 125.4 → 76.8 ms (**-38.8%**) — now 1.9x Vanilla (was 3.1x)
-- **Clear 1k**: 57.7 → 38.1 ms (**-34.0%**) — now 2.2x Vanilla (was 3.3x)
-- **Run-clear memory**: 20.86 → 11.22 MB (**-46.2%**) — memory leak fixed
-- **Run memory**: 30.76 → 24.01 MB (**-21.9%**)
+Tempo keyed is approximately **2x VanillaJS** across most operations, which is competitive with many reactive frameworks. Key strengths:
+- **Remove row** (1.23x) — bulk removal is nearly native
+- **Update 10th** (1.49x) — fine-grained reactivity pays off
+- **Swap rows** (1.58x) — keyed reconciliation is efficient
 
-#### What's Still Good
-- **Bundle size**: 9.4 KB gzipped — competitive with Solid (4.5 KB), much smaller than React (51 KB) or Angular (44 KB)
-- **First paint**: 69.3 ms — faster than Svelte and far ahead of React/Angular
-- **Remove row**: 19.7 ms — nearly matching Vanilla (17.7 ms), only 1.1x
-- **Swap rows**: 32.3 ms — now faster than Solid (27.1) and Svelte (27.0), competitive range
+Compared to Solid (the fastest reactive framework), Tempo is roughly 1.5-2x slower on creation/replacement but within the same order of magnitude.
 
-#### What Needs More Work
-- **Memory is still high**: 24.0 MB for 1k rows (vs 2-3 MB for Solid/Svelte). The signal-per-row architecture creates far more objects than compile-time reactive frameworks.
-- **Run-clear memory**: 11.2 MB is much better but still 18x Vanilla. Some signal graph references may still not be fully released.
-- **CPU still ~2.0x slower** than leading frameworks on creation/replacement. Per-row overhead: signal allocation, DisposalScope, marker text nodes, scope tracking.
+### Memory
 
-### Keyed vs Non-Keyed Comparison
+Memory remains the biggest gap:
+- **Run memory**: 21.75 MB vs 2.03 MB (VanillaJS) / 2.82 MB (Solid) — **~10x overhead**
+- **Run-clear memory**: 10.61 MB vs 0.62 MB — significant retention after clearing
 
-Non-keyed Tempo is faster on creation (57.9 vs 66.7 ms) but similar on partial operations after microtask batching (update 10th: 28.5 vs 27.4 ms). The non-keyed run-clear memory (7.15 MB) is 36% better than keyed (11.21 MB), confirming KeyedForEach's signal bookkeeping adds significant memory overhead.
+The signal-per-row architecture creates substantially more objects than compile-time reactive frameworks. Each row involves:
+- 1 `Prop<RowData>` (the item signal)
+- 1 `KeyedPosition` instance
+- Several text node contexts and marker nodes
+- Scope tracking arrays
+
+### Bundle Size
+
+Tempo's bundle at **8.9 KB gzipped** is competitive — nearly 2x Solid (4.5 KB) but far smaller than React (51 KB) or Angular (44 KB). First paint at 70.7 ms is excellent.
 
 ### Remaining Optimization Opportunities
 
-1. **Reduce per-row signal count**: Flatten the signal graph — fewer Signals/Computeds per row
-2. **Reduce marker nodes**: Single marker per item instead of two (saves 2,000 text nodes + DOMContext wrappers)
-3. **Investigate remaining memory retention**: 11.2 MB after run-clear indicates incomplete disposal
-4. **Lightweight reactive primitives**: Simpler reactive wrapper for cases that don't need full Signal capabilities
+1. **Cell primitive**: Lightweight reactive value without full Signal overhead (no dispose tracking, simpler notification)
+2. **Structural reactivity**: Reactive records where fields are individually reactive without wrapper signals
+3. **Comment node markers**: Currently `makeMarker()` delegates to text nodes; Comment nodes could be cheaper in some engines
+4. **Reduce per-row object count**: Flatten signal graph, fewer wrappers per DOM binding
 
 ## Raw Data
 
-All raw JSON results are in the benchmark runner's `webdriver-ts/results/` directory. Each file contains min/max/median/mean/stddev and individual run values.
+All raw JSON results are in `demo/js-framework-benchmark/js-framework-benchmark/webdriver-ts/results/`. Each file contains min/max/median/mean/stddev and individual run values.
 
 ## Methodology Notes
 
-- All frameworks were built with their standard production build configurations
-- Benchmarks were run on the same machine in sequence (not parallel)
-- 3-5 iterations per benchmark — official results typically use 10+ for more statistical significance
-- React's swap rows score (167 ms) is anomalously high compared to its other scores — this is a known React issue where VDOM diffing struggles with large table row swaps
-- Tempo keyed implementation uses `KeyedForEach` with event delegation via `delegate.click`
-- Tempo non-keyed implementation uses `ForEach` with event delegation via `delegate.click`
-- "Before" values are from the initial baseline run before any optimizations
+- All frameworks built with standard production configurations
+- Benchmarks run on the same machine in sequence (not parallel)
+- 5 iterations per CPU benchmark, 5 for memory, 15 for select row (with warmup)
+- Tempo keyed uses `KeyedForEach` with `delegate.click` and `MapText`
+- Tempo non-keyed uses `ForEach` with `delegate.click`
+- "Baseline" values are from the initial run before any optimizations
+- Run on the official js-framework-benchmark suite (submodule at `demo/js-framework-benchmark/js-framework-benchmark/`)

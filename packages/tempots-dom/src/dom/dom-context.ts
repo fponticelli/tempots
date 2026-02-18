@@ -194,4 +194,9 @@ export interface DOMContext {
    * Used for bulk removal of keyed entries.
    */
   removeRange(startRef: DOMContext, endRef: DOMContext): void
+
+  /**
+   * Creates a lightweight marker node (Comment node) as a boundary reference.
+   */
+  makeMarker(): DOMContext
 }

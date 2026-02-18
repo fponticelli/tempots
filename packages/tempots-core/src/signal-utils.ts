@@ -1,7 +1,15 @@
 import { getWindow } from './window'
 import { ValueType, RemoveSignals, Values } from './types'
 import { guessInterpolate } from './interpolate'
-import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
+import {
+  AnySignal,
+  computed,
+  Computed,
+  prop,
+  Prop,
+  Signal,
+  strictEquals,
+} from './signal'
 import { computedOf, Value } from './value'
 import { getCurrentScope } from './scope-stack'
 
@@ -135,7 +143,7 @@ export const storedProp = <T>({
   store,
   serialize = JSON.stringify,
   deserialize = JSON.parse,
-  equals = (a, b) => a === b,
+  equals = strictEquals as (a: T, b: T) => boolean,
   onLoad = value => value,
   syncTabs = true,
   onKeyChange = 'load',
@@ -443,7 +451,7 @@ export const animateSignals = <T>(
   /* c8 ignore next */
   const duration = options?.duration ?? 300
   const easing = options?.easing ?? (t => t)
-  const equals = options?.equals ?? ((a, b) => a === b)
+  const equals = options?.equals ?? strictEquals
   let interpolate = options?.interpolate
   let startValue = initialValue
   let endValue = fn()
@@ -748,7 +756,7 @@ export const syncProp = <T>(
     channel: channelName,
     serialize = JSON.stringify,
     deserialize = JSON.parse,
-    equals = (a, b) => a === b,
+    equals = strictEquals as (a: T, b: T) => boolean,
   }: SyncPropOptions<T>
 ): (() => void) => {
   const windowRef = getWindow() as Window & {
@@ -973,7 +981,7 @@ export const throttleSignal = <T>(signal: Signal<T>, ms: number): Signal<T> => {
  */
 export const distinctUntilChanged = <T>(
   signal: Signal<T>,
-  equals: (a: T, b: T) => boolean = (a, b) => a === b
+  equals: (a: T, b: T) => boolean = strictEquals
 ): Signal<T> => {
   const newSignal = prop(signal.get(), equals)
 
@@ -1015,7 +1023,7 @@ export const accumulateSignal = <T, A>(
   signal: Signal<T>,
   reducer: (acc: A, value: T) => A,
   initial: A,
-  equals: (a: A, b: A) => boolean = (a, b) => a === b
+  equals: (a: A, b: A) => boolean = strictEquals
 ): Signal<A> => {
   let acc = reducer(initial, signal.get())
   const newSignal = prop(acc, equals)
@@ -1061,7 +1069,7 @@ export const accumulateSignal = <T, A>(
  */
 export const createSelector = <T>(
   source: Signal<T>,
-  equals: (a: T, b: T) => boolean = (a, b) => a === b
+  equals: (a: T, b: T) => boolean = strictEquals
 ): ((key: T) => Signal<boolean>) => {
   const subscribers = new Map<T, Set<Prop<boolean>>>()
   let currentValue = source.get()

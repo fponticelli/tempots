@@ -1,4 +1,4 @@
-import type { Clear, Renderable, TNode } from '@tempots/core'
+import type { Clear, Renderable, TNode, Scope } from '@tempots/core'
 import {
   Computed,
   Signal,
@@ -9,7 +9,10 @@ import {
   KeyedPosition,
   DisposalScope,
   withScope,
+  pushScope,
+  popScope,
   Prop,
+  AnySignal,
 } from '@tempots/core'
 import type { BaseRenderContext } from './context'
 import type {
@@ -170,6 +173,10 @@ export interface RenderKit<
   ) => (
     child: (...values: ToProviderTypes<P>) => TNode<CTX, TType>
   ) => Renderable<CTX, TType>
+  MapText: <T>(
+    source: Signal<T>,
+    fn: (value: T) => string
+  ) => Renderable<CTX, TType>
   handleValueOrSignal: <T, R>(
     value: Value<T>,
     onSignal: (signal: Signal<T>) => R,
@@ -218,6 +225,28 @@ export function createRenderKit<
       }
     })
 
+  /**
+   * Creates a text node that displays a transformed signal value without
+   * creating an intermediate Computed. This is more efficient than
+   * `signal.map(fn)` when the mapped value is only used as text content.
+   *
+   * @param source - The source signal to map from
+   * @param fn - Transform function that produces the text to display
+   * @returns A renderable that displays the transformed text
+   */
+  const MapText = <T>(
+    source: Signal<T>,
+    fn: (value: T) => string
+  ): Renderable<CTX, TType> =>
+    create((ctx: CTX) => {
+      const newCtx = ctx.makeChildText(fn(source.value))
+      const dispose = source.onChange((v: T) => newCtx.setText(fn(v)))
+      return (removeTree: boolean) => {
+        dispose()
+        newCtx.clear(removeTree)
+      }
+    })
+
   // --- Internal helpers ---
 
   const handleValueOrSignal = <T, R>(
@@ -259,7 +288,7 @@ export function createRenderKit<
     sig: Signal<T>,
     render: (value: T) => TNode<CTX, TType>
   ): Clear => {
-    const newCtx = ctx.makeRef() as CTX
+    const newCtx = ctx.makeMarker() as CTX
     let clear: Clear = () => {}
     let currentScope: DisposalScope | null = null
 
@@ -356,7 +385,7 @@ export function createRenderKit<
       if (Signal.is(times)) {
         return create((ctx: CTX) => {
           const length = (times as Signal<number>).derive()
-          const newCtx = ctx.makeRef() as CTX
+          const newCtx = ctx.makeMarker() as CTX
           const clears: Clear[] = []
           const scopes: DisposalScope[] = []
 
@@ -476,21 +505,51 @@ export function createRenderKit<
       value,
       arrSignal =>
         create((ctx: CTX) => {
-          const outerRef = ctx.makeRef() as CTX
+          const outerRef = ctx.makeMarker() as CTX
           const totalProp = prop(0)
 
           type KeyedEntry = {
             key: K
             valueProp: Prop<T>
             position: KeyedPosition
-            scope: DisposalScope
+            tracked: AnySignal[] | null
+            disposeCallbacks: Array<() => void> | null
             clear: Clear
             startRef: CTX
             endRef: CTX
             // Separator state (if separator is provided)
-            sepScope?: DisposalScope
+            sepTracked?: AnySignal[] | null
+            sepDisposeCallbacks?: Array<() => void> | null
             sepClear?: Clear
             sepStartRef?: CTX
+          }
+
+          /** Create a lightweight scope that tracks signals into an entry's arrays */
+          const makeLightScope = (entry: {
+            tracked: AnySignal[] | null
+            disposeCallbacks: Array<() => void> | null
+          }): Scope => ({
+            track: (s: AnySignal) => {
+              if (entry.tracked === null) entry.tracked = []
+              entry.tracked.push(s)
+            },
+            onDispose: (cb: () => void) => {
+              if (entry.disposeCallbacks === null) entry.disposeCallbacks = []
+              entry.disposeCallbacks.push(cb)
+            },
+          })
+
+          /** Dispose tracked signals and callbacks from a lightweight scope */
+          const disposeTracked = (
+            tracked: AnySignal[] | null,
+            callbacks: Array<() => void> | null
+          ): void => {
+            if (callbacks !== null) {
+              for (let i = 0; i < callbacks.length; i++) callbacks[i]()
+            }
+            if (tracked !== null) {
+              for (let i = 0; i < tracked.length; i++) tracked[i].dispose()
+            }
           }
 
           const entries: KeyedEntry[] = []
@@ -505,35 +564,43 @@ export function createRenderKit<
             const valueProp = prop(value)
             const position = new KeyedPosition(index, totalProp)
 
-            // Create start marker
-            const startRef = ctx.makeChildText('') as CTX
+            // Create start marker (Comment node — cheaper than text node)
+            const startRef = ctx.makeMarker() as CTX
             // Move it before the target
             ctx.moveRangeBefore(startRef, startRef, insertBefore)
 
             // Create end marker
-            const endRef = ctx.makeChildText('') as CTX
+            const endRef = ctx.makeMarker() as CTX
             ctx.moveRangeBefore(endRef, endRef, insertBefore)
 
             // Render content between start and end markers.
             // endRef acts as the insertion point — content is placed before it.
-            const scope = new DisposalScope()
-            const clear = withScope(scope, () =>
-              renderableOfTNode(item(valueProp, position)).render(endRef)
-            )
-
-            return {
+            // Use lightweight inline scope instead of DisposalScope
+            const entry: KeyedEntry = {
               key: k,
               valueProp,
               position,
-              scope,
-              clear,
+              tracked: null,
+              disposeCallbacks: null,
+              clear: undefined!,
               startRef,
               endRef,
             }
+            const scope = makeLightScope(entry)
+            pushScope(scope)
+            try {
+              entry.clear = renderableOfTNode(item(valueProp, position)).render(
+                endRef
+              )
+            } finally {
+              popScope()
+            }
+
+            return entry
           }
 
           const removeEntry = (entry: KeyedEntry, removeTree = true) => {
-            entry.scope.dispose()
+            disposeTracked(entry.tracked, entry.disposeCallbacks)
             entry.clear(removeTree)
             entry.startRef.clear(removeTree)
             entry.endRef.clear(removeTree)
@@ -541,7 +608,10 @@ export function createRenderKit<
             entry.valueProp.dispose()
             // Remove separator if present
             if (entry.sepClear) {
-              entry.sepScope?.dispose()
+              disposeTracked(
+                entry.sepTracked ?? null,
+                entry.sepDisposeCallbacks ?? null
+              )
               entry.sepClear(removeTree)
               entry.sepStartRef?.clear(removeTree)
             }
@@ -577,25 +647,41 @@ export function createRenderKit<
             if (!separator) return
 
             // Create separator marker before the entry's start marker
-            const sepStartRef = ctx.makeChildText('') as CTX
+            const sepStartRef = ctx.makeMarker() as CTX
             ctx.moveRangeBefore(sepStartRef, sepStartRef, insertBefore)
 
-            const sepScope = new DisposalScope()
-            const sepClear = withScope(sepScope, () =>
-              renderableOfTNode(separator(entry.position)).render(insertBefore)
-            )
-
             entry.sepStartRef = sepStartRef
-            entry.sepScope = sepScope
+            entry.sepTracked = null
+            entry.sepDisposeCallbacks = null
+            const sepScopeHolder = {
+              tracked: null as AnySignal[] | null,
+              disposeCallbacks: null as Array<() => void> | null,
+            }
+            const sepScope = makeLightScope(sepScopeHolder)
+            pushScope(sepScope)
+            let sepClear: Clear
+            try {
+              sepClear = renderableOfTNode(separator(entry.position)).render(
+                insertBefore
+              )
+            } finally {
+              popScope()
+            }
+            entry.sepTracked = sepScopeHolder.tracked
+            entry.sepDisposeCallbacks = sepScopeHolder.disposeCallbacks
             entry.sepClear = sepClear
           }
 
           const removeSeparator = (entry: KeyedEntry): void => {
             if (entry.sepClear) {
-              entry.sepScope?.dispose()
+              disposeTracked(
+                entry.sepTracked ?? null,
+                entry.sepDisposeCallbacks ?? null
+              )
               entry.sepClear(true)
               entry.sepStartRef?.clear(true)
-              entry.sepScope = undefined
+              entry.sepTracked = undefined
+              entry.sepDisposeCallbacks = undefined
               entry.sepClear = undefined
               entry.sepStartRef = undefined
             }
@@ -763,7 +849,7 @@ export function createRenderKit<
   ): Renderable<CTX, TType> => {
     function onSignal(matchSignal: Signal<T>): Renderable<CTX, TType> {
       return create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         let clearRenderable: Clear | undefined
         let matched: Computed<T[keyof T]> | undefined
         const keySignal = matchSignal.map(value => {
@@ -842,7 +928,7 @@ export function createRenderKit<
     if (Signal.is(value)) {
       const sig = value as Signal<T>
       return create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         const mountableSignal = sig.map(v => renderableOfTNode(fn(v)))
         let previousClear: Clear = () => {}
         const clear = mountableSignal.on(child => {
@@ -865,7 +951,7 @@ export function createRenderKit<
   ): Renderable<CTX, TType> => {
     function onSignal(valueSignal: Signal<T | null | undefined>) {
       return create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         let clear: Clear = () => {}
         let isNonNillRendered = false
         let feed: ReturnType<typeof prop<T>> | null = null
@@ -934,7 +1020,7 @@ export function createRenderKit<
       otherwise?: () => TNode<CTX, TType>
     ): Renderable<CTX, TType> =>
       create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         const hasNillLiterals = signals.some(
           sig => !Signal.is(sig) && sig == null
         )
@@ -1042,7 +1128,7 @@ export function createRenderKit<
     return create((ctx: CTX) => {
       let active = true
       const promise = task()
-      const newCtx = ctx.makeRef() as CTX
+      const newCtx = ctx.makeMarker() as CTX
       let clear = renderableOfTNode(pending).render(newCtx)
       promise.then(
         value => {
@@ -1209,6 +1295,7 @@ export function createRenderKit<
     Provide,
     Use,
     UseMany,
+    MapText,
     handleValueOrSignal,
     createReactiveRenderable,
     renderableOfTNode,

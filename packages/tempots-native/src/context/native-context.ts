@@ -59,6 +59,11 @@ export class NativeContext implements BaseRenderContext {
     ) as this
   }
 
+  makeMarker(): this {
+    // In native context, markers are the same as refs
+    return this.makeRef()
+  }
+
   // --- BaseRenderContext (text) ---
 
   /**

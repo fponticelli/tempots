@@ -22,6 +22,7 @@ export const {
   OneOfValue,
   OneOfTuple,
   MapSignal,
+  MapText,
   Ensure,
   EnsureAll,
   NotEmpty,

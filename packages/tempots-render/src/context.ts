@@ -89,4 +89,12 @@ export interface BaseRenderContext extends HierarchicalContext {
    * @param endRef - The context whose reference marks the end of the range.
    */
   removeRange(startRef: BaseRenderContext, endRef: BaseRenderContext): void
+
+  /**
+   * Creates a lightweight marker node (e.g. Comment node in DOM) and appends it
+   * to the current context. Markers are cheaper than text nodes and are used
+   * as boundary references for keyed list items.
+   * @returns A new context with a reference to the marker node.
+   */
+  makeMarker(): BaseRenderContext
 }

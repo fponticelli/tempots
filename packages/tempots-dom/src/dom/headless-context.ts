@@ -516,6 +516,10 @@ export class HeadlessContext implements DOMContext {
   readonly makeRef = (): DOMContext => {
     return this.makeChildText('')
   }
+  readonly makeMarker = (): DOMContext => {
+    // In headless mode, markers are just empty text nodes (same as makeRef)
+    return this.makeChildText('')
+  }
   readonly makePortal = (selector: string | HTMLElement): DOMContext => {
     const portal = new HeadlessPortal(selector, this.element)
     this.appendOrInsert(portal)

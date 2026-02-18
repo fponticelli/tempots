@@ -1,6 +1,13 @@
 import { getCurrentScope } from './scope-stack'
 
 /**
+ * Singleton strict equality function. Used as default `equals` for all signals
+ * to avoid allocating a new arrow function per signal instance.
+ * @public
+ */
+export const strictEquals = <T>(a: T, b: T): boolean => a === b
+
+/**
  * Represents any type of signal.
  * It can be a Signal, Prop, or Computed.
  *
@@ -124,7 +131,7 @@ export class Signal<T> implements ReadSignal<T> {
     promise: Promise<O>,
     init: O,
     recover?: (error: unknown) => O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ): Signal<O> => {
     const signal = new Signal(init, equals)
     promise
@@ -422,7 +429,7 @@ export class Signal<T> implements ReadSignal<T> {
    */
   readonly map = <O>(
     fn: (value: T) => O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     const comp = new Computed(() => {
       try {
@@ -448,7 +455,7 @@ export class Signal<T> implements ReadSignal<T> {
    */
   readonly flatMap = <O>(
     fn: (value: T) => Signal<O>,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     const computed = new Computed(() => {
       try {
@@ -469,10 +476,13 @@ export class Signal<T> implements ReadSignal<T> {
    * @returns A new signal that emits the same value as the original signal and invokes the callback function.
    */
   readonly tap = (fn: (value: T) => void) => {
-    return this.map(value => {
+    const comp = this.map(value => {
       fn(value)
       return value
     })
+    // tap is used for side effects — schedule initial computation
+    comp.scheduleIfDirty()
+    return comp
   }
 
   /**
@@ -527,7 +537,7 @@ export class Signal<T> implements ReadSignal<T> {
   readonly filterMap = <O>(
     fn: (value: T) => O | undefined | null,
     startValue: O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     let latestValue = startValue
     const computed = new Computed(() => {
@@ -561,7 +571,7 @@ export class Signal<T> implements ReadSignal<T> {
     fn: (value: T, options: { abortSignal: AbortSignal }) => Promise<O>,
     alt: O,
     recover?: (error: unknown) => O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     const p = prop(alt, equals)
     let count = 0
@@ -638,7 +648,7 @@ export class Signal<T> implements ReadSignal<T> {
     ) => AsyncGenerator<O, void, unknown>,
     alt: O,
     recover?: (error: unknown) => O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     const p = prop(alt, equals)
     let count = 0
@@ -798,7 +808,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
   /**
    * @internal
    */
-  protected _isDirty = false
+  protected _isDirty = true
 
   /**
    * Creates a new Computed signal.
@@ -828,9 +838,10 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     private readonly _fn: () => T,
     equals: (a: T, b: T) => boolean
   ) {
-    // cheat to avoid reading when possibly not necessary
+    // Start with undefined; _isDirty = true ensures first get() computes the real value.
+    // Skip setDirty()/queue() — the value will be computed lazily on first read
+    // (via get(), on(), or onChange()), avoiding ~3000 queue() calls per 1k rows.
     super(undefined as T, equals)
-    this.setDirty()
 
     // Auto-register with current scope if one exists
     const currentScope = getCurrentScope()
@@ -872,6 +883,17 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
         this._setAndNotify(this._fn())
       }
     })
+  }
+
+  /**
+   * Schedule a microtask to compute this signal if it is dirty.
+   * Used by computed() factory to ensure effects fire their initial computation.
+   * @internal
+   */
+  readonly scheduleIfDirty = () => {
+    if (this._isDirty) {
+      this._scheduleNotify()
+    }
   }
 
   /** {@inheritDoc Signal.get} */
@@ -1030,7 +1052,7 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
   readonly iso = <O>(
     to: (value: T) => O,
     from: (value: O) => T,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     const prop = new Prop(to(this.get()), equals)
     prop.onDispose(this.on(value => prop.set(to(value))))
@@ -1075,11 +1097,15 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
 export const computed = <T>(
   fn: () => T,
   dependencies: Array<AnySignal>,
-  equals: (a: T, b: T) => boolean = (a, b) => a === b
+  equals: (a: T, b: T) => boolean = strictEquals
 ): Computed<T> => {
-  const computed = new Computed(fn, equals)
-  dependencies.forEach(signal => signal.setDerivative(computed))
-  return computed
+  const c = new Computed(fn, equals)
+  dependencies.forEach(signal => signal.setDerivative(c))
+  // Schedule initial computation via microtask. Unlike .map() where the
+  // parent reads the Computed synchronously, computed() with explicit
+  // dependencies (used by effect()) may never be .get()'d directly.
+  c.scheduleIfDirty()
+  return c
 }
 /**
  * Executes the provided function `fn` whenever any of the signals in the `signals` array change.
@@ -1135,7 +1161,7 @@ export const effect = (
  */
 export const prop = <T>(
   value: T,
-  equals: (a: T, b: T) => boolean = (a, b) => a === b
+  equals: (a: T, b: T) => boolean = strictEquals
 ): Prop<T> => {
   const signal = new Prop(value, equals)
 
@@ -1159,5 +1185,5 @@ export const prop = <T>(
  */
 export const signal = <T>(
   value: T,
-  equals: (a: T, b: T) => boolean = (a, b) => a === b
+  equals: (a: T, b: T) => boolean = strictEquals
 ): Signal<T> => new Signal(value, equals)

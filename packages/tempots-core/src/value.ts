@@ -4,6 +4,7 @@ import {
   effect,
   prop,
   signal,
+  strictEquals,
   Prop,
   Signal,
 } from './signal'
@@ -257,7 +258,7 @@ export const computedOfAsync = <T extends Value<unknown>[]>(...args: T) => {
     ) => Promise<O>,
     alt: O,
     recover?: (error: unknown) => O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     return computedOf(...args)((...args) => args).mapAsync(
       ([...args], options) =>
@@ -324,7 +325,7 @@ export const computedOfAsyncGenerator = <T extends Value<unknown>[]>(
     ) => AsyncGenerator<O, void, unknown>,
     alt: O,
     recover?: (error: unknown) => O,
-    equals: (a: O, b: O) => boolean = (a, b) => a === b
+    equals: (a: O, b: O) => boolean = strictEquals
   ) => {
     return computedOf(...args)((...args) => args).mapAsyncGenerator(
       ([...args], options) =>

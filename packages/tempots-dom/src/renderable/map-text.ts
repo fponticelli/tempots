@@ -1,0 +1,1 @@
+export { MapText } from './shared'

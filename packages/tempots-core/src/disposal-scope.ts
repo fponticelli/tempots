@@ -1,5 +1,6 @@
 import type { AnySignal, Computed, ListenerOptions, Prop } from './signal'
 import { computed, effect, prop } from './signal'
+import type { Scope } from './scope-stack'
 import { untracked, withScope } from './scope-stack'
 import type { Value } from './value'
 import { computedOf, effectOf } from './value'
@@ -11,26 +12,19 @@ import { ValueTypes } from './types'
  *
  * @public
  */
-export class DisposalScope {
-  private _signals: AnySignal[] = []
-  private _callbacks: Array<() => void> = []
+export class DisposalScope implements Scope {
+  private _signals: AnySignal[] | null = null
+  private _callbacks: Array<() => void> | null = null
   private _disposed: boolean = false
 
   /**
    * Register a signal with this scope for automatic disposal.
    *
    * @param signal - The signal to track
-   * @throws Error if the scope has already been disposed
-   * @throws Error if the signal has already been disposed
    * @public
    */
   track(signal: AnySignal): void {
-    if (this._disposed) {
-      throw new Error('Cannot track signal in disposed scope')
-    }
-    if (signal.isDisposed()) {
-      throw new Error('Cannot track already disposed signal')
-    }
+    if (this._signals === null) this._signals = []
     this._signals.push(signal)
   }
 
@@ -40,13 +34,10 @@ export class DisposalScope {
    * Use this for cleanup that doesn't need the `removeTree` parameter.
    *
    * @param callback - The callback to call on disposal
-   * @throws Error if the scope has already been disposed
    * @public
    */
   onDispose(callback: () => void): void {
-    if (this._disposed) {
-      throw new Error('Cannot register callback in disposed scope')
-    }
+    if (this._callbacks === null) this._callbacks = []
     this._callbacks.push(callback)
   }
 
@@ -61,23 +52,27 @@ export class DisposalScope {
     this._disposed = true
 
     // Call disposal callbacks first (before disposing signals)
-    // Catch errors to ensure all callbacks run
-    for (const callback of this._callbacks) {
-      try {
-        callback()
-      } catch (error) {
-        // Log error but continue with other callbacks
-        const message = error instanceof Error ? error.message : String(error)
-        console.error('Error in disposal callback:', message)
+    const callbacks = this._callbacks
+    this._callbacks = null
+    if (callbacks !== null) {
+      for (let i = 0; i < callbacks.length; i++) {
+        try {
+          callbacks[i]()
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          console.error('Error in disposal callback:', message)
+        }
       }
     }
-    this._callbacks.length = 0
 
     // Then dispose all signals
-    for (let i = 0; i < this._signals.length; i++) {
-      this._signals[i].dispose()
+    const signals = this._signals
+    this._signals = null
+    if (signals !== null) {
+      for (let i = 0; i < signals.length; i++) {
+        signals[i].dispose()
+      }
     }
-    this._signals.length = 0
   }
 
   /**
@@ -179,5 +174,22 @@ export class DisposalScope {
       // Use withScope to ensure the computed signal created by effectOf() is tracked
       return withScope(this, () => effectOf(...args)(fn, options))
     }
+  }
+}
+
+/**
+ * Execute a function in a new scope and dispose the scope immediately after.
+ * Useful for one-off scoped operations.
+ *
+ * @param fn - The function to execute, receives the scope as parameter
+ * @returns The result of the function
+ * @public
+ */
+export const scoped = <T>(fn: (scope: DisposalScope) => T): T => {
+  const scope = new DisposalScope()
+  try {
+    return withScope(scope, () => fn(scope))
+  } finally {
+    scope.dispose()
   }
 }

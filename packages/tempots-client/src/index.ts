@@ -274,6 +274,10 @@ export class HydrationContext implements DOMContext {
     )
   }
 
+  readonly makeMarker = (): DOMContext => {
+    return this.makeRef()
+  }
+
   readonly makePortal = (selector: string | HTMLElement): DOMContext => {
     const target =
       typeof selector === 'string'

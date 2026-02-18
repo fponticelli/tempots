@@ -7,6 +7,7 @@ import {
   computed,
   delegate,
   KeyedForEach,
+  MapText,
   aria,
 } from '@tempots/dom'
 import type { Renderable, Signal } from '@tempots/dom'
@@ -20,8 +21,8 @@ function Row(item: Signal<RowData>, selected: Signal<number>): Renderable {
         [item, selected]
       )
     ),
-    html.td(attr.class('col-md-1'), item.map(d => String(d.id))),
-    html.td(attr.class('col-md-4'), html.a(item.map(d => d.label))),
+    html.td(attr.class('col-md-1'), MapText(item, d => String(d.id))),
+    html.td(attr.class('col-md-4'), html.a(MapText(item, d => d.label))),
     html.td(
       attr.class('col-md-1'),
       html.a(

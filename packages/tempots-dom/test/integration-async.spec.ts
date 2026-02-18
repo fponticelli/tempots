@@ -163,8 +163,9 @@ describe('Integration - Async Contexts', () => {
     // Wait for the third setTimeout to execute
     await sleep(40)
 
-    // Attempting to track a signal in a disposed scope should throw an error
-    expect(errorThrown).toBe(true)
+    // Creating a signal in a disposed scope no longer throws (for performance),
+    // but the signal won't be tracked for disposal.
+    expect(errorThrown).toBe(false)
   })
 
   test('should handle nested async operations', async () => {

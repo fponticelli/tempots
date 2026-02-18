@@ -191,6 +191,14 @@ export class BrowserContext implements DOMContext {
   }
 
   /**
+   * Creates a lightweight marker node and appends/inserts it.
+   * Used as boundary references for keyed list items and conditional renderables.
+   */
+  readonly makeMarker = (): DOMContext => {
+    return this.makeRef()
+  }
+
+  /**
    * Appends or inserts a child node to the element, depending on whether a reference node is provided.
    *
    * @param child - The child node to append or insert.
