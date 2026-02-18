@@ -180,18 +180,18 @@ export class BrowserContext implements DOMContext {
   }
 
   /**
-   * Creates a new `DOMContext` with a reference to a newly created text node.
-   * The text node is appended or inserted to the current `DOMContext`.
+   * Creates a new `DOMContext` with a reference to a newly created Comment node.
+   * The Comment node is appended or inserted to the current `DOMContext`.
    * The new `DOMContext` with the reference is returned.
    */
   readonly makeRef = (): DOMContext => {
-    const ref = this.createText('')
+    const ref = this.document.createComment('')
     this.appendOrInsert(ref)
     return this.withReference(ref)
   }
 
   /**
-   * Creates a lightweight marker node and appends/inserts it.
+   * Creates a lightweight Comment marker node and appends/inserts it.
    * Used as boundary references for keyed list items and conditional renderables.
    */
   readonly makeMarker = (): DOMContext => {
@@ -282,10 +282,10 @@ export class BrowserContext implements DOMContext {
   /**
    * Creates a new `DOMContext` instance with the specified reference.
    *
-   * @param reference - The optional `Text` node to use as the reference for the new `DOMContext`.
+   * @param reference - The optional `Node` to use as the reference for the new `DOMContext`.
    * @returns A new `DOMContext` instance with the specified reference.
    */
-  readonly withReference = (reference: Text | undefined): DOMContext =>
+  readonly withReference = (reference: Node | undefined): DOMContext =>
     new BrowserContext(this.document, this.element, reference, this.providers)
 
   /**

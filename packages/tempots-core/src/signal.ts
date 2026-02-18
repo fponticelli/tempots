@@ -748,12 +748,20 @@ export class Signal<T> implements ReadSignal<T> {
   readonly setDerivative = <O>(computed: Computed<O>) => {
     if (this._derivatives === null) this._derivatives = []
     this._derivatives.push(computed as Computed<unknown>)
+    const parentDispose = computed.dispose
     computed.onDispose(() => {
-      if (this._derivatives === null) return
-      const idx = this._derivatives.indexOf(computed as Computed<unknown>)
-      if (idx !== -1) this._derivatives.splice(idx, 1)
+      if (this._derivatives !== null) {
+        const idx = this._derivatives.indexOf(computed as Computed<unknown>)
+        if (idx !== -1) this._derivatives.splice(idx, 1)
+      }
+      // Remove from parent's onDispose listeners to prevent reference leak.
+      // Without this, the parent retains references to all disposed derivatives forever.
+      if (this._onDisposeListeners !== null) {
+        const idx = this._onDisposeListeners.indexOf(parentDispose)
+        if (idx !== -1) this._onDisposeListeners.splice(idx, 1)
+      }
     })
-    this.onDispose(computed.dispose)
+    this.onDispose(parentDispose)
   }
 }
 
@@ -925,6 +933,8 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     this._onDisposeListeners = null
     this._derivatives = null
     this._onValueListeners = null
+    // Release the computation closure to free captured references (parent signals, DOM nodes)
+    ;(this as { _fn: (() => T) | null })._fn = null
     if (disposeListeners !== null) {
       for (let i = 0; i < disposeListeners.length; i++) disposeListeners[i]()
     }

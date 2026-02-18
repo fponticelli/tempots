@@ -17,19 +17,19 @@ describe("EnsureAll", () => {
       ), () => 'x'),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     a.set('a')
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     b.set(2)
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     c.set(true)
-    expect(document.body.innerHTML).toStrictEqual('a2true')
+    expect(document.body.innerHTML).toStrictEqual('a2true<!---->')
     a.set(null)
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     a.set('b')
-    expect(document.body.innerHTML).toStrictEqual('b2true')
+    expect(document.body.innerHTML).toStrictEqual('b2true<!---->')
     a.set('c')
-    expect(document.body.innerHTML).toStrictEqual('c2true')
+    expect(document.body.innerHTML).toStrictEqual('c2true<!---->')
   });
   test("using non-null signals", async () => {
     const a = prop<string | null>('a')
@@ -43,15 +43,15 @@ describe("EnsureAll", () => {
       ), () => 'x'),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('a2true')
+    expect(document.body.innerHTML).toStrictEqual('a2true<!---->')
     a.set('a')
-    expect(document.body.innerHTML).toStrictEqual('a2true')
+    expect(document.body.innerHTML).toStrictEqual('a2true<!---->')
     b.set(2)
-    expect(document.body.innerHTML).toStrictEqual('a2true')
+    expect(document.body.innerHTML).toStrictEqual('a2true<!---->')
     c.set(true)
-    expect(document.body.innerHTML).toStrictEqual('a2true')
+    expect(document.body.innerHTML).toStrictEqual('a2true<!---->')
     a.set(null)
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
   });
   test("using string literal", () => {
     render(
@@ -61,7 +61,7 @@ describe("EnsureAll", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('A')
+    expect(document.body.innerHTML).toStrictEqual('A<!---->')
   });
   test("using null literal", () => {
     render(
@@ -71,7 +71,7 @@ describe("EnsureAll", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
   });
 
   test("should properly dispose resources (lines 237-242)", () => {
@@ -88,7 +88,7 @@ describe("EnsureAll", () => {
       document.body
     )
 
-    expect(document.body.innerHTML).toStrictEqual('a2true')
+    expect(document.body.innerHTML).toStrictEqual('a2true<!---->')
 
     // Test disposal with removeTree = true to cover lines 237-242
     clear(true)

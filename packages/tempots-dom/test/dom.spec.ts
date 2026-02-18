@@ -84,7 +84,7 @@ describe("DOM", () => {
     expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(0);
     expect(document.body.innerHTML).toStrictEqual(
-      '<div class="test"><div>test</div></div>'
+      '<div class="test"><!----><div>test</div><!----></div>'
     );
     cls.value = "test2";
     expect(spyElement).toHaveBeenCalledTimes(1);
@@ -93,7 +93,7 @@ describe("DOM", () => {
     expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(0);
     expect(document.body.innerHTML).toStrictEqual(
-      '<div class="test2"><div>test2</div></div>'
+      '<div class="test2"><!----><div>test2</div><!----></div>'
     );
     cls.value = null;
     expect(spyElement).toHaveBeenCalledTimes(1);
@@ -101,7 +101,7 @@ describe("DOM", () => {
     expect(spyBrowserCtx).toHaveBeenCalledTimes(1);
     expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(1);
-    expect(document.body.innerHTML).toStrictEqual('<div class=""></div>');
+    expect(document.body.innerHTML).toStrictEqual('<div class=""><!----><!----></div>');
     cls.value = "test3";
     expect(spyElement).toHaveBeenCalledTimes(2);
     expect(spyCtxMount).toHaveBeenCalledTimes(2);
@@ -109,7 +109,7 @@ describe("DOM", () => {
     expect(spyHeadlessCtx).toHaveBeenCalledTimes(0);
     expect(spyDispose).toHaveBeenCalledTimes(1);
     expect(document.body.innerHTML).toStrictEqual(
-      '<div class="test3"><div>test3</div></div>'
+      '<div class="test3"><!----><div>test3</div><!----></div>'
     );
   });
 });

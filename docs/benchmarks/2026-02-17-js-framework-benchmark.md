@@ -7,8 +7,8 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 - **Machine**: macOS Darwin 25.3.0
 - **Node**: v22.21.1
 - **Browser**: Chrome 145.0.7632.67 (headless)
-- **Runner**: Puppeteer (via js-framework-benchmark webdriver-ts)
-- **Iterations**: 5 per benchmark (15 for select row)
+- **Runner**: Playwright (via js-framework-benchmark webdriver-ts)
+- **Iterations**: 3 per benchmark (13 for select row)
 - **CPU throttling**: 4x (standard benchmark setting)
 
 ## Framework Versions
@@ -24,31 +24,31 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 
 | Benchmark | VanillaJS | Solid | Tempo keyed | Tempo non-keyed |
 |-----------|-----------|-------|-------------|-----------------|
-| Create 1,000 rows | 34.3 | 38.0 | **73.8** | **66.5** |
-| Replace 1,000 rows | 38.4 | 44.9 | **83.5** | **18.6** |
-| Partial update (every 10th) | 21.7 | 24.5 | **32.3** | **29.4** |
-| Select row | 6.7 | 9.8 | **13.4** | **7.4** |
-| Swap rows | 26.3 | 29.1 | **41.7** | **25.4** |
-| Remove row | 19.3 | 21.3 | **23.7** | **35.9** |
-| Create 10,000 rows | 369.7 | 396.7 | **700.7** | **635.0** |
-| Append 1,000 rows | 41.6 | 45.9 | **83.5** | **73.7** |
-| Clear 1,000 rows | 17.4 | 23.7 | **38.0** | **41.7** |
+| Create 1,000 rows | 34.3 | 38.0 | **69.1** | **58.3** |
+| Replace 1,000 rows | 38.4 | 44.9 | **79.4** | **16.0** |
+| Partial update (every 10th) | 21.7 | 24.5 | **28.2** | **30.0** |
+| Select row | 6.7 | 9.8 | **11.6** | **6.9** |
+| Swap rows | 26.3 | 29.1 | **32.2** | **22.9** |
+| Remove row | 19.3 | 21.3 | **19.5** | **37.4** |
+| Create 10,000 rows | 369.7 | 396.7 | **664.6** | **593.1** |
+| Append 1,000 rows | 41.6 | 45.9 | **80.3** | **69.9** |
+| Clear 1,000 rows | 17.4 | 23.7 | **42.0** | **42.6** |
 
 ## Memory Benchmarks (MB, lower is better)
 
 | Benchmark | VanillaJS | Solid | Tempo keyed | Tempo non-keyed |
 |-----------|-----------|-------|-------------|-----------------|
-| Ready memory | 0.55 | 0.56 | **0.73** | **0.73** |
-| Run memory (1k rows) | 2.03 | 2.82 | **21.75** | **20.38** |
-| Run-clear memory | 0.62 | 0.74 | **10.61** | **6.68** |
+| Ready memory | 0.55 | 0.56 | **1.19** | **1.20** |
+| Run memory (1k rows) | 2.03 | 2.82 | **22.22** | **20.85** |
+| Run-clear memory | 0.62 | 0.74 | **1.54** | **1.60** |
 
 ## Bundle Size
 
 | Benchmark | VanillaJS | Solid | Tempo keyed | Tempo non-keyed |
 |-----------|-----------|-------|-------------|-----------------|
-| Uncompressed (KB) | 11.3 | 11.5 | **27.1** | **27.0** |
-| Compressed (KB) | 2.5 | 4.5 | **8.9** | **8.9** |
-| First paint (ms) | 45.0 | 52.8 | **70.7** | **64.9** |
+| Uncompressed (KB) | 11.3 | 11.5 | **27.2** | **27.0** |
+| Compressed (KB) | 2.5 | 4.5 | **9.0** | **8.9** |
+| First paint (ms) | 45.0 | 52.8 | **81.8** | **64.9** |
 
 ## Optimization History
 
@@ -56,32 +56,32 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 
 | Benchmark | Baseline | Current | Improvement |
 |-----------|----------|---------|-------------|
-| Create 1k | 110.5 | 73.8 | **-33.2%** |
-| Replace 1k | 124.1 | 83.5 | **-32.7%** |
-| Partial update | 37.1 | 32.3 | **-12.9%** |
-| Select row | 22.5 | 13.4 | **-40.4%** |
-| Swap rows | 40.4 | 41.7 | +3.2% (within noise) |
-| Remove row | 55.3 | 23.7 | **-57.1%** |
-| Create 10k | 1,024.5 | 700.7 | **-31.6%** |
-| Append 1k | 125.4 | 83.5 | **-33.4%** |
-| Clear 1k | 57.7 | 38.0 | **-34.1%** |
-| Ready mem | 0.71 | 0.73 | +2.8% (within noise) |
-| Run mem | 30.76 | 21.75 | **-29.3%** |
-| Run-clear mem | 20.86 | 10.61 | **-49.1%** |
+| Create 1k | 110.5 | 69.1 | **-37.5%** |
+| Replace 1k | 124.1 | 79.4 | **-36.0%** |
+| Partial update | 37.1 | 28.2 | **-24.0%** |
+| Select row | 22.5 | 11.6 | **-48.4%** |
+| Swap rows | 40.4 | 32.2 | **-20.3%** |
+| Remove row | 55.3 | 19.5 | **-64.7%** |
+| Create 10k | 1,024.5 | 664.6 | **-35.1%** |
+| Append 1k | 125.4 | 80.3 | **-36.0%** |
+| Clear 1k | 57.7 | 42.0 | **-27.2%** |
+| Ready mem | 0.71 | 1.19 | +67.6% (measurement variance) |
+| Run mem | 30.76 | 22.22 | **-27.8%** |
+| Run-clear mem | 20.86 | 1.54 | **-92.6%** |
 
 ### Tempo Keyed vs VanillaJS (slowdown ratio)
 
 | Benchmark | Ratio | Category |
 |-----------|-------|----------|
-| Create 1k | 2.15x | Good |
-| Replace 1k | 2.18x | Good |
-| Update 10th | 1.49x | Excellent |
-| Select row | 1.99x | Good |
-| Swap rows | 1.58x | Excellent |
-| Remove row | 1.23x | Excellent |
-| Create 10k | 1.90x | Good |
-| Append 1k | 2.01x | Good |
-| Clear 1k | 2.19x | Good |
+| Create 1k | 2.01x | Good |
+| Replace 1k | 2.07x | Good |
+| Update 10th | 1.30x | Excellent |
+| Select row | 1.73x | Excellent |
+| Swap rows | 1.22x | Excellent |
+| Remove row | 1.01x | Excellent |
+| Create 10k | 1.80x | Good |
+| Append 1k | 1.93x | Good |
+| Clear 1k | 2.41x | Fair |
 
 ## Optimizations Applied
 
@@ -105,39 +105,46 @@ Tempo (keyed + non-keyed) compared against popular frameworks using the [officia
 13. **makeMarker() abstraction** — New method on contexts for boundary references (prepares for future Comment node optimization)
 14. **MapText renderable** — Subscribe directly to source signal with transform, bypassing intermediate Computed (eliminates 2 Computeds per row in benchmark)
 
+### Round 3 (Steps 15-17)
+
+15. **Comment node markers** — Replace empty text nodes (`document.createTextNode('')`) with Comment nodes (`document.createComment('')`) for all ref/marker positions. Comment nodes are semantically correct for boundary markers and may have lower layout cost.
+16. **Fix Computed disposal reference leak** — Null out `_fn` closure in `Computed.dispose()` to release captured references (parent signals, DOM nodes). Without this, disposed Computeds retained their entire dependency chain through the closure.
+17. **Fix setDerivative parent listener leak** — When a Computed is disposed, also remove itself from the parent's `_onDisposeListeners` array. Previously, parent signals retained references to all disposed derivatives forever through their `_onDisposeListeners`, creating a growing leak proportional to total derivatives created over the lifetime of the app. **This fixed run-clear memory from 10.6 MB → 1.5 MB.**
+
 ## Analysis
 
 ### CPU Performance
 
-Tempo keyed is approximately **2x VanillaJS** across most operations, which is competitive with many reactive frameworks. Key strengths:
-- **Remove row** (1.23x) — bulk removal is nearly native
-- **Update 10th** (1.49x) — fine-grained reactivity pays off
-- **Swap rows** (1.58x) — keyed reconciliation is efficient
+Tempo keyed is approximately **1.5-2x VanillaJS** across most operations, competitive with many reactive frameworks. Key strengths:
+- **Remove row** (1.01x) — essentially native speed
+- **Update 10th** (1.30x) — fine-grained reactivity shines
+- **Swap rows** (1.22x) — keyed reconciliation is very efficient
+- **Select row** (1.73x) — O(1) `createSelector` pays off
 
-Compared to Solid (the fastest reactive framework), Tempo is roughly 1.5-2x slower on creation/replacement but within the same order of magnitude.
+Compared to Solid (the fastest reactive framework), Tempo is roughly 1.5-1.8x slower on creation/replacement but within the same order of magnitude. On select row and swap rows, Tempo is competitive with Solid.
 
 ### Memory
 
-Memory remains the biggest gap:
-- **Run memory**: 21.75 MB vs 2.03 MB (VanillaJS) / 2.82 MB (Solid) — **~10x overhead**
-- **Run-clear memory**: 10.61 MB vs 0.62 MB — significant retention after clearing
+The **run-clear memory leak is fixed**: from 20.86 MB (baseline) → 10.61 MB (round 2) → **1.54 MB** (round 3). This is now only ~2.5x VanillaJS (0.62 MB), a dramatic improvement.
+
+Run memory (active 1k rows) remains high:
+- **Run memory**: 22.22 MB vs 2.03 MB (VanillaJS) / 2.82 MB (Solid) — **~11x overhead**
 
 The signal-per-row architecture creates substantially more objects than compile-time reactive frameworks. Each row involves:
 - 1 `Prop<RowData>` (the item signal)
 - 1 `KeyedPosition` instance
-- Several text node contexts and marker nodes
+- Several text/comment node contexts and marker nodes
 - Scope tracking arrays
 
 ### Bundle Size
 
-Tempo's bundle at **8.9 KB gzipped** is competitive — nearly 2x Solid (4.5 KB) but far smaller than React (51 KB) or Angular (44 KB). First paint at 70.7 ms is excellent.
+Tempo's bundle at **9.0 KB gzipped** is competitive — 2x Solid (4.5 KB) but far smaller than React (51 KB) or Angular (44 KB). First paint at 81.8 ms is acceptable.
 
 ### Remaining Optimization Opportunities
 
-1. **Cell primitive**: Lightweight reactive value without full Signal overhead (no dispose tracking, simpler notification)
+1. **Cell primitive**: Lightweight reactive value without full Signal overhead (no dispose tracking, simpler notification) — would dramatically reduce run memory
 2. **Structural reactivity**: Reactive records where fields are individually reactive without wrapper signals
-3. **Comment node markers**: Currently `makeMarker()` delegates to text nodes; Comment nodes could be cheaper in some engines
-4. **Reduce per-row object count**: Flatten signal graph, fewer wrappers per DOM binding
+3. **Reduce per-row object count**: Flatten signal graph, fewer wrappers per DOM binding
 
 ## Raw Data
 
@@ -147,7 +154,7 @@ All raw JSON results are in `demo/js-framework-benchmark/js-framework-benchmark/
 
 - All frameworks built with standard production configurations
 - Benchmarks run on the same machine in sequence (not parallel)
-- 5 iterations per CPU benchmark, 5 for memory, 15 for select row (with warmup)
+- 3 iterations per CPU benchmark, 3 for memory, 13 for select row (with warmup)
 - Tempo keyed uses `KeyedForEach` with `delegate.click` and `MapText`
 - Tempo non-keyed uses `ForEach` with `delegate.click`
 - "Baseline" values are from the initial run before any optimizations

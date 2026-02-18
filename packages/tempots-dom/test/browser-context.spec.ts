@@ -337,11 +337,11 @@ describe('BrowserContext', () => {
   })
 
   describe('makeRef', () => {
-    test('should create reference text node', () => {
+    test('should create reference comment node', () => {
       const refCtx = ctx.makeRef() as BrowserContext
 
       expect(container.childNodes.length).toBe(1)
-      expect(container.childNodes[0].nodeType).toBe(Node.TEXT_NODE)
+      expect(container.childNodes[0].nodeType).toBe(Node.COMMENT_NODE)
       expect(container.childNodes[0].textContent).toBe('')
       expect(refCtx.reference).toBe(container.childNodes[0])
     })
@@ -353,7 +353,7 @@ describe('BrowserContext', () => {
 
       expect(container.childNodes.length).toBe(2)
       expect(container.childNodes[0].nodeType).toBe(Node.ELEMENT_NODE)
-      expect(container.childNodes[1].nodeType).toBe(Node.TEXT_NODE)
+      expect(container.childNodes[1].nodeType).toBe(Node.COMMENT_NODE)
     })
   })
 

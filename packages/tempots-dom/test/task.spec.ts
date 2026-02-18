@@ -21,7 +21,7 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
       clear()
     })
 
@@ -36,10 +36,10 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Result: success</div>')
+      expect(document.body.innerHTML).toBe('<div>Result: success</div><!---->')
       clear()
     })
 
@@ -55,10 +55,10 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Error: Task failed</div>')
+      expect(document.body.innerHTML).toBe('<div>Error: Task failed</div><!---->')
       clear()
     })
 
@@ -71,7 +71,7 @@ describe('Task', () => {
       )
 
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Result: success</div>')
+      expect(document.body.innerHTML).toBe('<div>Result: success</div><!---->')
       clear()
     })
 
@@ -86,10 +86,10 @@ describe('Task', () => {
       )
 
       // Should render empty initially
-      expect(document.body.innerHTML).toBe('')
+      expect(document.body.innerHTML).toBe('<!---->')
 
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Result: success</div>')
+      expect(document.body.innerHTML).toBe('<div>Result: success</div><!---->')
       clear()
     })
 
@@ -104,11 +104,11 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       await sleep(10)
       // Should render empty on error when no error handler
-      expect(document.body.innerHTML).toBe('')
+      expect(document.body.innerHTML).toBe('<!---->')
       clear()
     })
   })
@@ -128,7 +128,7 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       // Dispose the component before the task resolves
       clear()
@@ -157,7 +157,7 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       // Dispose the component before the task rejects
       clear()
@@ -183,7 +183,7 @@ describe('Task', () => {
       )
 
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Result: success</div>')
+      expect(document.body.innerHTML).toBe('<div>Result: success</div><!---->')
 
       clear()
       expect(document.body.innerHTML).toBe('')
@@ -204,7 +204,7 @@ describe('Task', () => {
       )
 
       await sleep(10)
-      expect(container.innerHTML).toBe('<div>Result: success</div>')
+      expect(container.innerHTML).toBe('<div>Result: success</div><!---->')
 
       // Clear with removeTree=false should still clean up
       clear()
@@ -229,12 +229,12 @@ describe('Task', () => {
       )
 
       // Initial pending state
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       // Resolve the task
       resolveTask!('success')
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Result: success</div>')
+      expect(document.body.innerHTML).toBe('<div>Result: success</div><!---->')
 
       clear()
     })
@@ -254,11 +254,11 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       await sleep(10)
       expect(document.body.innerHTML).toBe(
-        '<div><h3>Test</h3><p>ID: 1</p><ul><li>1</li><li>2</li><li>3</li></ul></div>'
+        '<div><h3>Test</h3><p>ID: 1</p><ul><li>1</li><li>2</li><li>3</li></ul></div><!---->'
       )
       clear()
     })
@@ -292,10 +292,10 @@ describe('Task', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Loading...</div>')
+      expect(document.body.innerHTML).toBe('<div>Loading...</div><!---->')
 
       await sleep(10)
-      expect(document.body.innerHTML).toBe('<div>Error: String error</div>')
+      expect(document.body.innerHTML).toBe('<div>Error: String error</div><!---->')
       clear()
     })
   })

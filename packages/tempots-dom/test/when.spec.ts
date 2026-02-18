@@ -147,15 +147,15 @@ describe("When", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('<span>False content</span>')
+    expect(document.body.innerHTML).toBe('<span>False content</span><!---->')
 
     bool.set(true)
     await sleep()
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
 
     bool.set(false)
     await sleep()
-    expect(document.body.innerHTML).toBe('<span>False content</span>')
+    expect(document.body.innerHTML).toBe('<span>False content</span><!---->')
   });
 
   test("with signal starting true - DOM content", async () => {
@@ -168,15 +168,15 @@ describe("When", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
 
     bool.set(false)
     await sleep()
-    expect(document.body.innerHTML).toBe('<span>False content</span>')
+    expect(document.body.innerHTML).toBe('<span>False content</span><!---->')
 
     bool.set(true)
     await sleep()
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
   });
 
   test("without otherwise clause - DOM content", async () => {
@@ -188,15 +188,15 @@ describe("When", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML).toBe('<!---->')
 
     bool.set(true)
     await sleep()
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
 
     bool.set(false)
     await sleep()
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML).toBe('<!---->')
   });
 
   test("without otherwise clause starting true - DOM content", async () => {
@@ -208,15 +208,15 @@ describe("When", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
 
     bool.set(false)
     await sleep()
-    expect(document.body.innerHTML).toBe('')
+    expect(document.body.innerHTML).toBe('<!---->')
 
     bool.set(true)
     await sleep()
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
   });
 
   test("with literal - DOM content", async () => {
@@ -336,15 +336,15 @@ describe("Unless", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toBe('<span>False content</span>')
+    expect(document.body.innerHTML).toBe('<span>False content</span><!---->')
 
     bool.set(false)
     await sleep()
-    expect(document.body.innerHTML).toBe('<div>True content</div>')
+    expect(document.body.innerHTML).toBe('<div>True content</div><!---->')
 
     bool.set(true)
     await sleep()
-    expect(document.body.innerHTML).toBe('<span>False content</span>')
+    expect(document.body.innerHTML).toBe('<span>False content</span><!---->')
   });
 
   test("with literal - DOM content", async () => {
