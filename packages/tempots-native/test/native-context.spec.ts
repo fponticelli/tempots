@@ -101,6 +101,86 @@ describe('NativeContext', () => {
     expect(pressed).toBe(false)
   })
 
+  describe('moveRangeBefore', () => {
+    test('moves a range of children before a target', () => {
+      const { bridge, ctx } = createContext()
+      const a = ctx.makeChildView('A')
+      const b = ctx.makeChildView('B')
+      const c = ctx.makeChildView('C')
+      const d = ctx.makeChildView('D')
+
+      // Order: A B C D → move B..C before A → B C A D
+      ctx.moveRangeBefore(b, c, a)
+
+      const handles = bridge.getChildren(ctx.handle)
+      const types = handles.map(h => bridge.getNode(h)!.type)
+      expect(types).toEqual(['B', 'C', 'A', 'D'])
+    })
+
+    test('no-op when start or end not found', () => {
+      const { bridge, ctx } = createContext()
+      const a = ctx.makeChildView('A')
+      const other = new NativeContext(bridge, 999 as any)
+
+      ctx.moveRangeBefore(other, a, a)
+      const handles = bridge.getChildren(ctx.handle)
+      expect(handles.length).toBe(1)
+    })
+  })
+
+  describe('removeRange', () => {
+    test('removes a range of children', () => {
+      const { bridge, ctx } = createContext()
+      const a = ctx.makeChildView('A')
+      const b = ctx.makeChildView('B')
+      const c = ctx.makeChildView('C')
+      const d = ctx.makeChildView('D')
+
+      ctx.removeRange(b, c)
+
+      const handles = bridge.getChildren(ctx.handle)
+      const types = handles.map(h => bridge.getNode(h)!.type)
+      expect(types).toEqual(['A', 'D'])
+    })
+
+    test('no-op when start or end not found', () => {
+      const { bridge, ctx } = createContext()
+      ctx.makeChildView('A')
+      const other = new NativeContext(bridge, 999 as any)
+
+      ctx.removeRange(other, other)
+      const handles = bridge.getChildren(ctx.handle)
+      expect(handles.length).toBe(1)
+    })
+  })
+
+  describe('removeAllBefore', () => {
+    test('removes all children before the marker', () => {
+      const { bridge, ctx } = createContext()
+      ctx.makeChildView('A')
+      ctx.makeChildView('B')
+      const c = ctx.makeChildView('C')
+      ctx.makeChildView('D')
+
+      ctx.removeAllBefore(c)
+
+      const handles = bridge.getChildren(ctx.handle)
+      const types = handles.map(h => bridge.getNode(h)!.type)
+      expect(types).toEqual(['C', 'D'])
+    })
+
+    test('no-op when marker is first child', () => {
+      const { bridge, ctx } = createContext()
+      const a = ctx.makeChildView('A')
+      ctx.makeChildView('B')
+
+      ctx.removeAllBefore(a)
+
+      const handles = bridge.getChildren(ctx.handle)
+      expect(handles.length).toBe(2)
+    })
+  })
+
   describe('providers', () => {
     test('setProvider and getProvider work correctly', () => {
       const { ctx } = createContext()

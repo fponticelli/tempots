@@ -13,7 +13,7 @@
     "lint": "turbo lint --filter='!js-framework-benchmark*'",
     "format": "turbo format --filter='!js-framework-benchmark*'",
     "typecheck": "turbo typecheck --filter='!js-framework-benchmark*'",
-    "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm test",
+    "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm test:coverage",
     "test": "turbo test --filter='!js-framework-benchmark*'",
     "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage --filter='!js-framework-benchmark*'",
