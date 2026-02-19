@@ -57,7 +57,7 @@ function walkNode(
           }
         }
       }
-      if (classNames) el.className = classNames
+      if (classNames) el.setAttribute('class', classNames)
 
       parent.appendChild(el)
 
