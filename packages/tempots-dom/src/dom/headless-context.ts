@@ -1,4 +1,5 @@
 import { _NODE_PLACEHOLDER_ATTR } from '../renderable/render'
+import type { Primitive } from '@tempots/core'
 import { Prop } from '@tempots/core'
 import { ProviderMark, Clear, Providers } from '../types/domain'
 import { BrowserContext } from './browser-context'
@@ -45,9 +46,13 @@ abstract class HeadlessBase {
   } = {}
   readonly children: HeadlessNode[] = []
   constructor(readonly parent: HeadlessBase | undefined) {}
-  readonly isElement = (): this is HeadlessBase => true
-  readonly isText = (): this is HeadlessText => false
-  readonly getText = (): string => {
+  isElement(): this is HeadlessBase {
+    return true
+  }
+  isText(): this is HeadlessText {
+    return false
+  }
+  getText(): string {
     if (this.properties.innerText != null) {
       return this.properties.innerText as string
     }
@@ -56,7 +61,7 @@ abstract class HeadlessBase {
     }
     return this.children.map(child => child.getText()).join('')
   }
-  readonly removeChild = (child: HeadlessNode): void => {
+  removeChild(child: HeadlessNode): void {
     const index = this.children.indexOf(child)
     if (index === -1) {
       return
@@ -64,7 +69,7 @@ abstract class HeadlessBase {
 
     this.children.splice(index, 1)
   }
-  readonly remove = (): void => {
+  remove(): void {
     if (this.parent != null) {
       this.parent.removeChild(this as unknown as HeadlessNode)
     } else {
@@ -83,7 +88,7 @@ abstract class HeadlessBase {
    */
   abstract toHTMLStream(options?: StreamOptions): AsyncGenerator<string>
 
-  readonly getPortals = (): HeadlessPortal[] => {
+  getPortals(): HeadlessPortal[] {
     const children = this.elements().flatMap(child => {
       if (child.isPortal()) {
         return [child, ...child.getPortals()]
@@ -98,37 +103,53 @@ abstract class HeadlessBase {
     return children
   }
 
-  readonly elements = (): HeadlessBase[] => {
+  elements(): HeadlessBase[] {
     return this.children.filter(child => child.isElement()) as HeadlessBase[]
   }
 
   abstract toHTML(): string
 
-  readonly hasInnerHTML = (): boolean => this.properties.innerHTML != null
+  hasInnerHTML(): boolean {
+    return this.properties.innerHTML != null
+  }
 
-  readonly getInnerHTML = (): string =>
-    (this.properties.innerHTML as string) ?? ''
+  getInnerHTML(): string {
+    return (this.properties.innerHTML as string) ?? ''
+  }
 
-  readonly getInnerText = (): string =>
-    (this.properties.innerText as string) ?? ''
+  getInnerText(): string {
+    return (this.properties.innerText as string) ?? ''
+  }
 
-  readonly hasInnerText = (): boolean => this.properties.innerText != null
+  hasInnerText(): boolean {
+    return this.properties.innerText != null
+  }
 
-  readonly hasChildren = (): boolean => this.children.length > 0
+  hasChildren(): boolean {
+    return this.children.length > 0
+  }
 
-  readonly hasClasses = (): boolean => this.properties[classKey] != null
+  hasClasses(): boolean {
+    return this.properties[classKey] != null
+  }
 
-  readonly hasStyles = (): boolean => this.properties[styleKey] != null
+  hasStyles(): boolean {
+    return this.properties[styleKey] != null
+  }
 
-  readonly hasAttributes = (): boolean =>
-    Object.keys(this.properties).length > 0
+  hasAttributes(): boolean {
+    return Object.keys(this.properties).length > 0
+  }
 
-  readonly hasHandlers = (): boolean => this.properties[handlerKey] != null
+  hasHandlers(): boolean {
+    return this.properties[handlerKey] != null
+  }
 
-  readonly hasRenderableProperties = (): boolean =>
-    this.hasClasses() || this.hasAttributes() || this.hasStyles()
+  hasRenderableProperties(): boolean {
+    return this.hasClasses() || this.hasAttributes() || this.hasStyles()
+  }
 
-  readonly getById = (id: string): HeadlessBase | undefined => {
+  getById(id: string): HeadlessBase | undefined {
     if (this.properties.id === id) {
       return this
     }
@@ -141,20 +162,20 @@ abstract class HeadlessBase {
     }
   }
 
-  readonly trigger = <E>(event: string, detail: E): void => {
+  trigger<E>(event: string, detail: E): void {
     const listeners = (this.properties[handlerKey] ?? {})[event] ?? []
     listeners.forEach(listener => listener(detail))
   }
 
-  readonly click = (): void => {
+  click(): void {
     this.trigger('click', {})
   }
-  readonly on = <E>(
+  on<E>(
     event: string,
     listener: (event: E, ctx: HeadlessContext) => void,
     ctx: HeadlessContext,
     options?: HandlerOptions
-  ): Clear => {
+  ): Clear {
     const handlers = (this.properties[handlerKey] ??= {})
     const _listener = options?.once
       ? (event: unknown) => {
@@ -192,7 +213,7 @@ abstract class HeadlessBase {
 
     return clear
   }
-  readonly addClasses = (tokens: string[]): void => {
+  addClasses(tokens: string[]): void {
     if (tokens.length === 0) {
       return
     }
@@ -206,7 +227,7 @@ abstract class HeadlessBase {
       }
     }
   }
-  readonly removeClasses = (tokens: string[]): void => {
+  removeClasses(tokens: string[]): void {
     if (tokens.length === 0) {
       return
     }
@@ -225,15 +246,15 @@ abstract class HeadlessBase {
       delete this.properties[classKey]
     }
   }
-  readonly getClasses = (): string[] => {
+  getClasses(): string[] {
     return this.properties[classKey] ?? []
   }
-  readonly getAttributes = () => {
+  getAttributes() {
     return Object.entries(this.properties).filter(
       ([key]) => !['innerText', 'innerHTML'].includes(key)
     )
   }
-  readonly getVisibleAttributes = () => {
+  getVisibleAttributes() {
     return Reflect.ownKeys(this.properties).flatMap(
       (
         key
@@ -253,7 +274,7 @@ abstract class HeadlessBase {
       }
     )
   }
-  readonly setStyle = (name: string, value: string): void => {
+  setStyle(name: string, value: string): void {
     const styles = (this.properties[styleKey] ??= {})
     styles[name] = value
     if (value === '') {
@@ -263,15 +284,13 @@ abstract class HeadlessBase {
       }
     }
   }
-  readonly getStyle = (name: string): string => {
+  getStyle(name: string): string {
     return this.properties[styleKey]?.[name] ?? ''
   }
-  readonly getStyles = (): Record<string, string> => {
+  getStyles(): Record<string, string> {
     return this.properties[styleKey] ?? {}
   }
-  readonly makeAccessors = (
-    name: string
-  ): { get(): unknown; set(value: unknown): void } => {
+  makeAccessors(name: string): { get(): unknown; set(value: unknown): void } {
     const attributes = this.properties
     return {
       get: () => attributes[name],
@@ -300,15 +319,18 @@ export class HeadlessElement extends HeadlessBase {
     super(parent)
   }
 
-  readonly isPortal = (): this is HeadlessPortal => false
+  isPortal(): this is HeadlessPortal {
+    return false
+  }
 
   /**
    * Builds the attributes string for this element.
    * Returns an object containing the attributes string and any innerHTML value.
    */
-  private readonly buildAttributesString = (
-    generatePlaceholders: boolean
-  ): { attrs: string; innerHTML: string | null } => {
+  private buildAttributesString(generatePlaceholders: boolean): {
+    attrs: string
+    innerHTML: string | null
+  } {
     let innerHTML = null as string | null
     const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
     const attrs = this.getVisibleAttributes()
@@ -348,7 +370,7 @@ export class HeadlessElement extends HeadlessBase {
     return { attrs: `${ns}${attrs}${placeholder}`, innerHTML }
   }
 
-  readonly toHTML = (generatePlaceholders: boolean = false): string => {
+  toHTML(generatePlaceholders: boolean = false): string {
     const children = this.children.map(child => child.toHTML()).join('')
     const { attrs, innerHTML } =
       this.buildAttributesString(generatePlaceholders)
@@ -401,9 +423,13 @@ export class HeadlessPortal extends HeadlessBase {
     super(parent)
   }
 
-  readonly isPortal = (): this is HeadlessPortal => true
+  isPortal(): this is HeadlessPortal {
+    return true
+  }
 
-  readonly toHTML = (): string => ''
+  toHTML(): string {
+    return ''
+  }
 
   /**
    * Portals don't render inline - they render at their target selector.
@@ -417,7 +443,7 @@ export class HeadlessPortal extends HeadlessBase {
     return
   }
 
-  readonly contentToHTML = (generatePlaceholders: boolean = false): string => {
+  contentToHTML(generatePlaceholders: boolean = false): string {
     return this.children
       .map(child => child.toHTML(generatePlaceholders))
       .join('')
@@ -440,10 +466,18 @@ export class HeadlessPortal extends HeadlessBase {
 export class HeadlessText {
   readonly id = makeRandom()
   constructor(public text: string) {}
-  readonly isElement = (): this is HeadlessElement => false
-  readonly isText = (): this is HeadlessText => true
-  readonly getText = (): string => this.text
-  readonly toHTML = (): string => this.text
+  isElement(): this is HeadlessElement {
+    return false
+  }
+  isText(): this is HeadlessText {
+    return true
+  }
+  getText(): string {
+    return this.text
+  }
+  toHTML(): string {
+    return this.text
+  }
 
   /**
    * Streams the text content as a single chunk.
@@ -471,7 +505,7 @@ export class HeadlessContext implements DOMContext {
     readonly container: HeadlessContainer,
     readonly providers: Providers
   ) {}
-  readonly appendOrInsert = (element: HeadlessNode): void => {
+  appendOrInsert(element: HeadlessNode): void {
     if (this.reference != null) {
       const index = this.element.children.indexOf(this.reference)
       if (index >= 0) {
@@ -481,10 +515,7 @@ export class HeadlessContext implements DOMContext {
       this.element.children.push(element)
     }
   }
-  readonly makeChildElement = (
-    tagName: string,
-    namespace: string | undefined
-  ): DOMContext => {
+  makeChildElement(tagName: string, namespace: string | undefined): DOMContext {
     const childEl = new HeadlessElement(tagName, namespace, this.element)
     this.appendOrInsert(childEl)
     return new HeadlessContext(
@@ -494,8 +525,8 @@ export class HeadlessContext implements DOMContext {
       this.providers
     )
   }
-  readonly makeChildText = (text: string): DOMContext => {
-    const childTxt = new HeadlessText(text)
+  makeChildText(text: Primitive): DOMContext {
+    const childTxt = new HeadlessText(String(text))
     this.appendOrInsert(childTxt)
     return new HeadlessContext(
       this.element,
@@ -504,19 +535,23 @@ export class HeadlessContext implements DOMContext {
       this.providers
     )
   }
-  readonly setText = (text: string): void => {
+  setText(text: Primitive): void {
     if (this.reference && this.reference.isText()) {
-      this.reference.text = text
+      this.reference.text = String(text)
     }
   }
-  readonly getText = (): string => {
+  getText(): string {
     /* c8 ignore next */
     return this.reference?.getText() ?? this.element.getText()
   }
-  readonly makeRef = (): DOMContext => {
+  makeRef(): DOMContext {
     return this.makeChildText('')
   }
-  readonly makePortal = (selector: string | HTMLElement): DOMContext => {
+  makeMarker(): DOMContext {
+    // In headless mode, markers are just empty text nodes (same as makeRef)
+    return this.makeChildText('')
+  }
+  makePortal(selector: string | HTMLElement): DOMContext {
     const portal = new HeadlessPortal(selector, this.element)
     this.appendOrInsert(portal)
     return new HeadlessContext(
@@ -534,17 +569,18 @@ export class HeadlessContext implements DOMContext {
    * @param value - The provider to set for the given mark.
    * @returns A new `DOMContext` instance with the specified provider.
    */
-  readonly setProvider = <T>(
+  setProvider<T>(
     mark: ProviderMark<T>,
     value: T,
     onUse: undefined | (() => void)
-  ): DOMContext =>
-    new HeadlessContext(this.element, this.reference, this.container, {
+  ): DOMContext {
+    return new HeadlessContext(this.element, this.reference, this.container, {
       ...this.providers,
       [mark]: [value, onUse],
     })
+  }
 
-  readonly getProvider = <T>(mark: ProviderMark<T>) => {
+  getProvider<T>(mark: ProviderMark<T>) {
     if (this.providers[mark] === undefined) {
       throw new ProviderNotFoundError(mark)
     }
@@ -555,7 +591,7 @@ export class HeadlessContext implements DOMContext {
     ]
     return { value, onUse }
   }
-  readonly clear = (removeTree: boolean): void => {
+  clear(removeTree: boolean): void {
     if (removeTree) {
       if (this.reference !== undefined) {
         this.element.removeChild(this.reference)
@@ -564,32 +600,48 @@ export class HeadlessContext implements DOMContext {
       }
     }
   }
-  readonly on = <E>(
+  on<E>(
     event: string,
     listener: (event: E, ctx: HeadlessContext) => void
-  ): Clear => this.element.on(event, listener, this)
-  readonly addClasses = (tokens: string[]): void =>
+  ): Clear {
+    return this.element.on(event, listener, this)
+  }
+  addClasses(tokens: string[]): void {
     this.element.addClasses(tokens)
-  readonly removeClasses = (tokens: string[]): void =>
+  }
+  removeClasses(tokens: string[]): void {
     this.element.removeClasses(tokens)
-  readonly getClasses = (): string[] => this.element.getClasses()
-  readonly isBrowserDOM = (): this is BrowserContext => false
-  readonly isBrowser = (): this is BrowserContext => false
-  readonly isHeadlessDOM = (): this is HeadlessContext => true
-  readonly isHeadless = (): this is HeadlessContext => true
-  readonly setStyle = (name: string, value: string): void =>
+  }
+  getClasses(): string[] {
+    return this.element.getClasses()
+  }
+  isBrowserDOM(): this is BrowserContext {
+    return false
+  }
+  isBrowser(): this is BrowserContext {
+    return false
+  }
+  isHeadlessDOM(): this is HeadlessContext {
+    return true
+  }
+  isHeadless(): this is HeadlessContext {
+    return true
+  }
+  setStyle(name: string, value: string): void {
     this.element.setStyle(name, value)
-  readonly getStyle = (name: string): string => this.element.getStyle(name)
-  readonly makeAccessors = (
-    name: string
-  ): { get(): unknown; set(value: unknown): void } =>
-    this.element.makeAccessors(name)
+  }
+  getStyle(name: string): string {
+    return this.element.getStyle(name)
+  }
+  makeAccessors(name: string): { get(): unknown; set(value: unknown): void } {
+    return this.element.makeAccessors(name)
+  }
 
-  readonly moveRangeBefore = (
+  moveRangeBefore(
     startRef: DOMContext,
     endRef: DOMContext,
     targetRef: DOMContext
-  ): void => {
+  ): void {
     const start = (startRef as HeadlessContext).reference!
     const end = (endRef as HeadlessContext).reference!
     const target = (targetRef as HeadlessContext).reference!
@@ -607,6 +659,35 @@ export class HeadlessContext implements DOMContext {
 
     // Insert before target
     children.splice(targetIndex, 0, ...range)
+  }
+
+  removeRange(startRef: DOMContext, endRef: DOMContext): void {
+    const start = (startRef as HeadlessContext).reference!
+    const end = (endRef as HeadlessContext).reference!
+    const children = this.element.children
+
+    const startIndex = children.indexOf(start)
+    const endIndex = children.indexOf(end)
+    const count = endIndex - startIndex + 1
+
+    children.splice(startIndex, count)
+  }
+
+  removeAllBefore(ref: DOMContext): void {
+    const marker = (ref as HeadlessContext).reference!
+    const children = this.element.children
+    const markerIndex = children.indexOf(marker)
+    if (markerIndex > 0) {
+      children.splice(0, markerIndex)
+    }
+  }
+
+  detach(): void {
+    // No-op: headless has no layout engine
+  }
+
+  reattach(): void {
+    // No-op: headless has no layout engine
   }
 }
 

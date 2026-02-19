@@ -24,7 +24,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span>[first]</span>')
+      expect(document.body.innerHTML).toBe('<span>[first]</span><!---->')
       clear()
     })
 
@@ -37,7 +37,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span>|</span>')
+      expect(document.body.innerHTML).toBe('<span>|</span><!---->')
       clear()
     })
 
@@ -50,7 +50,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span> - </span>')
+      expect(document.body.innerHTML).toBe('<span> - </span><!---->')
       clear()
     })
 
@@ -63,7 +63,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span> &amp; </span>')
+      expect(document.body.innerHTML).toBe('<span> &amp; </span><!---->')
       clear()
     })
   })
@@ -103,7 +103,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span>[FIRST]</span>')
+      expect(document.body.innerHTML).toBe('<span>[FIRST]</span><!---->')
       clear()
     })
 
@@ -123,7 +123,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span>[LAST]</span>')
+      expect(document.body.innerHTML).toBe('<span>[LAST]</span><!---->')
       clear()
     })
   })
@@ -141,7 +141,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<span>[START]</span>')
+      expect(document.body.innerHTML).toBe('<span>[START]</span><!---->')
       clear()
     })
 
@@ -158,7 +158,7 @@ describe('Conjunction', () => {
       )
 
       // Due to bug, non-first positions use lastSeparator
-      expect(document.body.innerHTML).toBe('<span>[END]</span>')
+      expect(document.body.innerHTML).toBe('<span>[END]</span><!---->')
       clear()
     })
   })
@@ -189,7 +189,7 @@ describe('Conjunction', () => {
       )
 
       expect(document.body.innerHTML).toBe(
-        '<div><h4>First Item</h4><p>Starting here</p></div>'
+        '<div><h4>First Item</h4><p>Starting here</p></div><!---->'
       )
       clear()
     })
@@ -209,7 +209,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('FIRST: ')
+      expect(document.body.innerHTML).toBe('FIRST: <!---->')
       clear()
     })
   })
@@ -251,7 +251,7 @@ describe('Conjunction', () => {
       )
 
       // When both isFirst and isLast are true, isFirst takes precedence
-      expect(document.body.innerHTML).toBe('<span>[FIRST]</span>')
+      expect(document.body.innerHTML).toBe('<span>[FIRST]</span><!---->')
       clear()
     })
 

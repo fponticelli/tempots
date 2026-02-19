@@ -1,8 +1,17 @@
 import { getWindow } from './window'
 import { ValueType, RemoveSignals, Values } from './types'
 import { guessInterpolate } from './interpolate'
-import { AnySignal, computed, Computed, prop, Prop, Signal } from './signal'
+import {
+  AnySignal,
+  computed,
+  Computed,
+  prop,
+  Prop,
+  Signal,
+  strictEquals,
+} from './signal'
 import { computedOf, Value } from './value'
+import { getCurrentScope } from './scope-stack'
 
 /**
  * Represents a memory store that stores key-value pairs.
@@ -134,7 +143,7 @@ export const storedProp = <T>({
   store,
   serialize = JSON.stringify,
   deserialize = JSON.parse,
-  equals = (a, b) => a === b,
+  equals = strictEquals as (a: T, b: T) => boolean,
   onLoad = value => value,
   syncTabs = true,
   onKeyChange = 'load',
@@ -442,7 +451,7 @@ export const animateSignals = <T>(
   /* c8 ignore next */
   const duration = options?.duration ?? 300
   const easing = options?.easing ?? (t => t)
-  const equals = options?.equals ?? ((a, b) => a === b)
+  const equals = options?.equals ?? strictEquals
   let interpolate = options?.interpolate
   let startValue = initialValue
   let endValue = fn()
@@ -454,10 +463,10 @@ export const animateSignals = <T>(
   animated.onDispose(() => {
     if (animationFrame !== null) cancelAnimationFrame(animationFrame)
   })
-  animated.onDispose(computed.dispose)
+  animated.onDispose(() => computed.dispose())
   dependencies.forEach(signal => {
     signal.setDerivative(computed)
-    signal.onDispose(animated.dispose)
+    signal.onDispose(() => animated.dispose())
   })
   const changeEndValue = (value: T) => {
     endValue = value
@@ -540,7 +549,7 @@ export const animateSignal = <T>(
   return animateSignals(
     /* c8 ignore next 2 */
     initialValue ?? signal.get(),
-    signal.get,
+    () => signal.get(),
     [signal],
     rest
   )
@@ -747,7 +756,7 @@ export const syncProp = <T>(
     channel: channelName,
     serialize = JSON.stringify,
     deserialize = JSON.parse,
-    equals = (a, b) => a === b,
+    equals = strictEquals as (a: T, b: T) => boolean,
   }: SyncPropOptions<T>
 ): (() => void) => {
   const windowRef = getWindow() as Window & {
@@ -972,7 +981,7 @@ export const throttleSignal = <T>(signal: Signal<T>, ms: number): Signal<T> => {
  */
 export const distinctUntilChanged = <T>(
   signal: Signal<T>,
-  equals: (a: T, b: T) => boolean = (a, b) => a === b
+  equals: (a: T, b: T) => boolean = strictEquals
 ): Signal<T> => {
   const newSignal = prop(signal.get(), equals)
 
@@ -1014,7 +1023,7 @@ export const accumulateSignal = <T, A>(
   signal: Signal<T>,
   reducer: (acc: A, value: T) => A,
   initial: A,
-  equals: (a: A, b: A) => boolean = (a, b) => a === b
+  equals: (a: A, b: A) => boolean = strictEquals
 ): Signal<A> => {
   let acc = reducer(initial, signal.get())
   const newSignal = prop(acc, equals)
@@ -1030,4 +1039,82 @@ export const accumulateSignal = <T, A>(
   newSignal.onDispose(dispose)
 
   return newSignal
+}
+
+/**
+ * Creates an O(1) selection primitive. Instead of creating a computed per item
+ * that ALL re-evaluate when the source changes, only the previously-selected
+ * and newly-selected items are notified.
+ *
+ * @typeParam T - The type of the selection key.
+ * @param source - The signal containing the currently selected value.
+ * @param equals - Equality function. Defaults to `===`.
+ * @returns A function that takes a key and returns a `Signal<boolean>` that is
+ *          `true` when that key matches the current source value.
+ * @public
+ *
+ * @example
+ * ```typescript
+ * const selected = prop(0)
+ * const isSelected = createSelector(selected)
+ *
+ * // Each call returns a Signal<boolean> that only updates
+ * // when this specific key becomes or stops being selected
+ * const isItem1 = isSelected(1) // Signal<false>
+ * const isItem2 = isSelected(2) // Signal<false>
+ *
+ * selected.set(1) // isItem1 -> true, isItem2 unchanged
+ * selected.set(2) // isItem1 -> false, isItem2 -> true
+ * ```
+ */
+export const createSelector = <T>(
+  source: Signal<T>,
+  equals: (a: T, b: T) => boolean = strictEquals
+): ((key: T) => Signal<boolean>) => {
+  const subscribers = new Map<T, Set<Prop<boolean>>>()
+  let currentValue = source.get()
+
+  source.on(
+    next => {
+      const prev = currentValue
+      currentValue = next
+
+      // Deselect previous
+      const prevSubs = subscribers.get(prev)
+      if (prevSubs) {
+        for (const p of prevSubs) p.set(false)
+      }
+
+      // Select new
+      const nextSubs = subscribers.get(next)
+      if (nextSubs) {
+        for (const p of nextSubs) p.set(true)
+      }
+    },
+    { skipInitial: true, noAutoDispose: true }
+  )
+
+  return (key: T): Signal<boolean> => {
+    const result = prop(equals(key, currentValue))
+
+    // Register with current disposal scope for automatic cleanup
+    getCurrentScope()?.onDispose(() => result.dispose())
+
+    let subs = subscribers.get(key)
+    if (!subs) {
+      subs = new Set()
+      subscribers.set(key, subs)
+    }
+    subs.add(result)
+
+    result.onDispose(() => {
+      const s = subscribers.get(key)
+      if (s) {
+        s.delete(result)
+        if (s.size === 0) subscribers.delete(key)
+      }
+    })
+
+    return result
+  }
 }

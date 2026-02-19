@@ -1,4 +1,16 @@
-import { DisposalScope } from './disposal-scope'
+import type { AnySignal } from './signal'
+
+/**
+ * Minimal interface for scope tracking. Both DisposalScope and lightweight
+ * inline scopes implement this. Only `track` and `onDispose` are needed
+ * by the signal system.
+ *
+ * @public
+ */
+export interface Scope {
+  track(signal: AnySignal): void
+  onDispose(callback: () => void): void
+}
 
 /**
  * Global scope stack for tracking active disposal scopes.
@@ -6,7 +18,7 @@ import { DisposalScope } from './disposal-scope'
  *
  * @internal
  */
-export const scopeStack: DisposalScope[] = []
+export const scopeStack: Scope[] = []
 
 /**
  * Push a scope onto the stack, making it the current scope.
@@ -14,7 +26,7 @@ export const scopeStack: DisposalScope[] = []
  * @param scope - The scope to push
  * @internal
  */
-export const pushScope = (scope: DisposalScope): void => {
+export const pushScope = (scope: Scope): void => {
   scopeStack.push(scope)
 }
 
@@ -37,7 +49,7 @@ export const popScope = (): void => {
  * @returns The current scope, or null if no scope is active
  * @public
  */
-export const getCurrentScope = (): DisposalScope | null => {
+export const getCurrentScope = (): Scope | null => {
   return scopeStack[scopeStack.length - 1] ?? null
 }
 
@@ -49,7 +61,7 @@ export const getCurrentScope = (): DisposalScope | null => {
  * @returns Read-only array of active scopes
  * @public
  */
-export const getScopeStack = (): readonly DisposalScope[] => {
+export const getScopeStack = (): readonly Scope[] => {
   return scopeStack
 }
 
@@ -61,7 +73,7 @@ export const getScopeStack = (): readonly DisposalScope[] => {
  * @returns The parent scope or null if no parent exists
  * @public
  */
-export const getParentScope = (): DisposalScope | null => {
+export const getParentScope = (): Scope | null => {
   return scopeStack[scopeStack.length - 2] ?? null
 }
 
@@ -75,29 +87,12 @@ export const getParentScope = (): DisposalScope | null => {
  * @returns The result of the function
  * @public
  */
-export const withScope = <T>(scope: DisposalScope, fn: () => T): T => {
+export const withScope = <T>(scope: Scope, fn: () => T): T => {
   pushScope(scope)
   try {
     return fn()
   } finally {
     popScope()
-  }
-}
-
-/**
- * Execute a function in a new scope and dispose the scope immediately after.
- * Useful for one-off scoped operations.
- *
- * @param fn - The function to execute, receives the scope as parameter
- * @returns The result of the function
- * @public
- */
-export const scoped = <T>(fn: (scope: DisposalScope) => T): T => {
-  const scope = new DisposalScope()
-  try {
-    return withScope(scope, () => fn(scope))
-  } finally {
-    scope.dispose()
   }
 }
 

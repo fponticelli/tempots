@@ -41,7 +41,7 @@ describe("OneOf", () => {
     );
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(0)
-    expect(document.body.innerHTML).toStrictEqual('<div>a</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>a</div><!---->');
     p.set({ type: "A", text: "b" })
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
@@ -50,17 +50,18 @@ describe("OneOf", () => {
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toStrictEqual('<div>num:1</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>num:1</div><!---->');
     p.set({ type: "B", num: 2 })
     await sleep()
     expect(spyMountA).toBeCalledTimes(1)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toStrictEqual('<div>num:2</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>num:2</div><!---->');
     p.set({ type: "A", text: "c" })
     await sleep()
     expect(spyMountA).toBeCalledTimes(2)
     expect(spyMountB).toBeCalledTimes(1)
-    expect(document.body.innerHTML).toStrictEqual('<div>c</div>');
+    expect(document.body.innerHTML).toStrictEqual('<div>c</div><!---->');
+
   });
 
   test("value", async () => {
@@ -72,10 +73,10 @@ describe("OneOf", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('<div>Viewing</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Viewing</div><!---->')
     mode.set('edit')
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('<div>Editing</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Editing</div><!---->')
   })
 
   test("tuple", async () => {
@@ -87,10 +88,10 @@ describe("OneOf", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('<div>A:1</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>A:1</div><!---->')
     pair.set(['B', 2])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('<div>B:2</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>B:2</div><!---->')
   })
 
   test("field", async () => {
@@ -107,13 +108,13 @@ describe("OneOf", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('<div>Loading...</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Loading...</div><!---->')
     state.set({ state: 'ready', content: 'Ok' })
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('<div>Ready:Ok</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Ready:Ok</div><!---->')
     state.set({ state: 'error', message: 'Oops' })
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('<div>Error:Oops</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Error:Oops</div><!---->')
   })
 
   test("kind", async () => {
@@ -126,10 +127,10 @@ describe("OneOf", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('<div>A:Hello, World!</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>A:Hello, World!</div><!---->')
     value.set({ kind: 'B', value: 5 })
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('<div>B:5</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>B:5</div><!---->')
   })
 
   test("oneof", async () => {
@@ -142,9 +143,9 @@ describe("OneOf", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('<div>Loading...</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Loading...</div><!---->')
     status.set({ error: 'Oops' })
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('<div>Error:Oops</div>')
+    expect(document.body.innerHTML).toStrictEqual('<div>Error:Oops</div><!---->')
   })
 });

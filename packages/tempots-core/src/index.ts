@@ -14,6 +14,7 @@ export type {
   HierarchicalContext,
   Renderable,
   TNode,
+  Primitive,
   ProviderMark,
   ValueType,
   BaseValueType,
@@ -39,6 +40,7 @@ export {
   prop,
   computed,
   effect,
+  strictEquals,
 } from './signal'
 
 // Value utilities
@@ -52,16 +54,16 @@ export {
 } from './value'
 
 // Disposal scope
-export { DisposalScope } from './disposal-scope'
+export { DisposalScope, scoped } from './disposal-scope'
 
 // Scope stack
+export type { Scope } from './scope-stack'
 export {
   scopeStack,
   getCurrentScope,
   getScopeStack,
   getParentScope,
   withScope,
-  scoped,
   untracked,
   pushScope,
   popScope,
@@ -90,6 +92,7 @@ export {
   throttleSignal,
   distinctUntilChanged,
   accumulateSignal,
+  createSelector,
 } from './signal-utils'
 
 export type { StoredPropOptions, SyncPropOptions } from './signal-utils'

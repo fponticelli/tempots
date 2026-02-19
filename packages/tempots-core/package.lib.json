@@ -21,6 +21,7 @@
     "url": "https://github.com/fponticelli"
   },
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./index.d.ts",

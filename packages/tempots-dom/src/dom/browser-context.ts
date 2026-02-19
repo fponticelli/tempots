@@ -1,4 +1,5 @@
 import type { Clear, ProviderMark, Providers } from '../types/domain'
+import type { Primitive } from '@tempots/core'
 import { _makeGetter, _makeSetter } from './attr'
 import { DOMContext, HandlerOptions } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
@@ -102,10 +103,7 @@ export class BrowserContext implements DOMContext {
    * @param namespace - The namespace URI to create the element in, or `undefined` to create a standard HTML element.
    * @returns The newly created element.
    */
-  readonly createElement = (
-    tagName: string,
-    namespace: string | undefined
-  ): HTMLElement => {
+  createElement(tagName: string, namespace: string | undefined): HTMLElement {
     if (namespace !== undefined) {
       return this.document.createElementNS(namespace, tagName) as HTMLElement
     } else {
@@ -135,10 +133,7 @@ export class BrowserContext implements DOMContext {
    * @param namespace - The namespace URI for the element, or undefined for HTML elements
    * @returns A new DOMContext focused on the newly created child element
    */
-  readonly makeChildElement = (
-    tagName: string,
-    namespace: string | undefined
-  ): DOMContext => {
+  makeChildElement(tagName: string, namespace: string | undefined): DOMContext {
     const element = this.createElement(tagName, namespace) as HTMLElement
     this.appendOrInsert(element)
     return this.withElement(element)
@@ -149,15 +144,16 @@ export class BrowserContext implements DOMContext {
    * @param text - The text content for the new text node.
    * @returns A new `Text` node with the specified text content.
    */
-  readonly createText = (text: string): Text =>
-    this.document.createTextNode(text)
+  createText(text: Primitive): Text {
+    return this.document.createTextNode(text as string)
+  }
 
   /**
    * Creates a new text node with the specified text content and appends it to the current element.
-   * @param text - The text content for the new text node.
+   * @param text - The text content for the new text node. Primitives are coerced to strings by the DOM.
    * @returns A new `DOMContext` with a reference to the new text node.
    */
-  readonly makeChildText = (text: string): DOMContext => {
+  makeChildText(text: Primitive): DOMContext {
     const textNode = this.createText(text)
     this.appendOrInsert(textNode)
     return this.withReference(textNode)
@@ -165,29 +161,37 @@ export class BrowserContext implements DOMContext {
 
   /**
    * Sets the text content of the current element.
-   * @param text - The text content to set.
+   * @param text - The text content to set. Primitives are coerced to strings by the DOM.
    */
-  readonly setText = (text: string) => {
-    this.reference!.nodeValue = text
+  setText(text: Primitive) {
+    this.reference!.nodeValue = text as string
   }
 
   /**
    * Gets the text content of the current element or text node.
    * @returns The text content of the current element or text node.
    */
-  readonly getText = (): string => {
+  getText(): string {
     return this.reference?.nodeValue ?? this.element.textContent ?? ''
   }
 
   /**
-   * Creates a new `DOMContext` with a reference to a newly created text node.
-   * The text node is appended or inserted to the current `DOMContext`.
+   * Creates a new `DOMContext` with a reference to a newly created Comment node.
+   * The Comment node is appended or inserted to the current `DOMContext`.
    * The new `DOMContext` with the reference is returned.
    */
-  readonly makeRef = (): DOMContext => {
-    const ref = this.createText('')
+  makeRef(): DOMContext {
+    const ref = this.document.createComment('')
     this.appendOrInsert(ref)
     return this.withReference(ref)
+  }
+
+  /**
+   * Creates a lightweight Comment marker node and appends/inserts it.
+   * Used as boundary references for keyed list items and conditional renderables.
+   */
+  makeMarker(): DOMContext {
+    return this.makeRef()
   }
 
   /**
@@ -195,7 +199,7 @@ export class BrowserContext implements DOMContext {
    *
    * @param child - The child node to append or insert.
    */
-  readonly appendOrInsert = (child: Node) => {
+  appendOrInsert(child: Node) {
     if (this.reference === undefined) {
       this.element.appendChild(child)
     } else {
@@ -208,13 +212,14 @@ export class BrowserContext implements DOMContext {
    * @param element - The DOM element to use in the new `DOMContext` instance.
    * @returns A new `DOMContext` instance with the provided `element`.
    */
-  readonly withElement = (element: HTMLElement): BrowserContext =>
-    new BrowserContext(
+  withElement(element: HTMLElement): BrowserContext {
+    return new BrowserContext(
       element.ownerDocument ?? this.document,
       element,
       undefined,
       this.providers
     )
+  }
 
   /**
    * Creates a portal to render content in a different part of the DOM tree.
@@ -260,7 +265,7 @@ export class BrowserContext implements DOMContext {
    * @returns A new DOMContext focused on the portal target element
    * @throws {Error} When the selector doesn't match any element in the document
    */
-  readonly makePortal = (selector: string | HTMLElement): DOMContext => {
+  makePortal(selector: string | HTMLElement): DOMContext {
     const element =
       typeof selector === 'string'
         ? (this.document.querySelector(selector) as HTMLElement | null)
@@ -274,11 +279,17 @@ export class BrowserContext implements DOMContext {
   /**
    * Creates a new `DOMContext` instance with the specified reference.
    *
-   * @param reference - The optional `Text` node to use as the reference for the new `DOMContext`.
+   * @param reference - The optional `Node` to use as the reference for the new `DOMContext`.
    * @returns A new `DOMContext` instance with the specified reference.
    */
-  readonly withReference = (reference: Text | undefined): DOMContext =>
-    new BrowserContext(this.document, this.element, reference, this.providers)
+  withReference(reference: Node | undefined): DOMContext {
+    return new BrowserContext(
+      this.document,
+      this.element,
+      reference,
+      this.providers
+    )
+  }
 
   /**
    * Sets a provider for the given provider mark.
@@ -287,15 +298,16 @@ export class BrowserContext implements DOMContext {
    * @param value - The provider to set for the given mark.
    * @returns A new `DOMContext` instance with the specified provider.
    */
-  readonly setProvider = <T>(
+  setProvider<T>(
     mark: ProviderMark<T>,
     value: T,
     onUse: undefined | (() => void)
-  ): DOMContext =>
-    new BrowserContext(this.document, this.element, this.reference, {
+  ): DOMContext {
+    return new BrowserContext(this.document, this.element, this.reference, {
       ...this.providers,
       [mark]: [value, onUse],
     })
+  }
 
   /**
    * Retrieves a provider for the given provider mark.
@@ -304,7 +316,7 @@ export class BrowserContext implements DOMContext {
    * @returns The provider for the given mark.
    * @throws Throws `ProviderNotFoundError` if the provider for the given mark is not found.
    */
-  readonly getProvider = <T>(mark: ProviderMark<T>) => {
+  getProvider<T>(mark: ProviderMark<T>) {
     if (this.providers[mark] === undefined) {
       throw new ProviderNotFoundError(mark)
     }
@@ -316,7 +328,7 @@ export class BrowserContext implements DOMContext {
     return { value, onUse }
   }
 
-  readonly clear = (removeTree: boolean) => {
+  clear(removeTree: boolean) {
     if (removeTree) {
       if (this.reference !== undefined) {
         _removeDOMNode(this.reference)
@@ -330,7 +342,7 @@ export class BrowserContext implements DOMContext {
    * Adds classes to the element.
    * @param tokens - The class names to add.
    */
-  readonly addClasses = (tokens: string[]) => {
+  addClasses(tokens: string[]) {
     this.element.classList.add(...tokens)
   }
 
@@ -338,8 +350,7 @@ export class BrowserContext implements DOMContext {
    * Removes classes from the element.
    * @param tokens - The class names to remove.
    */
-
-  readonly removeClasses = (tokens: string[]) => {
+  removeClasses(tokens: string[]) {
     this.element.classList.remove(...tokens)
   }
 
@@ -347,7 +358,7 @@ export class BrowserContext implements DOMContext {
    * Gets the classes of the element.
    * @returns The classes of the element.
    */
-  readonly getClasses = (): string[] => {
+  getClasses(): string[] {
     return Array.from(this.element.classList)
   }
 
@@ -358,11 +369,11 @@ export class BrowserContext implements DOMContext {
    * @param options - The options for the event listener.
    * @returns A function to remove the event listener.
    */
-  readonly on = <E>(
+  on<E>(
     event: string,
     listener: (event: E, ctx: BrowserContext) => void,
     options?: HandlerOptions
-  ): Clear => {
+  ): Clear {
     const handler = (event: Event) => listener(event as E, this)
     this.element.addEventListener(event, handler, options)
     return (removeTree: boolean) => {
@@ -377,32 +388,40 @@ export class BrowserContext implements DOMContext {
    * @returns `true` if the context is a browser DOM context.
    * @deprecated Use `isBrowser()` instead.
    */
-  readonly isBrowserDOM = (): this is BrowserContext => true
+  isBrowserDOM(): this is BrowserContext {
+    return true
+  }
 
   /**
    * Returns `true` if the context is a browser context.
    * @returns `true` if the context is a browser context.
    */
-  readonly isBrowser = (): this is BrowserContext => true
+  isBrowser(): this is BrowserContext {
+    return true
+  }
 
   /**
    * Returns `true` if the context is a headless DOM context.
    * @returns `true` if the context is a headless DOM context.
    */
-  readonly isHeadlessDOM = (): this is HeadlessContext => false
+  isHeadlessDOM(): this is HeadlessContext {
+    return false
+  }
 
   /**
    * Returns `true` if the context is a headless context.
    * @returns `true` if the context is a headless context.
    */
-  readonly isHeadless = (): this is HeadlessContext => false
+  isHeadless(): this is HeadlessContext {
+    return false
+  }
 
   /**
    * Sets the style of the element.
    * @param name - The name of the style to set.
    * @param value - The value of the style to set.
    */
-  readonly setStyle = (name: string, value: string) => {
+  setStyle(name: string, value: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.element.style[name as any] = value
   }
@@ -412,27 +431,27 @@ export class BrowserContext implements DOMContext {
    * @param name - The name of the style to get.
    * @returns The value of the style.
    */
-  readonly getStyle = (name: string) => {
+  getStyle(name: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.element.style[name as any]
   }
 
-  readonly makeAccessors = (name: string) => {
+  makeAccessors(name: string) {
     return {
       get: _makeGetter(name, this.element),
       set: _makeSetter(name, this.element),
     }
   }
 
-  readonly getWindow = () => {
+  getWindow() {
     return this.document.defaultView!
   }
 
-  readonly moveRangeBefore = (
+  moveRangeBefore(
     startRef: DOMContext,
     endRef: DOMContext,
     targetRef: DOMContext
-  ): void => {
+  ): void {
     const start = (startRef as BrowserContext).reference!
     const end = (endRef as BrowserContext).reference!
     const target = (targetRef as BrowserContext).reference!
@@ -444,6 +463,50 @@ export class BrowserContext implements DOMContext {
       parent.insertBefore(current, target)
       if (current === end) break
       current = next
+    }
+  }
+
+  removeRange(startRef: DOMContext, endRef: DOMContext): void {
+    const start = (startRef as BrowserContext).reference!
+    const end = (endRef as BrowserContext).reference!
+    const parent = this.element
+
+    let current: Node | null = start
+    while (current !== null) {
+      const next: Node | null = current.nextSibling
+      parent.removeChild(current)
+      if (current === end) break
+      current = next
+    }
+  }
+
+  removeAllBefore(ref: DOMContext): void {
+    const marker = (ref as BrowserContext).reference!
+    const parent = this.element
+    if (!parent.firstChild || parent.firstChild === marker) return
+    const range = this.document.createRange()
+    range.setStartBefore(parent.firstChild)
+    range.setEndBefore(marker)
+    range.deleteContents()
+  }
+
+  private _detachedParent: Node | null = null
+  private _detachedNext: Node | null = null
+
+  detach(): void {
+    const el = this.element
+    if (el.parentNode) {
+      this._detachedParent = el.parentNode
+      this._detachedNext = el.nextSibling
+      el.remove()
+    }
+  }
+
+  reattach(): void {
+    if (this._detachedParent) {
+      this._detachedParent.insertBefore(this.element, this._detachedNext)
+      this._detachedParent = null
+      this._detachedNext = null
     }
   }
 }

@@ -112,7 +112,7 @@ export function ForEachDemo(): Renderable {
           const duration = Math.random() * 2000 + 1000
           const newBalance = animateSignals(
             10000,
-            account.at('balance').get,
+            () => account.value.balance,
             [account],
             { duration: 1500, easing: easeOutCubic }
           )

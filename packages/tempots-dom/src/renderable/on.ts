@@ -7,8 +7,13 @@ const handler = <T extends Event>(
   name: string,
   handler: (event: T, ctx: DOMContext) => void,
   options?: HandlerOptions
-): Renderable =>
-  domRenderable((ctx: DOMContext) => ctx.on(name, handler, options))
+): Renderable => {
+  const r = domRenderable((ctx: DOMContext) =>
+    ctx.on(name, handler, options)
+  ) as Renderable & Record<string, unknown>
+  r.kind = 'dynamic-attr'
+  return r
+}
 
 /**
  * Attaches an event handler to the 'click' event that triggers when a checkbox is checked or unchecked.

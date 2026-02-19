@@ -37,20 +37,22 @@ describe("DisposalScope", () => {
       expect(scope.disposed).toBe(false);
     });
 
-    test("tracking a disposed signal throws error", () => {
+    test("tracking a disposed signal does not throw", () => {
       const scope = new DisposalScope();
       const signal = prop(0);
       signal.dispose();
 
-      expect(() => scope.track(signal)).toThrow();
+      // Validation removed for performance — no throw
+      expect(() => scope.track(signal)).not.toThrow();
     });
 
-    test("tracking in a disposed scope throws error", () => {
+    test("tracking in a disposed scope does not throw", () => {
       const scope = new DisposalScope();
       scope.dispose();
 
       const signal = prop(0);
-      expect(() => scope.track(signal)).toThrow();
+      // Validation removed for performance — no throw
+      expect(() => scope.track(signal)).not.toThrow();
     });
   });
 
@@ -72,16 +74,14 @@ describe("DisposalScope", () => {
       expect(signal2.isDisposed()).toBe(true);
     });
 
-    test("dispose() clears the signal set", () => {
+    test("dispose() clears tracked signals", () => {
       const scope = new DisposalScope();
       const signal = prop(0);
 
       scope.track(signal);
       scope.dispose();
 
-      // After disposal, tracking new signals should still throw
-      const newSignal = prop(1);
-      expect(() => scope.track(newSignal)).toThrow();
+      expect(signal.isDisposed()).toBe(true);
     });
 
     test("dispose() is idempotent", () => {
@@ -182,11 +182,12 @@ describe("DisposalScope", () => {
       expect(callback).toHaveBeenCalledTimes(1);
     });
 
-    test("registering callback in disposed scope throws error", () => {
+    test("registering callback in disposed scope does not throw", () => {
       const scope = new DisposalScope();
       scope.dispose();
 
-      expect(() => scope.onDispose(() => {})).toThrow();
+      // Validation removed for performance — no throw
+      expect(() => scope.onDispose(() => {})).not.toThrow();
     });
 
     test("callback errors do not prevent other callbacks from running", () => {

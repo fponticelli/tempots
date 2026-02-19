@@ -12,16 +12,16 @@ describe("ForEach", () => {
       ForEach(s, item => item),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('abc')
+    expect(document.body.innerHTML).toStrictEqual('abc<!---->')
     s.set(['d', 'e', 'f'])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('def')
+    expect(document.body.innerHTML).toStrictEqual('def<!---->')
     s.set([])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
     s.set(['a'])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('a')
+    expect(document.body.innerHTML).toStrictEqual('a<!---->')
   });
   test("with separator", async () => {
     const s = prop(['A', 'B', 'C'])
@@ -33,19 +33,19 @@ describe("ForEach", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('A0:true:falseB1:false:trueC')
+    expect(document.body.innerHTML).toStrictEqual('A0:true:false<!---->B1:false:true<!---->C<!----><!---->')
     s.set(['A', 'B'])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('A0:true:trueB')
+    expect(document.body.innerHTML).toStrictEqual('A0:true:true<!---->B<!----><!---->')
     s.set(['A'])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('A')
+    expect(document.body.innerHTML).toStrictEqual('A<!----><!---->')
     s.set([])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
     s.set(['A', 'B', 'C', 'D'])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('A0:true:falseB1:false:falseC2:false:trueD')
+    expect(document.body.innerHTML).toStrictEqual('A0:true:false<!---->B1:false:false<!---->C2:false:true<!---->D<!----><!---->')
   });
   test("with literal", async () => {
     const clear = render(
@@ -65,23 +65,23 @@ describe("ForEach", () => {
       ForEach(s, items => ForEach(items, item => item)),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('abcd')
+    expect(document.body.innerHTML).toStrictEqual('ab<!---->cd<!----><!---->')
 
     s.set([['a', 'b'], ['c', 'd', 'e']])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('abcde')
-    
+    expect(document.body.innerHTML).toStrictEqual('ab<!---->cde<!----><!---->')
+
     s.set([['a', 'b'], ['c', 'd', 'e'], ['f', 'g', 'h']])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('abcdefgh')
+    expect(document.body.innerHTML).toStrictEqual('ab<!---->cde<!---->fgh<!----><!---->')
 
     s.set([['a', 'b'], ['c', 'd', 'e'], ['f', 'g']])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('abcdefg')
+    expect(document.body.innerHTML).toStrictEqual('ab<!---->cde<!---->fg<!----><!---->')
 
     s.set([['a'], ['f']])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('af')
+    expect(document.body.innerHTML).toStrictEqual('a<!---->f<!----><!---->')
   });
 });
 

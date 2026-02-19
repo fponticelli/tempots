@@ -9,8 +9,8 @@ const delegatedHandler = <T extends Event>(
   selector: string,
   handler: (event: T, ctx: DOMContext) => void,
   options?: HandlerOptions
-): Renderable =>
-  domRenderable((ctx: DOMContext) => {
+): Renderable => {
+  const r = domRenderable((ctx: DOMContext) => {
     if (!ctx.isBrowser()) {
       return () => {}
     }
@@ -30,7 +30,10 @@ const delegatedHandler = <T extends Event>(
         el.removeEventListener(name, listener, options)
       }
     }
-  })
+  }) as Renderable & Record<string, unknown>
+  r.kind = 'dynamic-attr'
+  return r
+}
 
 /**
  * Provides type-safe delegated event handlers for all HTML events.

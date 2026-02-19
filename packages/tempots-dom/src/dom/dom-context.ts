@@ -1,4 +1,5 @@
 import type { Clear, ProviderMark } from '../types/domain'
+import type { Primitive } from '@tempots/core'
 import { makeProviderMark } from '@tempots/core'
 import { BrowserContext } from './browser-context'
 import { HeadlessContext } from './headless-context'
@@ -42,13 +43,13 @@ export interface DOMContext {
    * @param text - The text content for the new text node.
    * @returns A new `DOMContext` with a reference to the new text node.
    */
-  makeChildText(text: string): DOMContext
+  makeChildText(text: Primitive): DOMContext
 
   /**
    * Sets the text content of the current element.
    * @param text - The text content to set.
    */
-  setText(text: string): void
+  setText(text: Primitive): void
 
   /**
    * Gets the text content of the current element or text node.
@@ -188,4 +189,32 @@ export interface DOMContext {
     endRef: DOMContext,
     targetRef: DOMContext
   ): void
+
+  /**
+   * Removes all sibling nodes between `startRef` and `endRef` (inclusive).
+   * Used for bulk removal of keyed entries.
+   */
+  removeRange(startRef: DOMContext, endRef: DOMContext): void
+
+  /**
+   * Creates a lightweight marker node (Comment node) as a boundary reference.
+   */
+  makeMarker(): DOMContext
+
+  /**
+   * Removes all sibling nodes before the given reference marker in one
+   * operation. Used as a fast path for clearing entire lists.
+   */
+  removeAllBefore(ref: DOMContext): void
+
+  /**
+   * Detaches the context's container element from the live DOM tree.
+   * Use before bulk insertions to avoid incremental layout recalculations.
+   */
+  detach(): void
+
+  /**
+   * Re-attaches the container element after a detach.
+   */
+  reattach(): void
 }

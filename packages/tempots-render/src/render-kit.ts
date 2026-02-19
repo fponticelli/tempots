@@ -1,4 +1,4 @@
-import type { Clear, Renderable, TNode } from '@tempots/core'
+import type { Clear, Primitive, Renderable, TNode, Scope } from '@tempots/core'
 import {
   Computed,
   Signal,
@@ -9,9 +9,13 @@ import {
   KeyedPosition,
   DisposalScope,
   withScope,
+  pushScope,
+  popScope,
   Prop,
+  AnySignal,
 } from '@tempots/core'
 import type { BaseRenderContext } from './context'
+import type { TemplateEngine } from './template-engine'
 import type {
   TaskOptions,
   AsyncOptions,
@@ -32,6 +36,28 @@ import type {
 } from './types'
 
 /**
+ * Shared scope functions for KeyedForEach entries.
+ * These are assigned as properties on entry objects so that entries
+ * implement the Scope interface directly, avoiding per-entry closure allocations.
+ * @internal
+ */
+function _scopeTrack(
+  this: { tracked: AnySignal[] | null },
+  s: AnySignal
+): void {
+  if (this.tracked === null) this.tracked = []
+  this.tracked.push(s)
+}
+
+function _scopeOnDispose(
+  this: { disposeCallbacks: Array<() => void> | null },
+  cb: () => void
+): void {
+  if (this.disposeCallbacks === null) this.disposeCallbacks = []
+  this.disposeCallbacks.push(cb)
+}
+
+/**
  * Configuration for creating a render kit.
  *
  * @typeParam CTX - The context type
@@ -46,6 +72,8 @@ export type RenderKitConfig<
   type: TType
   /** Factory function to create branded renderables */
   create: (renderFn: (ctx: CTX) => Clear) => Renderable<CTX, TType>
+  /** Optional template engine for cloneNode optimization in loops */
+  templateEngine?: TemplateEngine<CTX, TType>
 }
 
 /**
@@ -170,6 +198,10 @@ export interface RenderKit<
   ) => (
     child: (...values: ToProviderTypes<P>) => TNode<CTX, TType>
   ) => Renderable<CTX, TType>
+  MapText: <T>(
+    source: Signal<T>,
+    fn: (value: T) => string
+  ) => Renderable<CTX, TType>
   handleValueOrSignal: <T, R>(
     value: Value<T>,
     onSignal: (signal: Signal<T>) => R,
@@ -201,21 +233,58 @@ export function createRenderKit<
 
   // --- Internal text helpers ---
 
-  const _staticText = (text: string): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
+  const _staticText = (text: Primitive): Renderable<CTX, TType> => {
+    const r = create((ctx: CTX) => {
       const newCtx = ctx.makeChildText(text)
-      return newCtx.clear
-    })
+      return (removeTree: boolean) => newCtx.clear(removeTree)
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'static-text'
+    r.text = String(text)
+    return r
+  }
 
-  const _signalText = (signal: Signal<string>): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
-      const newCtx = ctx.makeChildText(signal.value)
-      const dispose = signal.on(newCtx.setText)
+  const _signalText = (sig: Signal<Primitive>): Renderable<CTX, TType> => {
+    const r = create((ctx: CTX) => {
+      const newCtx = ctx.makeChildText(sig.value)
+      // Use onChange to skip the redundant initial call (value already set via makeChildText)
+      const dispose = sig.onChange((v: Primitive) => newCtx.setText(v))
       return (removeTree: boolean) => {
         dispose()
         newCtx.clear(removeTree)
       }
-    })
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'dynamic-text'
+    r.source = sig
+    r.transform = String
+    return r
+  }
+
+  /**
+   * Creates a text node that displays a transformed signal value without
+   * creating an intermediate Computed. This is more efficient than
+   * `signal.map(fn)` when the mapped value is only used as text content.
+   *
+   * @param source - The source signal to map from
+   * @param fn - Transform function that produces the text to display
+   * @returns A renderable that displays the transformed text
+   */
+  const MapText = <T>(
+    source: Signal<T>,
+    fn: (value: T) => string
+  ): Renderable<CTX, TType> => {
+    const r = create((ctx: CTX) => {
+      const newCtx = ctx.makeChildText(fn(source.value))
+      const dispose = source.onChange((v: T) => newCtx.setText(fn(v)))
+      return (removeTree: boolean) => {
+        dispose()
+        newCtx.clear(removeTree)
+      }
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'dynamic-text'
+    r.source = source
+    r.transform = fn
+    return r
+  }
 
   // --- Internal helpers ---
 
@@ -238,10 +307,14 @@ export function createRenderKit<
       return Empty
     } else if (Array.isArray(child)) {
       return Fragment(...child.map(renderableOfTNode))
-    } else if (typeof child === 'string') {
+    } else if (
+      typeof child === 'string' ||
+      typeof child === 'number' ||
+      typeof child === 'boolean'
+    ) {
       return _staticText(child)
-    } else if (Signal.is(child as Signal<string>)) {
-      return _signalText(child as Signal<string>)
+    } else if (Signal.is(child as Signal<Primitive>)) {
+      return _signalText(child as Signal<Primitive>)
     } else if (
       typeof child === 'object' &&
       'render' in child &&
@@ -258,7 +331,7 @@ export function createRenderKit<
     sig: Signal<T>,
     render: (value: T) => TNode<CTX, TType>
   ): Clear => {
-    const newCtx = ctx.makeRef() as CTX
+    const newCtx = ctx.makeMarker() as CTX
     let clear: Clear = () => {}
     let currentScope: DisposalScope | null = null
 
@@ -286,14 +359,22 @@ export function createRenderKit<
   // --- Renderables ---
 
   const Empty: Renderable<CTX, TType> = create(() => () => {})
+  ;(Empty as Renderable<CTX, TType> & Record<string, unknown>).kind = 'empty'
 
-  const Fragment = (...children: TNode<CTX, TType>[]): Renderable<CTX, TType> =>
-    create((ctx: CTX) => {
-      const clears = children.map(child => renderableOfTNode(child).render(ctx))
+  const Fragment = (
+    ...children: TNode<CTX, TType>[]
+  ): Renderable<CTX, TType> => {
+    const normalized = children.map(renderableOfTNode)
+    const r = create((ctx: CTX) => {
+      const clears = normalized.map(child => child.render(ctx))
       return (removeTree: boolean) => {
         clears.forEach(clear => clear(removeTree))
       }
-    })
+    }) as Renderable<CTX, TType> & Record<string, unknown>
+    r.kind = 'fragment'
+    r.children = normalized
+    return r
+  }
 
   const When = (
     condition: Value<boolean>,
@@ -355,9 +436,18 @@ export function createRenderKit<
       if (Signal.is(times)) {
         return create((ctx: CTX) => {
           const length = (times as Signal<number>).derive()
-          const newCtx = ctx.makeRef() as CTX
+          const newCtx = ctx.makeMarker() as CTX
           const clears: Clear[] = []
           const scopes: DisposalScope[] = []
+
+          // Template cache for cloneNode optimization
+          const rEngine = config.templateEngine
+          let rTmplCache: {
+            compiled: unknown
+            fp: string
+            verified: boolean
+          } | null = null
+          let rTmplDisabled = !rEngine
 
           length.on(newLength => {
             const toRemove = clears.splice(newLength)
@@ -377,9 +467,45 @@ export function createRenderKit<
               scopes.push(scope)
 
               clears.push(
-                withScope(scope, () =>
-                  renderableOfTNode(element(pos)).render(newCtx)
-                )
+                withScope(scope, () => {
+                  const renderable = renderableOfTNode(element(pos))
+                  if (rTmplDisabled) return renderable.render(newCtx)
+
+                  if (rTmplCache === null) {
+                    const fp = rEngine!.fingerprint(renderable)
+                    if (fp === null) {
+                      rTmplDisabled = true
+                      return renderable.render(newCtx)
+                    }
+                    const compiled = rEngine!.build(renderable, newCtx)
+                    if (!compiled) {
+                      rTmplDisabled = true
+                      return renderable.render(newCtx)
+                    }
+                    rTmplCache = { compiled, fp, verified: false }
+                    return rEngine!.cloneAndHydrate(
+                      compiled,
+                      newCtx,
+                      rEngine!.extractSlots(renderable)
+                    ).clear
+                  }
+
+                  if (!rTmplCache.verified) {
+                    const fp = rEngine!.fingerprint(renderable)
+                    if (fp !== rTmplCache.fp) {
+                      rTmplDisabled = true
+                      rTmplCache = null
+                      return renderable.render(newCtx)
+                    }
+                    rTmplCache.verified = true
+                  }
+
+                  return rEngine!.cloneAndHydrate(
+                    rTmplCache.compiled,
+                    newCtx,
+                    rEngine!.extractSlots(renderable)
+                  ).clear
+                })
               )
             }
           })
@@ -475,26 +601,101 @@ export function createRenderKit<
       value,
       arrSignal =>
         create((ctx: CTX) => {
-          const outerRef = ctx.makeRef() as CTX
+          const outerRef = ctx.makeMarker() as CTX
           const totalProp = prop(0)
 
           type KeyedEntry = {
             key: K
             valueProp: Prop<T>
-            indexProp: Prop<number>
-            position: KeyedPosition
-            scope: DisposalScope
+            position: KeyedPosition | null
+            tracked: AnySignal[] | null
+            disposeCallbacks: Array<() => void> | null
             clear: Clear
             startRef: CTX
             endRef: CTX
+            // Scope interface methods (shared functions, not closures)
+            track: (s: AnySignal) => void
+            onDispose: (cb: () => void) => void
             // Separator state (if separator is provided)
-            sepScope?: DisposalScope
+            sepTracked?: AnySignal[] | null
+            sepDisposeCallbacks?: Array<() => void> | null
             sepClear?: Clear
             sepStartRef?: CTX
           }
 
+          /** Dispose tracked signals and callbacks from a lightweight scope */
+          const disposeTracked = (
+            tracked: AnySignal[] | null,
+            callbacks: Array<() => void> | null
+          ): void => {
+            if (callbacks !== null) {
+              for (let i = 0; i < callbacks.length; i++) callbacks[i]()
+            }
+            if (tracked !== null) {
+              for (let i = 0; i < tracked.length; i++) tracked[i].dispose()
+            }
+          }
+
           const entries: KeyedEntry[] = []
           const keyToEntry = new Map<K, KeyedEntry>()
+          const positionUsed = item.length >= 2 || separator != null
+
+          // Template cache for cloneNode optimization
+          const engine = config.templateEngine
+          let tmplCache: {
+            compiled: unknown
+            fp: string
+            verified: boolean
+          } | null = null
+          let tmplDisabled = !engine
+
+          const renderMaybeTemplate = (
+            renderable: Renderable<CTX, TType>,
+            renderCtx: CTX
+          ): { clear: Clear; startCtx: CTX | null } => {
+            if (tmplDisabled)
+              return { clear: renderable.render(renderCtx), startCtx: null }
+
+            if (tmplCache === null) {
+              // First item: build template
+              const fp = engine!.fingerprint(renderable)
+              if (fp === null) {
+                tmplDisabled = true
+                return { clear: renderable.render(renderCtx), startCtx: null }
+              }
+              const compiled = engine!.build(renderable, renderCtx)
+              if (!compiled) {
+                tmplDisabled = true
+                return { clear: renderable.render(renderCtx), startCtx: null }
+              }
+              tmplCache = { compiled, fp, verified: false }
+              const result = engine!.cloneAndHydrate(
+                compiled,
+                renderCtx,
+                engine!.extractSlots(renderable)
+              )
+              return { clear: result.clear, startCtx: result.startCtx as CTX }
+            }
+
+            if (!tmplCache.verified) {
+              // Second item: fingerprint guard
+              const fp = engine!.fingerprint(renderable)
+              if (fp !== tmplCache.fp) {
+                tmplDisabled = true
+                tmplCache = null
+                return { clear: renderable.render(renderCtx), startCtx: null }
+              }
+              tmplCache.verified = true
+            }
+
+            // Verified: clone
+            const result = engine!.cloneAndHydrate(
+              tmplCache.compiled,
+              renderCtx,
+              engine!.extractSlots(renderable)
+            )
+            return { clear: result.clear, startCtx: result.startCtx as CTX }
+          }
 
           const createEntry = (
             value: T,
@@ -503,51 +704,94 @@ export function createRenderKit<
           ): KeyedEntry => {
             const k = key(value)
             const valueProp = prop(value)
-            const indexProp = prop(index)
-            const position = new KeyedPosition(indexProp, totalProp)
+            const position = positionUsed
+              ? new KeyedPosition(index, totalProp)
+              : null
 
-            // Create start marker
-            const startRef = ctx.makeChildText('') as CTX
-            // Move it before the target
-            ctx.moveRangeBefore(startRef, startRef, insertBefore)
+            // Skip creating a separate Comment start marker when template
+            // cloning is verified (items 3+). Items 1-2 still need the marker
+            // because we don't know if template cloning will succeed yet.
+            const tmplVerified =
+              !tmplDisabled && tmplCache !== null && tmplCache.verified
+            let startRef: CTX | undefined
+            if (!tmplVerified) {
+              startRef = ctx.makeMarker() as CTX
+              ctx.moveRangeBefore(startRef, startRef, insertBefore)
+            }
 
             // Create end marker
-            const endRef = ctx.makeChildText('') as CTX
+            const endRef = ctx.makeMarker() as CTX
             ctx.moveRangeBefore(endRef, endRef, insertBefore)
 
             // Render content between start and end markers.
             // endRef acts as the insertion point — content is placed before it.
-            const scope = new DisposalScope()
-            const clear = withScope(scope, () =>
-              renderableOfTNode(item(valueProp, position)).render(endRef)
-            )
-
-            return {
+            // Use lightweight inline scope instead of DisposalScope
+            const entry: KeyedEntry = {
               key: k,
               valueProp,
-              indexProp,
               position,
-              scope,
-              clear,
-              startRef,
+              tracked: null,
+              disposeCallbacks: null,
+              clear: undefined!,
+              startRef: startRef!,
               endRef,
+              track: _scopeTrack,
+              onDispose: _scopeOnDispose,
+            }
+            pushScope(entry as unknown as Scope)
+            try {
+              const renderable = renderableOfTNode(item(valueProp, position!))
+              const result = renderMaybeTemplate(renderable, endRef)
+              entry.clear = result.clear
+              if (result.startCtx) {
+                // Template-cloned: use first content node as startRef
+                if (startRef) {
+                  // Items 1-2: remove the now-unnecessary comment marker
+                  startRef.clear(true)
+                }
+                entry.startRef = result.startCtx
+              }
+              // else: non-template, startRef is already the comment marker
+            } finally {
+              popScope()
+            }
+
+            return entry
+          }
+
+          const removeEntry = (entry: KeyedEntry, removeTree = true) => {
+            disposeTracked(entry.tracked, entry.disposeCallbacks)
+            entry.clear(removeTree)
+            entry.startRef.clear(removeTree)
+            entry.endRef.clear(removeTree)
+            entry.position?.dispose()
+            entry.valueProp.dispose()
+            // Remove separator if present
+            if (entry.sepClear) {
+              disposeTracked(
+                entry.sepTracked ?? null,
+                entry.sepDisposeCallbacks ?? null
+              )
+              entry.sepClear(removeTree)
+              entry.sepStartRef?.clear(removeTree)
             }
           }
 
-          const removeEntry = (entry: KeyedEntry) => {
-            entry.scope.dispose()
-            entry.clear(true)
-            entry.startRef.clear(true)
-            entry.endRef.clear(true)
-            entry.position.dispose()
-            entry.valueProp.dispose()
-            entry.indexProp.dispose()
-            // Remove separator if present
-            if (entry.sepClear) {
-              entry.sepScope?.dispose()
-              entry.sepClear(true)
-              entry.sepStartRef?.clear(true)
+          /**
+           * Fast path for removing all entries at once.
+           * Disposes signals without individual DOM node removal,
+           * then removes the entire DOM range in one operation.
+           */
+          const removeAllEntries = () => {
+            if (entries.length === 0) return
+            // 1. Remove all DOM nodes before the outer marker in one operation
+            ctx.removeAllBefore(outerRef)
+            // 2. Dispose all signals (skip DOM removal — nodes already removed)
+            for (let i = 0; i < entries.length; i++) {
+              removeEntry(entries[i], false)
             }
+            entries.length = 0
+            keyToEntry.clear()
           }
 
           const renderSeparator = (
@@ -557,25 +801,42 @@ export function createRenderKit<
             if (!separator) return
 
             // Create separator marker before the entry's start marker
-            const sepStartRef = ctx.makeChildText('') as CTX
+            const sepStartRef = ctx.makeMarker() as CTX
             ctx.moveRangeBefore(sepStartRef, sepStartRef, insertBefore)
 
-            const sepScope = new DisposalScope()
-            const sepClear = withScope(sepScope, () =>
-              renderableOfTNode(separator(entry.position)).render(insertBefore)
-            )
-
             entry.sepStartRef = sepStartRef
-            entry.sepScope = sepScope
+            entry.sepTracked = null
+            entry.sepDisposeCallbacks = null
+            const sepScopeHolder = {
+              tracked: null as AnySignal[] | null,
+              disposeCallbacks: null as Array<() => void> | null,
+              track: _scopeTrack,
+              onDispose: _scopeOnDispose,
+            }
+            pushScope(sepScopeHolder as unknown as Scope)
+            let sepClear: Clear
+            try {
+              sepClear = renderableOfTNode(separator(entry.position!)).render(
+                insertBefore
+              )
+            } finally {
+              popScope()
+            }
+            entry.sepTracked = sepScopeHolder.tracked
+            entry.sepDisposeCallbacks = sepScopeHolder.disposeCallbacks
             entry.sepClear = sepClear
           }
 
           const removeSeparator = (entry: KeyedEntry): void => {
             if (entry.sepClear) {
-              entry.sepScope?.dispose()
+              disposeTracked(
+                entry.sepTracked ?? null,
+                entry.sepDisposeCallbacks ?? null
+              )
               entry.sepClear(true)
               entry.sepStartRef?.clear(true)
-              entry.sepScope = undefined
+              entry.sepTracked = undefined
+              entry.sepDisposeCallbacks = undefined
               entry.sepClear = undefined
               entry.sepStartRef = undefined
             }
@@ -583,10 +844,70 @@ export function createRenderKit<
 
           const disposeSignal = arrSignal.on(
             newArr => {
+              // Fast path: clear all entries when new array is empty
+              if (newArr.length === 0 && entries.length > 0) {
+                removeAllEntries()
+                totalProp.set(0)
+                return
+              }
+
               const newKeys = newArr.map(key)
               const newKeySet = new Set(newKeys)
 
+              // Fast path: full replacement (no surviving keys)
+              if (entries.length > 0) {
+                let hasSurvivor = false
+                for (let i = 0; i < entries.length; i++) {
+                  if (newKeySet.has(entries[i].key)) {
+                    hasSurvivor = true
+                    break
+                  }
+                }
+                if (!hasSurvivor) {
+                  // Reuse existing entries by updating values in-place.
+                  // Avoids destroy+create cycle — DOM stays, signals propagate new values.
+                  const reuseCount = Math.min(entries.length, newArr.length)
+
+                  keyToEntry.clear()
+                  for (let i = 0; i < reuseCount; i++) {
+                    const entry = entries[i]
+                    entry.key = newKeys[i]
+                    entry.valueProp.set(newArr[i])
+                    entry.position?.setIndex(i)
+                    keyToEntry.set(newKeys[i], entry)
+                  }
+
+                  // Remove excess old entries
+                  for (let i = entries.length - 1; i >= reuseCount; i--) {
+                    removeEntry(entries[i])
+                  }
+                  entries.length = reuseCount
+
+                  // Create new entries beyond reuse count
+                  if (newArr.length > reuseCount) {
+                    ctx.detach()
+                    for (let i = reuseCount; i < newArr.length; i++) {
+                      const entry = createEntry(newArr[i], i, outerRef)
+                      keyToEntry.set(newKeys[i], entry)
+                      entries.push(entry)
+                      if (separator && i > 0 && !entry.sepClear) {
+                        renderSeparator(entry, entry.startRef)
+                      }
+                    }
+                    ctx.reattach()
+                  }
+
+                  totalProp.set(newArr.length)
+                  return
+                }
+              }
+
+              // Detach from DOM during full create/replace to avoid layout thrashing
+              const wasBulkCreate = entries.length === 0 && newArr.length > 0
+              if (wasBulkCreate) ctx.detach()
+
               // 1. Remove entries whose keys are no longer present
+              // (after full replacement, this loop is a no-op since entries is empty)
               for (let i = entries.length - 1; i >= 0; i--) {
                 const entry = entries[i]
                 if (!newKeySet.has(entry.key)) {
@@ -607,7 +928,7 @@ export function createRenderKit<
                 if (entry) {
                   // Update value and index
                   entry.valueProp.set(newArr[i])
-                  entry.indexProp.set(i)
+                  entry.position?.setIndex(i)
                 } else {
                   // Create new entry at the end (before outerRef)
                   entry = createEntry(newArr[i], i, outerRef)
@@ -688,17 +1009,24 @@ export function createRenderKit<
               entries.length = 0
               entries.push(...newEntries)
               totalProp.set(newArr.length)
+
+              // Re-attach after bulk create (no-op if not detached)
+              if (wasBulkCreate) ctx.reattach()
             },
             { noAutoDispose: true }
           )
 
           return (removeTree: boolean) => {
             disposeSignal()
-            for (const entry of entries) {
-              removeEntry(entry)
+            if (removeTree && entries.length > 0) {
+              removeAllEntries()
+            } else {
+              for (let i = 0; i < entries.length; i++) {
+                removeEntry(entries[i])
+              }
+              entries.length = 0
+              keyToEntry.clear()
             }
-            entries.length = 0
-            keyToEntry.clear()
             totalProp.dispose()
             outerRef.clear(removeTree)
           }
@@ -712,8 +1040,7 @@ export function createRenderKit<
         return Fragment(
           ...arr.map((val, i) => {
             const valueSig = signal(val)
-            const indexProp = prop(i)
-            const position = new KeyedPosition(indexProp, totalSig)
+            const position = new KeyedPosition(i, totalSig)
 
             if (separator && i > 0) {
               return Fragment(
@@ -733,7 +1060,7 @@ export function createRenderKit<
   ): Renderable<CTX, TType> => {
     function onSignal(matchSignal: Signal<T>): Renderable<CTX, TType> {
       return create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         let clearRenderable: Clear | undefined
         let matched: Computed<T[keyof T]> | undefined
         const keySignal = matchSignal.map(value => {
@@ -812,7 +1139,7 @@ export function createRenderKit<
     if (Signal.is(value)) {
       const sig = value as Signal<T>
       return create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         const mountableSignal = sig.map(v => renderableOfTNode(fn(v)))
         let previousClear: Clear = () => {}
         const clear = mountableSignal.on(child => {
@@ -835,7 +1162,7 @@ export function createRenderKit<
   ): Renderable<CTX, TType> => {
     function onSignal(valueSignal: Signal<T | null | undefined>) {
       return create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         let clear: Clear = () => {}
         let isNonNillRendered = false
         let feed: ReturnType<typeof prop<T>> | null = null
@@ -904,7 +1231,7 @@ export function createRenderKit<
       otherwise?: () => TNode<CTX, TType>
     ): Renderable<CTX, TType> =>
       create((ctx: CTX) => {
-        const newCtx = ctx.makeRef() as CTX
+        const newCtx = ctx.makeMarker() as CTX
         const hasNillLiterals = signals.some(
           sig => !Signal.is(sig) && sig == null
         )
@@ -1012,7 +1339,7 @@ export function createRenderKit<
     return create((ctx: CTX) => {
       let active = true
       const promise = task()
-      const newCtx = ctx.makeRef() as CTX
+      const newCtx = ctx.makeMarker() as CTX
       let clear = renderableOfTNode(pending).render(newCtx)
       promise.then(
         value => {
@@ -1179,6 +1506,7 @@ export function createRenderKit<
     Provide,
     Use,
     UseMany,
+    MapText,
     handleValueOrSignal,
     createReactiveRenderable,
     renderableOfTNode,

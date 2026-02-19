@@ -53,7 +53,7 @@ export function Timer(): Renderable {
         attr.min(MIN),
         attr.max(MAX),
         attr.valueAsNumber(duration),
-        on.input(emitValueAsNumber(duration.set))
+        on.input(emitValueAsNumber(v => duration.set(v)))
       ),
       Txt(duration.map(duration => formatSecond(duration)))
     ),

@@ -19,6 +19,9 @@ export { ProviderNotFoundError } from './errors'
 export { createRenderKit } from './render-kit'
 export type { RenderKitConfig, RenderKit } from './render-kit'
 
+// Template engine interface
+export type { TemplateEngine } from './template-engine'
+
 // Shared types
 export type {
   TaskOptions,

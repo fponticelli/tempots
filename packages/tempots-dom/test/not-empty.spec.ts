@@ -88,7 +88,7 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<ul><li>apple</li><li>banana</li><li>cherry</li></ul>')
+      expect(document.body.innerHTML).toBe('<ul><li>apple</li><li>banana</li><li>cherry</li></ul><!---->')
       clear()
     })
 
@@ -104,7 +104,7 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>No items found</div>')
+      expect(document.body.innerHTML).toBe('<div>No items found</div><!---->')
       clear()
     })
 
@@ -120,11 +120,11 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Empty</div>')
+      expect(document.body.innerHTML).toBe('<div>Empty</div><!---->')
 
       arraySignal.set([1, 2, 3])
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Count: 3</div>')
+      expect(document.body.innerHTML).toBe('<div>Count: 3</div><!---->')
 
       clear()
     })
@@ -141,11 +141,11 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Items: 1, 2, 3</div>')
+      expect(document.body.innerHTML).toBe('<div>Items: 1, 2, 3</div><!---->')
 
       arraySignal.set([])
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>No items</div>')
+      expect(document.body.innerHTML).toBe('<div>No items</div><!---->')
 
       clear()
     })
@@ -164,7 +164,7 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Letters: a-b</div>')
+      expect(document.body.innerHTML).toBe('<div>Letters: a-b</div><!---->')
 
       arraySignal.set(['x', 'y', 'z'])
       await waitForUpdate()
@@ -173,7 +173,7 @@ describe('NotEmpty', () => {
       // between non-empty states, even though the signal value updates correctly.
       // This is because OneOf only re-renders when the key changes, but both
       // non-empty arrays map to the same "notEmpty" key.
-      expect(document.body.innerHTML).toBe('<div>Letters: a-b</div>')
+      expect(document.body.innerHTML).toBe('<div>Letters: a-b</div><!---->')
 
       clear()
     })
@@ -190,7 +190,7 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Empty</div>')
+      expect(document.body.innerHTML).toBe('<div>Empty</div><!---->')
 
       // Rapid changes
       arraySignal.set([1])
@@ -200,7 +200,7 @@ describe('NotEmpty', () => {
       arraySignal.set([10, 20])
 
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Sum: 30</div>')
+      expect(document.body.innerHTML).toBe('<div>Sum: 30</div><!---->')
 
       clear()
     })
@@ -229,7 +229,7 @@ describe('NotEmpty', () => {
       )
 
       expect(document.body.innerHTML).toBe(
-        '<div><h3>Outer array has items</h3><p>Group 1: a, b</p><p>Group 2: c</p></div>'
+        '<div><h3>Outer array has items</h3><p>Group 1: a, b</p><p>Group 2: c</p></div><!---->'
       )
 
       outerArray.set([[], ['x', 'y']])
@@ -238,7 +238,7 @@ describe('NotEmpty', () => {
       // NOTE: Due to the same limitation, the nested components don't update
       // when the outer array changes between non-empty states
       expect(document.body.innerHTML).toBe(
-        '<div><h3>Outer array has items</h3><p>Group 1: a, b</p><p>Group 2: c</p></div>'
+        '<div><h3>Outer array has items</h3><p>Group 1: a, b</p><p>Group 2: c</p></div><!---->'
       )
 
       clear()
@@ -290,17 +290,17 @@ describe('NotEmpty', () => {
       )
 
       expect(document.body.innerHTML).toBe(
-        '<div><h3>Users:</h3><ul><li>1: Alice</li><li>2: Bob</li></ul></div>'
+        '<div><h3>Users:</h3><ul><li>1: Alice</li><li>2: Bob</li></ul></div><!---->'
       )
 
       usersSignal.set([])
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>No users</div>')
+      expect(document.body.innerHTML).toBe('<div>No users</div><!---->')
 
       usersSignal.set([{ id: 3, name: 'Charlie' }])
       await waitForUpdate()
       expect(document.body.innerHTML).toBe(
-        '<div><h3>Users:</h3><ul><li>3: Charlie</li></ul></div>'
+        '<div><h3>Users:</h3><ul><li>3: Charlie</li></ul></div><!---->'
       )
 
       clear()
@@ -399,7 +399,7 @@ describe('NotEmpty', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Value: test</div>')
+      expect(document.body.innerHTML).toBe('<div>Value: test</div><!---->')
 
       // Dispose the component
       clear()

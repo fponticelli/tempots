@@ -1,4 +1,8 @@
-import type { HierarchicalContext, ProviderMark } from '@tempots/core'
+import type {
+  HierarchicalContext,
+  Primitive,
+  ProviderMark,
+} from '@tempots/core'
 
 /**
  * Represents a collection of providers.
@@ -28,13 +32,13 @@ export interface BaseRenderContext extends HierarchicalContext {
    * @param text - The text content for the new text node.
    * @returns A new context with a reference to the new text node.
    */
-  makeChildText(text: string): BaseRenderContext
+  makeChildText(text: Primitive): BaseRenderContext
 
   /**
    * Sets the text content of the current text node.
-   * @param text - The text content to set.
+   * @param text - The text content to set. Primitives are coerced to strings.
    */
-  setText(text: string): void
+  setText(text: Primitive): void
 
   /**
    * Gets the text content of the current element or text node.
@@ -80,4 +84,44 @@ export interface BaseRenderContext extends HierarchicalContext {
     endRef: BaseRenderContext,
     targetRef: BaseRenderContext
   ): void
+
+  /**
+   * Removes all sibling nodes between `startRef` and `endRef` (inclusive).
+   * Used for bulk removal of keyed entries without individual node removal.
+   *
+   * @param startRef - The context whose reference marks the start of the range.
+   * @param endRef - The context whose reference marks the end of the range.
+   */
+  removeRange(startRef: BaseRenderContext, endRef: BaseRenderContext): void
+
+  /**
+   * Creates a lightweight marker node (e.g. Comment node in DOM) and appends it
+   * to the current context. Markers are cheaper than text nodes and are used
+   * as boundary references for keyed list items.
+   * @returns A new context with a reference to the marker node.
+   */
+  makeMarker(): BaseRenderContext
+
+  /**
+   * Removes all sibling nodes before the given reference marker in one
+   * operation. Used as a fast path for clearing entire lists when the
+   * marker node at the end must be preserved.
+   *
+   * @param ref - The context whose reference marks the boundary. All nodes
+   *   before this reference (within the same parent) are removed.
+   */
+  removeAllBefore(ref: BaseRenderContext): void
+
+  /**
+   * Detaches the context's container element from the live DOM tree.
+   * Use before bulk insertions to avoid incremental layout recalculations.
+   * Call {@link reattach} when done. No-op on platforms without a layout engine.
+   */
+  detach(): void
+
+  /**
+   * Re-attaches the container element to the DOM tree after a {@link detach}.
+   * No-op if the element was not previously detached.
+   */
+  reattach(): void
 }

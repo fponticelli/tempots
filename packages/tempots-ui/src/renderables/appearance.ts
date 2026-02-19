@@ -31,7 +31,7 @@ export const Appearance: Provider<Signal<AppearanceType>> = {
     const value = useAppearance()
     return {
       value,
-      dispose: value.dispose,
+      dispose: () => value.dispose(),
     }
   },
 }

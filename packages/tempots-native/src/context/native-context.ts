@@ -1,4 +1,4 @@
-import type { ProviderMark } from '@tempots/core'
+import type { Primitive, ProviderMark } from '@tempots/core'
 import type { BaseRenderContext, Providers } from '@tempots/render'
 import { ProviderNotFoundError } from '@tempots/render'
 import type { JSIBridge, NativeViewHandle } from '../bridge/jsi-bridge'
@@ -32,7 +32,7 @@ export class NativeContext implements BaseRenderContext {
    * Removes this view from the native view tree.
    * @param removeTree - If true, removes the view from its parent via the bridge
    */
-  readonly clear = (removeTree: boolean): void => {
+  clear(removeTree: boolean): void {
     if (removeTree) {
       this.bridge.removeView(this.handle)
     }
@@ -59,6 +59,11 @@ export class NativeContext implements BaseRenderContext {
     ) as this
   }
 
+  makeMarker(): this {
+    // In native context, markers are the same as refs
+    return this.makeRef()
+  }
+
   // --- BaseRenderContext (text) ---
 
   /**
@@ -70,9 +75,9 @@ export class NativeContext implements BaseRenderContext {
    * @param text - The initial text content
    * @returns A new context for the text view
    */
-  readonly makeChildText = (text: string): NativeContext => {
+  makeChildText(text: Primitive): NativeContext {
     const textHandle = this.bridge.createTextView(
-      text,
+      String(text),
       this._isRef ? this._parentHandle! : this.handle,
       this._isRef ? this.handle : undefined
     )
@@ -81,17 +86,17 @@ export class NativeContext implements BaseRenderContext {
 
   /**
    * Updates the text content of this context's text view.
-   * @param text - The new text content
+   * @param text - The new text content. Primitives are coerced to strings.
    */
-  readonly setText = (text: string): void => {
-    this.bridge.setTextContent(this.handle, text)
+  setText(text: Primitive): void {
+    this.bridge.setTextContent(this.handle, String(text))
   }
 
   /**
    * Reads the text content of this context's text view.
    * @returns The current text content
    */
-  readonly getText = (): string => {
+  getText(): string {
     return this.bridge.getTextContent(this.handle)
   }
 
@@ -103,9 +108,7 @@ export class NativeContext implements BaseRenderContext {
    * @returns The provider value and optional onUse callback
    * @throws {ProviderNotFoundError} If the provider is not found
    */
-  readonly getProvider = <T>(
-    mark: ProviderMark<T>
-  ): { value: T; onUse?: () => void } => {
+  getProvider<T>(mark: ProviderMark<T>): { value: T; onUse?: () => void } {
     const entry = this._providers[mark as ProviderMark<unknown>]
     if (entry == null) {
       throw new ProviderNotFoundError(mark)
@@ -125,11 +128,11 @@ export class NativeContext implements BaseRenderContext {
    * @param onUse - Optional callback invoked when the provider is consumed
    * @returns A new context with the provider set
    */
-  readonly setProvider = <T>(
+  setProvider<T>(
     mark: ProviderMark<T>,
     value: T,
     onUse: undefined | (() => void)
-  ): NativeContext => {
+  ): NativeContext {
     const newProviders = {
       ...this._providers,
       [mark as ProviderMark<unknown>]: [value, onUse],
@@ -154,7 +157,7 @@ export class NativeContext implements BaseRenderContext {
    * @param viewType - The native view type (e.g. 'View', 'Text', 'Image')
    * @returns A new context for the child view
    */
-  readonly makeChildView = (viewType: string): NativeContext => {
+  makeChildView(viewType: string): NativeContext {
     const childHandle = this.bridge.createView(
       viewType,
       this._isRef ? this._parentHandle! : this.handle,
@@ -169,7 +172,7 @@ export class NativeContext implements BaseRenderContext {
    * @param handler - The event handler
    * @returns A cleanup function to remove the listener
    */
-  readonly on = <E>(event: string, handler: (e: E) => void): (() => void) => {
+  on<E>(event: string, handler: (e: E) => void): () => void {
     return this.bridge.addEventListener(
       this.handle,
       event,
@@ -182,7 +185,7 @@ export class NativeContext implements BaseRenderContext {
    * @param name - The property name
    * @param value - The property value
    */
-  readonly setProp = (name: string, value: unknown): void => {
+  setProp(name: string, value: unknown): void {
     this.bridge.setViewProp(this.handle, name, value)
   }
 
@@ -190,7 +193,7 @@ export class NativeContext implements BaseRenderContext {
    * Sets multiple properties on the current view.
    * @param props - A record of property names to values
    */
-  readonly setProps = (props: Record<string, unknown>): void => {
+  setProps(props: Record<string, unknown>): void {
     this.bridge.setViewProps(this.handle, props)
   }
 
@@ -198,7 +201,7 @@ export class NativeContext implements BaseRenderContext {
    * Sets style properties on the current view.
    * @param styles - A record of style properties to values
    */
-  readonly setStyle = (styles: Record<string, unknown>): void => {
+  setStyle(styles: Record<string, unknown>): void {
     this.bridge.setStyle(this.handle, styles)
   }
 
@@ -212,11 +215,11 @@ export class NativeContext implements BaseRenderContext {
    * @param endRef - The context whose handle marks the end of the range.
    * @param targetRef - The context before which the range will be inserted.
    */
-  readonly moveRangeBefore = (
+  moveRangeBefore(
     startRef: BaseRenderContext,
     endRef: BaseRenderContext,
     targetRef: BaseRenderContext
-  ): void => {
+  ): void {
     const start = (startRef as NativeContext).handle
     const end = (endRef as NativeContext).handle
     const target = (targetRef as NativeContext).handle
@@ -232,5 +235,40 @@ export class NativeContext implements BaseRenderContext {
     for (let i = startIdx; i <= endIdx; i++) {
       this.bridge.moveView(children[i], target)
     }
+  }
+
+  removeRange(startRef: BaseRenderContext, endRef: BaseRenderContext): void {
+    const start = (startRef as NativeContext).handle
+    const end = (endRef as NativeContext).handle
+    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+
+    const children = this.bridge.getChildren(parentHandle)
+    const startIdx = children.indexOf(start)
+    const endIdx = children.indexOf(end)
+
+    if (startIdx < 0 || endIdx < 0) return
+
+    for (let i = endIdx; i >= startIdx; i--) {
+      this.bridge.removeView(children[i])
+    }
+  }
+
+  removeAllBefore(ref: BaseRenderContext): void {
+    const marker = (ref as NativeContext).handle
+    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+    const children = this.bridge.getChildren(parentHandle)
+    const markerIdx = children.indexOf(marker)
+    if (markerIdx <= 0) return
+    for (let i = markerIdx - 1; i >= 0; i--) {
+      this.bridge.removeView(children[i])
+    }
+  }
+
+  detach(): void {
+    // No-op: native bridge handles layout differently
+  }
+
+  reattach(): void {
+    // No-op: native bridge handles layout differently
   }
 }

@@ -15,16 +15,16 @@ describe("Ensure", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     s.set('y')
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('y')
+    expect(document.body.innerHTML).toStrictEqual('y<!---->')
     s.set(null)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     s.set('z')
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('z')
+    expect(document.body.innerHTML).toStrictEqual('z<!---->')
   });
   test("using signal (start from not null)", async () => {
     const s = prop<string | null>('y')
@@ -35,16 +35,16 @@ describe("Ensure", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('y')
+    expect(document.body.innerHTML).toStrictEqual('y<!---->')
     s.set('z')
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('z')
+    expect(document.body.innerHTML).toStrictEqual('z<!---->')
     s.set(null)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('x')
+    expect(document.body.innerHTML).toStrictEqual('x<!---->')
     s.set('z')
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('z')
+    expect(document.body.innerHTML).toStrictEqual('z<!---->')
   });
   test("using string literal", () => {
     render(
@@ -79,7 +79,7 @@ describe("Ensure", () => {
       document.body
     )
     // When then function returns null, should render Empty (lines 103-104)
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
   });
 
   test("should handle undefined result from then function", () => {
@@ -92,6 +92,6 @@ describe("Ensure", () => {
       document.body
     )
     // When then function returns undefined, should render Empty
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
   });
 });

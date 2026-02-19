@@ -37,6 +37,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: true,
     copyPublicDir: false,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -45,7 +46,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['@tempots/dom', '@tempots/std'],
+      external: ['@tempots/dom', '@tempots/std', '@floating-ui/dom'],
       output: {
         extend: true,
       },

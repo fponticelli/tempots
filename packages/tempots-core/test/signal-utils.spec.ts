@@ -8,6 +8,7 @@ import {
   throttleSignal,
   distinctUntilChanged,
   accumulateSignal,
+  createSelector,
   Signal,
 } from '../src'
 
@@ -475,5 +476,136 @@ describe('accumulateSignal', () => {
     source.set(100)
     // After dispose, the accumulated signal should not update
     expect(total.isDisposed()).toBe(true)
+  })
+})
+
+describe('createSelector', () => {
+  test('returns false for non-matching keys', () => {
+    const selected = prop(1)
+    const isSelected = createSelector(selected)
+
+    const is2 = isSelected(2)
+    const is3 = isSelected(3)
+
+    expect(is2.value).toBe(false)
+    expect(is3.value).toBe(false)
+
+    is2.dispose()
+    is3.dispose()
+  })
+
+  test('returns true for matching key', () => {
+    const selected = prop(1)
+    const isSelected = createSelector(selected)
+
+    const is1 = isSelected(1)
+    expect(is1.value).toBe(true)
+
+    is1.dispose()
+  })
+
+  test('updates only affected items on selection change', () => {
+    const selected = prop(0)
+    const isSelected = createSelector(selected)
+
+    const is1 = isSelected(1)
+    const is2 = isSelected(2)
+    const is3 = isSelected(3)
+
+    const spy1 = vi.fn()
+    const spy2 = vi.fn()
+    const spy3 = vi.fn()
+    is1.on(spy1, { skipInitial: true })
+    is2.on(spy2, { skipInitial: true })
+    is3.on(spy3, { skipInitial: true })
+
+    // Select item 1
+    selected.set(1)
+    expect(is1.value).toBe(true)
+    expect(is2.value).toBe(false)
+    expect(is3.value).toBe(false)
+    expect(spy1).toHaveBeenCalledTimes(1)
+    expect(spy2).not.toHaveBeenCalled()
+    expect(spy3).not.toHaveBeenCalled()
+
+    spy1.mockClear()
+
+    // Switch to item 2
+    selected.set(2)
+    expect(is1.value).toBe(false)
+    expect(is2.value).toBe(true)
+    expect(is3.value).toBe(false)
+    expect(spy1).toHaveBeenCalledTimes(1) // deselected
+    expect(spy2).toHaveBeenCalledTimes(1) // selected
+    expect(spy3).not.toHaveBeenCalled()   // untouched
+
+    is1.dispose()
+    is2.dispose()
+    is3.dispose()
+  })
+
+  test('handles deselection (selecting a key with no subscriber)', () => {
+    const selected = prop(1)
+    const isSelected = createSelector(selected)
+
+    const is1 = isSelected(1)
+    expect(is1.value).toBe(true)
+
+    // Select a key that has no subscriber — should not throw
+    selected.set(999)
+    expect(is1.value).toBe(false)
+
+    is1.dispose()
+  })
+
+  test('cleans up subscriber on dispose', () => {
+    const selected = prop(0)
+    const isSelected = createSelector(selected)
+
+    const is1 = isSelected(1)
+    const spy = vi.fn()
+    is1.on(spy, { skipInitial: true })
+
+    is1.dispose()
+
+    // Selecting 1 after dispose should not call spy
+    selected.set(1)
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  test('works with custom equality', () => {
+    const selected = prop({ id: 1 })
+    const isSelected = createSelector(selected, (a, b) => a.id === b.id)
+
+    const is1 = isSelected({ id: 1 })
+    const is2 = isSelected({ id: 2 })
+
+    expect(is1.value).toBe(true)
+    expect(is2.value).toBe(false)
+
+    // Note: with custom equals for source change detection,
+    // we need the Map lookup to use the same key object.
+    // This test demonstrates the equals is used for initial check.
+    is1.dispose()
+    is2.dispose()
+  })
+
+  test('handles rapid selection changes', () => {
+    const selected = prop(0)
+    const isSelected = createSelector(selected)
+
+    const signals = Array.from({ length: 100 }, (_, i) => isSelected(i))
+
+    // Rapidly change selection
+    for (let i = 0; i < 100; i++) {
+      selected.set(i)
+    }
+
+    // Only the last one should be selected
+    signals.forEach((s, i) => {
+      expect(s.value).toBe(i === 99)
+    })
+
+    signals.forEach(s => s.dispose())
   })
 })

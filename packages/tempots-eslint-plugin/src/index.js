@@ -8,6 +8,7 @@ import noRedundantListenerDisposal from './rules/no-redundant-listener-disposal.
 import noRenderableSignalMap from './rules/no-renderable-signal-map.js'
 import noEmptyFragment from './rules/no-empty-fragment.js'
 import noSingleChildFragment from './rules/no-single-child-fragment.js'
+import noMethodReference from './rules/no-method-reference.js'
 
 // Default recommended rules configuration
 const recommendedRules = {
@@ -31,6 +32,8 @@ const recommendedRules = {
   'tempots/no-empty-fragment': 'warn',
   // Warn about Fragment() with a single child
   'tempots/no-single-child-fragment': 'warn',
+  // Error on passing Tempo methods by reference (loses `this` binding)
+  'tempots/no-method-reference': 'error',
 }
 
 const plugin = {
@@ -45,6 +48,7 @@ const plugin = {
     'no-renderable-signal-map': noRenderableSignalMap,
     'no-empty-fragment': noEmptyFragment,
     'no-single-child-fragment': noSingleChildFragment,
+    'no-method-reference': noMethodReference,
   },
   configs: {
     recommended: recommendedRules,
@@ -76,6 +80,7 @@ export default {
         'tempots/no-renderable-signal-map': 'error',
         'tempots/no-empty-fragment': 'error',
         'tempots/no-single-child-fragment': 'error',
+        'tempots/no-method-reference': 'error',
       },
     },
   },

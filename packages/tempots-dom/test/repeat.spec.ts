@@ -21,16 +21,16 @@ describe("Repeat", () => {
       Repeat(s, item => String(item.counter)),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('123')
+    expect(document.body.innerHTML).toStrictEqual('123<!---->')
     s.set(2)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('12')
+    expect(document.body.innerHTML).toStrictEqual('12<!---->')
     s.set(0)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
     s.set(1)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('1')
+    expect(document.body.innerHTML).toStrictEqual('1<!---->')
   });
   test("with separator", async () => {
     const s = prop(3)
@@ -42,19 +42,19 @@ describe("Repeat", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('1|0:true:false|2|1:false:true|3')
+    expect(document.body.innerHTML).toStrictEqual('1|0:true:false|<!---->2|1:false:true|<!---->3<!----><!---->')
     s.set(2)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('1|0:true:true|2')
+    expect(document.body.innerHTML).toStrictEqual('1|0:true:true|<!---->2<!----><!---->')
     s.set(0)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
     s.set(1)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('1')
+    expect(document.body.innerHTML).toStrictEqual('1<!----><!---->')
     s.set(3)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('1|0:true:false|2|1:false:true|3')
+    expect(document.body.innerHTML).toStrictEqual('1|0:true:false|<!---->2|1:false:true|<!---->3<!----><!---->')
   });
   test("with literal", async () => {
     const clear = render(
@@ -74,31 +74,31 @@ describe("Repeat", () => {
       Repeat(s, position => Fragment(Repeat(position.total.map(total => total), pos => pos.index.toString()), '!')),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
 
     s.set(1)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('0!')
+    expect(document.body.innerHTML).toStrictEqual('0<!---->!<!---->')
 
     s.set(2)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('01!01!')
+    expect(document.body.innerHTML).toStrictEqual('01<!---->!01<!---->!<!---->')
 
     s.set(3)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('012!012!012!')
+    expect(document.body.innerHTML).toStrictEqual('012<!---->!012<!---->!012<!---->!<!---->')
 
     s.set(0)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
 
     s.set(2)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('01!01!')
+    expect(document.body.innerHTML).toStrictEqual('01<!---->!01<!---->!<!---->')
 
     s.set(1)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('0!')
+    expect(document.body.innerHTML).toStrictEqual('0<!---->!<!---->')
   });
 
   test("with prop counter inside item", async () => {
@@ -117,29 +117,29 @@ describe("Repeat", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('[1:10][2:20][3:30]')
+    expect(document.body.innerHTML).toStrictEqual('[1:10][2:20][3:30]<!---->')
 
     // Update one of the item counters
     itemCounters[1].set(25)
     await sleep()
 
-    expect(document.body.innerHTML).toStrictEqual('[1:10][2:25][3:30]')
+    expect(document.body.innerHTML).toStrictEqual('[1:10][2:25][3:30]<!---->')
 
     // Reduce the repeat count
     s.set(2)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:10][2:25]')
+    expect(document.body.innerHTML).toStrictEqual('[1:10][2:25]<!---->')
 
     // Increase the repeat count back
     s.set(3)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:10][2:25][3:30]')
+    expect(document.body.innerHTML).toStrictEqual('[1:10][2:25][3:30]<!---->')
 
     // Update multiple item counters
     itemCounters[0].set(15)
     itemCounters[2].set(35)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:15][2:25][3:35]')
+    expect(document.body.innerHTML).toStrictEqual('[1:15][2:25][3:35]<!---->')
   });
 
   test("with prop reused inside item", async () => {
@@ -157,24 +157,24 @@ describe("Repeat", () => {
       }),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
     s.set(1)
     await sleep()
 
-    expect(document.body.innerHTML).toStrictEqual('[1:0]')
+    expect(document.body.innerHTML).toStrictEqual('[1:0]<!---->')
 
     s.set(2)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:0][2:20]')
+    expect(document.body.innerHTML).toStrictEqual('[1:0][2:20]<!---->')
 
     // Increase the repeat count back
     s.set(3)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:0][2:30][3:60]')
+    expect(document.body.innerHTML).toStrictEqual('[1:0][2:30][3:60]<!---->')
 
     s.set(1)
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:0]')
+    expect(document.body.innerHTML).toStrictEqual('[1:0]<!---->')
   });
 
   test("based on array", async () => {
@@ -196,16 +196,16 @@ describe("Repeat", () => {
       ),
       document.body
     )
-    expect(document.body.innerHTML).toStrictEqual('')
+    expect(document.body.innerHTML).toStrictEqual('<!---->')
     list.set([1, 2])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:2]![2:2]')
+    expect(document.body.innerHTML).toStrictEqual('[1:2]!<!---->[2:2]<!----><!---->')
     list.set([1])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:1]')
+    expect(document.body.innerHTML).toStrictEqual('[1:1]<!----><!---->')
     list.set([1, 2, 3, 4])
     await sleep()
-    expect(document.body.innerHTML).toStrictEqual('[1:4]-[2:4]-[3:4]![4:4]')
+    expect(document.body.innerHTML).toStrictEqual('[1:4]-<!---->[2:4]-<!---->[3:4]!<!---->[4:4]<!----><!---->')
   })
 });
 

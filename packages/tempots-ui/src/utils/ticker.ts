@@ -1,4 +1,4 @@
-import { Prop } from '@tempots/dom'
+import { Prop, strictEquals } from '@tempots/dom'
 
 /**
  * A property that can be used to force an update. Internally, it's a number that is incremented by one on each tick.
@@ -21,5 +21,4 @@ export class Ticker extends Prop<number> {
  * @returns A new Ticker instance that only updates when the value changes
  * @public
  */
-export const ticker = (initial: number = 0) =>
-  new Ticker(initial, (a, b) => a === b)
+export const ticker = (initial: number = 0) => new Ticker(initial, strictEquals)

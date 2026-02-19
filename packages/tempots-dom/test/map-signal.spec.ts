@@ -73,7 +73,7 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Initial</div>')
+      expect(document.body.innerHTML).toBe('<div>Initial</div><!---->')
       clear()
     })
 
@@ -85,15 +85,15 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>First</div>')
+      expect(document.body.innerHTML).toBe('<div>First</div><!---->')
 
       signal.set('Second')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Second</div>')
+      expect(document.body.innerHTML).toBe('<div>Second</div><!---->')
 
       signal.set('Third')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Third</div>')
+      expect(document.body.innerHTML).toBe('<div>Third</div><!---->')
 
       clear()
     })
@@ -111,13 +111,13 @@ describe('MapSignal', () => {
       )
 
       expect(document.body.innerHTML).toBe(
-        '<div><h2>Number: 1</h2><p>Squared: 1</p><p>Even: No</p></div>'
+        '<div><h2>Number: 1</h2><p>Squared: 1</p><p>Even: No</p></div><!---->'
       )
 
       signal.set(4)
       await waitForUpdate()
       expect(document.body.innerHTML).toBe(
-        '<div><h2>Number: 4</h2><p>Squared: 16</p><p>Even: Yes</p></div>'
+        '<div><h2>Number: 4</h2><p>Squared: 16</p><p>Even: Yes</p></div><!---->'
       )
 
       clear()
@@ -134,11 +134,11 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div><h3>Alice</h3><p>Score: 100</p></div>')
+      expect(document.body.innerHTML).toBe('<div><h3>Alice</h3><p>Score: 100</p></div><!---->')
 
       signal.set({ name: 'Bob', score: 85 })
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div><h3>Bob</h3><p>Score: 85</p></div>')
+      expect(document.body.innerHTML).toBe('<div><h3>Bob</h3><p>Score: 85</p></div><!---->')
 
       clear()
     })
@@ -153,11 +153,11 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<ul><li>apple</li><li>banana</li></ul>')
+      expect(document.body.innerHTML).toBe('<ul><li>apple</li><li>banana</li></ul><!---->')
 
       signal.set(['cherry', 'date', 'elderberry'])
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<ul><li>cherry</li><li>date</li><li>elderberry</li></ul>')
+      expect(document.body.innerHTML).toBe('<ul><li>cherry</li><li>date</li><li>elderberry</li></ul><!---->')
 
       clear()
     })
@@ -172,15 +172,15 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Initial</div>')
+      expect(document.body.innerHTML).toBe('<div>Initial</div><!---->')
 
       // Dispose the component
       clear()
-      expect(document.body.innerHTML).toBe('')
+      expect(document.body.innerHTML).toBe('<!---->')
 
       // Signal changes after disposal should not affect DOM
       signal.set('After disposal')
-      expect(document.body.innerHTML).toBe('')
+      expect(document.body.innerHTML).toBe('<!---->')
     })
 
     test('should clean up properly with removeTree=true', () => {
@@ -191,10 +191,10 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Test</div>')
+      expect(document.body.innerHTML).toBe('<div>Test</div><!---->')
 
       clear()
-      expect(document.body.innerHTML).toBe('')
+      expect(document.body.innerHTML).toBe('<!---->')
     })
 
     test('should clean up properly with removeTree=false', () => {
@@ -208,10 +208,10 @@ describe('MapSignal', () => {
         container
       )
 
-      expect(container.innerHTML).toBe('<div>Test</div>')
+      expect(container.innerHTML).toBe('<div>Test</div><!---->')
 
       clear()
-      expect(container.innerHTML).toBe('')
+      expect(container.innerHTML).toBe('<!---->')
     })
 
     test('should handle multiple rapid signal changes', async () => {
@@ -222,7 +222,7 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Count: 0</div>')
+      expect(document.body.innerHTML).toBe('<div>Count: 0</div><!---->')
 
       // Rapid changes - only check the final result since DOM updates are batched
       for (let i = 1; i <= 10; i++) {
@@ -230,7 +230,7 @@ describe('MapSignal', () => {
       }
 
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Count: 10</div>')
+      expect(document.body.innerHTML).toBe('<div>Count: 10</div><!---->')
 
       clear()
     })
@@ -249,15 +249,15 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div><h2>outer</h2><p>inner</p></div>')
+      expect(document.body.innerHTML).toBe('<div><h2>outer</h2><p>inner</p><!----></div><!---->')
 
       innerSignal.set('updated inner')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div><h2>outer</h2><p>updated inner</p></div>')
+      expect(document.body.innerHTML).toBe('<div><h2>outer</h2><p>updated inner</p><!----></div><!---->')
 
       outerSignal.set('updated outer')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div><h2>updated outer</h2><p>updated inner</p></div>')
+      expect(document.body.innerHTML).toBe('<div><h2>updated outer</h2><p>updated inner</p><!----></div><!---->')
 
       clear()
     })
@@ -286,11 +286,11 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('plain text')
+      expect(document.body.innerHTML).toBe('plain text<!---->')
 
       signal.set('updated text')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('updated text')
+      expect(document.body.innerHTML).toBe('updated text<!---->')
 
       clear()
     })
@@ -303,19 +303,19 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>initial</div>')
+      expect(document.body.innerHTML).toBe('<div>initial</div><!---->')
 
       signal.set(null)
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>empty</div>')
+      expect(document.body.innerHTML).toBe('<div>empty</div><!---->')
 
       signal.set('')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>empty</div>')
+      expect(document.body.innerHTML).toBe('<div>empty</div><!---->')
 
       signal.set('restored')
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>restored</div>')
+      expect(document.body.innerHTML).toBe('<div>restored</div><!---->')
 
       clear()
     })
@@ -331,11 +331,11 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div><span>ON</span><button>Turn Off</button></div>')
+      expect(document.body.innerHTML).toBe('<div><span>ON</span><button>Turn Off</button></div><!---->')
 
       signal.set(false)
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div><span>OFF</span><button>Turn On</button></div>')
+      expect(document.body.innerHTML).toBe('<div><span>OFF</span><button>Turn On</button></div><!---->')
 
       clear()
     })
@@ -350,11 +350,11 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>defined</div>')
+      expect(document.body.innerHTML).toBe('<div>defined</div><!---->')
 
       signal.set(undefined)
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>undefined</div>')
+      expect(document.body.innerHTML).toBe('<div>undefined</div><!---->')
 
       clear()
     })
@@ -367,15 +367,15 @@ describe('MapSignal', () => {
         document.body
       )
 
-      expect(document.body.innerHTML).toBe('<div>Value: 0</div>')
+      expect(document.body.innerHTML).toBe('<div>Value: 0</div><!---->')
 
       signal.set(42)
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Value: 42</div>')
+      expect(document.body.innerHTML).toBe('<div>Value: 42</div><!---->')
 
       signal.set(0)
       await waitForUpdate()
-      expect(document.body.innerHTML).toBe('<div>Value: 0</div>')
+      expect(document.body.innerHTML).toBe('<div>Value: 0</div><!---->')
 
       clear()
     })

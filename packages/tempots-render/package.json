@@ -26,6 +26,7 @@
     "url": "git+https://github.com/fponticelli/tempots.git"
   },
   "type": "module",
+  "sideEffects": false,
   "files": [
     "dist"
   ],

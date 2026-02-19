@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { DisposalScope } from "../src/disposal-scope";
+import { DisposalScope, scoped } from "../src/disposal-scope";
 import { prop } from "../src/signal";
 import {
   scopeStack,
@@ -9,7 +9,6 @@ import {
   getScopeStack,
   getParentScope,
   withScope,
-  scoped,
   untracked,
 } from "../src/scope-stack";
 

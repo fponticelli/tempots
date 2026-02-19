@@ -1,4 +1,4 @@
-import { Prop, Signal } from './signal'
+import { Prop, Signal, strictEquals } from './signal'
 import { getCurrentScope, untracked } from './scope-stack'
 
 /**
@@ -117,7 +117,7 @@ export function propHistory<T>(
     Prop.is(source) &&
     (setOrOptions === undefined || typeof setOrOptions === 'object')
   ) {
-    setter = source.set
+    setter = (v: T) => source.set(v)
     options = setOrOptions as PropHistoryOptions<T> | undefined
   } else {
     setter = setOrOptions as (value: T) => void
@@ -136,12 +136,12 @@ export function propHistory<T>(
   let transactionStartIndex = 0
 
   // Reactive state — created outside any scope so they don't get auto-disposed
-  const _canUndo = untracked(() => new Prop(false, (a, b) => a === b))
-  const _canRedo = untracked(() => new Prop(false, (a, b) => a === b))
+  const _canUndo = untracked(() => new Prop(false, strictEquals))
+  const _canRedo = untracked(() => new Prop(false, strictEquals))
   const _entries = untracked(
-    () => new Prop<readonly T[]>(history.slice(), (a, b) => a === b)
+    () => new Prop<readonly T[]>(history.slice(), strictEquals)
   )
-  const _index = untracked(() => new Prop(0, (a, b) => a === b))
+  const _index = untracked(() => new Prop(0, strictEquals))
 
   const updateReactiveState = () => {
     _canUndo.set(currentIndex > 0)

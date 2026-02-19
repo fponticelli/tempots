@@ -54,11 +54,14 @@ export {
   createRenderable,
   ElementPosition,
   KeyedPosition,
+  createSelector,
+  strictEquals,
 } from '@tempots/core'
 export type {
   AnySignal,
   AtGetter,
   ListenerOptions,
+  Primitive,
   StoredPropOptions,
   SyncPropOptions,
   RenderContext,
@@ -89,6 +92,7 @@ export * from './renderable/on'
 export * from './renderable/on-dispose'
 export * from './renderable/oneof'
 export * from './renderable/map-signal'
+export * from './renderable/map-text'
 export * from './renderable/iframe'
 export * from './renderable/not-empty'
 export * from './renderable/portal'

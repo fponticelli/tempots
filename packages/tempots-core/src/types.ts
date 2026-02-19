@@ -239,9 +239,18 @@ export interface Renderable<
  *
  * @public
  */
+/**
+ * Primitive types that can be rendered as text content.
+ * The rendering context coerces these to strings automatically.
+ * @public
+ */
+export type Primitive = string | number | boolean
+
 export type TNode<CTX extends RenderContext, TType extends symbol> =
   | Renderable<CTX, TType>
   | Value<string>
+  | Value<number>
+  | Value<boolean>
   | undefined
   | null
   | Renderable<CTX, TType>[]

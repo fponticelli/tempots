@@ -274,6 +274,10 @@ export class HydrationContext implements DOMContext {
     )
   }
 
+  readonly makeMarker = (): DOMContext => {
+    return this.makeRef()
+  }
+
   readonly makePortal = (selector: string | HTMLElement): DOMContext => {
     const target =
       typeof selector === 'string'
@@ -409,6 +413,50 @@ export class HydrationContext implements DOMContext {
       parent.insertBefore(current, target)
       if (current === end) break
       current = next
+    }
+  }
+
+  readonly removeRange = (startRef: DOMContext, endRef: DOMContext): void => {
+    const start = (startRef as HydrationContext).reference!
+    const end = (endRef as HydrationContext).reference!
+    const parent = this.element
+
+    let current: Node | null = start
+    while (current !== null) {
+      const next: Node | null = current.nextSibling
+      parent.removeChild(current)
+      if (current === end) break
+      current = next
+    }
+  }
+
+  removeAllBefore(ref: DOMContext): void {
+    const marker = (ref as HydrationContext).reference!
+    const parent = this.element
+    if (!parent.firstChild || parent.firstChild === marker) return
+    const range = this.document.createRange()
+    range.setStartBefore(parent.firstChild)
+    range.setEndBefore(marker)
+    range.deleteContents()
+  }
+
+  private _detachedParent: Node | null = null
+  private _detachedNext: Node | null = null
+
+  detach(): void {
+    const el = this.element
+    if (el.parentNode) {
+      this._detachedParent = el.parentNode
+      this._detachedNext = el.nextSibling
+      el.remove()
+    }
+  }
+
+  reattach(): void {
+    if (this._detachedParent) {
+      this._detachedParent.insertBefore(this.element, this._detachedNext)
+      this._detachedParent = null
+      this._detachedNext = null
     }
   }
 }

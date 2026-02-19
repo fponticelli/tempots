@@ -1,5 +1,5 @@
 import type { Prop, Signal } from './signal'
-import { computed } from './signal'
+import { computed, prop } from './signal'
 
 /**
  * Represents the position of an element in a keyed collection.
@@ -10,53 +10,111 @@ import { computed } from './signal'
  * fields (`counter`, `isFirst`, `isEven`, `isOdd`, `isLast`) update
  * automatically.
  *
+ * The index signal and all derived fields are created lazily — only when first
+ * accessed — to avoid unnecessary signal overhead when they are not used.
+ *
  * @public
  */
 export class KeyedPosition {
-  /**
-   * The 1-based counter (index + 1).
-   */
-  readonly counter: Signal<number>
-  /**
-   * Whether this is the first element in the collection.
-   */
-  readonly isFirst: Signal<boolean>
-  /**
-   * Whether the counter is even.
-   */
-  readonly isEven: Signal<boolean>
-  /**
-   * Whether the counter is odd.
-   */
-  readonly isOdd: Signal<boolean>
-  /**
-   * Whether this is the last element in the collection.
-   */
-  readonly isLast: Signal<boolean>
+  #indexProp: Prop<number> | null = null
+  #counterSignal: Signal<number> | undefined
+  #isFirstSignal: Signal<boolean> | undefined
+  #isEvenSignal: Signal<boolean> | undefined
+  #isOddSignal: Signal<boolean> | undefined
+  #isLastSignal: Signal<boolean> | undefined
+  #currentIndex: number
 
   /**
    * Creates a new instance of `KeyedPosition`.
-   * @param index - A reactive signal representing the current index of the element.
+   * @param initialIndex - The initial index of the element.
    * @param total - A reactive signal representing the total number of elements in the collection.
    */
   constructor(
-    /**
-     * The reactive index of the element.
-     */
-    readonly index: Signal<number>,
+    initialIndex: number,
     /**
      * The reactive total number of elements in the collection.
      */
     readonly total: Signal<number>
   ) {
-    this.counter = index.map(i => i + 1)
-    this.isFirst = index.map(i => i === 0)
-    this.isEven = index.map(i => i % 2 === 1)
-    this.isOdd = index.map(i => i % 2 === 0)
-    this.isLast = computed(
-      () => (index as Prop<number>).value + 1 === (total as Prop<number>).value,
-      [index, total]
-    )
+    this.#currentIndex = initialIndex
+  }
+
+  /**
+   * Updates the stored index. If the index signal has been created (because
+   * user code accessed it), the signal is also updated reactively.
+   * @internal
+   */
+  setIndex(index: number) {
+    this.#currentIndex = index
+    if (this.#indexProp !== null) {
+      this.#indexProp.set(index)
+    }
+  }
+
+  /**
+   * The reactive index of the element.
+   * Created lazily on first access.
+   */
+  get index(): Signal<number> {
+    if (this.#indexProp === null) {
+      this.#indexProp = prop(this.#currentIndex)
+    }
+    return this.#indexProp
+  }
+
+  /**
+   * The 1-based counter (index + 1).
+   */
+  get counter(): Signal<number> {
+    if (this.#counterSignal == null) {
+      this.#counterSignal = this.index.map(i => i + 1)
+    }
+    return this.#counterSignal
+  }
+
+  /**
+   * Whether this is the first element in the collection.
+   */
+  get isFirst(): Signal<boolean> {
+    if (this.#isFirstSignal == null) {
+      this.#isFirstSignal = this.index.map(i => i === 0)
+    }
+    return this.#isFirstSignal
+  }
+
+  /**
+   * Whether the counter is even.
+   */
+  get isEven(): Signal<boolean> {
+    if (this.#isEvenSignal == null) {
+      this.#isEvenSignal = this.index.map(i => i % 2 === 1)
+    }
+    return this.#isEvenSignal
+  }
+
+  /**
+   * Whether the counter is odd.
+   */
+  get isOdd(): Signal<boolean> {
+    if (this.#isOddSignal == null) {
+      this.#isOddSignal = this.index.map(i => i % 2 === 0)
+    }
+    return this.#isOddSignal
+  }
+
+  /**
+   * Whether this is the last element in the collection.
+   */
+  get isLast(): Signal<boolean> {
+    if (this.#isLastSignal == null) {
+      this.#isLastSignal = computed(
+        () =>
+          (this.index as Prop<number>).value + 1 ===
+          (this.total as Prop<number>).value,
+        [this.index, this.total]
+      )
+    }
+    return this.#isLastSignal
   }
 
   /**
@@ -66,11 +124,12 @@ export class KeyedPosition {
    * when used within a disposal scope (e.g., inside a renderable). Kept for
    * backward compatibility and edge cases.
    */
-  readonly dispose = () => {
-    this.counter.dispose()
-    this.isFirst.dispose()
-    this.isEven.dispose()
-    this.isOdd.dispose()
-    this.isLast.dispose()
+  dispose() {
+    this.#indexProp?.dispose()
+    this.#counterSignal?.dispose()
+    this.#isFirstSignal?.dispose()
+    this.#isEvenSignal?.dispose()
+    this.#isOddSignal?.dispose()
+    this.#isLastSignal?.dispose()
   }
 }
