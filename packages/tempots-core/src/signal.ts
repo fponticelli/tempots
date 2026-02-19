@@ -85,6 +85,10 @@ export interface ReadSignal<T> {
  * @typeParam T - The type of the value held by the signal
  * @public
  */
+// WeakMap cache for $ proxy — avoids per-instance _$ field (saves 8 bytes per signal)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _proxyCache = new WeakMap<Signal<any>, any>()
+
 export class Signal<T> implements ReadSignal<T> {
   /**
    * Creates a Signal that holds the result of a Promise, with proper error handling.
@@ -160,9 +164,13 @@ export class Signal<T> implements ReadSignal<T> {
     value != null && (value as any).$__signal__ === true
 
   /**
+   * @internal — type marker lives on prototype, not per-instance
+   */
+  declare $__signal__: true
+  /**
    * @internal
    */
-  protected readonly $__signal__ = true
+  declare equals: (a: T, b: T) => boolean
   /**
    * @internal
    */
@@ -189,11 +197,12 @@ export class Signal<T> implements ReadSignal<T> {
    * @param equals - A function that determines whether two values of type T are equal.
    * @public
    */
-  constructor(
-    value: T,
-    public readonly equals: (a: T, b: T) => boolean
-  ) {
+  constructor(value: T, equals?: (a: T, b: T) => boolean) {
     this._value = value
+    // Only set per-instance if custom equals provided (otherwise use prototype default)
+    if (equals !== undefined && equals !== strictEquals) {
+      this.equals = equals
+    }
   }
 
   /**
@@ -361,12 +370,29 @@ export class Signal<T> implements ReadSignal<T> {
   dispose() {
     if (this._disposed) return
     this._disposed = true
+    // Directly dispose all derivatives (no closure indirection)
+    const derivatives = this._derivatives
+    this._derivatives = null
     const disposeListeners = this._onDisposeListeners
     this._onDisposeListeners = null
-    this._derivatives = null
     this._onValueListeners = null
+    if (derivatives !== null) {
+      for (let i = 0; i < derivatives.length; i++) derivatives[i].dispose()
+    }
     if (disposeListeners !== null) {
       for (let i = 0; i < disposeListeners.length; i++) disposeListeners[i]()
+    }
+  }
+
+  /**
+   * Removes a computed from this signal's derivatives list.
+   * Called by Computed.dispose() to clean up the parent→child link.
+   * @internal
+   */
+  _removeDerivative(computed: Computed<unknown>) {
+    if (this._derivatives !== null) {
+      const idx = this._derivatives.indexOf(computed)
+      if (idx !== -1) this._derivatives.splice(idx, 1)
     }
   }
 
@@ -498,18 +524,17 @@ export class Signal<T> implements ReadSignal<T> {
   }
 
   /**
-   * @internal
-   */
-  private _$: AtGetter<T> | undefined
-  /**
    * Represents a collection of signals mapping to each key/field in the wrapped value.
    * @typeParam T - The type of the signals.
    */
   get $() {
-    if (this._$ !== undefined) return this._$
-    return (this._$ = new Proxy(this, {
+    let p = _proxyCache.get(this)
+    if (p !== undefined) return p as AtGetter<T>
+    p = new Proxy(this, {
       get: (_, key) => this.at(key as keyof T),
-    }) as unknown as AtGetter<T>)
+    }) as unknown as AtGetter<T>
+    _proxyCache.set(this, p)
+    return p as AtGetter<T>
   }
 
   filter(fn: (value: T) => boolean, startValue?: T) {
@@ -751,29 +776,23 @@ export class Signal<T> implements ReadSignal<T> {
 
   /**
    * Adds a computed value as a derivative of the signal.
-   * When the computed value is disposed, it is automatically removed from the derivatives list.
-   * Additionally, when the computed value is disposed, it sets the signal as dirty.
+   * Uses structural parent↔child references instead of closure-based disposal wiring.
+   * Parent.dispose() directly disposes derivatives; Computed.dispose() removes itself from parents.
    * @param computed - The computed value to add as a derivative.
    */
   setDerivative<O>(computed: Computed<O>) {
     if (this._derivatives === null) this._derivatives = []
     this._derivatives.push(computed as Computed<unknown>)
-    const parentDispose = () => computed.dispose()
-    computed.onDispose(() => {
-      if (this._derivatives !== null) {
-        const idx = this._derivatives.indexOf(computed as Computed<unknown>)
-        if (idx !== -1) this._derivatives.splice(idx, 1)
-      }
-      // Remove from parent's onDispose listeners to prevent reference leak.
-      // Without this, the parent retains references to all disposed derivatives forever.
-      if (this._onDisposeListeners !== null) {
-        const idx = this._onDisposeListeners.indexOf(parentDispose)
-        if (idx !== -1) this._onDisposeListeners.splice(idx, 1)
-      }
-    })
-    this.onDispose(parentDispose)
+    computed._addParent(this as Signal<unknown>)
   }
 }
+
+// Prototype-level defaults: avoids per-instance field allocation
+// Type marker on prototype — Signal.is() traverses prototype chain
+Signal.prototype.$__signal__ = true as const
+// Default equals on prototype — only overridden per-instance when custom equals provided
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(Signal.prototype as any).equals = strictEquals
 
 /* c8 ignore next 4 */
 const _queueMicrotask =
@@ -820,13 +839,18 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     return value != null && (value as any).$__computed__ === true
   }
   /**
-   * @internal
+   * @internal — type marker lives on prototype, not per-instance
    */
-  protected readonly $__computed__ = true
+  declare $__computed__: true
   /**
    * @internal
    */
   protected _isDirty = true
+  /**
+   * @internal — parent signals that have this as a derivative.
+   * Used for structural disposal: Computed.dispose() removes itself from parents.
+   */
+  _parents: Array<Signal<unknown>> | null = null
 
   /**
    * Creates a new Computed signal.
@@ -854,7 +878,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
    */
   constructor(
     private readonly _fn: () => T,
-    equals: (a: T, b: T) => boolean
+    equals?: (a: T, b: T) => boolean
   ) {
     // Start with undefined; _isDirty = true ensures first get() computes the real value.
     // Skip setDirty()/queue() — the value will be computed lazily on first read
@@ -866,6 +890,15 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     if (currentScope != null) {
       currentScope.track(this)
     }
+  }
+
+  /**
+   * Registers a parent signal that has this computed as a derivative.
+   * @internal
+   */
+  _addParent(parent: Signal<unknown>) {
+    if (this._parents === null) this._parents = [parent]
+    else this._parents.push(parent)
   }
 
   /**
@@ -929,27 +962,41 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
 
   /**
    * Disposes the computed signal and cancels any pending recomputations.
-   * This override increments the schedule count to invalidate all pending
-   * microtasks before disposing the signal.
+   * Uses structural parent references to remove itself from parents' derivative lists,
+   * then directly disposes own derivatives.
    */
   dispose() {
     if (this._disposed) return
     // Increment schedule count to invalidate all pending recomputations
-    // This ensures that any microtasks queued before disposal won't execute
     this._scheduleCount++
-    // Mark as disposed and clean up listeners and derivatives
     this._disposed = true
+    // Remove self from all parents' derivative lists
+    const parents = this._parents
+    this._parents = null
+    if (parents !== null) {
+      for (let i = 0; i < parents.length; i++) {
+        parents[i]._removeDerivative(this as Computed<unknown>)
+      }
+    }
+    // Directly dispose all own derivatives
+    const derivatives = this._derivatives
+    this._derivatives = null
     const disposeListeners = this._onDisposeListeners
     this._onDisposeListeners = null
-    this._derivatives = null
     this._onValueListeners = null
-    // Release the computation closure to free captured references (parent signals, DOM nodes)
+    // Release the computation closure to free captured references
     ;(this as unknown as { _fn: (() => T) | null })._fn = null
+    if (derivatives !== null) {
+      for (let i = 0; i < derivatives.length; i++) derivatives[i].dispose()
+    }
     if (disposeListeners !== null) {
       for (let i = 0; i < disposeListeners.length; i++) disposeListeners[i]()
     }
   }
 }
+
+// Prototype-level type marker for Computed
+Computed.prototype.$__computed__ = true as const
 
 /**
  * Represents the data passed to a reducer effect.
@@ -1010,9 +1057,9 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
     value != null && (value as any).$__prop__ === true
 
   /**
-   * @internal
+   * @internal — type marker lives on prototype, not per-instance
    */
-  protected readonly $__prop__ = true
+  declare $__prop__: true
 
   /**
    * Changes the value of the property and notifies its listeners.
@@ -1100,6 +1147,9 @@ export class Prop<T> extends Signal<T> implements ReadSignal<T> {
     this._setAndNotify(value)
   }
 }
+
+// Prototype-level type marker for Prop
+Prop.prototype.$__prop__ = true as const
 
 /**
  * Creates a computed signal that depends on other signals and updates when any of the dependencies change.
