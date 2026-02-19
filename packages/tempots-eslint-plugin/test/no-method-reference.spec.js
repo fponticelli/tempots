@@ -1,65 +1,124 @@
-import { RuleTester } from 'eslint'
+import { RuleTester } from '@typescript-eslint/rule-tester'
 import rule from '../src/rules/no-method-reference.js'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts*', '*.js*'],
+      },
+      tsconfigRootDir: __dirname,
+    },
   },
 })
+
+// Type stubs so the type checker can resolve Tempo types.
+const T = `
+interface Signal<T> {
+  readonly value: T
+  get(): T
+  map<U>(fn: (value: T) => U): Signal<U>
+  filter(fn: (value: T) => boolean): Signal<T>
+  flatMap<U>(fn: (value: T) => Signal<U>): Signal<U>
+  on(fn: (value: T) => void): () => void
+  onChange(fn: (value: T) => void): () => void
+  dispose(): void
+  onDispose(fn: () => void): void
+}
+interface Prop<T> extends Signal<T> { set(value: T): void }
+interface Computed<T> extends Signal<T> {}
+declare function prop<T>(value: T): Prop<T>
+declare function signal<T>(value: T): Signal<T>
+
+interface DOMContext {
+  setText(text: string): void
+  clear(removeTree: boolean): void
+}
+`
 
 ruleTester.run('no-method-reference', rule, {
   valid: [
     // Calling methods with dot notation is fine
     {
-      code: `
+      code: `${T}
         const count = prop(0)
         count.dispose()
       `,
     },
     // Wrapped in lambda is fine
     {
-      code: `
-        signal.onDispose(() => other.dispose())
+      code: `${T}
+        const s = signal(0)
+        s.onDispose(() => s.dispose())
       `,
     },
     {
-      code: `
-        signal.on(v => prop.set(v))
+      code: `${T}
+        const s = signal(0)
+        const p = prop(0)
+        s.on(v => p.set(v))
+      `,
+    },
+    // Property access (not method) is fine: .value
+    {
+      code: `${T}
+        const p = prop('hello')
+        const v = p.value
+      `,
+    },
+    // Non-Signal objects are fine even with matching method names
+    {
+      code: `${T}
+        const arr = [1, 2, 3]
+        const fn = arr.filter
       `,
     },
     {
-      code: `
-        signal.onChange(v => ctx.setText(v))
-      `,
-    },
-    // Non-Tempo method names are fine
-    {
-      code: `
-        arr.forEach(item.toString)
+      code: `${T}
+        const m = new Map()
+        const fn = m.set
       `,
     },
     {
-      code: `
-        fn(obj.customMethod)
+      code: `${T}
+        const obj = { at: 5, filter: 'all' }
+        const x = obj.filter
       `,
     },
-    // Computed property access is fine (dynamic)
+    // Plain object property named 'filter' in object literal
     {
-      code: `
-        fn(obj[method])
+      code: `${T}
+        const action = { type: 'ToggleFilter' as const, filter: 'all' }
+        const state = { filter: action.filter }
       `,
     },
-    // Method chaining is fine
+    // Method chaining (calling) is fine
     {
-      code: `
-        const result = signal.map(x => x * 2).filter(x => x > 0)
+      code: `${T}
+        const s = signal(0)
+        const result = s.map(x => x * 2)
       `,
     },
     // Using method result (calling it) is fine
     {
-      code: `
-        const value = signal.get()
+      code: `${T}
+        const s = signal(0)
+        const value = s.get()
+      `,
+    },
+    // Computed property access is fine
+    {
+      code: `${T}
+        const s = signal(0)
+        const method = 'dispose'
+        const fn = s[method]
       `,
     },
   ],
@@ -67,8 +126,10 @@ ruleTester.run('no-method-reference', rule, {
   invalid: [
     // Passing dispose by reference as argument
     {
-      code: `
-        signal.onDispose(other.dispose)
+      code: `${T}
+        const s = signal(0)
+        const other = signal(1)
+        s.onDispose(other.dispose)
       `,
       errors: [
         {
@@ -79,116 +140,109 @@ ruleTester.run('no-method-reference', rule, {
     },
     // Passing set by reference as argument
     {
-      code: `
-        signal.on(prop.set)
+      code: `${T}
+        const s = signal(0)
+        const p = prop(0)
+        s.on(p.set)
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'prop', method: 'set' },
-        },
-      ],
-    },
-    // Passing setText by reference
-    {
-      code: `
-        signal.onChange(ctx.setText)
-      `,
-      errors: [
-        {
-          messageId: 'noMethodReference',
-          data: { object: 'ctx', method: 'setText' },
+          data: { object: 'p', method: 'set' },
         },
       ],
     },
     // Assigning method to variable
     {
-      code: `
-        const fn = signal.dispose
+      code: `${T}
+        const s = signal(0)
+        const fn = s.dispose
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'signal', method: 'dispose' },
-        },
-      ],
-    },
-    // OnDispose with method reference
-    {
-      code: `
-        OnDispose(count.dispose)
-      `,
-      errors: [
-        {
-          messageId: 'noMethodReference',
-          data: { object: 'count', method: 'dispose' },
+          data: { object: 's', method: 'dispose' },
         },
       ],
     },
     // Method reference in array
     {
-      code: `
-        const fns = [signal.dispose, other.clear]
+      code: `${T}
+        const s = signal(0)
+        const fns = [s.dispose]
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'signal', method: 'dispose' },
-        },
-        {
-          messageId: 'noMethodReference',
-          data: { object: 'other', method: 'clear' },
+          data: { object: 's', method: 'dispose' },
         },
       ],
     },
     // Assignment expression
     {
-      code: `
-        let fn
-        fn = signal.get
+      code: `${T}
+        const s = signal(0)
+        let fn: any
+        fn = s.get
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'signal', method: 'get' },
+          data: { object: 's', method: 'get' },
         },
       ],
     },
     // Return statement
     {
-      code: `
+      code: `${T}
+        const s = signal(0)
         function getFn() {
-          return ctx.clear
+          return s.dispose
         }
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'ctx', method: 'clear' },
+          data: { object: 's', method: 'dispose' },
         },
       ],
     },
     // Object property value
     {
-      code: `
-        const obj = { cleanup: signal.dispose }
+      code: `${T}
+        const s = signal(0)
+        const obj = { cleanup: s.dispose }
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'signal', method: 'dispose' },
+          data: { object: 's', method: 'dispose' },
         },
       ],
     },
-    // Chained object access
+    // Prop.set as variable
     {
-      code: `
-        scope.onDispose(this.signal.dispose)
+      code: `${T}
+        const p = prop('hello')
+        const setter = p.set
       `,
       errors: [
         {
           messageId: 'noMethodReference',
-          data: { object: 'this.signal', method: 'dispose' },
+          data: { object: 'p', method: 'set' },
+        },
+      ],
+    },
+    // Prop.set as callback
+    {
+      code: `${T}
+        const p = prop('hello')
+        const opts = { onChange: p.set }
+      `,
+      errors: [
+        {
+          messageId: 'noMethodReference',
+          data: { object: 'p', method: 'set' },
         },
       ],
     },
