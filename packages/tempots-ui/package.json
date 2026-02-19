@@ -1,7 +1,7 @@
 {
   "name": "@tempots/ui",
   "private": false,
-  "version": "15.0.1",
+  "version": "16.0.0",
   "type": "module",
   "sideEffects": false,
   "priority": 8,
