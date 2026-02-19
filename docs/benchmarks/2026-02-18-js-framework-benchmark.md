@@ -216,6 +216,7 @@ Note: Absolute ms values vary between runs due to machine conditions. Ratios vs 
 | Run memory (non-keyed) | 4.5 MB | 3.9 MB | 2.37x | **2.05x** | **-14%** |
 | **CPU Geo Mean** | | | **~1.12x** | **~1.14x** | ~same |
 
+<<<<<<< HEAD
 30. **Structural derivative disposal** — Replace 3 closures per `setDerivative` call with direct parent↔child arrays. Signals store `_derivatives: Computed[]`, Computeds store `_parents: Signal[]`. Disposal cascades structurally: parent→child via `_derivatives`, child removes self from parent via `_removeDerivative`. Eliminates closure allocations for derivative lifecycle management.
 31. **WeakMap proxy cache** — Move per-instance `_$` field to module-level `const _proxyCache = new WeakMap()`. Only signals that use `.$` accessor pay for proxy allocation. Saves 8 bytes per Signal.
 32. **Prototype type markers** — Move `$__signal__`, `$__computed__`, `$__prop__` from per-instance fields to prototype assignments via `declare` + `Signal.prototype.$__signal__ = true`. Saves 24 bytes per instance.
@@ -224,6 +225,11 @@ Note: Absolute ms values vary between runs due to machine conditions. Ratios vs 
 35. **Pre-allocated topNodes array in hydrator** — Replace `Array.from(clone.childNodes)` with pre-allocated array filled by walking `firstChild → nextSibling`. Captures node refs before DOM insertion; removed opaque-slot comments (`parentNode === null`) are safely skipped during cleanup.
 36. **selectedClass token cache** — Module-level `Map<string, string[]>` caches `activeClass.split(' ').filter(...)` results. Avoids re-splitting the same CSS class string per row.
 37. **Inline dynamic-text clear in hydrator** — Dynamic-text hydration stores `slot.source.onChange(...)` result directly as `Clear` instead of wrapping in a closure. Removes 1 wrapper function per dynamic text slot per template clone.
+=======
+30-34. Five Signal class memory optimizations: (1) structural derivative disposal replaces 3 closures per `setDerivative` with direct parent↔child arrays (`_parents`/`_derivatives`), (2) `_$` proxy cache moved to module-level `WeakMap` (saves 8 bytes per Signal that doesn't use `.$`), (3) type markers (`$__signal__`, `$__computed__`, `$__prop__`) moved to prototypes via `declare` + prototype assignment (saves 24 bytes per instance), (4) default `equals` on prototype (saves 8 bytes per instance with default equality), (5) `Computed.dispose()` removes itself from parents' derivative lists for clean bidirectional teardown.
+
+Per-row object reduction: (A) merge lightweight scope into KeyedForEach entry objects (shared `_scopeTrack`/`_scopeOnDispose` functions, no per-entry closures), (B) pre-allocated `topNodes` array in hydrator (captures node refs before insertion, handles removed opaque-slot comments gracefully), (C) `selectedClass` token cache avoids re-splitting the same CSS class string per row, (E) dynamic-text hydration stores `onChange` result directly as `Clear` (no wrapper closure).
+>>>>>>> fdf0f0ef1f728b3e7e40034fea1d9b92af2da508
 
 CPU geo mean is within noise of Round 8 (~1.14x vs ~1.12x). The primary benefit is **memory**: non-keyed run memory dropped 4.5 → 3.9 MB (-14%), validating the per-instance byte savings from Signal prototype optimizations.
 
