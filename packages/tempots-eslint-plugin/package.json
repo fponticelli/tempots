@@ -1,7 +1,7 @@
 {
   "name": "@tempots/eslint-plugin",
   "private": false,
-  "version": "0.12.0",
+  "version": "0.13.0",
   "priority": 10,
   "description": "ESLint plugin for TempoTS to catch common signal disposal issues",
   "keywords": [
