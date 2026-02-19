@@ -52,7 +52,7 @@ export const update = (state: State, action: Action) => {
     case 'ToggleFilter':
       return {
         ...state,
-        filter: action.filter,
+        filter: action.filter, // eslint-disable-line tempots/no-method-reference
       }
     case 'ClearCompleted':
       return {

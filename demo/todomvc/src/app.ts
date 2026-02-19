@@ -63,7 +63,7 @@ export const App = () => {
             attr.value(adding),
             on.keydown(e => {
               if (e.key === 'Enter') {
-                emitValue(adding.set)(e)
+                emitValue(v => adding.set(v))(e)
                 dispatch({ type: 'AddTodo', title: adding.value })
                 adding.set('')
               } else if (e.key === 'Escape') {
