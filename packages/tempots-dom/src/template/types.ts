@@ -25,6 +25,8 @@ export interface CompiledTemplate {
   fragment: DocumentFragment
   /** Slot descriptors in build order (matches extractSlots order) */
   slots: SlotInfo[]
+  /** Number of top-level child nodes in the fragment */
+  topNodeCount: number
 }
 
 // --- Template node types (kind metadata on renderables) ---

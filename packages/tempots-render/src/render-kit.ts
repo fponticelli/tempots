@@ -36,6 +36,28 @@ import type {
 } from './types'
 
 /**
+ * Shared scope functions for KeyedForEach entries.
+ * These are assigned as properties on entry objects so that entries
+ * implement the Scope interface directly, avoiding per-entry closure allocations.
+ * @internal
+ */
+function _scopeTrack(
+  this: { tracked: AnySignal[] | null },
+  s: AnySignal
+): void {
+  if (this.tracked === null) this.tracked = []
+  this.tracked.push(s)
+}
+
+function _scopeOnDispose(
+  this: { disposeCallbacks: Array<() => void> | null },
+  cb: () => void
+): void {
+  if (this.disposeCallbacks === null) this.disposeCallbacks = []
+  this.disposeCallbacks.push(cb)
+}
+
+/**
  * Configuration for creating a render kit.
  *
  * @typeParam CTX - The context type
@@ -591,27 +613,15 @@ export function createRenderKit<
             clear: Clear
             startRef: CTX
             endRef: CTX
+            // Scope interface methods (shared functions, not closures)
+            track: (s: AnySignal) => void
+            onDispose: (cb: () => void) => void
             // Separator state (if separator is provided)
             sepTracked?: AnySignal[] | null
             sepDisposeCallbacks?: Array<() => void> | null
             sepClear?: Clear
             sepStartRef?: CTX
           }
-
-          /** Create a lightweight scope that tracks signals into an entry's arrays */
-          const makeLightScope = (entry: {
-            tracked: AnySignal[] | null
-            disposeCallbacks: Array<() => void> | null
-          }): Scope => ({
-            track: (s: AnySignal) => {
-              if (entry.tracked === null) entry.tracked = []
-              entry.tracked.push(s)
-            },
-            onDispose: (cb: () => void) => {
-              if (entry.disposeCallbacks === null) entry.disposeCallbacks = []
-              entry.disposeCallbacks.push(cb)
-            },
-          })
 
           /** Dispose tracked signals and callbacks from a lightweight scope */
           const disposeTracked = (
@@ -725,9 +735,10 @@ export function createRenderKit<
               clear: undefined!,
               startRef: startRef!,
               endRef,
+              track: _scopeTrack,
+              onDispose: _scopeOnDispose,
             }
-            const scope = makeLightScope(entry)
-            pushScope(scope)
+            pushScope(entry as unknown as Scope)
             try {
               const renderable = renderableOfTNode(item(valueProp, position!))
               const result = renderMaybeTemplate(renderable, endRef)
@@ -799,9 +810,10 @@ export function createRenderKit<
             const sepScopeHolder = {
               tracked: null as AnySignal[] | null,
               disposeCallbacks: null as Array<() => void> | null,
+              track: _scopeTrack,
+              onDispose: _scopeOnDispose,
             }
-            const sepScope = makeLightScope(sepScopeHolder)
-            pushScope(sepScope)
+            pushScope(sepScopeHolder as unknown as Scope)
             let sepClear: Clear
             try {
               sepClear = renderableOfTNode(separator(entry.position!)).render(
