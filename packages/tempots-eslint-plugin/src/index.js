@@ -10,7 +10,7 @@ import noEmptyFragment from './rules/no-empty-fragment.js'
 import noSingleChildFragment from './rules/no-single-child-fragment.js'
 import noMethodReference from './rules/no-method-reference.js'
 
-// Default recommended rules configuration
+// Base recommended rules (no type information required)
 const recommendedRules = {
   // Warn about signals created at module level
   'tempots/no-module-level-signals': 'warn',
@@ -32,9 +32,18 @@ const recommendedRules = {
   'tempots/no-empty-fragment': 'warn',
   // Warn about Fragment() with a single child
   'tempots/no-single-child-fragment': 'warn',
+}
+
+// Rules that require type-checked linting (parserOptions.projectService)
+const typeCheckedRules = {
   // Error on passing Tempo methods by reference (loses `this` binding)
   'tempots/no-method-reference': 'error',
 }
+
+// Strict: all recommended rules elevated to error
+const strictRules = Object.fromEntries(
+  Object.keys(recommendedRules).map((key) => [key, 'error'])
+)
 
 const plugin = {
   rules: {
@@ -64,24 +73,26 @@ export default {
       },
       rules: recommendedRules,
     },
-    // Strict config for maximum safety
+    // Recommended + type-checked rules
+    recommendedTypeChecked: {
+      plugins: {
+        tempots: plugin,
+      },
+      rules: { ...recommendedRules, ...typeCheckedRules },
+    },
+    // Strict: all base rules at error level
     strict: {
       plugins: {
         tempots: plugin,
       },
-      rules: {
-        'tempots/no-module-level-signals': 'error',
-        'tempots/no-unnecessary-disposal': 'error',
-        'tempots/require-untracked-disposal': 'error',
-        'tempots/require-async-signal-disposal': 'error',
-        'tempots/no-signal-reassignment': 'error',
-        'tempots/prefer-const-signals': 'error',
-        'tempots/no-redundant-listener-disposal': 'error',
-        'tempots/no-renderable-signal-map': 'error',
-        'tempots/no-empty-fragment': 'error',
-        'tempots/no-single-child-fragment': 'error',
-        'tempots/no-method-reference': 'error',
+      rules: strictRules,
+    },
+    // Strict + type-checked rules
+    strictTypeChecked: {
+      plugins: {
+        tempots: plugin,
       },
+      rules: { ...strictRules, ...typeCheckedRules },
     },
   },
 }

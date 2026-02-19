@@ -12,6 +12,7 @@ export interface TempoTSPlugin extends ESLint.Plugin {
     'no-renderable-signal-map': Linter.RuleModule
     'no-empty-fragment': Linter.RuleModule
     'no-single-child-fragment': Linter.RuleModule
+    'no-method-reference': Linter.RuleModule
   }
   configs: {
     recommended: Linter.RulesRecord
@@ -21,7 +22,9 @@ export interface TempoTSPlugin extends ESLint.Plugin {
 export interface TempoTSPluginExport extends TempoTSPlugin {
   configs: {
     recommended: Linter.Config
+    recommendedTypeChecked: Linter.Config
     strict: Linter.Config
+    strictTypeChecked: Linter.Config
   }
 }
 

@@ -5,7 +5,8 @@
  * binding.
  *
  * This rule requires TypeScript type information (type-checked linting).
- * Without it, the rule is silently disabled to avoid false positives.
+ * Without it, the rule reports a single warning per file so the user knows
+ * the rule is not functioning.
  *
  * @example
  * ```js
@@ -32,11 +33,14 @@ export default {
       description:
         'Disallow passing Signal/Prop/Computed methods by reference (loses `this` binding)',
       category: 'Possible Errors',
-      recommended: true,
+      recommended: false,
+      requiresTypeChecking: true,
     },
     messages: {
       noMethodReference:
         'Do not pass `{{object}}.{{method}}` by reference — wrap in a lambda to preserve `this` binding. Use `(...args) => {{object}}.{{method}}(...args)` instead.',
+      missingTypeInfo:
+        'The tempots/no-method-reference rule requires type information to function. Enable type-checked linting (parserOptions.projectService) or use the `recommendedTypeChecked` / `strictTypeChecked` config.',
     },
     schema: [],
   },
@@ -47,9 +51,14 @@ export default {
       context.sourceCode?.parserServices ?? context.parserServices
 
     // Without type information, this rule cannot reliably determine
-    // whether an object is a Signal, so it is silently disabled.
+    // whether an object is a Signal. Report once per file so the user
+    // knows the rule is not functioning.
     if (!checker || !parserServices?.esTreeNodeToTSNodeMap) {
-      return {}
+      return {
+        Program(node) {
+          context.report({ node, messageId: 'missingTypeInfo' })
+        },
+      }
     }
 
     function isSignalObject(node) {

@@ -41,6 +41,27 @@ This enables:
 - `no-empty-fragment` (warn) - Empty Fragment() usage
 - `no-single-child-fragment` (warn) - Fragment() with one child
 
+> **Note:** Rules that require TypeScript type information (e.g., `no-method-reference`) are not included in the base `recommended` config. Use `recommendedTypeChecked` to enable them.
+
+### Recommended Type-Checked Configuration
+
+If you use TypeScript with type-checked linting (`parserOptions.projectService`), use this config to also enable rules that require type information:
+
+```javascript
+// eslint.config.js
+import tempots from '@tempots/eslint-plugin'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+  // ... typescript-eslint configs with type checking
+  tempots.configs.recommendedTypeChecked,
+)
+```
+
+This includes everything from `recommended` plus:
+
+- `no-method-reference` (error) - Passing Signal/Prop/Computed methods by reference
+
 ### Strict Configuration
 
 For maximum safety, use the strict configuration:
@@ -55,7 +76,22 @@ export default [
 ]
 ```
 
-All rules are set to `error` instead of `warn`.
+All base rules are set to `error` instead of `warn`.
+
+### Strict Type-Checked Configuration
+
+Combines strict with type-checked rules:
+
+```javascript
+// eslint.config.js
+import tempots from '@tempots/eslint-plugin'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+  // ... typescript-eslint configs with type checking
+  tempots.configs.strictTypeChecked,
+)
+```
 
 ### Custom Configuration
 
@@ -441,6 +477,42 @@ const MyComponent = ctx => {
 const MyComponent = ctx => {
   return html.div('hello')
 }
+```
+
+---
+
+### `no-method-reference` (Type-Checked)
+
+Disallows passing Signal/Prop/Computed methods by reference (loses `this` binding).
+
+**Why?** Tempo signal classes use prototype methods, not arrow function fields. Extracting a method (e.g., `signal.dispose` instead of `() => signal.dispose()`) loses the `this` binding and will fail at runtime.
+
+> **Requires type-checked linting.** This rule uses the TypeScript type checker to determine whether an object is a Signal type. Without `parserOptions.projectService`, the rule will report a warning that type information is missing.
+
+#### ❌ Incorrect
+
+```typescript
+const s = signal(0)
+const other = signal(1)
+
+s.onDispose(other.dispose)        // ❌ Loses `this`
+s.on(p.set)                       // ❌ Loses `this`
+const setter = p.set              // ❌ Loses `this`
+const fns = [s.dispose]           // ❌ Loses `this`
+const obj = { cleanup: s.dispose } // ❌ Loses `this`
+```
+
+#### ✅ Correct
+
+```typescript
+const s = signal(0)
+const other = signal(1)
+
+s.onDispose(() => other.dispose())        // ✅ Wrapped in lambda
+s.on(v => p.set(v))                       // ✅ Wrapped in lambda
+const setter = (v: number) => p.set(v)    // ✅ Wrapped in lambda
+const fns = [() => s.dispose()]           // ✅ Wrapped in lambda
+const obj = { cleanup: () => s.dispose() } // ✅ Wrapped in lambda
 ```
 
 ---
