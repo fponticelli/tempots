@@ -207,7 +207,15 @@ Note: Absolute ms values vary between runs due to machine conditions. Ratios vs 
 28. **Entry reuse on full replace** — When `KeyedForEach` detects that no old keys survive in the new array (full replacement), it reuses existing entries in-place instead of destroying and recreating. Updates `entry.key`, calls `entry.valueProp.set(newValue)` (propagating through the reactive graph to update DOM text nodes and attributes), and resets position indices. Excess old entries are removed; new entries beyond the reuse count are created normally. **Replace 1k ratio: 1.45x → 0.41x VanillaJS (2.4x faster than vanilla!).**
 29. **Single-marker entries for template-cloned rows** — Template-cloned rows (items 3+) skip creating a separate Comment start marker. The `TemplateEngine.cloneAndHydrate` return type was changed from `Clear` to `{ clear: Clear; startCtx: CTX }`, allowing the hydrator to return the first top-level cloned node as the entry's range start reference. Items 1-2 still create the Comment (template not yet verified), then remove it once template cloning succeeds. Saves ~998 Comment node allocations per 1k-row list.
 
+<<<<<<< HEAD
 ### Round 9 (Steps 30-37: Signal memory optimizations + per-row object reduction)
+=======
+<<<<<<< HEAD
+### Round 9 (Steps 30-37: Signal memory optimizations + per-row object reduction)
+=======
+### Round 9 (Steps 30-33: Signal memory optimizations + per-row object reduction)
+>>>>>>> fdf0f0ef1f728b3e7e40034fea1d9b92af2da508
+>>>>>>> ac8cf2ccd2667d11e7be94e21b1b2daf1089ff5d
 
 | Benchmark | Before (Round 8) | After (Round 9) | Ratio vs VanillaJS (Before) | Ratio vs VanillaJS (After) | Ratio Change |
 |-----------|-------------------|------------------|-----------------------------|----------------------------|--------------|
