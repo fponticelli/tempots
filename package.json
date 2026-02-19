@@ -9,7 +9,7 @@
     "build": "turbo build --filter='!js-framework-benchmark*'",
     "build:demos": "turbo build --filter=./demo/*",
     "build:watch": "turbo build:watch",
-    "docs": "turbo docs && pnpm --filter @tempos/docs docs:prep",
+    "docs": "turbo run docs && pnpm --filter @tempos/docs docs:prep",
     "lint": "turbo lint --filter='!js-framework-benchmark*'",
     "format": "turbo format --filter='!js-framework-benchmark*'",
     "typecheck": "turbo typecheck --filter='!js-framework-benchmark*'",

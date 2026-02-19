@@ -310,7 +310,7 @@ export function MonacoEditor({
           }
 
           return OnDispose(() => {
-            const all = [editor.dispose, ...disposers]
+            const all = [() => editor.dispose(), ...disposers]
             all.forEach(d => {
               try {
                 d()

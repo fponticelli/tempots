@@ -52,7 +52,7 @@ export function HtmlToTempo() {
         autoSelect: true,
         content,
         language: 'html',
-        onChange: content.set,
+        onChange: (v: string) => content.set(v),
       })
     ),
     EditorContainer(
