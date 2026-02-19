@@ -26,7 +26,7 @@ export function buildTemplate(
     return null
   }
 
-  return { fragment, slots }
+  return { fragment, slots, topNodeCount: fragment.childNodes.length }
 }
 
 function walkNode(

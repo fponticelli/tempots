@@ -14,9 +14,10 @@ function walkPath(root: Node, path: number[]): Node {
 /**
  * Clone a compiled template and wire up dynamic bindings.
  *
- * Walks the clone BEFORE insertion to capture node references,
- * then inserts the clone (moving nodes to live DOM). The captured
- * JS references remain valid after insertion.
+ * Optimizations vs naive approach:
+ * - Pre-allocated topNodes array (no Array.from) — minimal allocation
+ * - Pre-allocated clears array — saves dynamic resizing
+ * - Dynamic-text onChange stored directly as Clear — no wrapper closure
  *
  * Returns `{ clear, startCtx }` where startCtx is a DOMContext whose
  * reference is the first top-level node of the clone. This lets
@@ -32,34 +33,44 @@ export function hydrateClone(
   const bc = ctx as BrowserContext
   const clone = template.fragment.cloneNode(true) as DocumentFragment
 
-  // Capture top-level nodes for cleanup
-  const topNodes: Node[] = Array.from(clone.childNodes)
+  // Capture all top-level nodes before insertion (fragment empties after insert).
+  // Opaque slot comments may be removed during hydration; their parentNode
+  // becomes null and the clear function skips them gracefully.
+  const numTopNodes = template.topNodeCount
+  const topNodes = new Array<Node>(numTopNodes)
+  let child = clone.firstChild
+  for (let i = 0; i < numTopNodes; i++) {
+    topNodes[i] = child!
+    child = child!.nextSibling
+  }
 
-  // Walk clone BEFORE insertion to capture slot node references
-  const slotNodes: Node[] = new Array(template.slots.length)
-  for (let i = 0; i < template.slots.length; i++) {
+  // Walk slot paths BEFORE insertion (fragment is empty after insertion)
+  const numSlots = template.slots.length
+  const slotNodes = new Array<Node>(numSlots)
+  for (let i = 0; i < numSlots; i++) {
     slotNodes[i] = walkPath(clone, template.slots[i].path)
   }
 
   // Insert clone into live DOM (moves all children from fragment)
   bc.appendOrInsert(clone)
 
-  // Hydrate slots
-  const clears: Clear[] = []
+  // Single-pass hydration (after insertion — opaque slots need live DOM parent)
+  const clears = new Array<Clear>(numSlots)
 
-  for (let i = 0; i < template.slots.length; i++) {
+  for (let i = 0; i < numSlots; i++) {
     const slotInfo = template.slots[i]
     const node = slotNodes[i]
 
     if (slotInfo.kind === 'dynamic-text') {
-      // Wire signal -> text node directly (bypass makeChildText)
+      // Wire signal -> text node directly (bypass makeChildText).
+      // Store onChange result directly as Clear — no wrapper closure needed.
+      // Node removal is handled by topNodes cleanup below.
       const slot = slots[i] as DynamicTextSlot
       const textNode = node as Text
       textNode.textContent = slot.transform(slot.source.value)
-      const dispose = slot.source.onChange((v: unknown) => {
+      clears[i] = slot.source.onChange((v: unknown) => {
         textNode.textContent = slot.transform(v)
-      })
-      clears.push(() => dispose())
+      }) as Clear
     } else if (slotInfo.kind === 'dynamic-attr') {
       // Create context wrapping the cloned element, call render()
       const slot = slots[i] as RenderableSlot
@@ -69,7 +80,7 @@ export function hydrateClone(
         undefined,
         bc.providers
       )
-      clears.push(slot.render(elemCtx as DOMContext))
+      clears[i] = slot.render(elemCtx as DOMContext)
     } else {
       // slot: opaque renderable with comment placeholder
       // The renderable will create its own markers, so we remove
@@ -82,7 +93,7 @@ export function hydrateClone(
         comment,
         bc.providers
       )
-      clears.push(slot.render(markerCtx as DOMContext))
+      clears[i] = slot.render(markerCtx as DOMContext)
       comment.remove()
     }
   }
@@ -98,11 +109,14 @@ export function hydrateClone(
 
   return {
     clear: (removeTree: boolean) => {
-      for (let i = 0; i < clears.length; i++) {
+      for (let i = 0; i < numSlots; i++) {
         clears[i](removeTree)
       }
       if (removeTree) {
-        for (let i = 0; i < topNodes.length; i++) {
+        // Remove template-owned top-level nodes.
+        // Nodes removed during hydration (opaque slot comments) have
+        // parentNode === null and are safely skipped.
+        for (let i = 0; i < numTopNodes; i++) {
           const node = topNodes[i]
           if (node.parentNode) node.parentNode.removeChild(node)
         }

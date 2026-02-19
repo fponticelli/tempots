@@ -8,6 +8,17 @@ import { Value } from '@tempots/core'
 import { MathMLAttributes } from '../types/mathml-attributes'
 import { domRenderable } from '../types/domain'
 
+// Cache for selectedClass tokens — avoids re-splitting the same activeClass string per row
+const _tokensCache = new Map<string, string[]>()
+function _getTokens(activeClass: string): string[] {
+  let tokens = _tokensCache.get(activeClass)
+  if (tokens === undefined) {
+    tokens = activeClass.split(' ').filter(s => s.length > 0)
+    _tokensCache.set(activeClass, tokens)
+  }
+  return tokens
+}
+
 const staticClassName = (value: string[]): Renderable => {
   const r = domRenderable((ctx: DOMContext) => {
     ctx.addClasses(value)
@@ -449,10 +460,10 @@ export const selectedClass = <T>(
   activeClass: string = 'danger',
   equals?: (a: T, b: T) => boolean
 ): Renderable => {
+  const tokens = _getTokens(activeClass)
   const r = domRenderable((ctx: DOMContext) => {
     const isSelected = _getOrCreateSelector(source, equals)
     const selectedSignal = isSelected(key)
-    const tokens = activeClass.split(' ').filter(s => s.length > 0)
 
     const clear = selectedSignal.on(
       selected => {
