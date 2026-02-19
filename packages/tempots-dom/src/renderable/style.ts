@@ -19,7 +19,7 @@ const staticStyle = (
       }
     }
   }) as Renderable & Record<string, unknown>
-  r.kind = 'static-attr'
+  r.kind = 'dynamic-attr'
   return r
 }
 
