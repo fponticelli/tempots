@@ -5,7 +5,7 @@ import { Page } from './types'
 import { App } from './components/app'
 
 export const globalRoute = makeRouteFlow()
-export const setGlobalRoute = globalRoute.set
+export const setGlobalRoute = (v: string) => globalRoute.set(v)
 
 const page = globalRoute
   .mapAsync(loadRoute, Page.loading)
