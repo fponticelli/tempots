@@ -18,13 +18,17 @@ function walkPath(root: Node, path: number[]): Node {
  * then inserts the clone (moving nodes to live DOM). The captured
  * JS references remain valid after insertion.
  *
+ * Returns `{ clear, startCtx }` where startCtx is a DOMContext whose
+ * reference is the first top-level node of the clone. This lets
+ * KeyedForEach skip creating a separate Comment start marker.
+ *
  * @internal
  */
 export function hydrateClone(
   template: CompiledTemplate,
   ctx: DOMContext,
   slots: readonly (DynamicTextSlot | RenderableSlot)[]
-): Clear {
+): { clear: Clear; startCtx: DOMContext } {
   const bc = ctx as BrowserContext
   const clone = template.fragment.cloneNode(true) as DocumentFragment
 
@@ -83,15 +87,27 @@ export function hydrateClone(
     }
   }
 
-  return (removeTree: boolean) => {
-    for (let i = 0; i < clears.length; i++) {
-      clears[i](removeTree)
-    }
-    if (removeTree) {
-      for (let i = 0; i < topNodes.length; i++) {
-        const node = topNodes[i]
-        if (node.parentNode) node.parentNode.removeChild(node)
+  // startCtx wraps the first top-level node — used as the range start
+  // for moveRangeBefore, replacing the separate Comment start marker.
+  const startCtx = new BrowserContext(
+    bc.document,
+    bc.element,
+    topNodes[0],
+    bc.providers
+  )
+
+  return {
+    clear: (removeTree: boolean) => {
+      for (let i = 0; i < clears.length; i++) {
+        clears[i](removeTree)
       }
-    }
+      if (removeTree) {
+        for (let i = 0; i < topNodes.length; i++) {
+          const node = topNodes[i]
+          if (node.parentNode) node.parentNode.removeChild(node)
+        }
+      }
+    },
+    startCtx,
   }
 }

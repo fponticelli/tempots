@@ -465,7 +465,7 @@ export function createRenderKit<
                       compiled,
                       newCtx,
                       rEngine!.extractSlots(renderable)
-                    )
+                    ).clear
                   }
 
                   if (!rTmplCache.verified) {
@@ -482,7 +482,7 @@ export function createRenderKit<
                     rTmplCache.compiled,
                     newCtx,
                     rEngine!.extractSlots(renderable)
-                  )
+                  ).clear
                 })
               )
             }
@@ -642,27 +642,29 @@ export function createRenderKit<
           const renderMaybeTemplate = (
             renderable: Renderable<CTX, TType>,
             renderCtx: CTX
-          ): Clear => {
-            if (tmplDisabled) return renderable.render(renderCtx)
+          ): { clear: Clear; startCtx: CTX | null } => {
+            if (tmplDisabled)
+              return { clear: renderable.render(renderCtx), startCtx: null }
 
             if (tmplCache === null) {
               // First item: build template
               const fp = engine!.fingerprint(renderable)
               if (fp === null) {
                 tmplDisabled = true
-                return renderable.render(renderCtx)
+                return { clear: renderable.render(renderCtx), startCtx: null }
               }
               const compiled = engine!.build(renderable, renderCtx)
               if (!compiled) {
                 tmplDisabled = true
-                return renderable.render(renderCtx)
+                return { clear: renderable.render(renderCtx), startCtx: null }
               }
               tmplCache = { compiled, fp, verified: false }
-              return engine!.cloneAndHydrate(
+              const result = engine!.cloneAndHydrate(
                 compiled,
                 renderCtx,
                 engine!.extractSlots(renderable)
               )
+              return { clear: result.clear, startCtx: result.startCtx as CTX }
             }
 
             if (!tmplCache.verified) {
@@ -671,17 +673,18 @@ export function createRenderKit<
               if (fp !== tmplCache.fp) {
                 tmplDisabled = true
                 tmplCache = null
-                return renderable.render(renderCtx)
+                return { clear: renderable.render(renderCtx), startCtx: null }
               }
               tmplCache.verified = true
             }
 
             // Verified: clone
-            return engine!.cloneAndHydrate(
+            const result = engine!.cloneAndHydrate(
               tmplCache.compiled,
               renderCtx,
               engine!.extractSlots(renderable)
             )
+            return { clear: result.clear, startCtx: result.startCtx as CTX }
           }
 
           const createEntry = (
@@ -695,10 +698,16 @@ export function createRenderKit<
               ? new KeyedPosition(index, totalProp)
               : null
 
-            // Create start marker (Comment node — cheaper than text node)
-            const startRef = ctx.makeMarker() as CTX
-            // Move it before the target
-            ctx.moveRangeBefore(startRef, startRef, insertBefore)
+            // Skip creating a separate Comment start marker when template
+            // cloning is verified (items 3+). Items 1-2 still need the marker
+            // because we don't know if template cloning will succeed yet.
+            const tmplVerified =
+              !tmplDisabled && tmplCache !== null && tmplCache.verified
+            let startRef: CTX | undefined
+            if (!tmplVerified) {
+              startRef = ctx.makeMarker() as CTX
+              ctx.moveRangeBefore(startRef, startRef, insertBefore)
+            }
 
             // Create end marker
             const endRef = ctx.makeMarker() as CTX
@@ -714,14 +723,24 @@ export function createRenderKit<
               tracked: null,
               disposeCallbacks: null,
               clear: undefined!,
-              startRef,
+              startRef: startRef!,
               endRef,
             }
             const scope = makeLightScope(entry)
             pushScope(scope)
             try {
               const renderable = renderableOfTNode(item(valueProp, position!))
-              entry.clear = renderMaybeTemplate(renderable, endRef)
+              const result = renderMaybeTemplate(renderable, endRef)
+              entry.clear = result.clear
+              if (result.startCtx) {
+                // Template-cloned: use first content node as startRef
+                if (startRef) {
+                  // Items 1-2: remove the now-unnecessary comment marker
+                  startRef.clear(true)
+                }
+                entry.startRef = result.startCtx
+              }
+              // else: non-template, startRef is already the comment marker
             } finally {
               popScope()
             }
@@ -823,7 +842,7 @@ export function createRenderKit<
               const newKeys = newArr.map(key)
               const newKeySet = new Set(newKeys)
 
-              // Fast path: full replacement (no surviving keys) — bulk DOM removal
+              // Fast path: full replacement (no surviving keys)
               if (entries.length > 0) {
                 let hasSurvivor = false
                 for (let i = 0; i < entries.length; i++) {
@@ -833,7 +852,41 @@ export function createRenderKit<
                   }
                 }
                 if (!hasSurvivor) {
-                  removeAllEntries() // entries.length → 0, DOM cleared via Range API
+                  // Reuse existing entries by updating values in-place.
+                  // Avoids destroy+create cycle — DOM stays, signals propagate new values.
+                  const reuseCount = Math.min(entries.length, newArr.length)
+
+                  keyToEntry.clear()
+                  for (let i = 0; i < reuseCount; i++) {
+                    const entry = entries[i]
+                    entry.key = newKeys[i]
+                    entry.valueProp.set(newArr[i])
+                    entry.position?.setIndex(i)
+                    keyToEntry.set(newKeys[i], entry)
+                  }
+
+                  // Remove excess old entries
+                  for (let i = entries.length - 1; i >= reuseCount; i--) {
+                    removeEntry(entries[i])
+                  }
+                  entries.length = reuseCount
+
+                  // Create new entries beyond reuse count
+                  if (newArr.length > reuseCount) {
+                    ctx.detach()
+                    for (let i = reuseCount; i < newArr.length; i++) {
+                      const entry = createEntry(newArr[i], i, outerRef)
+                      keyToEntry.set(newKeys[i], entry)
+                      entries.push(entry)
+                      if (separator && i > 0 && !entry.sepClear) {
+                        renderSeparator(entry, entry.startRef)
+                      }
+                    }
+                    ctx.reattach()
+                  }
+
+                  totalProp.set(newArr.length)
+                  return
                 }
               }
 

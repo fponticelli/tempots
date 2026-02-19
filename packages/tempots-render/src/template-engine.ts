@@ -24,12 +24,13 @@ export interface TemplateEngine<
 
   /**
    * Clone a compiled template and wire up dynamic bindings from the provided slots.
+   * Returns the cleanup function and a context referencing the first inserted node.
    */
   cloneAndHydrate(
     template: unknown,
     ctx: CTX,
     slots: Renderable<CTX, TType>[]
-  ): Clear
+  ): { clear: Clear; startCtx: CTX }
 
   /**
    * Compute a structural fingerprint for runtime guard checking.

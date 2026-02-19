@@ -126,7 +126,11 @@ export const domTemplateEngine: TemplateEngine<
     return buildTemplate(node, doc)
   },
 
-  cloneAndHydrate(template: unknown, ctx: DOMContext, slots: R[]): Clear {
+  cloneAndHydrate(
+    template: unknown,
+    ctx: DOMContext,
+    slots: R[]
+  ): { clear: Clear; startCtx: DOMContext } {
     return hydrateClone(template as CompiledTemplate, ctx, slots)
   },
 
