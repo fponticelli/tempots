@@ -17,10 +17,12 @@ export const _staticText = (text: Primitive): Renderable =>
 /**
  * @internal
  */
-export const _signalText = (signal: Signal<Primitive>): Renderable =>
+export const _signalText = <T extends Primitive>(
+  signal: Signal<T>
+): Renderable =>
   domRenderable((ctx: DOMContext) => {
     const newCtx = ctx.makeChildText(signal.value)
-    const dispose = signal.on((v: Primitive) => newCtx.setText(v))
+    const dispose = signal.on((v: T) => newCtx.setText(v))
     return (removeTree: boolean) => {
       dispose()
       newCtx.clear(removeTree)
@@ -34,10 +36,10 @@ export const _signalText = (signal: Signal<Primitive>): Renderable =>
  * @returns A renderable text node.
  * @public
  */
-export const TextNode = (value: Value<Primitive>): Renderable => {
+export const TextNode = <T extends Primitive>(value: Value<T>): Renderable => {
   if (Signal.is(value)) {
-    return _signalText(value as Signal<Primitive>)
+    return _signalText(value as Signal<T>)
   } else {
-    return _staticText(value as Primitive)
+    return _staticText(value as T)
   }
 }

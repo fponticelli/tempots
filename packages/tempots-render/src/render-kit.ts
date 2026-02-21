@@ -243,11 +243,13 @@ export function createRenderKit<
     return r
   }
 
-  const _signalText = (sig: Signal<Primitive>): Renderable<CTX, TType> => {
+  const _signalText = <T extends Primitive>(
+    sig: Signal<T>
+  ): Renderable<CTX, TType> => {
     const r = create((ctx: CTX) => {
       const newCtx = ctx.makeChildText(sig.value)
       // Use onChange to skip the redundant initial call (value already set via makeChildText)
-      const dispose = sig.onChange((v: Primitive) => newCtx.setText(v))
+      const dispose = sig.onChange((v: T) => newCtx.setText(v))
       return (removeTree: boolean) => {
         dispose()
         newCtx.clear(removeTree)

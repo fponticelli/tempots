@@ -42,7 +42,7 @@ const typeCheckedRules = {
 
 // Strict: all recommended rules elevated to error
 const strictRules = Object.fromEntries(
-  Object.keys(recommendedRules).map((key) => [key, 'error'])
+  Object.keys(recommendedRules).map(key => [key, 'error'])
 )
 
 const plugin = {
