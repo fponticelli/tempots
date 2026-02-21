@@ -422,8 +422,12 @@ export class BrowserContext implements DOMContext {
    * @param value - The value of the style to set.
    */
   setStyle(name: string, value: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.element.style[name as any] = value
+    if (name.startsWith('--')) {
+      this.element.style.setProperty(name, value)
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.element.style[name as any] = value
+    }
   }
 
   /**
@@ -432,6 +436,9 @@ export class BrowserContext implements DOMContext {
    * @returns The value of the style.
    */
   getStyle(name: string) {
+    if (name.startsWith('--')) {
+      return this.element.style.getPropertyValue(name)
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.element.style[name as any]
   }
