@@ -1,6 +1,6 @@
 {
   "name": "@tempots/ui",
-  "version": "16.0.0",
+  "version": "16.0.1",
   "type": "module",
   "sideEffects": false,
   "main": "./index.cjs",
@@ -40,7 +40,7 @@
   "license": "Apache-2.0",
   "peerDependencies": {
     "@floating-ui/dom": "^1.7.1",
-    "@tempots/dom": "^37.0.0",
+    "@tempots/dom": "^37.0.4",
     "@tempots/std": "^0.26.1"
   }
 }
