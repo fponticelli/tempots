@@ -949,7 +949,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
 
   /** {@inheritDoc Signal.get} */
   get() {
-    if (this._isDirty) {
+    if (this._isDirty && !this._disposed) {
       this._isDirty = false
       this._setAndNotify(this._fn())
     }
