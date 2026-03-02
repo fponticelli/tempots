@@ -54,11 +54,11 @@ A class attribute can be a string or a signal that emits a string. The string ca
 
 ### Other attributes and elements
 
-There are helper objects to create arbitrary data-attributes, math/svg elements and attributes, and style attributes.
+There are helpers to create arbitrary data-attributes, math/svg elements and attributes, and style attributes.
 
 ```ts
 html.div(
-  dataAttr.mydata('myvalue'),
+  dataAttr('mydata', 'myvalue'),
   math.math(
     mathAttr.display('inline'),
     math.mfrac(math.msup(math.mi('π'), math.mn('2')), math.mn('6'))

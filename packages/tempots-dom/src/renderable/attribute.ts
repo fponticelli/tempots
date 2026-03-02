@@ -194,7 +194,7 @@ export const attr = new Proxy(
 /**
  * Creates a renderable for a data attribute with the specified name and value.
  *
- * This is the functional equivalent of using `dataAttr[name](value)` with a dynamic attribute name.
+ * This is an alias for `dataAttr(name, value)` that accepts `unknown` values.
  *
  * @param name - The name of the data attribute (without the 'data-' prefix).
  * @param value - The value of the attribute (can be a literal or Signal).
@@ -211,33 +211,21 @@ export const DataAttr = (name: string, value: unknown): Renderable =>
   createAttributeRenderable(`data-${name}`, value)
 
 /**
- * The `data` object allows to create any `data-` attributes. Either a literal value
- * or `Signal<string>` can be passed as a value.
+ * Creates a renderable for a `data-` attribute with the specified name and value.
  *
+ * @param name - The name of the data attribute (without the 'data-' prefix).
+ * @param value - The value of the attribute (can be a literal or Signal).
+ * @returns A renderable that sets the data attribute.
  * @example
  * ```ts
  * const button = html.button(
- *   dataAttr.myinfo('something'), // maps to the `data-myinfo` attribute
+ *   dataAttr('myinfo', 'something'), // maps to the `data-myinfo` attribute
  * )
  * ```
  * @public
  */
-export const dataAttr = new Proxy(
-  {} as {
-    [A in string]: (value: Value<string>) => Renderable
-  },
-  {
-    /**
-     * Creates a renderable component for the specified `data-?` attribute.
-     *
-     * @param _ - The target object.
-     * @param name - The name of the data attribute.
-     * @returns The renderable component for the specified attribute.
-     *
-     */
-    get: (_, name: string) => (value: Value<string>) => DataAttr(name, value),
-  }
-)
+export const dataAttr = (name: string, value: Value<string>): Renderable =>
+  DataAttr(name, value)
 
 /**
  * Creates a renderable for an ARIA attribute with the specified name and value.

@@ -309,12 +309,12 @@ describe('Attribute Renderables', () => {
     })
   })
 
-  describe('dataAttr proxy object', () => {
+  describe('dataAttr function', () => {
     test('should create static data attribute', () => {
       const clear = render(
         html.div(
-          dataAttr.testid('my-test-id'),
-          dataAttr.value('some-value'),
+          dataAttr('testid', 'my-test-id'),
+          dataAttr('value', 'some-value'),
           'Content'
         ),
         document.body
@@ -332,8 +332,8 @@ describe('Attribute Renderables', () => {
 
       const clear = render(
         html.div(
-          dataAttr.testid(testIdSignal),
-          dataAttr.value(valueSignal),
+          dataAttr('testid', testIdSignal),
+          dataAttr('value', valueSignal),
           'Content'
         ),
         document.body
@@ -354,7 +354,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle kebab-case data attributes', () => {
       const clear = render(
-        html.div(dataAttr['my-custom-attr']('custom-value'), 'Content'),
+        html.div(dataAttr('my-custom-attr', 'custom-value'), 'Content'),
         document.body
       )
 
@@ -536,8 +536,8 @@ describe('Attribute Renderables', () => {
     test('should work with dataAttr in headless mode', () => {
       const { root, clear } = runHeadless(() =>
         html.div(
-          dataAttr.testid('headless-test'),
-          dataAttr.value('headless-value'),
+          dataAttr('testid', 'headless-test'),
+          dataAttr('value', 'headless-value'),
           'Content'
         )
       )
@@ -647,7 +647,7 @@ describe('Attribute Renderables', () => {
       const clear = render(
         html.div(
           attr.title(complexValue),
-          dataAttr.complex(complexValue),
+          dataAttr('complex', complexValue),
           'Content'
         ),
         document.body
@@ -700,7 +700,7 @@ describe('Attribute Renderables', () => {
 
     test('should handle empty string data attribute names', () => {
       const clear = render(
-        html.div(dataAttr['']('empty-name'), 'Content'),
+        html.div(dataAttr('', 'empty-name'), 'Content'),
         document.body
       )
 
@@ -712,8 +712,8 @@ describe('Attribute Renderables', () => {
     test('should handle special characters in data attribute names', () => {
       const clear = render(
         html.div(
-          dataAttr['test-123']('value1'),
-          dataAttr['test_456']('value2'),
+          dataAttr('test-123', 'value1'),
+          dataAttr('test_456', 'value2'),
           'Content'
         ),
         document.body

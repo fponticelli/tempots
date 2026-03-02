@@ -91,7 +91,7 @@ describe('Template-context attributes (Repeat cloning path)', () => {
       const count = prop(0)
       const clear = render(
         html.div(
-          Repeat(count, () => html.span(dataAttr.testid('row'), 'x'))
+          Repeat(count, () => html.span(dataAttr('testid', 'row'), 'x'))
         ),
         document.body
       )
@@ -150,7 +150,7 @@ describe('Template-context attributes (Repeat cloning path)', () => {
               attr.type('text'),
               attr.id('field'),
               attr.class('input-field'),
-              dataAttr.testid('input'),
+              dataAttr('testid', 'input'),
               aria.label('Name')
             )
           )
@@ -201,7 +201,7 @@ describe('Template-context attributes (Repeat cloning path)', () => {
       const val = prop('v1')
       const count = prop(0)
       const clear = render(
-        html.div(Repeat(count, () => html.span(dataAttr.info(val), 'x'))),
+        html.div(Repeat(count, () => html.span(dataAttr('info', val), 'x'))),
         document.body
       )
       count.set(3)
@@ -359,7 +359,7 @@ describe('Template-context attributes (Repeat cloning path)', () => {
               attr.id('static-id'),
               attr.class('static-class'),
               attr.title(title),
-              dataAttr.testid('static-data'),
+              dataAttr('testid', 'static-data'),
               'content'
             )
           )
@@ -472,7 +472,7 @@ describe('Template-context attributes (Repeat cloning path)', () => {
           Repeat(count, () =>
             html.span(
               attr.class('item'),
-              dataAttr.testid('row'),
+              dataAttr('testid', 'row'),
               style.color('green'),
               'x'
             )
