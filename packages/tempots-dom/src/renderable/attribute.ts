@@ -207,7 +207,7 @@ export const attr = new Proxy(
  * ```
  * @public
  */
-export const DataAttr = (name: string, value: unknown): Renderable =>
+export const DataAttr = (name: string, value: Value<string>): Renderable =>
   createAttributeRenderable(`data-${name}`, value)
 
 /**
@@ -223,6 +223,7 @@ export const DataAttr = (name: string, value: unknown): Renderable =>
  * )
  * ```
  * @public
+ * @deprecated
  */
 export const dataAttr = (name: string, value: Value<string>): Renderable =>
   DataAttr(name, value)
