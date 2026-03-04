@@ -213,7 +213,7 @@ The library is organized into the following modules:
 - `iterator` - Iterator utilities (take, skip, filter, map, reduce, find, etc.)
 - `json` - JSON utilities
 - `map` - Map utilities (mapFromEntries, mapFilter, mapMerge, mapGroupBy, etc.)
-- `number` - Number utilities
+- `number` - Number utilities (clamp, interpolate, snapToGrid, etc.)
 - `object` - Object manipulation
 - `promise` - Promise utilities
 - `random` - Random value generation

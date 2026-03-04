@@ -275,6 +275,36 @@ const Content = () =>
   )
 ```
 
+## Built-in Providers
+
+### ReducedMotion
+
+Tempo ships a `ReducedMotion` provider that tracks the user's `prefers-reduced-motion` system preference. This is useful for any component that performs animations:
+
+```typescript
+import { Provide, Use, ReducedMotion, html, When } from '@tempots/dom'
+
+// Provide at app level (once)
+const App = () =>
+  Provide(ReducedMotion, undefined,
+    () => html.div(
+      AnimatedWidget(),
+    )
+  )
+
+// Consume anywhere in the tree
+const AnimatedWidget = () =>
+  Use(ReducedMotion, (reducedMotion) =>
+    When(
+      reducedMotion,
+      html.div('Static content'),           // reduced motion: skip animation
+      html.div(/* animated content */),      // full motion: animate
+    )
+  )
+```
+
+The signal updates automatically when the user changes their system preference.
+
 ## Next Steps
 
 - [Learn more about Building your own Renderables](/page/components.html)

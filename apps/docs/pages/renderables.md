@@ -409,6 +409,95 @@ const items = ['Item 1', 'Item 2', 'Item 3']
 html.div(items.map((item, index) => html.div(String(index), ': ', item)))
 ```
 
+### TransitionKeyedForEach
+
+`TransitionKeyedForEach` is a drop-in replacement for `KeyedForEach` that supports enter and exit animations. Items that leave the list are kept in the DOM for a configurable duration with an `isExiting` signal set to `true`, allowing CSS transitions or animations to play before removal.
+
+```ts
+import { TransitionKeyedForEach } from '@tempots/dom'
+
+TransitionKeyedForEach(
+  todoItems,
+  (item) => item.id,
+  (item, position, isExiting) => html.div(
+    attr.class('todo-item'),
+    attr.class(isExiting.map(e => e ? 'todo-item--exiting' : '')),
+    item.map(i => i.text),
+  ),
+  { exitDuration: 300 }
+)
+```
+
+```css
+.todo-item--exiting {
+  animation: fade-out 300ms ease-out forwards;
+}
+```
+
+The `config` object supports:
+- `exitClass` / `exitDuration` — class and duration for exit animations
+- `enterClass` / `enterDuration` — class and duration for enter animations
+- `useAnimationEvents` — listen for `animationend`/`transitionend` instead of using a fixed duration
+
+## Animation Renderables
+
+### RafLoop
+
+A renderable that runs a `requestAnimationFrame` loop for the lifetime of the component. The loop is automatically stopped when the component is disposed.
+
+```ts
+import { RafLoop } from '@tempots/dom'
+
+html.canvas(
+  RafLoop((dt) => {
+    // dt is delta time in milliseconds since last frame
+    // Update canvas, particles, etc.
+  })
+)
+```
+
+For imperative use inside `WithElement`, use `createRafLoop()` which returns a handle with a `dispose()` method.
+
+## Gesture Renderables
+
+### PinchZoom
+
+Attaches two-finger pinch-to-zoom with simultaneous pan to the parent element:
+
+```ts
+import { PinchZoom, prop } from '@tempots/dom'
+import type { PinchZoomState } from '@tempots/dom'
+
+const viewport = prop<PinchZoomState>({ scale: 1, panX: 0, panY: 0 })
+
+html.div(
+  attr.style(viewport.map(v => ({
+    transform: `translate(${v.panX}px, ${v.panY}px) scale(${v.scale})`,
+  }))),
+  PinchZoom(viewport, { minScale: 0.25, maxScale: 4 }),
+)
+```
+
+### Inertia
+
+Attaches physics-based inertia drag-and-scroll to the parent element. On pointer up, the surface continues scrolling with exponential velocity decay.
+
+```ts
+import { Inertia, prop } from '@tempots/dom'
+
+const offset = prop({ x: 0, y: 0 })
+
+html.div(
+  Inertia(
+    (dx, dy) => offset.set({
+      x: offset.get().x + dx,
+      y: offset.get().y + dy,
+    }),
+    { friction: 0.95 }
+  ),
+)
+```
+
 ## Lifecycle
 
 For more advanced use cases, Tempo provides a set of functions to handle the lifecycle of a renderable. For example, to run a function when a renderable is mounted, use `WithElement`. This will take a callback function that will be called with the HTML DOM Element just mounted. Similarly `WithCtx` will take a callback function that will be called with the current `DOMContext`, and `WithBrowserCtx` for browser-specific contexts.

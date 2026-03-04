@@ -39,7 +39,7 @@ The Tempo Standard Library fills the gaps in JavaScript's standard library with 
 - **json**: JSON parsing and serialization helpers
 
 ### Numeric Operations
-- **number**: Number utilities and mathematical operations
+- **number**: Number utilities and mathematical operations (clamp, interpolate, snapToGrid, wrap, etc.)
 - **bigint**: BigInt manipulation functions
 
 ## Design Principles

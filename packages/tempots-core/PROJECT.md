@@ -107,6 +107,47 @@ const doubled = scope.computed(() => count.value * 2)
 scope.dispose()
 ```
 
+## Easing Functions
+
+A comprehensive set of easing functions for smooth animations. These are used by `animateSignal` and `createTween` but can be used standalone:
+
+```typescript
+import { easeInOutCubic, easeOutElastic, reverseEasing, mirrorEasing, chainEasing } from '@tempots/core'
+import type { EasingFn } from '@tempots/core'
+
+// Use with animateSignal
+const animated = animateSignal(position, {
+  duration: 300,
+  easing: easeInOutCubic,
+})
+
+// Combine easings with combinators
+const customEasing = chainEasing(easeInQuad, easeOutElastic)
+const symmetric = mirrorEasing(easeInCubic)
+const reversed = reverseEasing(easeInQuad) // produces easeOut curve
+```
+
+### Available Easings
+
+| Family | In | Out | InOut |
+|--------|------|------|-------|
+| Quad | `easeInQuad` | `easeOutQuad` | `easeInOutQuad` |
+| Cubic | `easeInCubic` | `easeOutCubic` | `easeInOutCubic` |
+| Quart | `easeInQuart` | `easeOutQuart` | `easeInOutQuart` |
+| Sine | `easeInSine` | `easeOutSine` | `easeInOutSine` |
+| Expo | `easeInExpo` | `easeOutExpo` | `easeInOutExpo` |
+| Back | `easeInBack` | `easeOutBack` | `easeInOutBack` |
+| Bounce | `easeInBounce` | `easeOutBounce` | `easeInOutBounce` |
+| Elastic | `easeInElastic` | `easeOutElastic` | `easeInOutElastic` |
+
+Plus `linear` for no easing.
+
+### Combinators
+
+- **`reverseEasing(fn)`** — Plays the easing backwards. `reverseEasing(easeIn)` produces an ease-out curve.
+- **`mirrorEasing(fn)`** — First half uses `fn`, second half plays it in reverse. Creates symmetric in-out easings from a single ease-in.
+- **`chainEasing(a, b)`** — Uses `a` for the first half, `b` for the second half. Compose any two easings sequentially.
+
 ## Core Types
 
 ### Renderable

@@ -286,6 +286,101 @@ const sharedState = syncProp({
 sharedState.value = { count: 1 }
 ```
 
+## Animation
+
+Tempo provides built-in signal animation support to smoothly transition between values.
+
+### animateSignal
+
+Creates a new signal that smoothly interpolates whenever the source signal changes:
+
+```ts
+import { prop, animateSignal, easeInOutCubic } from '@tempots/dom'
+
+const position = prop(0)
+const animated = animateSignal(position, {
+  duration: 300,
+  easing: easeInOutCubic,
+})
+
+// When position changes, animated smoothly transitions to the new value
+position.set(100) // animated smoothly goes from 0 to 100
+```
+
+### Easing Functions
+
+Tempo includes 25 standard easing functions covering all common animation curves:
+
+| Family | In | Out | InOut |
+|--------|------|------|-------|
+| Quad | `easeInQuad` | `easeOutQuad` | `easeInOutQuad` |
+| Cubic | `easeInCubic` | `easeOutCubic` | `easeInOutCubic` |
+| Quart | `easeInQuart` | `easeOutQuart` | `easeInOutQuart` |
+| Sine | `easeInSine` | `easeOutSine` | `easeInOutSine` |
+| Expo | `easeInExpo` | `easeOutExpo` | `easeInOutExpo` |
+| Back | `easeInBack` | `easeOutBack` | `easeInOutBack` |
+| Bounce | `easeInBounce` | `easeOutBounce` | `easeInOutBounce` |
+| Elastic | `easeInElastic` | `easeOutElastic` | `easeInOutElastic` |
+
+Plus `linear` (identity) and three **combinators** for building custom easings:
+
+```ts
+import { reverseEasing, mirrorEasing, chainEasing, easeInQuad, easeOutElastic } from '@tempots/dom'
+
+// Reverse: plays easing backwards (easeIn → easeOut)
+const myEaseOut = reverseEasing(easeInQuad)
+
+// Mirror: symmetric in-out from a single ease-in
+const myEaseInOut = mirrorEasing(easeInQuad)
+
+// Chain: compose two easings (first half + second half)
+const dramatic = chainEasing(easeInQuad, easeOutElastic)
+```
+
+### createTween
+
+For imperative control over animations (e.g., animate to a target on user action), use `createTween`:
+
+```ts
+import { createTween, easeInOutCubic, interpolateNumber } from '@tempots/dom'
+
+const tween = createTween(0, {
+  duration: 300,
+  easing: easeInOutCubic,
+})
+
+// Animate to target value on demand
+tween.tweenTo(100)
+
+// Read current animated value
+tween.value.get() // smoothly approaches 100
+
+// Cancel mid-animation
+tween.cancel()
+
+// Clean up
+tween.dispose()
+```
+
+`createTween` supports a `reducedMotion` signal to respect the user's accessibility preference — when `true`, `tweenTo()` sets the value immediately without animation.
+
+### Reduced Motion
+
+Track the user's `prefers-reduced-motion` system preference reactively:
+
+```ts
+import { createReducedMotionSignal, createTween } from '@tempots/dom'
+
+const reducedMotion = createReducedMotionSignal()
+
+const tween = createTween(0, {
+  duration: 300,
+  reducedMotion, // automatically skips animation when user prefers reduced motion
+})
+```
+
+The `ReducedMotion` provider makes this available app-wide via the `Provide`/`Use` pattern — see the [Providers page](/page/providers.html).
+
 ## Next Steps
 
 - [Learn more about Building your own Renderables](/page/components.html)
