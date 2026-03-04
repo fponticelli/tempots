@@ -56,6 +56,35 @@ export {
   KeyedPosition,
   createSelector,
   strictEquals,
+  // Easing functions
+  linear,
+  easeInQuad,
+  easeOutQuad,
+  easeInOutQuad,
+  easeInCubic,
+  easeOutCubic,
+  easeInOutCubic,
+  easeInQuart,
+  easeOutQuart,
+  easeInOutQuart,
+  easeInSine,
+  easeOutSine,
+  easeInOutSine,
+  easeInExpo,
+  easeOutExpo,
+  easeInOutExpo,
+  easeInBack,
+  easeOutBack,
+  easeInOutBack,
+  easeOutBounce,
+  easeInBounce,
+  easeInOutBounce,
+  easeOutElastic,
+  easeInElastic,
+  easeInOutElastic,
+  reverseEasing,
+  mirrorEasing,
+  chainEasing,
 } from '@tempots/core'
 export type {
   AnySignal,
@@ -66,6 +95,8 @@ export type {
   SyncPropOptions,
   RenderContext,
   HierarchicalContext,
+  EasingFn,
+  Interpolate,
 } from '@tempots/core'
 // Export DOM-specific types (Renderable, TNode, etc. specialized for DOMContext)
 export type * from './types/domain'
@@ -76,6 +107,12 @@ export * from './dom/dom-utils'
 export * from './dom/errors'
 export * from './dom/headless-context'
 export * from './dom/window'
+export * from './dom/reduced-motion'
+export * from './dom/raf-loop'
+export * from './dom/is-input-focused'
+export * from './dom/tween'
+export * from './dom/pinch-zoom'
+export * from './dom/inertia'
 export * from './renderable/async'
 export * from './renderable/attribute'
 export * from './renderable/bind'
@@ -110,6 +147,9 @@ export * from './renderable/with-element'
 export * from './renderable/with-headless-ctx'
 export * from './renderable/with-scope'
 export * from './renderable/provider'
+export * from './renderable/pinch-zoom'
+export * from './renderable/inertia'
+export * from './renderable/transition-keyed-foreach'
 
 // Re-export from @tempots/render for downstream consumers
 export type { BaseRenderContext } from '@tempots/render'

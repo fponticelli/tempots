@@ -21,6 +21,7 @@ import {
   nearEqualAngles,
   nearZero,
   root,
+  snapToGrid,
   EPSILON
 } from '../src/number'
 
@@ -248,5 +249,16 @@ describe('numbers', () => {
     expect(typeof EPSILON).toBe('number')
     expect(EPSILON > 0).toBe(true)
     expect(EPSILON < 1e-8).toBe(true)
+  })
+
+  test('snapToGrid', () => {
+    expect(snapToGrid(7, 5)).toBe(5)
+    expect(snapToGrid(8, 5)).toBe(10)
+    expect(snapToGrid(0, 5)).toBe(0)
+    expect(snapToGrid(-3, 5)).toBe(-5)
+    expect(snapToGrid(-7, 5)).toBe(-5)
+    expect(snapToGrid(2.3, 0.5)).toBeCloseTo(2.5)
+    expect(snapToGrid(10, 10)).toBe(10)
+    expect(snapToGrid(15, 10)).toBe(20)
   })
 })

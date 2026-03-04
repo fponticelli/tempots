@@ -117,3 +117,36 @@ export { ElementPosition } from './element-position'
 
 // Keyed position
 export { KeyedPosition } from './keyed-position'
+
+// Easing functions
+export type { EasingFn } from './easing'
+export {
+  linear,
+  easeInQuad,
+  easeOutQuad,
+  easeInOutQuad,
+  easeInCubic,
+  easeOutCubic,
+  easeInOutCubic,
+  easeInQuart,
+  easeOutQuart,
+  easeInOutQuart,
+  easeInSine,
+  easeOutSine,
+  easeInOutSine,
+  easeInExpo,
+  easeOutExpo,
+  easeInOutExpo,
+  easeInBack,
+  easeOutBack,
+  easeInOutBack,
+  easeOutBounce,
+  easeInBounce,
+  easeInOutBounce,
+  easeOutElastic,
+  easeInElastic,
+  easeInOutElastic,
+  reverseEasing,
+  mirrorEasing,
+  chainEasing,
+} from './easing'

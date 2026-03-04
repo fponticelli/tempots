@@ -475,3 +475,20 @@ export const wrapCircular = (v: number, max: number): number => {
   if (v < 0) v += max
   return v
 }
+
+/**
+ * Snaps a value to the nearest multiple of `gridSize`.
+ *
+ * @param value - The value to snap.
+ * @param gridSize - The grid increment to snap to.
+ * @returns The snapped value.
+ * @public
+ * @example
+ * ```ts
+ * snapToGrid(7, 5) // returns 5
+ * snapToGrid(8, 5) // returns 10
+ * snapToGrid(2.3, 0.5) // returns 2.5
+ * ```
+ */
+export const snapToGrid = (value: number, gridSize: number): number =>
+  Math.round(value / gridSize) * gridSize
