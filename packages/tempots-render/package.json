@@ -1,7 +1,7 @@
 {
   "name": "@tempots/render",
   "private": false,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "priority": 1.5,
   "description": "Platform-agnostic shared renderables for the Tempo framework",
   "keywords": [

@@ -1,7 +1,7 @@
 {
   "name": "@tempots/core",
   "private": false,
-  "version": "3.1.0",
+  "version": "3.2.0",
   "priority": 1,
   "description": "Core types and utilities for multi-context Tempo framework",
   "keywords": [
