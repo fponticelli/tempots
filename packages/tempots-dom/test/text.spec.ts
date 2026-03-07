@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { render, TextNode, prop } from '../src'
+import { render, TextNode, html, prop, signal } from '../src'
 
 describe('TextNode', () => {
   test('should handle static text (line 41-42)', () => {
@@ -48,6 +48,52 @@ describe('TextNode', () => {
     )
 
     expect(element.textContent).toBe('')
+    clear()
+    document.body.removeChild(element)
+  })
+
+  test('should render signal with undefined as empty text', () => {
+    const element = document.createElement('div')
+    document.body.appendChild(element)
+    const s = prop<string | undefined>(undefined)
+
+    const clear = render(
+      html.div(s),
+      element
+    )
+
+    const inner = element.querySelector('div')!
+    expect(inner.textContent).toBe('')
+
+    s.set('hello')
+    expect(inner.textContent).toBe('hello')
+
+    s.set(undefined)
+    expect(inner.textContent).toBe('')
+
+    clear()
+    document.body.removeChild(element)
+  })
+
+  test('should render signal with null as empty text', () => {
+    const element = document.createElement('div')
+    document.body.appendChild(element)
+    const s = prop<string | null>(null)
+
+    const clear = render(
+      html.div(s),
+      element
+    )
+
+    const inner = element.querySelector('div')!
+    expect(inner.textContent).toBe('')
+
+    s.set('world')
+    expect(inner.textContent).toBe('world')
+
+    s.set(null)
+    expect(inner.textContent).toBe('')
+
     clear()
     document.body.removeChild(element)
   })

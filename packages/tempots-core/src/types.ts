@@ -251,6 +251,9 @@ export type TNode<CTX extends RenderContext, TType extends symbol> =
   | Value<string>
   | Value<number>
   | Value<boolean>
+  | Signal<string | Nil>
+  | Signal<number | Nil>
+  | Signal<boolean | Nil>
   | undefined
   | null
   | Renderable<CTX, TType>[]

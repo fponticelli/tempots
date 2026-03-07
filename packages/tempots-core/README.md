@@ -78,10 +78,17 @@ A flexible type representing any content that can be rendered:
 type TNode<CTX extends RenderContext, TType extends symbol> =
   | Renderable<CTX, TType>
   | Value<string>
+  | Value<number>
+  | Value<boolean>
+  | Signal<string | Nil>
+  | Signal<number | Nil>
+  | Signal<boolean | Nil>
   | undefined
   | null
   | Renderable<CTX, TType>[]
 ```
+
+Signals containing `null` or `undefined` values render as empty text (equivalent to `''`).
 
 ### Value
 

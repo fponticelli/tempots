@@ -29,7 +29,7 @@ export const Fragment =
   }
 ```
 
-In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Signal<string>`, `Prop<string>`, `Computed<string>`, `string`, `undefined`, `null`, or an `Array<Renderable>`. The `renderableOfTNode` function helps convert a `TNode` to a `Renderable`.
+In Tempo, you often pass a `TNode` (short for Tempo Node) to existing renderables. A `TNode` is a union type that includes commonly used types in Tempo: `Renderable`, `Value<string>`, `Value<number>`, `Value<boolean>`, `Signal<string | null | undefined>`, `undefined`, `null`, or an `Array<Renderable>`. The `renderableOfTNode` function helps convert a `TNode` to a `Renderable`.
 
 Using `TNode` makes the API more flexible and allows for a more declarative syntax.
 
@@ -47,8 +47,9 @@ The `Clear` function removes the rendered template from the DOM. Its argument, `
 
 A `TNode` is treated differently based on its type:
 
-- string or `Value<string>` (alias for `Signal<string> | string`): Treated as a text node.
-- `undefined` or `null`: Ignored.
+- `string`, `number`, `boolean` or their `Signal` counterparts: Treated as a text node.
+- Signals containing `null` or `undefined` values render as empty text (equivalent to `''`).
+- `undefined` or `null`: Ignored (renders nothing).
 - `Renderable`: Left unmodified.
 - `Renderable[]`: Gets wrapped into a `Fragment`.
 

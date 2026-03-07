@@ -174,6 +174,9 @@ export type TNode<CTX extends DOMContext = DOMContext> =
   | Signal<string>
   | Signal<number>
   | Signal<boolean>
+  | Signal<string | Nil>
+  | Signal<number | Nil>
+  | Signal<boolean | Nil>
   | undefined
   | null
   | Renderable<CTX>[]

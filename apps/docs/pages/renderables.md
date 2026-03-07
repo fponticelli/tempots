@@ -14,9 +14,9 @@ The Renderable functions use the convention of starting with a capital letter. T
 
 To create HTML or SVG elements, use the `html` and `svg` objects. Each of them contains the full list of available tags as functions. For example, to create a `div` element, use `html.div()`. To create a `circle` element, use `svg.circle()`.
 
-These functions take an arbitrary number of `TNode` arguments. A `TNode` can be a string, a `Signal<string>`, a `Renderable`, a `Renderable[]` or `null`/`undefined`.
+These functions take an arbitrary number of `TNode` arguments. A `TNode` can be a primitive (`string`, `number`, `boolean`), a `Signal` of a primitive (including nullable signals like `Signal<string | null>`), a `Renderable`, a `Renderable[]`, or `null`/`undefined`.
 
-To create text nodes, you can just pass a `string` or a `Signal<string>` where a `TNode` is expected. Alternatively you can be explicit and use the `TextNode()` function.
+To create text nodes, you can just pass a primitive or a `Signal` of a primitive where a `TNode` is expected. Signals containing `null` or `undefined` render as empty text. Alternatively you can be explicit and use the `TextNode()` function.
 
 ```ts
 const titleSignal = signal('Hello, World!')

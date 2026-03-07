@@ -611,6 +611,63 @@ describe('createRenderKit', () => {
       s.dispose()
     })
 
+    it('handles signal with initial undefined value as empty text', () => {
+      const { ctx, element } = createRoot()
+      const s = prop<string | undefined>(undefined)
+      const clear = kit.renderableOfTNode(s).render(ctx)
+      expect(element.children.filter(n => n.type === 'text')).toHaveLength(1)
+      expect(element.children[0].text).toBe('')
+
+      s.value = 'hello'
+      expect(getTexts(element)).toEqual(['hello'])
+
+      s.value = undefined
+      expect(element.children[0].text).toBe('')
+
+      clear(true)
+      s.dispose()
+    })
+
+    it('handles signal with initial null value as empty text', () => {
+      const { ctx, element } = createRoot()
+      const s = prop<string | null>(null)
+      const clear = kit.renderableOfTNode(s).render(ctx)
+      expect(element.children.filter(n => n.type === 'text')).toHaveLength(1)
+      expect(element.children[0].text).toBe('')
+
+      s.value = 'world'
+      expect(getTexts(element)).toEqual(['world'])
+
+      s.value = null
+      expect(element.children[0].text).toBe('')
+
+      clear(true)
+      s.dispose()
+    })
+
+    it('handles signal toggling between value and null/undefined', () => {
+      const { ctx, element } = createRoot()
+      const s = prop<number | null | undefined>(42)
+      const clear = kit.renderableOfTNode(s).render(ctx)
+      // MockContext stores raw primitives; in real DOM these become strings
+      expect(element.children[0].text).toBe(42)
+
+      s.value = null
+      expect(element.children[0].text).toBe('')
+
+      s.value = 0
+      expect(element.children[0].text).toBe(0)
+
+      s.value = undefined
+      expect(element.children[0].text).toBe('')
+
+      s.value = 100
+      expect(element.children[0].text).toBe(100)
+
+      clear(true)
+      s.dispose()
+    })
+
     it('handles array', () => {
       const { ctx, element } = createRoot()
       const clear = kit.renderableOfTNode(['a', 'b']).render(ctx)

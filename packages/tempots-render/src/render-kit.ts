@@ -1,4 +1,11 @@
-import type { Clear, Primitive, Renderable, TNode, Scope } from '@tempots/core'
+import type {
+  Clear,
+  Nil,
+  Primitive,
+  Renderable,
+  TNode,
+  Scope,
+} from '@tempots/core'
 import {
   Computed,
   Signal,
@@ -243,13 +250,15 @@ export function createRenderKit<
     return r
   }
 
-  const _signalText = <T extends Primitive>(
+  const _toPrimitive = (v: Primitive | Nil): Primitive => v ?? ''
+
+  const _signalText = <T extends Primitive | Nil>(
     sig: Signal<T>
   ): Renderable<CTX, TType> => {
     const r = create((ctx: CTX) => {
-      const newCtx = ctx.makeChildText(sig.value)
+      const newCtx = ctx.makeChildText(_toPrimitive(sig.value))
       // Use onChange to skip the redundant initial call (value already set via makeChildText)
-      const dispose = sig.onChange((v: T) => newCtx.setText(v))
+      const dispose = sig.onChange((v: T) => newCtx.setText(_toPrimitive(v)))
       return (removeTree: boolean) => {
         dispose()
         newCtx.clear(removeTree)
