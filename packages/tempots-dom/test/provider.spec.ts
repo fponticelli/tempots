@@ -4,6 +4,7 @@ import {
   Provide,
   Use,
   UseMany,
+  UseOptional,
   Provider,
   render,
   runHeadless,
@@ -620,6 +621,519 @@ describe('Provider', () => {
       clear()
       expect(providerDisposeSpy).toHaveBeenCalled()
       expect(componentDisposeSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('UseOptional', () => {
+    test('should return undefined when provider is not found (no fallback)', () => {
+      const testMark = makeProviderMark<string>('MissingProvider')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'test-value',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | undefined = 'initial'
+
+      const clear = render(
+        UseOptional(testProvider, value => {
+          capturedValue = value
+          return html.div(value ?? 'not-provided')
+        }),
+        document.body
+      )
+
+      expect(capturedValue).toBeUndefined()
+      expect(document.body.innerHTML).toBe('<div>not-provided</div>')
+      clear()
+    })
+
+    test('should return provider value when provider is available (no fallback)', () => {
+      const testMark = makeProviderMark<string>('AvailableProvider')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'available-value',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | undefined
+
+      const clear = render(
+        Provide(
+          testProvider,
+          undefined,
+          () => UseOptional(testProvider, value => {
+            capturedValue = value
+            return html.div(value ?? 'not-provided')
+          })
+        ),
+        document.body
+      )
+
+      expect(capturedValue).toBe('available-value')
+      expect(document.body.innerHTML).toBe('<div>available-value</div>')
+      clear()
+    })
+
+    test('should use fallback when provider is not found', () => {
+      const testMark = makeProviderMark<string>('MissingWithFallback')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'test-value',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | undefined
+
+      const clear = render(
+        UseOptional(testProvider, 'fallback-value', value => {
+          capturedValue = value
+          return html.div(value)
+        }),
+        document.body
+      )
+
+      expect(capturedValue).toBe('fallback-value')
+      expect(document.body.innerHTML).toBe('<div>fallback-value</div>')
+      clear()
+    })
+
+    test('should use provider value instead of fallback when provider is available', () => {
+      const testMark = makeProviderMark<string>('AvailableWithFallback')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'real-value',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | undefined
+
+      const clear = render(
+        Provide(
+          testProvider,
+          undefined,
+          () => UseOptional(testProvider, 'fallback-value', value => {
+            capturedValue = value
+            return html.div(value)
+          })
+        ),
+        document.body
+      )
+
+      expect(capturedValue).toBe('real-value')
+      expect(document.body.innerHTML).toBe('<div>real-value</div>')
+      clear()
+    })
+
+    test('should not throw when provider is missing (unlike Use)', () => {
+      const testMark = makeProviderMark<string>('SafeProvider')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'test-value',
+          dispose: () => {}
+        })
+      }
+
+      // Use throws
+      expect(() => {
+        render(
+          Use(testProvider, value => html.div(value)),
+          document.body
+        )
+      }).toThrow(ProviderNotFoundError)
+
+      document.body.innerHTML = ''
+
+      // UseOptional does not throw
+      const clear = render(
+        UseOptional(testProvider, value => html.div(value ?? 'safe')),
+        document.body
+      )
+
+      expect(document.body.innerHTML).toBe('<div>safe</div>')
+      clear()
+    })
+
+    test('should call onUse when provider is found', () => {
+      const onUseSpy = vi.fn()
+      const testMark = makeProviderMark<string>('OnUseOptional')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'on-use-value',
+          dispose: () => {},
+          onUse: onUseSpy
+        })
+      }
+
+      const clear = render(
+        Provide(
+          testProvider,
+          undefined,
+          () => UseOptional(testProvider, value => html.div(value ?? 'missing'))
+        ),
+        document.body
+      )
+
+      expect(onUseSpy).toHaveBeenCalledTimes(1)
+      expect(document.body.innerHTML).toBe('<div>on-use-value</div>')
+      clear()
+    })
+
+    test('should not call onUse when provider is not found', () => {
+      const onUseSpy = vi.fn()
+      const testMark = makeProviderMark<string>('NoOnUseOptional')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'test-value',
+          dispose: () => {},
+          onUse: onUseSpy
+        })
+      }
+
+      const clear = render(
+        UseOptional(testProvider, value => html.div(value ?? 'missing')),
+        document.body
+      )
+
+      expect(onUseSpy).not.toHaveBeenCalled()
+      expect(document.body.innerHTML).toBe('<div>missing</div>')
+      clear()
+    })
+
+    test('should work with nested providers where inner is optional', () => {
+      const outerMark = makeProviderMark<string>('OuterRequired')
+      const innerMark = makeProviderMark<number>('InnerOptional')
+
+      const outerProvider: Provider<string> = {
+        mark: outerMark,
+        create: () => ({
+          value: 'outer-value',
+          dispose: () => {}
+        })
+      }
+
+      const innerProvider: Provider<number> = {
+        mark: innerMark,
+        create: () => ({
+          value: 99,
+          dispose: () => {}
+        })
+      }
+
+      const clear = render(
+        Provide(
+          outerProvider,
+          undefined,
+          () => Fragment(
+            Use(outerProvider, outer => html.div(`Outer: ${outer}`)),
+            UseOptional(innerProvider, inner =>
+              html.div(`Inner: ${inner ?? 'none'}`)
+            )
+          )
+        ),
+        document.body
+      )
+
+      expect(document.body.innerHTML).toBe(
+        '<div>Outer: outer-value</div><div>Inner: none</div>'
+      )
+      clear()
+    })
+
+    test('should work with fallback of complex type', () => {
+      type Config = { theme: string; debug: boolean }
+      const configMark = makeProviderMark<Config>('ConfigProvider')
+
+      const configProvider: Provider<Config> = {
+        mark: configMark,
+        create: () => ({
+          value: { theme: 'dark', debug: true },
+          dispose: () => {}
+        })
+      }
+
+      const defaultConfig: Config = { theme: 'light', debug: false }
+
+      let capturedConfig: Config | undefined
+
+      const clear = render(
+        UseOptional(configProvider, defaultConfig, config => {
+          capturedConfig = config
+          return html.div(`${config.theme}-${config.debug}`)
+        }),
+        document.body
+      )
+
+      expect(capturedConfig).toEqual(defaultConfig)
+      expect(document.body.innerHTML).toBe('<div>light-false</div>')
+      clear()
+    })
+
+    test('should work in headless environment', () => {
+      const testMark = makeProviderMark<string>('HeadlessOptional')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'headless-value',
+          dispose: () => {}
+        })
+      }
+
+      // Without provider
+      const { root: root1, clear: clear1 } = runHeadless(() =>
+        UseOptional(testProvider, value => html.div(value ?? 'missing'))
+      )
+      expect(root1.contentToHTML()).toBe('<div>missing</div>')
+      clear1()
+
+      // With provider
+      const { root: root2, clear: clear2 } = runHeadless(() =>
+        Provide(
+          testProvider,
+          undefined,
+          () => UseOptional(testProvider, value => html.div(value ?? 'missing'))
+        )
+      )
+      expect(root2.contentToHTML()).toBe('<div>headless-value</div>')
+      clear2()
+    })
+
+    test('should work with headless environment and fallback', () => {
+      const testMark = makeProviderMark<string>('HeadlessFallback')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'headless-value',
+          dispose: () => {}
+        })
+      }
+
+      const { root, clear } = runHeadless(() =>
+        UseOptional(testProvider, 'default', value => html.div(value))
+      )
+      expect(root.contentToHTML()).toBe('<div>default</div>')
+      clear()
+    })
+
+    test('should work with tryUse in WithProvider', () => {
+      const testMark = makeProviderMark<string>('TryUseProvider')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'try-use-value',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | undefined = 'initial'
+
+      // tryUse without provider set
+      const clear1 = render(
+        WithProvider(({ tryUse }) => {
+          capturedValue = tryUse(testProvider)
+          return html.div(capturedValue ?? 'not-found')
+        }),
+        document.body
+      )
+
+      expect(capturedValue).toBeUndefined()
+      expect(document.body.innerHTML).toBe('<div>not-found</div>')
+      clear1()
+
+      document.body.innerHTML = ''
+
+      // tryUse with provider set
+      const clear2 = render(
+        WithProvider(({ set, tryUse }) => {
+          set(testProvider)
+          capturedValue = tryUse(testProvider)
+          return html.div(capturedValue ?? 'not-found')
+        }),
+        document.body
+      )
+
+      expect(capturedValue).toBe('try-use-value')
+      expect(document.body.innerHTML).toBe('<div>try-use-value</div>')
+      clear2()
+    })
+
+    test('should work with provider override (inner overrides outer)', () => {
+      const testMark = makeProviderMark<string>('OverrideProvider')
+
+      const outerProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'outer',
+          dispose: () => {}
+        })
+      }
+
+      const innerProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'inner',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | undefined
+
+      const clear = render(
+        Provide(
+          outerProvider,
+          undefined,
+          () => Provide(
+            innerProvider,
+            undefined,
+            () => UseOptional({ mark: testMark, create: () => ({ value: '', dispose: () => {} }) }, value => {
+              capturedValue = value
+              return html.div(value ?? 'missing')
+            })
+          )
+        ),
+        document.body
+      )
+
+      expect(capturedValue).toBe('inner')
+      expect(document.body.innerHTML).toBe('<div>inner</div>')
+      clear()
+    })
+
+    test('should handle null fallback correctly', () => {
+      const testMark = makeProviderMark<string | null>('NullFallbackProvider')
+
+      const testProvider: Provider<string | null> = {
+        mark: testMark,
+        create: () => ({
+          value: 'non-null',
+          dispose: () => {}
+        })
+      }
+
+      let capturedValue: string | null | undefined = 'initial'
+
+      const clear = render(
+        UseOptional(testProvider, null, value => {
+          capturedValue = value
+          return html.div(String(value))
+        }),
+        document.body
+      )
+
+      expect(capturedValue).toBeNull()
+      expect(document.body.innerHTML).toBe('<div>null</div>')
+      clear()
+    })
+  })
+
+  describe('tryUse in WithProvider', () => {
+    test('should call onUse when tryUse finds provider', () => {
+      const onUseSpy = vi.fn()
+      const testMark = makeProviderMark<string>('TryUseOnUse')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'value',
+          dispose: () => {},
+          onUse: onUseSpy
+        })
+      }
+
+      const clear = render(
+        WithProvider(({ set, tryUse }) => {
+          set(testProvider)
+          tryUse(testProvider)
+          return html.div('test')
+        }),
+        document.body
+      )
+
+      expect(onUseSpy).toHaveBeenCalledTimes(1)
+      clear()
+    })
+
+    test('should not call onUse when tryUse does not find provider', () => {
+      const onUseSpy = vi.fn()
+      const testMark = makeProviderMark<string>('TryUseNoOnUse')
+
+      const testProvider: Provider<string> = {
+        mark: testMark,
+        create: () => ({
+          value: 'value',
+          dispose: () => {},
+          onUse: onUseSpy
+        })
+      }
+
+      const clear = render(
+        WithProvider(({ tryUse }) => {
+          tryUse(testProvider)
+          return html.div('test')
+        }),
+        document.body
+      )
+
+      expect(onUseSpy).not.toHaveBeenCalled()
+      clear()
+    })
+
+    test('should allow mixing use and tryUse', () => {
+      const requiredMark = makeProviderMark<string>('Required')
+      const optionalMark = makeProviderMark<number>('Optional')
+
+      const requiredProvider: Provider<string> = {
+        mark: requiredMark,
+        create: () => ({
+          value: 'required-value',
+          dispose: () => {}
+        })
+      }
+
+      const optionalProvider: Provider<number> = {
+        mark: optionalMark,
+        create: () => ({
+          value: 42,
+          dispose: () => {}
+        })
+      }
+
+      const clear = render(
+        Provide(
+          requiredProvider,
+          undefined,
+          () => WithProvider(({ use, tryUse }) => {
+            const req = use(requiredProvider)
+            const opt = tryUse(optionalProvider)
+            return html.div(`${req}-${opt ?? 'none'}`)
+          })
+        ),
+        document.body
+      )
+
+      expect(document.body.innerHTML).toBe('<div>required-value-none</div>')
+      clear()
     })
   })
 })

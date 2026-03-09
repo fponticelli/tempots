@@ -205,6 +205,17 @@ export interface RenderKit<
   ) => (
     child: (...values: ToProviderTypes<P>) => TNode<CTX, TType>
   ) => Renderable<CTX, TType>
+  UseOptional: {
+    <T>(
+      provider: Provider<T, unknown, CTX>,
+      child: (value: T | undefined) => TNode<CTX, TType>
+    ): Renderable<CTX, TType>
+    <T>(
+      provider: Provider<T, unknown, CTX>,
+      fallback: T,
+      child: (value: T) => TNode<CTX, TType>
+    ): Renderable<CTX, TType>
+  }
   MapText: <T>(
     source: Signal<T>,
     fn: (value: T) => string
@@ -1450,6 +1461,12 @@ export function createRenderKit<
           onUse?.()
           return value
         },
+        tryUse: ({ mark }) => {
+          const result = getCtx().tryGetProvider(mark)
+          if (result === undefined) return undefined
+          result.onUse?.()
+          return result.value
+        },
         set: ({ mark, create: createProvider }, options) => {
           const { value, dispose, onUse } = createProvider(options, getCtx())
           disposers.push(dispose)
@@ -1490,6 +1507,30 @@ export function createRenderKit<
         return child(...args)
       })
 
+  function UseOptional<T>(
+    provider: Provider<T, unknown, CTX>,
+    child: (value: T | undefined) => TNode<CTX, TType>
+  ): Renderable<CTX, TType>
+  function UseOptional<T>(
+    provider: Provider<T, unknown, CTX>,
+    fallback: T,
+    child: (value: T) => TNode<CTX, TType>
+  ): Renderable<CTX, TType>
+  function UseOptional<T>(
+    provider: Provider<T, unknown, CTX>,
+    fallbackOrChild: T | ((value: T | undefined) => TNode<CTX, TType>),
+    child?: (value: T) => TNode<CTX, TType>
+  ): Renderable<CTX, TType> {
+    if (child !== undefined) {
+      const fallback = fallbackOrChild as T
+      return WithProvider(({ tryUse }) => child(tryUse(provider) ?? fallback))
+    }
+    const childFn = fallbackOrChild as (
+      value: T | undefined
+    ) => TNode<CTX, TType>
+    return WithProvider(({ tryUse }) => childFn(tryUse(provider)))
+  }
+
   return {
     Empty,
     Fragment,
@@ -1517,6 +1558,7 @@ export function createRenderKit<
     Provide,
     Use,
     UseMany,
+    UseOptional,
     MapText,
     handleValueOrSignal,
     createReactiveRenderable,

@@ -21,7 +21,7 @@ export const PinchZoom = (
   state: Prop<PinchZoomState>,
   config?: PinchZoomConfig
 ): Renderable =>
-  WithBrowserCtx((ctx) => {
+  WithBrowserCtx(ctx => {
     const el = ctx.element
     const handler = createPinchZoomHandler(
       state,

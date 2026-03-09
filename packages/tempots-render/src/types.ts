@@ -229,6 +229,8 @@ export type ProviderOptions<CTX extends BaseRenderContext = BaseRenderContext> =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     use: <T, O = any>(provider: Provider<T, O, CTX>) => T
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tryUse: <T, O = any>(provider: Provider<T, O, CTX>) => T | undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set: <T, O = any>(provider: Provider<T, O, CTX>, options?: O) => void
   }
 

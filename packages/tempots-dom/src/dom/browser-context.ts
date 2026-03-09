@@ -328,6 +328,18 @@ export class BrowserContext implements DOMContext {
     return { value, onUse }
   }
 
+  tryGetProvider<T>(mark: ProviderMark<T>) {
+    if (this.providers[mark] === undefined) {
+      return undefined
+    }
+
+    const [value, onUse] = this.providers[mark]! as [
+      T,
+      undefined | (() => void),
+    ]
+    return { value, onUse }
+  }
+
   clear(removeTree: boolean) {
     if (removeTree) {
       if (this.reference !== undefined) {

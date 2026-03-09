@@ -54,7 +54,7 @@ export function TransitionKeyedForEach<T>(
   ) => TNode,
   config: TransitionConfig
 ): Renderable {
-  return WithScope((scope) => {
+  return WithScope(scope => {
     const tracked = prop<TrackedItem<T>[]>([])
     const exitTimers = new Map<string | number, ReturnType<typeof setTimeout>>()
 
@@ -67,7 +67,7 @@ export function TransitionKeyedForEach<T>(
     const exitingKeys = new Set<string | number>()
 
     items.on(
-      (currentItems) => {
+      currentItems => {
         const currentKeys = new Set(currentItems.map(key))
         const prevTracked = tracked.get()
 
@@ -85,7 +85,7 @@ export function TransitionKeyedForEach<T>(
               const timer = setTimeout(() => {
                 exitTimers.delete(t.key)
                 exitingKeys.delete(t.key)
-                tracked.set(tracked.get().filter((x) => x.key !== t.key))
+                tracked.set(tracked.get().filter(x => x.key !== t.key))
               }, config.exitDuration)
               exitTimers.set(t.key, timer)
             } else if (!config.useAnimationEvents) {
@@ -97,11 +97,11 @@ export function TransitionKeyedForEach<T>(
         }
 
         // Build active items (preserving order of current items)
-        const activeItems: TrackedItem<T>[] = currentItems.map((item) => {
+        const activeItems: TrackedItem<T>[] = currentItems.map(item => {
           const k = key(item)
           // Reuse existing tracked item if it exists and is not exiting
           const existing = prevTracked.find(
-            (t) => t.key === k && !exitingKeys.has(k)
+            t => t.key === k && !exitingKeys.has(k)
           )
           if (existing != null) {
             return existing
@@ -115,7 +115,7 @@ export function TransitionKeyedForEach<T>(
 
         // Still-exiting items (from previous rounds, not yet timed out)
         const stillExiting = prevTracked.filter(
-          (t) => exitingKeys.has(t.key) && !currentKeys.has(t.key)
+          t => exitingKeys.has(t.key) && !currentKeys.has(t.key)
         )
 
         tracked.set([...activeItems, ...stillExiting])
@@ -127,7 +127,7 @@ export function TransitionKeyedForEach<T>(
       tracked,
       (t: TrackedItem<T>) => t.key,
       (trackedSignal: Signal<TrackedItem<T>>, position: KeyedPosition) => {
-        const itemValue = trackedSignal.map((t) => t.value)
+        const itemValue = trackedSignal.map(t => t.value)
         const isExiting = trackedSignal.get().isExiting
 
         return renderFn(itemValue, position, isExiting)

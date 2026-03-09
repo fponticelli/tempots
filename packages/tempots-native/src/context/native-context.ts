@@ -116,6 +116,16 @@ export class NativeContext implements BaseRenderContext {
     return { value: entry[0] as T, onUse: entry[1] }
   }
 
+  tryGetProvider<T>(
+    mark: ProviderMark<T>
+  ): { value: T; onUse?: () => void } | undefined {
+    const entry = this._providers[mark as ProviderMark<unknown>]
+    if (entry == null) {
+      return undefined
+    }
+    return { value: entry[0] as T, onUse: entry[1] }
+  }
+
   /**
    * Creates a new context with an additional provider value.
    *

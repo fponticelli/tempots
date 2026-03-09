@@ -22,7 +22,7 @@ export const Inertia = (
   onDelta: (dx: number, dy: number) => void,
   config?: InertiaConfig
 ): Renderable =>
-  WithBrowserCtx((ctx) => {
+  WithBrowserCtx(ctx => {
     const el = ctx.element
     const handler: InertiaHandler = createInertiaHandler(onDelta, config)
     let decayHandle: RafLoopHandle | null = null

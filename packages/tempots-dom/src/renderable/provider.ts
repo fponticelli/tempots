@@ -4,7 +4,7 @@ import type {
   ProviderOptions as BaseProviderOptions,
 } from '@tempots/render'
 
-export { WithProvider, Provide, Use, UseMany } from './shared'
+export { WithProvider, Provide, Use, UseMany, UseOptional } from './shared'
 
 /**
  * Represents a provider for a specific type `T`, specialized for DOMContext.

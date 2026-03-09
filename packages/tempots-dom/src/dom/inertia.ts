@@ -74,7 +74,7 @@ export function createInertiaHandler(
     vx = 0
     vy = 0
 
-    const handle = createRafLoop((dt) => {
+    const handle = createRafLoop(dt => {
       const dtSec = dt / 1000
       currentVx *= friction
       currentVy *= friction

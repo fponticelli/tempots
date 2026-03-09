@@ -56,6 +56,7 @@ export const {
   Provide,
   Use,
   UseMany,
+  UseOptional,
   handleValueOrSignal,
   createReactiveRenderable,
   renderableOfTNode,

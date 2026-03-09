@@ -223,5 +223,33 @@ describe('NativeContext', () => {
       const { value } = child.getProvider(mark)
       expect(value).toBe(42)
     })
+
+    test('tryGetProvider returns value when found', () => {
+      const { ctx } = createContext()
+      const mark = makeProviderMark<string>('test')
+      const newCtx = ctx.setProvider(mark, 'value', undefined)
+      const result = newCtx.tryGetProvider(mark)
+      expect(result).toBeDefined()
+      expect(result!.value).toBe('value')
+    })
+
+    test('tryGetProvider returns undefined when not found', () => {
+      const { ctx } = createContext()
+      const mark = makeProviderMark<string>('missing')
+      const result = ctx.tryGetProvider(mark)
+      expect(result).toBeUndefined()
+    })
+
+    test('tryGetProvider returns onUse callback', () => {
+      const { ctx } = createContext()
+      const mark = makeProviderMark<string>('test')
+      let used = false
+      const newCtx = ctx.setProvider(mark, 'value', () => {
+        used = true
+      })
+      const result = newCtx.tryGetProvider(mark)
+      result!.onUse?.()
+      expect(used).toBe(true)
+    })
   })
 })

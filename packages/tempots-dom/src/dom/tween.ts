@@ -89,7 +89,7 @@ export function createTween<T>(
       interpolate = guessInterpolate(startValue) as Interpolate<T>
     }
 
-    loopHandle = createRafLoop((dt) => {
+    loopHandle = createRafLoop(dt => {
       elapsed += dt
       const t = Math.min(elapsed / duration, 1)
       const easedT = easing(t)

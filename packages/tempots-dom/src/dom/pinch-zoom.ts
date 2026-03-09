@@ -105,7 +105,7 @@ export function createPinchZoomHandler(
     state.set({ scale: newScale, panX: newPanX, panY: newPanY })
   }
 
-  const onTouchEnd = (_e: TouchEvent) => {
+  const onTouchEnd = () => {
     // Reset when fewer than 2 touches remain — next start will re-initialize
   }
 

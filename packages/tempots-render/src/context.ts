@@ -56,6 +56,17 @@ export interface BaseRenderContext extends HierarchicalContext {
   getProvider<T>(mark: ProviderMark<T>): { value: T; onUse?: () => void }
 
   /**
+   * Retrieves a provider for the given provider mark, returning `undefined`
+   * if the provider is not found instead of throwing.
+   *
+   * @param mark - The provider mark to retrieve the provider for.
+   * @returns The provider value and optional onUse callback, or `undefined` if not found.
+   */
+  tryGetProvider<T>(
+    mark: ProviderMark<T>
+  ): { value: T; onUse?: () => void } | undefined
+
+  /**
    * Sets a provider for the given provider mark.
    *
    * @param mark - The provider mark to set the provider for.

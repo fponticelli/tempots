@@ -331,6 +331,19 @@ export class HydrationContext implements DOMContext {
     return { value, onUse }
   }
 
+  readonly tryGetProvider = <T>(
+    mark: ProviderMark<T>
+  ): { value: T; onUse?: () => void } | undefined => {
+    if (this.providers[mark] === undefined) {
+      return undefined
+    }
+    const [value, onUse] = this.providers[mark]! as [
+      T,
+      undefined | (() => void),
+    ]
+    return { value, onUse }
+  }
+
   readonly clear = (removeTree: boolean): void => {
     if (removeTree) {
       if (this.reference !== undefined) {

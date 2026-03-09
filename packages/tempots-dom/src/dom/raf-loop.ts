@@ -53,9 +53,9 @@ export function createRafLoop(callback: (dt: number) => void): RafLoopHandle {
  * @public
  */
 export const RafLoop = (callback: (dt: number) => void): Renderable =>
-  domRenderable((ctx) => {
+  domRenderable(ctx => {
     const handle = createRafLoop(callback)
-    return (removeTree) => {
+    return removeTree => {
       handle.dispose()
       ctx.clear(removeTree)
     }
