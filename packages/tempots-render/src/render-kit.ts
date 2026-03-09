@@ -205,11 +205,52 @@ export interface RenderKit<
   ) => (
     child: (...values: ToProviderTypes<P>) => TNode<CTX, TType>
   ) => Renderable<CTX, TType>
+  /**
+   * Consumes a provider value optionally, without throwing if the provider
+   * is not found in the component tree.
+   *
+   * @remarks
+   * This is the safe counterpart to {@link Use}. When called without a
+   * fallback, the child receives `T | undefined` — allowing you to branch
+   * on the provider's presence. When called with a fallback value, the child
+   * always receives `T`, using the fallback when the provider is absent.
+   *
+   * @example
+   * ```typescript
+   * // Without fallback — child receives T | undefined
+   * UseOptional(ThemeProvider, theme =>
+   *   html.div(theme !== undefined ? theme.value : 'default')
+   * )
+   * ```
+   *
+   * @example
+   * ```typescript
+   * // With fallback — child always receives T
+   * UseOptional(ConfigProvider, defaultConfig, config =>
+   *   html.div('API: ', config.apiUrl)
+   * )
+   * ```
+   */
   UseOptional: {
+    /**
+     * Consumes an optional provider. The child receives the provider value
+     * or `undefined` if the provider is not available.
+     *
+     * @param provider - The provider to consume
+     * @param child - Function that receives `T | undefined` and returns content to render
+     */
     <T>(
       provider: Provider<T, unknown, CTX>,
       child: (value: T | undefined) => TNode<CTX, TType>
     ): Renderable<CTX, TType>
+    /**
+     * Consumes an optional provider with a fallback value. The child always
+     * receives `T` — the provider value when available, or the fallback otherwise.
+     *
+     * @param provider - The provider to consume
+     * @param fallback - Default value to use when the provider is not available
+     * @param child - Function that receives the value and returns content to render
+     */
     <T>(
       provider: Provider<T, unknown, CTX>,
       fallback: T,

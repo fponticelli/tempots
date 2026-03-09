@@ -1,6 +1,6 @@
 {
   "name": "@tempots/render",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "type": "module",
   "sideEffects": false,
   "main": "./index.cjs",

@@ -14,8 +14,9 @@ The provider system in Tempo consists of several key components:
 1. **Provider Mark**: A unique identifier for a provider
 2. **Provider**: An object that knows how to create and dispose of a value
 3. **Provide**: A renderable that makes a provider available to its children
-4. **Use**: A renderable that consumes a provider's value
-5. **WithProvider**: A more flexible API for working with multiple providers
+4. **Use**: A renderable that consumes a provider's value (throws if missing)
+5. **UseOptional**: A renderable that consumes a provider's value safely (returns `undefined` or a fallback if missing)
+6. **WithProvider**: A more flexible API for working with multiple providers
 
 ## Creating a Provider
 
@@ -135,22 +136,69 @@ const SettingsPanel = () =>
   )
 ```
 
+## Optional Providers with UseOptional
+
+Sometimes a provider may or may not be available in the component tree. `Use` throws a `ProviderNotFoundError` when a provider is missing, but `UseOptional` handles this gracefully.
+
+### Without a fallback
+
+When called with just a provider and a child function, `UseOptional` passes `T | undefined` to the child:
+
+```typescript
+import { html, UseOptional } from '@tempots/dom'
+
+const OptionalTheme = () =>
+  UseOptional(
+    ThemeProvider,
+    theme => html.div(
+      theme !== undefined
+        ? `Theme: ${theme.value}`
+        : 'No theme provider — using system defaults'
+    )
+  )
+```
+
+### With a fallback value
+
+When called with a fallback, the child always receives `T` — either the provider value or the fallback:
+
+```typescript
+import { html, UseOptional } from '@tempots/dom'
+
+const defaultPreferences = { theme: 'light', fontSize: 16 }
+
+const ThemedContent = () =>
+  UseOptional(
+    PreferencesProvider,
+    defaultPreferences,
+    prefs => html.div(
+      `Theme: ${prefs.theme}, Font size: ${prefs.fontSize}`
+    )
+  )
+```
+
+This is useful for building reusable components that can work standalone or adapt when a parent provides configuration.
+
 ## Advanced Usage with WithProvider
 
-For more complex scenarios, you can use `WithProvider` which gives you direct access to both `set` and `use` functions:
+For more complex scenarios, you can use `WithProvider` which gives you direct access to `set`, `use`, and `tryUse` functions:
 
 ```typescript
 import { html, WithProvider } from '@tempots/dom'
 
 const AdvancedComponent = () =>
-  WithProvider(({ set, use }) => {
+  WithProvider(({ set, use, tryUse }) => {
     // Set up multiple providers
     set(PreferencesProvider, {})
     set(UserProvider, { userId: 123 })
 
-    // Use the providers
+    // Use the providers (throws if missing)
     const preferences = use(PreferencesProvider)
     const user = use(UserProvider)
+
+    // Optionally use a provider (returns undefined if missing)
+    const analytics = tryUse(AnalyticsProvider)
+    analytics?.trackPageView('advanced')
 
     // Return a renderable using the providers
     return html.div(

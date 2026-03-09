@@ -226,10 +226,22 @@ export type Provider<
  */
 export type ProviderOptions<CTX extends BaseRenderContext = BaseRenderContext> =
   {
+    /**
+     * Retrieves a provider's value. Throws `ProviderNotFoundError` if the
+     * provider has not been set by a parent component.
+     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     use: <T, O = any>(provider: Provider<T, O, CTX>) => T
+    /**
+     * Retrieves a provider's value, returning `undefined` if the provider
+     * has not been set by a parent component. Unlike `use`, this never throws.
+     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tryUse: <T, O = any>(provider: Provider<T, O, CTX>) => T | undefined
+    /**
+     * Registers a provider, making it available to child components and
+     * subsequent `use`/`tryUse` calls within the same `WithProvider` block.
+     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set: <T, O = any>(provider: Provider<T, O, CTX>, options?: O) => void
   }
