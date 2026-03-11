@@ -22,9 +22,7 @@ export interface TempoTSPlugin extends ESLint.Plugin {
 export interface TempoTSPluginExport extends TempoTSPlugin {
   configs: {
     recommended: Linter.Config
-    recommendedTypeChecked: Linter.Config
     strict: Linter.Config
-    strictTypeChecked: Linter.Config
   }
 }
 

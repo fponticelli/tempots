@@ -9,7 +9,7 @@ export default [
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
 
-  // Option 1: Use the recommended config (easiest)
+  // Option 1: Use the recommended config (includes type-checked rules)
   tempots.configs.recommended,
 
   // Option 2: Customize individual rules

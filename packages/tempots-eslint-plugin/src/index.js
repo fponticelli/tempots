@@ -60,7 +60,7 @@ const plugin = {
     'no-method-reference': noMethodReference,
   },
   configs: {
-    recommended: recommendedRules,
+    recommended: { ...recommendedRules, ...typeCheckedRules },
   },
 }
 
@@ -71,24 +71,10 @@ export default {
       plugins: {
         tempots: plugin,
       },
-      rules: recommendedRules,
-    },
-    // Recommended + type-checked rules
-    recommendedTypeChecked: {
-      plugins: {
-        tempots: plugin,
-      },
       rules: { ...recommendedRules, ...typeCheckedRules },
     },
-    // Strict: all base rules at error level
+    // Strict: all rules at error level (includes type-checked rules)
     strict: {
-      plugins: {
-        tempots: plugin,
-      },
-      rules: strictRules,
-    },
-    // Strict + type-checked rules
-    strictTypeChecked: {
       plugins: {
         tempots: plugin,
       },

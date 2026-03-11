@@ -40,7 +40,7 @@ export default {
       noMethodReference:
         'Do not pass `{{object}}.{{method}}` by reference — wrap in a lambda to preserve `this` binding. Use `(...args) => {{object}}.{{method}}(...args)` instead.',
       missingTypeInfo:
-        'The tempots/no-method-reference rule requires type information to function. Enable type-checked linting (parserOptions.projectService) or use the `recommendedTypeChecked` / `strictTypeChecked` config.',
+        'The tempots/no-method-reference rule requires type information to function. Enable type-checked linting (parserOptions.projectService) or use the `recommended` / `strict` config.',
     },
     schema: [],
   },

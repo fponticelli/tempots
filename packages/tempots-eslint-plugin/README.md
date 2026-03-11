@@ -40,27 +40,9 @@ This enables:
 - `no-renderable-signal-map` (warn) - Mapping signals to renderables
 - `no-empty-fragment` (warn) - Empty Fragment() usage
 - `no-single-child-fragment` (warn) - Fragment() with one child
+- `no-method-reference` (error) - Passing Signal/Prop/Computed methods by reference (requires type-checked linting)
 
-> **Note:** Rules that require TypeScript type information (e.g., `no-method-reference`) are not included in the base `recommended` config. Use `recommendedTypeChecked` to enable them.
-
-### Recommended Type-Checked Configuration
-
-If you use TypeScript with type-checked linting (`parserOptions.projectService`), use this config to also enable rules that require type information:
-
-```javascript
-// eslint.config.js
-import tempots from '@tempots/eslint-plugin'
-import tseslint from 'typescript-eslint'
-
-export default tseslint.config(
-  // ... typescript-eslint configs with type checking
-  tempots.configs.recommendedTypeChecked,
-)
-```
-
-This includes everything from `recommended` plus:
-
-- `no-method-reference` (error) - Passing Signal/Prop/Computed methods by reference
+> **Note:** The `no-method-reference` rule requires type-checked linting (`parserOptions.projectService`). Without it, the rule will report a warning that type information is missing.
 
 ### Strict Configuration
 
@@ -76,22 +58,7 @@ export default [
 ]
 ```
 
-All base rules are set to `error` instead of `warn`.
-
-### Strict Type-Checked Configuration
-
-Combines strict with type-checked rules:
-
-```javascript
-// eslint.config.js
-import tempots from '@tempots/eslint-plugin'
-import tseslint from 'typescript-eslint'
-
-export default tseslint.config(
-  // ... typescript-eslint configs with type checking
-  tempots.configs.strictTypeChecked,
-)
-```
+All rules are set to `error` instead of `warn` (includes type-checked rules).
 
 ### Custom Configuration
 
