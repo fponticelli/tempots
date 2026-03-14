@@ -1455,7 +1455,7 @@ export function createRenderKit<
         pos.map(v => {
           if (v.isFirst) {
             return 'first'
-          } else if (v.isLast) {
+          } else if (v.isLast.value) {
             return 'last'
           } else {
             return 'other'

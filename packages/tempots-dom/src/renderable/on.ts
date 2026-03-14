@@ -267,7 +267,7 @@ export const emitValueAsDate = (
 ) =>
   emitTarget((target: HTMLInputElement, event: Event) => {
     if (target.value === '') {
-      return // TODO do not emit?
+      return // Skip empty values; use emitValueAsNullableDate to handle empty as null
     }
     const parts = target.value.split('-')
     const date = new Date(

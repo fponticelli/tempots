@@ -109,9 +109,8 @@ export const makeQueryResource = <Req, Res, E>({
     status.set(AsyncResult.loading(AsyncResult.getOrUndefined(previous)))
     try {
       const result = await load({ request: req, abortSignal, previous })
-      // forces a delay when load is synchronous
-      // without this, the status.set(Loading) gets triggered again with an undefined value
-      // TODO: not sure if this is the best solution
+      // Forces a microtask boundary when load resolves synchronously,
+      // ensuring the Loading status propagates before being replaced by Success.
       await Promise.resolve()
       abortController = undefined
       status.set(AsyncResult.success(result))

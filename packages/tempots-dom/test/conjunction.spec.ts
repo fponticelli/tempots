@@ -7,10 +7,6 @@ describe('Conjunction', () => {
     document.body.innerHTML = ''
   })
 
-  // NOTE: The current implementation has a bug where it checks v.isLast (Signal)
-  // instead of v.isLast.value (boolean), causing all non-first positions to be
-  // treated as 'last' since Signal objects are truthy.
-
   describe('basic functionality', () => {
     test('should render first separator for first element', () => {
       const totalSignal = prop(3)
@@ -68,27 +64,25 @@ describe('Conjunction', () => {
     })
   })
 
-  describe('current behavior (with bug)', () => {
-    test('should demonstrate the bug in conjunction mapping', () => {
+  describe('correct position handling', () => {
+    test('should correctly distinguish first, last, and middle positions', () => {
       const totalSignal = prop(3)
       const middlePosition = prop(new ElementPosition(1, totalSignal))
 
-      // The actual conjunction mapping logic (with bug)
       const mappedValue = middlePosition.map(v => {
         if (v.isFirst) {
           return 'first'
-        } else if (v.isLast) { // BUG: This checks Signal object, not its value
+        } else if (v.isLast.value) {
           return 'last'
         } else {
           return 'other'
         }
       })
 
-      // Due to bug, middle position returns 'last' instead of 'other'
-      expect(mappedValue.value).toBe('last')
+      expect(mappedValue.value).toBe('other')
     })
 
-    test('should render first separator correctly', () => {
+    test('should render first separator for first position', () => {
       const totalSignal = prop(3)
       const firstPosition = prop(new ElementPosition(0, totalSignal))
 
@@ -107,11 +101,10 @@ describe('Conjunction', () => {
       clear()
     })
 
-    test('should render last separator for non-first positions due to bug', () => {
+    test('should render default separator for middle positions', () => {
       const totalSignal = prop(3)
-
-      // Both middle and last positions will render lastSeparator due to bug
       const middlePosition = prop(new ElementPosition(1, totalSignal))
+
       const clear = render(
         Conjunction(
           () => html.span(', '),
@@ -120,6 +113,25 @@ describe('Conjunction', () => {
             lastSeparator: () => html.span('[LAST]')
           }
         )(middlePosition),
+        document.body
+      )
+
+      expect(document.body.innerHTML).toBe('<span>, </span><!---->')
+      clear()
+    })
+
+    test('should render last separator for last position', () => {
+      const totalSignal = prop(3)
+      const lastPosition = prop(new ElementPosition(2, totalSignal))
+
+      const clear = render(
+        Conjunction(
+          () => html.span(', '),
+          {
+            firstSeparator: () => html.span('[FIRST]'),
+            lastSeparator: () => html.span('[LAST]')
+          }
+        )(lastPosition),
         document.body
       )
 
@@ -145,7 +157,23 @@ describe('Conjunction', () => {
       clear()
     })
 
-    test('should handle only lastSeparator defined', () => {
+    test('should handle only lastSeparator defined for last position', () => {
+      const totalSignal = prop(3)
+      const position = prop(new ElementPosition(2, totalSignal))
+
+      const clear = render(
+        Conjunction(
+          () => html.span(' ~ '),
+          { lastSeparator: () => html.span('[END]') }
+        )(position),
+        document.body
+      )
+
+      expect(document.body.innerHTML).toBe('<span>[END]</span><!---->')
+      clear()
+    })
+
+    test('should use default separator for middle position when only lastSeparator defined', () => {
       const totalSignal = prop(3)
       const position = prop(new ElementPosition(1, totalSignal))
 
@@ -157,8 +185,7 @@ describe('Conjunction', () => {
         document.body
       )
 
-      // Due to bug, non-first positions use lastSeparator
-      expect(document.body.innerHTML).toBe('<span>[END]</span><!---->')
+      expect(document.body.innerHTML).toBe('<span> ~ </span><!---->')
       clear()
     })
   })
@@ -255,20 +282,17 @@ describe('Conjunction', () => {
       clear()
     })
 
-    test('should cover other case in mapping logic (lines 41-42)', () => {
-      // Create a test that directly exercises the mapping logic
-      // to ensure the 'other' case is covered even if unreachable due to bug
+    test('should correctly identify middle position in mapping logic', () => {
       const totalSignal = prop(5)
-      const position = new ElementPosition(2, totalSignal) // Middle position
+      const position = new ElementPosition(2, totalSignal)
 
-      // Manually test the mapping logic that's in conjunction.ts
       const mappedValue = (() => {
         if (position.isFirst) {
           return 'first'
-        } else if (position.isLast.value) { // Fix the bug for this test
+        } else if (position.isLast.value) {
           return 'last'
         } else {
-          return 'other' // This covers lines 41-42
+          return 'other'
         }
       })()
 
