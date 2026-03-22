@@ -430,6 +430,32 @@ describe("Signal", () => {
     expect(spy).toHaveBeenCalledWith(1, 2);
   })
 
+  test("effectOf with $.field should not re-emit when field value is unchanged", async () => {
+    const hsla = prop({ h: 180, s: 0.5, l: 0.5, alpha: 1 })
+
+    const h = hsla.$.h
+    const s = hsla.$.s
+    const l = hsla.$.l
+
+    const drawSat = vi.fn()
+    const drawLig = vi.fn()
+
+    effectOf(h, l)(drawSat)
+    effectOf(h, s)(drawLig)
+
+    await sleep()
+
+    expect(drawSat).toHaveBeenCalledTimes(1)
+    expect(drawLig).toHaveBeenCalledTimes(1)
+
+    // Change only s
+    hsla.set({ h: 180, s: 0.75, l: 0.5, alpha: 1 })
+    await sleep()
+
+    expect(drawSat).toHaveBeenCalledTimes(1) // h,l unchanged → should NOT fire
+    expect(drawLig).toHaveBeenCalledTimes(2) // s changed → SHOULD fire
+  })
+
   test("mapMaybe", () => {
     const p = prop<string | null>("hello");
     const mapped = p.mapMaybe(v => v?.toUpperCase(), "DEFAULT");
