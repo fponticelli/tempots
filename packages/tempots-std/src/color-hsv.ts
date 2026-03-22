@@ -66,9 +66,9 @@ export const canParseHsv = (s: string): boolean => {
  * @public
  * @example
  * ```ts
- * parseHsv('hsv(0, 100%, 100%)') // hsva(0, 100, 100)
- * parseHsv('hsva(120, 50%, 80%, 0.5)') // hsva(120, 50, 80, 0.5)
- * parseHsv('hsv(240 25% 90% / 50%)') // hsva(240, 25, 90, 0.5)
+ * parseHsv('hsv(0, 100%, 100%)') // hsva(0, 1, 1)
+ * parseHsv('hsva(120, 50%, 80%, 0.5)') // hsva(120, 0.5, 0.8, 0.5)
+ * parseHsv('hsv(240 25% 90% / 50%)') // hsva(240, 0.25, 0.9, 0.5)
  * ```
  */
 export const parseHsv = (s: string): HSVA => {
@@ -77,8 +77,8 @@ export const parseHsv = (s: string): HSVA => {
   if (!m) throw new ParsingError(`Invalid hsv color: '${s}'`)
   return hsva(
     wrapCircular(parseFloat(m[1]), 360),
-    clamp(parseFloat(m[2]), 0, 100),
-    clamp(parseFloat(m[3]), 0, 100),
+    clamp(parseFloat(m[2]) / 100, 0, 1),
+    clamp(parseFloat(m[3]) / 100, 0, 1),
     parseAlpha(m[4])
   )
 }
@@ -98,9 +98,9 @@ export const parseHsv = (s: string): HSVA => {
  * @public
  * @example
  * ```ts
- * rgb8aToHsva(rgb8a(255, 0, 0)) // hsva(0, 100, 100)
+ * rgb8aToHsva(rgb8a(255, 0, 0)) // hsva(0, 1, 1)
  * rgb8aToHsva(rgb8a(0, 0, 0)) // hsva(0, 0, 0)
- * rgb8aToHsva(rgb8a(128, 128, 128)) // hsva(0, 0, ~50.2)
+ * rgb8aToHsva(rgb8a(128, 128, 128)) // hsva(0, 0, ~0.502)
  * ```
  */
 export const rgb8aToHsva = (c: RGB8A): HSVA => {
@@ -127,7 +127,7 @@ export const rgb8aToHsva = (c: RGB8A): HSVA => {
     if (h < 0) h += 360
   }
 
-  return hsva(h, s * 100, v * 100, c.alpha)
+  return hsva(h, s, v, c.alpha)
 }
 
 /**
@@ -141,14 +141,14 @@ export const rgb8aToHsva = (c: RGB8A): HSVA => {
  * @public
  * @example
  * ```ts
- * hsvaToRgb8a(hsva(0, 100, 100)) // rgb8a(255, 0, 0)
- * hsvaToRgb8a(hsva(120, 100, 100)) // rgb8a(0, 255, 0)
+ * hsvaToRgb8a(hsva(0, 1, 1)) // rgb8a(255, 0, 0)
+ * hsvaToRgb8a(hsva(120, 1, 1)) // rgb8a(0, 255, 0)
  * hsvaToRgb8a(hsva(0, 0, 0)) // rgb8a(0, 0, 0)
  * ```
  */
 export const hsvaToRgb8a = (c: HSVA): RGB8A => {
-  const s = c.s / 100
-  const v = c.v / 100
+  const s = c.s
+  const v = c.v
   const ch = v * s
   const x = ch * (1 - Math.abs(((c.h / 60) % 2) - 1))
   const m = v - ch
@@ -195,17 +195,17 @@ export const hsvaToRgb8a = (c: HSVA): RGB8A => {
  * @public
  * @example
  * ```ts
- * hslaToHsva(hsla(0, 100, 50)) // hsva(0, 100, 100)
+ * hslaToHsva(hsla(0, 1, 0.5)) // hsva(0, 1, 1)
  * hslaToHsva(hsla(0, 0, 0)) // hsva(0, 0, 0)
- * hslaToHsva(hsla(120, 50, 75)) // hsva(120, ~33.3, ~87.5)
+ * hslaToHsva(hsla(120, 0.5, 0.75)) // hsva(120, ~0.333, ~0.875)
  * ```
  */
 export const hslaToHsva = (c: HSLA): HSVA => {
-  const s = c.s / 100
-  const l = c.l / 100
+  const s = c.s
+  const l = c.l
   const v = l + s * Math.min(l, 1 - l)
   const sv = v === 0 ? 0 : 2 * (1 - l / v)
-  return hsva(c.h, sv * 100, v * 100, c.alpha)
+  return hsva(c.h, sv, v, c.alpha)
 }
 
 /**
@@ -217,17 +217,17 @@ export const hslaToHsva = (c: HSLA): HSVA => {
  * @public
  * @example
  * ```ts
- * hsvaToHsla(hsva(0, 100, 100)) // hsla(0, 100, 50)
+ * hsvaToHsla(hsva(0, 1, 1)) // hsla(0, 1, 0.5)
  * hsvaToHsla(hsva(0, 0, 0)) // hsla(0, 0, 0)
- * hsvaToHsla(hsva(120, 50, 80)) // hsla(120, ~47.1, 60)
+ * hsvaToHsla(hsva(120, 0.5, 0.8)) // hsla(120, ~0.471, 0.6)
  * ```
  */
 export const hsvaToHsla = (c: HSVA): HSLA => {
-  const s = c.s / 100
-  const v = c.v / 100
+  const s = c.s
+  const v = c.v
   const l = v * (1 - s / 2)
   const sl = l === 0 || l === 1 ? 0 : (v - l) / Math.min(l, 1 - l)
-  return hsla(c.h, sl * 100, l * 100, c.alpha)
+  return hsla(c.h, sl, l, c.alpha)
 }
 
 // ---------------------------------------------------------------------------
@@ -245,11 +245,11 @@ export const hsvaToHsla = (c: HSVA): HSLA => {
  * @public
  * @example
  * ```ts
- * hsvaToHsvString(hsva(0, 100, 100)) // 'hsv(0, 100%, 100%)'
- * hsvaToHsvString(hsva(120, 50, 80, 0.5)) // 'hsva(120, 50%, 80%, 0.5)'
+ * hsvaToHsvString(hsva(0, 1, 1)) // 'hsv(0, 100%, 100%)'
+ * hsvaToHsvString(hsva(120, 0.5, 0.8, 0.5)) // 'hsva(120, 50%, 80%, 0.5)'
  * ```
  */
 export const hsvaToHsvString = (c: HSVA): string => {
-  if (c.alpha >= 1) return `hsv(${c.h}, ${c.s}%, ${c.v}%)`
-  return `hsva(${c.h}, ${c.s}%, ${c.v}%, ${c.alpha})`
+  if (c.alpha >= 1) return `hsv(${c.h}, ${c.s * 100}%, ${c.v * 100}%)`
+  return `hsva(${c.h}, ${c.s * 100}%, ${c.v * 100}%, ${c.alpha})`
 }

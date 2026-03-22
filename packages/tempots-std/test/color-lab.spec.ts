@@ -29,7 +29,7 @@ describe('canParseLab', () => {
 describe('parseLab', () => {
   test('should parse lab(50 -20 30)', () => {
     const result = parseLab('lab(50 -20 30)')
-    expect(result.l).toBe(50)
+    expect(result.l).toBe(0.5)
     expect(result.a).toBe(-20)
     expect(result.b).toBe(30)
     expect(result.alpha).toBe(1)
@@ -37,7 +37,7 @@ describe('parseLab', () => {
 
   test('should parse lab with percentage lightness and alpha', () => {
     const result = parseLab('lab(50% -20 30 / 0.5)')
-    expect(result.l).toBe(50)
+    expect(result.l).toBe(0.5)
     expect(result.a).toBe(-20)
     expect(result.b).toBe(30)
     expect(result.alpha).toBe(0.5)
@@ -64,7 +64,7 @@ describe('canParseLch', () => {
 describe('parseLch', () => {
   test('should parse lch(50 36 326)', () => {
     const result = parseLch('lch(50 36 326)')
-    expect(result.l).toBe(50)
+    expect(result.l).toBe(0.5)
     expect(result.c).toBe(36)
     expect(result.h).toBe(326)
     expect(result.alpha).toBe(1)
@@ -78,7 +78,7 @@ describe('parseLch', () => {
 describe('rgb8aToLaba', () => {
   test('should convert red to LAB', () => {
     const result = rgb8aToLaba(rgb8a(255, 0, 0))
-    expect(result.l).toBeCloseTo(53.23, 0)
+    expect(result.l).toBeCloseTo(0.5323, 2)
     expect(result.a).toBeGreaterThan(0)
     expect(result.b).toBeGreaterThan(0)
     expect(result.alpha).toBe(1)
@@ -93,7 +93,7 @@ describe('rgb8aToLaba', () => {
 
   test('should convert white to LAB', () => {
     const result = rgb8aToLaba(rgb8a(255, 255, 255))
-    expect(result.l).toBeCloseTo(100, 0)
+    expect(result.l).toBeCloseTo(1, 2)
   })
 })
 
@@ -119,11 +119,11 @@ describe('rgb8aToLcha / lchaToRgb8a', () => {
 
 describe('labaToLabString', () => {
   test('should serialize without alpha when alpha is 1', () => {
-    expect(labaToLabString(laba(50, -20, 30))).toBe('lab(50 -20 30)')
+    expect(labaToLabString(laba(0.5, -20, 30))).toBe('lab(50 -20 30)')
   })
 
   test('should serialize with alpha when alpha < 1', () => {
-    expect(labaToLabString(laba(50, -20, 30, 0.5))).toBe(
+    expect(labaToLabString(laba(0.5, -20, 30, 0.5))).toBe(
       'lab(50 -20 30 / 0.5)'
     )
   })
@@ -131,11 +131,11 @@ describe('labaToLabString', () => {
 
 describe('lchaToLchString', () => {
   test('should serialize without alpha when alpha is 1', () => {
-    expect(lchaToLchString(lcha(50, 36, 326))).toBe('lch(50 36 326)')
+    expect(lchaToLchString(lcha(0.5, 36, 326))).toBe('lch(50 36 326)')
   })
 
   test('should serialize with alpha when alpha < 1', () => {
-    expect(lchaToLchString(lcha(50, 36, 326, 0.8))).toBe(
+    expect(lchaToLchString(lcha(0.5, 36, 326, 0.8))).toBe(
       'lch(50 36 326 / 0.8)'
     )
   })

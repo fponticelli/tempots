@@ -38,7 +38,7 @@ import { colorDistanceSimple } from './color-distance'
  * @param a - The first color.
  * @param b - The second color.
  * @param tolerance - Maximum allowed difference per LAB
- *   channel. Defaults to 1.
+ *   channel. Defaults to 0.01.
  * @returns `true` when every channel is within tolerance.
  * @public
  * @example
@@ -48,7 +48,7 @@ import { colorDistanceSimple } from './color-distance'
  * equalColors(rgb8a(255, 0, 0), rgb8a(0, 0, 255))  // false
  * ```
  */
-export const equalColors = (a: Color, b: Color, tolerance = 1): boolean => {
+export const equalColors = (a: Color, b: Color, tolerance = 0.01): boolean => {
   const labA = convertColor(a, 'lab') as LABA
   const labB = convertColor(b, 'lab') as LABA
   return (
@@ -87,19 +87,19 @@ export const randomColor = (space: ColorSpace = 'rgb8'): Color => {
         Math.round(randomFloat(0, 255))
       )
     case 'hsl':
-      return hsla(randomFloat(0, 360), randomFloat(0, 100), randomFloat(0, 100))
+      return hsla(randomFloat(0, 360), randomFloat(0, 1), randomFloat(0, 1))
     case 'hsv':
-      return hsva(randomFloat(0, 360), randomFloat(0, 100), randomFloat(0, 100))
+      return hsva(randomFloat(0, 360), randomFloat(0, 1), randomFloat(0, 1))
     case 'hwb':
-      return hwba(randomFloat(0, 360), randomFloat(0, 100), randomFloat(0, 100))
+      return hwba(randomFloat(0, 360), randomFloat(0, 1), randomFloat(0, 1))
     case 'lab':
       return laba(
-        randomFloat(0, 100),
+        randomFloat(0, 1),
         randomFloat(-125, 125),
         randomFloat(-125, 125)
       )
     case 'lch':
-      return lcha(randomFloat(0, 100), randomFloat(0, 150), randomFloat(0, 360))
+      return lcha(randomFloat(0, 1), randomFloat(0, 150), randomFloat(0, 360))
     case 'oklab':
       return oklaba(
         randomFloat(0, 1),

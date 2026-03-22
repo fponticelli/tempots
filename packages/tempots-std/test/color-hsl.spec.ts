@@ -28,16 +28,16 @@ describe('parseHsl', () => {
   test('should parse legacy hsl without alpha', () => {
     const c = parseHsl('hsl(0, 100%, 50%)')
     expect(c.h).toBe(0)
-    expect(c.s).toBe(100)
-    expect(c.l).toBe(50)
+    expect(c.s).toBe(1)
+    expect(c.l).toBe(0.5)
     expect(c.alpha).toBe(1)
   })
 
   test('should parse legacy hsla with alpha', () => {
     const c = parseHsl('hsla(120, 50%, 75%, 0.8)')
     expect(c.h).toBe(120)
-    expect(c.s).toBe(50)
-    expect(c.l).toBe(75)
+    expect(c.s).toBe(0.5)
+    expect(c.l).toBe(0.75)
     expect(c.alpha).toBe(0.8)
   })
 
@@ -55,8 +55,8 @@ describe('rgb8aToHsla', () => {
   test('should convert pure red', () => {
     const c = rgb8aToHsla(rgb8a(255, 0, 0))
     expect(c.h).toBeCloseTo(0, 0)
-    expect(c.s).toBeCloseTo(100, 0)
-    expect(c.l).toBeCloseTo(50, 0)
+    expect(c.s).toBeCloseTo(1, 2)
+    expect(c.l).toBeCloseTo(0.5, 2)
   })
 
   test('should convert pure green', () => {
@@ -78,7 +78,7 @@ describe('rgb8aToHsla', () => {
   test('should convert white', () => {
     const c = rgb8aToHsla(rgb8a(255, 255, 255))
     expect(c.s).toBe(0)
-    expect(c.l).toBe(100)
+    expect(c.l).toBe(1)
   })
 
   test('should convert gray with zero saturation', () => {
@@ -89,21 +89,21 @@ describe('rgb8aToHsla', () => {
 
 describe('hslaToRgb8a', () => {
   test('should convert pure red', () => {
-    const c = hslaToRgb8a(hsla(0, 100, 50))
+    const c = hslaToRgb8a(hsla(0, 1, 0.5))
     expect(c.r).toBe(255)
     expect(c.g).toBe(0)
     expect(c.b).toBe(0)
   })
 
   test('should convert pure green', () => {
-    const c = hslaToRgb8a(hsla(120, 100, 50))
+    const c = hslaToRgb8a(hsla(120, 1, 0.5))
     expect(c.r).toBe(0)
     expect(c.g).toBe(255)
     expect(c.b).toBe(0)
   })
 
   test('should convert pure blue', () => {
-    const c = hslaToRgb8a(hsla(240, 100, 50))
+    const c = hslaToRgb8a(hsla(240, 1, 0.5))
     expect(c.r).toBe(0)
     expect(c.g).toBe(0)
     expect(c.b).toBe(255)
@@ -117,7 +117,7 @@ describe('hslaToRgb8a', () => {
   })
 
   test('should convert white', () => {
-    const c = hslaToRgb8a(hsla(0, 0, 100))
+    const c = hslaToRgb8a(hsla(0, 0, 1))
     expect(c.r).toBe(255)
     expect(c.g).toBe(255)
     expect(c.b).toBe(255)
@@ -139,11 +139,11 @@ describe('round-trip rgb8a -> hsla -> rgb8a', () => {
 
 describe('hslaToHslString', () => {
   test('should serialize opaque color without alpha', () => {
-    expect(hslaToHslString(hsla(0, 100, 50))).toBe('hsl(0, 100%, 50%)')
+    expect(hslaToHslString(hsla(0, 1, 0.5))).toBe('hsl(0, 100%, 50%)')
   })
 
   test('should serialize translucent color with alpha', () => {
-    expect(hslaToHslString(hsla(120, 50, 75, 0.5))).toBe(
+    expect(hslaToHslString(hsla(120, 0.5, 0.75, 0.5))).toBe(
       'hsla(120, 50%, 75%, 0.5)'
     )
   })

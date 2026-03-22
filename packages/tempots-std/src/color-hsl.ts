@@ -53,9 +53,9 @@ export const canParseHsl = (s: string): boolean => {
  * @public
  * @example
  * ```ts
- * parseHsl('hsl(0, 100%, 50%)') // hsla(0, 100, 50)
- * parseHsl('hsla(120, 50%, 75%, 0.8)') // hsla(120, 50, 75, 0.8)
- * parseHsl('hsl(240 100% 50% / 50%)') // hsla(240, 100, 50, 0.5)
+ * parseHsl('hsl(0, 100%, 50%)') // hsla(0, 1, 0.5)
+ * parseHsl('hsla(120, 50%, 75%, 0.8)') // hsla(120, 0.5, 0.75, 0.8)
+ * parseHsl('hsl(240 100% 50% / 50%)') // hsla(240, 1, 0.5, 0.5)
  * ```
  */
 export const parseHsl = (s: string): HSLA => {
@@ -64,8 +64,8 @@ export const parseHsl = (s: string): HSLA => {
   if (!m) throw new ParsingError(`Invalid hsl color: '${s}'`)
   return hsla(
     parseFloat(m[1]),
-    clamp(parseFloat(m[2]), 0, 100),
-    clamp(parseFloat(m[3]), 0, 100),
+    clamp(parseFloat(m[2]) / 100, 0, 1),
+    clamp(parseFloat(m[3]) / 100, 0, 1),
     parseAlpha(m[4])
   )
 }
@@ -83,8 +83,8 @@ export const parseHsl = (s: string): HSLA => {
  * @public
  * @example
  * ```ts
- * rgb8aToHsla(rgb8a(255, 0, 0)) // hsla(0, 100, 50)
- * rgb8aToHsla(rgb8a(0, 128, 0)) // hsla(120, 100, ~25.1)
+ * rgb8aToHsla(rgb8a(255, 0, 0)) // hsla(0, 1, 0.5)
+ * rgb8aToHsla(rgb8a(0, 128, 0)) // hsla(120, 1, ~0.251)
  * rgb8aToHsla(rgb8a(0, 0, 0)) // hsla(0, 0, 0)
  * ```
  */
@@ -100,7 +100,7 @@ export const rgb8aToHsla = (c: RGB8A): HSLA => {
   const l = (max + min) / 2
 
   if (delta === 0) {
-    return hsla(0, 0, l * 100, c.alpha)
+    return hsla(0, 0, l, c.alpha)
   }
 
   const s = delta / (1 - Math.abs(2 * l - 1))
@@ -117,7 +117,7 @@ export const rgb8aToHsla = (c: RGB8A): HSLA => {
   h *= 60
   if (h < 0) h += 360
 
-  return hsla(h, s * 100, l * 100, c.alpha)
+  return hsla(h, s, l, c.alpha)
 }
 
 // ---------------------------------------------------------------------------
@@ -133,14 +133,14 @@ export const rgb8aToHsla = (c: RGB8A): HSLA => {
  * @public
  * @example
  * ```ts
- * hslaToRgb8a(hsla(0, 100, 50)) // rgb8a(255, 0, 0)
- * hslaToRgb8a(hsla(120, 100, 50)) // rgb8a(0, 255, 0)
- * hslaToRgb8a(hsla(240, 100, 50)) // rgb8a(0, 0, 255)
+ * hslaToRgb8a(hsla(0, 1, 0.5)) // rgb8a(255, 0, 0)
+ * hslaToRgb8a(hsla(120, 1, 0.5)) // rgb8a(0, 255, 0)
+ * hslaToRgb8a(hsla(240, 1, 0.5)) // rgb8a(0, 0, 255)
  * ```
  */
 export const hslaToRgb8a = (c: HSLA): RGB8A => {
-  const s = c.s / 100
-  const l = c.l / 100
+  const s = c.s
+  const l = c.l
   const h = wrapCircular(c.h, 360)
 
   const ch = (1 - Math.abs(2 * l - 1)) * s
@@ -201,14 +201,14 @@ export const hslaToRgb8a = (c: HSLA): RGB8A => {
  * @public
  * @example
  * ```ts
- * hslaToHslString(hsla(0, 100, 50)) // 'hsl(0, 100%, 50%)'
- * hslaToHslString(hsla(120, 50, 75, 0.5)) // 'hsla(120, 50%, 75%, 0.5)'
+ * hslaToHslString(hsla(0, 1, 0.5)) // 'hsl(0, 100%, 50%)'
+ * hslaToHslString(hsla(120, 0.5, 0.75, 0.5)) // 'hsla(120, 50%, 75%, 0.5)'
  * ```
  */
 export const hslaToHslString = (c: HSLA): string => {
   const h = round2(c.h)
-  const s = round2(c.s)
-  const l = round2(c.l)
+  const s = round2(c.s * 100)
+  const l = round2(c.l * 100)
   if (c.alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`
   return `hsla(${h}, ${s}%, ${l}%, ${c.alpha})`
 }

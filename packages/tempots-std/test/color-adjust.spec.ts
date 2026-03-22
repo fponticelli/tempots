@@ -27,7 +27,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the input color space', () => {
-      const result = lighten(hsla(0, 100, 50), 0.2)
+      const result = lighten(hsla(0, 1, 0.5), 0.2)
       expect(result.space).toBe('hsl')
     })
 
@@ -48,7 +48,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the input color space', () => {
-      const result = darken(hsla(0, 100, 50), 0.2)
+      const result = darken(hsla(0, 1, 0.5), 0.2)
       expect(result.space).toBe('hsl')
     })
   })
@@ -64,7 +64,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the input color space', () => {
-      const result = saturate(hsla(0, 50, 50), 0.3)
+      const result = saturate(hsla(0, 0.5, 0.5), 0.3)
       expect(result.space).toBe('hsl')
     })
   })
@@ -78,7 +78,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the input color space', () => {
-      const result = desaturate(hsla(120, 100, 50), 0.5)
+      const result = desaturate(hsla(120, 1, 0.5), 0.5)
       expect(result.space).toBe('hsl')
     })
   })
@@ -90,7 +90,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the color space', () => {
-      const result = opacify(hsla(0, 100, 50, 0.5), 0.2)
+      const result = opacify(hsla(0, 1, 0.5, 0.5), 0.2)
       expect(result.space).toBe('hsl')
     })
 
@@ -128,7 +128,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the input color space', () => {
-      const result = invert(hsla(0, 100, 50))
+      const result = invert(hsla(0, 1, 0.5))
       expect(result.space).toBe('hsl')
     })
   })
@@ -141,7 +141,7 @@ describe('color-adjust', () => {
     })
 
     test('should preserve the input color space', () => {
-      const result = grayscale(hsla(120, 100, 50))
+      const result = grayscale(hsla(120, 1, 0.5))
       expect(result.space).toBe('hsl')
     })
   })

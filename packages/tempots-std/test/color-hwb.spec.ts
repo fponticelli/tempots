@@ -32,8 +32,8 @@ describe('parseHwb', () => {
   test('should parse hwb with alpha', () => {
     const c = parseHwb('hwb(180 20% 30% / 0.5)')
     expect(c.h).toBe(180)
-    expect(c.w).toBe(20)
-    expect(c.b).toBe(30)
+    expect(c.w).toBe(0.2)
+    expect(c.b).toBe(0.3)
     expect(c.alpha).toBe(0.5)
   })
 
@@ -53,12 +53,12 @@ describe('rgb8aToHwba', () => {
   test('should convert black', () => {
     const c = rgb8aToHwba(rgb8a(0, 0, 0))
     expect(c.w).toBe(0)
-    expect(c.b).toBe(100)
+    expect(c.b).toBe(1)
   })
 
   test('should convert white', () => {
     const c = rgb8aToHwba(rgb8a(255, 255, 255))
-    expect(c.w).toBe(100)
+    expect(c.w).toBe(1)
     expect(c.b).toBe(0)
   })
 })
@@ -72,14 +72,14 @@ describe('hwbaToRgb8a', () => {
   })
 
   test('should convert full whiteness to white', () => {
-    const c = hwbaToRgb8a(hwba(0, 100, 0))
+    const c = hwbaToRgb8a(hwba(0, 1, 0))
     expect(c.r).toBe(255)
     expect(c.g).toBe(255)
     expect(c.b).toBe(255)
   })
 
   test('should convert full blackness to black', () => {
-    const c = hwbaToRgb8a(hwba(0, 0, 100))
+    const c = hwbaToRgb8a(hwba(0, 0, 1))
     expect(c.r).toBe(0)
     expect(c.g).toBe(0)
     expect(c.b).toBe(0)
@@ -102,7 +102,7 @@ describe('hwbaToHwbString', () => {
   })
 
   test('should serialize translucent color with alpha', () => {
-    expect(hwbaToHwbString(hwba(180, 20, 30, 0.5))).toBe(
+    expect(hwbaToHwbString(hwba(180, 0.2, 0.3, 0.5))).toBe(
       'hwb(180 20% 30% / 0.5)'
     )
   })

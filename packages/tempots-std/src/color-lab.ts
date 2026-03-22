@@ -132,9 +132,9 @@ const lchToLab = (
 
 const parseLightness = (raw: string): number => {
   if (raw.endsWith('%')) {
-    return clamp(parseFloat(raw), 0, 100)
+    return clamp(parseFloat(raw), 0, 100) / 100
   }
-  return clamp(parseFloat(raw), 0, 100)
+  return clamp(parseFloat(raw), 0, 100) / 100
 }
 
 // ---------------------------------------------------------------------------
@@ -169,8 +169,8 @@ export const canParseLab = (s: string): boolean => LAB_RE.test(s.trim())
  * @public
  * @example
  * ```ts
- * parseLab('lab(50 -20 30)') // laba(50, -20, 30)
- * parseLab('lab(50% -20 30 / 0.5)') // laba(50, -20, 30, 0.5)
+ * parseLab('lab(50 -20 30)') // laba(0.5, -20, 30)
+ * parseLab('lab(50% -20 30 / 0.5)') // laba(0.5, -20, 30, 0.5)
  * ```
  */
 export const parseLab = (s: string): LABA => {
@@ -212,8 +212,8 @@ export const canParseLch = (s: string): boolean => LCH_RE.test(s.trim())
  * @public
  * @example
  * ```ts
- * parseLch('lch(50 36 326)') // lcha(50, 36, 326)
- * parseLch('lch(75% 40 120 / 50%)') // lcha(75, 40, 120, 0.5)
+ * parseLch('lch(50 36 326)') // lcha(0.5, 36, 326)
+ * parseLch('lch(75% 40 120 / 50%)') // lcha(0.75, 40, 120, 0.5)
  * ```
  */
 export const parseLch = (s: string): LCHA => {
@@ -240,7 +240,7 @@ export const parseLch = (s: string): LCHA => {
  * @public
  * @example
  * ```ts
- * rgb8aToLaba(rgb8a(255, 0, 0)) // laba(~53.23, ~80.11, ~67.22)
+ * rgb8aToLaba(rgb8a(255, 0, 0)) // laba(~0.5323, ~80.11, ~67.22)
  * rgb8aToLaba(rgb8a(0, 0, 0))   // laba(0, 0, 0)
  * ```
  */
@@ -250,7 +250,7 @@ export const rgb8aToLaba = (c: RGB8A): LABA => {
   const bl = srgbToLinear(c.b / 255)
   const [x, y, z] = linearRgbToXyz(rl, gl, bl)
   const [l, a, b] = xyzToLab(x, y, z)
-  return laba(l, a, b, c.alpha)
+  return laba(l / 100, a, b, c.alpha)
 }
 
 // ---------------------------------------------------------------------------
@@ -268,12 +268,12 @@ export const rgb8aToLaba = (c: RGB8A): LABA => {
  * @public
  * @example
  * ```ts
- * labaToRgb8a(laba(53.23, 80.11, 67.22)) // rgb8a(~255, ~0, ~0)
- * labaToRgb8a(laba(0, 0, 0))             // rgb8a(0, 0, 0)
+ * labaToRgb8a(laba(0.5323, 80.11, 67.22)) // rgb8a(~255, ~0, ~0)
+ * labaToRgb8a(laba(0, 0, 0))              // rgb8a(0, 0, 0)
  * ```
  */
 export const labaToRgb8a = (c: LABA): RGB8A => {
-  const [x, y, z] = labToXyz(c.l, c.a, c.b)
+  const [x, y, z] = labToXyz(c.l * 100, c.a, c.b)
   const [rl, gl, bl] = xyzToLinearRgb(x, y, z)
   return rgb8a(
     Math.round(clamp(linearToSrgb(rl), 0, 1) * 255),
@@ -296,14 +296,14 @@ export const labaToRgb8a = (c: LABA): RGB8A => {
  * @public
  * @example
  * ```ts
- * rgb8aToLcha(rgb8a(255, 0, 0)) // lcha(~53.23, ~104.55, ~40.0)
+ * rgb8aToLcha(rgb8a(255, 0, 0)) // lcha(~0.5323, ~104.55, ~40.0)
  * rgb8aToLcha(rgb8a(0, 0, 0))   // lcha(0, 0, 0)
  * ```
  */
 export const rgb8aToLcha = (c: RGB8A): LCHA => {
   const lab = rgb8aToLaba(c)
-  const [l, ch, h] = labToLch(lab.l, lab.a, lab.b)
-  return lcha(l, ch, h, c.alpha)
+  const [l, ch, h] = labToLch(lab.l * 100, lab.a, lab.b)
+  return lcha(l / 100, ch, h, c.alpha)
 }
 
 // ---------------------------------------------------------------------------
@@ -319,13 +319,13 @@ export const rgb8aToLcha = (c: RGB8A): LCHA => {
  * @public
  * @example
  * ```ts
- * lchaToRgb8a(lcha(53.23, 104.55, 40.0)) // rgb8a(~255, ~0, ~0)
- * lchaToRgb8a(lcha(0, 0, 0))             // rgb8a(0, 0, 0)
+ * lchaToRgb8a(lcha(0.5323, 104.55, 40.0)) // rgb8a(~255, ~0, ~0)
+ * lchaToRgb8a(lcha(0, 0, 0))              // rgb8a(0, 0, 0)
  * ```
  */
 export const lchaToRgb8a = (c: LCHA): RGB8A => {
-  const [l, a, b] = lchToLab(c.l, c.c, c.h)
-  return labaToRgb8a(laba(l, a, b, c.alpha))
+  const [l, a, b] = lchToLab(c.l * 100, c.c, c.h)
+  return labaToRgb8a(laba(l / 100, a, b, c.alpha))
 }
 
 // ---------------------------------------------------------------------------
@@ -344,14 +344,14 @@ export const lchaToRgb8a = (c: LCHA): RGB8A => {
  * @public
  * @example
  * ```ts
- * labaToLabString(laba(50, -20, 30))
+ * labaToLabString(laba(0.5, -20, 30))
  * // 'lab(50 -20 30)'
- * labaToLabString(laba(50, -20, 30, 0.5))
+ * labaToLabString(laba(0.5, -20, 30, 0.5))
  * // 'lab(50 -20 30 / 0.5)'
  * ```
  */
 export const labaToLabString = (c: LABA): string => {
-  const l = roundTo(c.l, 2)
+  const l = roundTo(c.l * 100, 2)
   const a = roundTo(c.a, 4)
   const b = roundTo(c.b, 4)
   if (c.alpha >= 1) return `lab(${l} ${a} ${b})`
@@ -370,14 +370,14 @@ export const labaToLabString = (c: LABA): string => {
  * @public
  * @example
  * ```ts
- * lchaToLchString(lcha(50, 36, 326))
+ * lchaToLchString(lcha(0.5, 36, 326))
  * // 'lch(50 36 326)'
- * lchaToLchString(lcha(50, 36, 326, 0.8))
+ * lchaToLchString(lcha(0.5, 36, 326, 0.8))
  * // 'lch(50 36 326 / 0.8)'
  * ```
  */
 export const lchaToLchString = (c: LCHA): string => {
-  const l = roundTo(c.l, 2)
+  const l = roundTo(c.l * 100, 2)
   const ch = roundTo(c.c, 4)
   const h = roundTo(c.h, 4)
   if (c.alpha >= 1) return `lch(${l} ${ch} ${h})`

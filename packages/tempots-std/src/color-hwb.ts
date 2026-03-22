@@ -50,8 +50,8 @@ export const canParseHwb = (s: string): boolean => HWB_RE.test(s.trim())
  * @example
  * ```ts
  * parseHwb('hwb(0 0% 0%)') // hwba(0, 0, 0)
- * parseHwb('hwb(180 20% 30%)') // hwba(180, 20, 30)
- * parseHwb('hwb(90 10% 20% / 0.5)') // hwba(90, 10, 20, 0.5)
+ * parseHwb('hwb(180 20% 30%)') // hwba(180, 0.2, 0.3)
+ * parseHwb('hwb(90 10% 20% / 0.5)') // hwba(90, 0.1, 0.2, 0.5)
  * ```
  */
 export const parseHwb = (s: string): HWBA => {
@@ -60,8 +60,8 @@ export const parseHwb = (s: string): HWBA => {
   if (!m) throw new ParsingError(`Invalid hwb color: '${s}'`)
   return hwba(
     parseFloat(m[1]),
-    parseFloat(m[2]),
-    parseFloat(m[3]),
+    clamp(parseFloat(m[2]) / 100, 0, 1),
+    clamp(parseFloat(m[3]) / 100, 0, 1),
     parseAlpha(m[4])
   )
 }
@@ -83,8 +83,8 @@ export const parseHwb = (s: string): HWBA => {
  * @example
  * ```ts
  * rgb8aToHwba(rgb8a(255, 0, 0)) // hwba(0, 0, 0)
- * rgb8aToHwba(rgb8a(0, 0, 0)) // hwba(0, 0, 100)
- * rgb8aToHwba(rgb8a(255, 255, 255)) // hwba(0, 100, 0)
+ * rgb8aToHwba(rgb8a(0, 0, 0)) // hwba(0, 0, 1)
+ * rgb8aToHwba(rgb8a(255, 255, 255)) // hwba(0, 1, 0)
  * ```
  */
 export const rgb8aToHwba = (c: RGB8A): HWBA => {
@@ -108,8 +108,8 @@ export const rgb8aToHwba = (c: RGB8A): HWBA => {
   }
   if (h < 0) h += 360
 
-  const w = min * 100
-  const b = (1 - max) * 100
+  const w = min
+  const b = 1 - max
 
   return hwba(h, w, b, c.alpha)
 }
@@ -121,8 +121,8 @@ export const rgb8aToHwba = (c: RGB8A): HWBA => {
 /**
  * Converts an HWBA color to an RGB8A color.
  *
- * When whiteness plus blackness exceed 100%, they are proportionally scaled
- * so that their sum equals 100%. The pure hue color is then blended between
+ * When whiteness plus blackness exceed 1, they are proportionally scaled
+ * so that their sum equals 1. The pure hue color is then blended between
  * white and black according to the whiteness and blackness values.
  *
  * @param c - The HWBA color to convert.
@@ -131,13 +131,13 @@ export const rgb8aToHwba = (c: RGB8A): HWBA => {
  * @example
  * ```ts
  * hwbaToRgb8a(hwba(0, 0, 0)) // rgb8a(255, 0, 0)
- * hwbaToRgb8a(hwba(0, 100, 0)) // rgb8a(255, 255, 255)
- * hwbaToRgb8a(hwba(0, 0, 100)) // rgb8a(0, 0, 0)
+ * hwbaToRgb8a(hwba(0, 1, 0)) // rgb8a(255, 255, 255)
+ * hwbaToRgb8a(hwba(0, 0, 1)) // rgb8a(0, 0, 0)
  * ```
  */
 export const hwbaToRgb8a = (c: HWBA): RGB8A => {
-  let w = c.w / 100
-  let b = c.b / 100
+  let w = c.w
+  let b = c.b
 
   if (w + b >= 1) {
     const scale = 1 / (w + b)
@@ -212,10 +212,10 @@ export const hwbaToRgb8a = (c: HWBA): RGB8A => {
  * @example
  * ```ts
  * hwbaToHwbString(hwba(0, 0, 0)) // 'hwb(0 0% 0%)'
- * hwbaToHwbString(hwba(180, 20, 30, 0.5)) // 'hwb(180 20% 30% / 0.5)'
+ * hwbaToHwbString(hwba(180, 0.2, 0.3, 0.5)) // 'hwb(180 20% 30% / 0.5)'
  * ```
  */
 export const hwbaToHwbString = (c: HWBA): string => {
-  if (c.alpha >= 1) return `hwb(${c.h} ${c.w}% ${c.b}%)`
-  return `hwb(${c.h} ${c.w}% ${c.b}% / ${c.alpha})`
+  if (c.alpha >= 1) return `hwb(${c.h} ${c.w * 100}% ${c.b * 100}%)`
+  return `hwb(${c.h} ${c.w * 100}% ${c.b * 100}% / ${c.alpha})`
 }

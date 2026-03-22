@@ -110,7 +110,7 @@ export interface RGB8A {
 }
 
 /**
- * An HSLA color with `h` (0–360), `s` (0–100), `l` (0–100), and `alpha`
+ * An HSLA color with `h` (0–360), `s` (0–1), `l` (0–1), and `alpha`
  * (0–1).
  *
  * @public
@@ -124,7 +124,7 @@ export interface HSLA {
 }
 
 /**
- * An HSVA color with `h` (0–360), `s` (0–100), `v` (0–100), and `alpha`
+ * An HSVA color with `h` (0–360), `s` (0–1), `v` (0–1), and `alpha`
  * (0–1).
  *
  * @public
@@ -138,7 +138,7 @@ export interface HSVA {
 }
 
 /**
- * An HWBA color with `h` (0–360), `w` (0–100), `b` (0–100), and `alpha`
+ * An HWBA color with `h` (0–360), `w` (0–1), `b` (0–1), and `alpha`
  * (0–1).
  *
  * @public
@@ -152,7 +152,7 @@ export interface HWBA {
 }
 
 /**
- * A CIE LAB color with `l` (0–100), `a` (~-125 to 125), `b` (~-125 to 125),
+ * A CIE LAB color with `l` (0–1), `a` (~-125 to 125), `b` (~-125 to 125),
  * and `alpha` (0–1).
  *
  * @public
@@ -166,7 +166,7 @@ export interface LABA {
 }
 
 /**
- * A CIE LCH color with `l` (0–100), `c` (0–150+), `h` (0–360), and `alpha`
+ * A CIE LCH color with `l` (0–1), `c` (0–150+), `h` (0–360), and `alpha`
  * (0–1).
  *
  * @public
@@ -277,21 +277,21 @@ export const rgb8a = (r: number, g: number, b: number, alpha = 1): RGB8A => ({
  * Creates an HSLA color, wrapping hue and clamping other channels.
  *
  * @param h - Hue (0–360, wraps).
- * @param s - Saturation (0–100).
- * @param l - Lightness (0–100).
+ * @param s - Saturation (0–1).
+ * @param l - Lightness (0–1).
  * @param alpha - Alpha channel (0–1). Defaults to 1.
  * @returns An HSLA color.
  * @public
  * @example
  * ```ts
- * hsla(0, 100, 50) // { space: 'hsl', h: 0, s: 100, l: 50, alpha: 1 }
+ * hsla(0, 1, 0.5) // { space: 'hsl', h: 0, s: 1, l: 0.5, alpha: 1 }
  * ```
  */
 export const hsla = (h: number, s: number, l: number, alpha = 1): HSLA => ({
   space: 'hsl',
   h: wrapCircular(h, 360),
-  s: clamp(s, 0, 100),
-  l: clamp(l, 0, 100),
+  s: clamp(s, 0, 1),
+  l: clamp(l, 0, 1),
   alpha: clamp(alpha, 0, 1),
 })
 
@@ -299,21 +299,21 @@ export const hsla = (h: number, s: number, l: number, alpha = 1): HSLA => ({
  * Creates an HSVA color, wrapping hue and clamping other channels.
  *
  * @param h - Hue (0–360, wraps).
- * @param s - Saturation (0–100).
- * @param v - Value (0–100).
+ * @param s - Saturation (0–1).
+ * @param v - Value (0–1).
  * @param alpha - Alpha channel (0–1). Defaults to 1.
  * @returns An HSVA color.
  * @public
  * @example
  * ```ts
- * hsva(0, 100, 100) // { space: 'hsv', h: 0, s: 100, v: 100, alpha: 1 }
+ * hsva(0, 1, 1) // { space: 'hsv', h: 0, s: 1, v: 1, alpha: 1 }
  * ```
  */
 export const hsva = (h: number, s: number, v: number, alpha = 1): HSVA => ({
   space: 'hsv',
   h: wrapCircular(h, 360),
-  s: clamp(s, 0, 100),
-  v: clamp(v, 0, 100),
+  s: clamp(s, 0, 1),
+  v: clamp(v, 0, 1),
   alpha: clamp(alpha, 0, 1),
 })
 
@@ -321,8 +321,8 @@ export const hsva = (h: number, s: number, v: number, alpha = 1): HSVA => ({
  * Creates an HWBA color, wrapping hue and clamping other channels.
  *
  * @param h - Hue (0–360, wraps).
- * @param w - Whiteness (0–100).
- * @param b - Blackness (0–100).
+ * @param w - Whiteness (0–1).
+ * @param b - Blackness (0–1).
  * @param alpha - Alpha channel (0–1). Defaults to 1.
  * @returns An HWBA color.
  * @public
@@ -334,15 +334,15 @@ export const hsva = (h: number, s: number, v: number, alpha = 1): HSVA => ({
 export const hwba = (h: number, w: number, b: number, alpha = 1): HWBA => ({
   space: 'hwb',
   h: wrapCircular(h, 360),
-  w: clamp(w, 0, 100),
-  b: clamp(b, 0, 100),
+  w: clamp(w, 0, 1),
+  b: clamp(b, 0, 1),
   alpha: clamp(alpha, 0, 1),
 })
 
 /**
  * Creates a CIE LAB color.
  *
- * @param l - Lightness (0–100).
+ * @param l - Lightness (0–1).
  * @param a - Green-red axis (~-125 to 125).
  * @param b - Blue-yellow axis (~-125 to 125).
  * @param alpha - Alpha channel (0–1). Defaults to 1.
@@ -350,12 +350,12 @@ export const hwba = (h: number, w: number, b: number, alpha = 1): HWBA => ({
  * @public
  * @example
  * ```ts
- * laba(50, -20, 30) // { space: 'lab', l: 50, a: -20, b: 30, alpha: 1 }
+ * laba(0.5, -20, 30) // { space: 'lab', l: 0.5, a: -20, b: 30, alpha: 1 }
  * ```
  */
 export const laba = (l: number, a: number, b: number, alpha = 1): LABA => ({
   space: 'lab',
-  l,
+  l: clamp(l, 0, 1),
   a,
   b,
   alpha: clamp(alpha, 0, 1),
@@ -364,7 +364,7 @@ export const laba = (l: number, a: number, b: number, alpha = 1): LABA => ({
 /**
  * Creates a CIE LCH color.
  *
- * @param l - Lightness (0–100).
+ * @param l - Lightness (0–1).
  * @param c - Chroma (0–150+).
  * @param h - Hue (0–360).
  * @param alpha - Alpha channel (0–1). Defaults to 1.
@@ -372,13 +372,13 @@ export const laba = (l: number, a: number, b: number, alpha = 1): LABA => ({
  * @public
  * @example
  * ```ts
- * lcha(50, 36, 326) // { space: 'lch', l: 50, c: 36, h: 326, alpha: 1 }
+ * lcha(0.5, 36, 326) // { space: 'lch', l: 0.5, c: 36, h: 326, alpha: 1 }
  * ```
  */
 export const lcha = (l: number, c: number, h: number, alpha = 1): LCHA => ({
   space: 'lch',
-  l,
-  c,
+  l: clamp(l, 0, 1),
+  c: Math.max(0, c),
   h: wrapCircular(h, 360),
   alpha: clamp(alpha, 0, 1),
 })
@@ -399,7 +399,7 @@ export const lcha = (l: number, c: number, h: number, alpha = 1): LCHA => ({
  */
 export const oklaba = (l: number, a: number, b: number, alpha = 1): OKLABA => ({
   space: 'oklab',
-  l,
+  l: clamp(l, 0, 1),
   a,
   b,
   alpha: clamp(alpha, 0, 1),
@@ -421,8 +421,8 @@ export const oklaba = (l: number, a: number, b: number, alpha = 1): OKLABA => ({
  */
 export const oklcha = (l: number, c: number, h: number, alpha = 1): OKLCHA => ({
   space: 'oklch',
-  l,
-  c,
+  l: clamp(l, 0, 1),
+  c: Math.max(0, c),
   h: wrapCircular(h, 360),
   alpha: clamp(alpha, 0, 1),
 })

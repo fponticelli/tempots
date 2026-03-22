@@ -35,7 +35,7 @@ describe('complement', () => {
   })
 
   test('should preserve the original color space', () => {
-    const hslColor = hsla(0, 100, 50)
+    const hslColor = hsla(0, 1, 0.5)
     const result = complement(hslColor)
     expect(result.space).toBe('hsl')
   })

@@ -25,8 +25,8 @@ describe('parseHsv', () => {
   test('should parse valid hsv string', () => {
     const c = parseHsv('hsv(0, 100%, 100%)')
     expect(c.h).toBe(0)
-    expect(c.s).toBe(100)
-    expect(c.v).toBe(100)
+    expect(c.s).toBe(1)
+    expect(c.v).toBe(1)
   })
 
   test('should throw on invalid input', () => {
@@ -38,8 +38,8 @@ describe('rgb8aToHsva', () => {
   test('should convert pure red', () => {
     const c = rgb8aToHsva(rgb8a(255, 0, 0))
     expect(c.h).toBeCloseTo(0, 0)
-    expect(c.s).toBe(100)
-    expect(c.v).toBe(100)
+    expect(c.s).toBe(1)
+    expect(c.v).toBe(1)
   })
 
   test('should convert black', () => {
@@ -56,14 +56,14 @@ describe('rgb8aToHsva', () => {
 
 describe('hsvaToRgb8a', () => {
   test('should convert pure red', () => {
-    const c = hsvaToRgb8a(hsva(0, 100, 100))
+    const c = hsvaToRgb8a(hsva(0, 1, 1))
     expect(c.r).toBe(255)
     expect(c.g).toBe(0)
     expect(c.b).toBe(0)
   })
 
   test('should convert pure green', () => {
-    const c = hsvaToRgb8a(hsva(120, 100, 100))
+    const c = hsvaToRgb8a(hsva(120, 1, 1))
     expect(c.r).toBe(0)
     expect(c.g).toBe(255)
     expect(c.b).toBe(0)
@@ -72,9 +72,9 @@ describe('hsvaToRgb8a', () => {
 
 describe('hslaToHsva', () => {
   test('should convert pure red hsl to hsv', () => {
-    const c = hslaToHsva(hsla(0, 100, 50))
-    expect(c.s).toBe(100)
-    expect(c.v).toBe(100)
+    const c = hslaToHsva(hsla(0, 1, 0.5))
+    expect(c.s).toBe(1)
+    expect(c.v).toBe(1)
   })
 
   test('should convert black', () => {
@@ -86,9 +86,9 @@ describe('hslaToHsva', () => {
 
 describe('hsvaToHsla', () => {
   test('should convert pure red hsv to hsl', () => {
-    const c = hsvaToHsla(hsva(0, 100, 100))
-    expect(c.s).toBe(100)
-    expect(c.l).toBe(50)
+    const c = hsvaToHsla(hsva(0, 1, 1))
+    expect(c.s).toBe(1)
+    expect(c.l).toBe(0.5)
   })
 
   test('should convert black', () => {
@@ -110,11 +110,11 @@ describe('round-trip rgb8a -> hsva -> rgb8a', () => {
 
 describe('hsvaToHsvString', () => {
   test('should serialize opaque color without alpha', () => {
-    expect(hsvaToHsvString(hsva(0, 100, 100))).toBe('hsv(0, 100%, 100%)')
+    expect(hsvaToHsvString(hsva(0, 1, 1))).toBe('hsv(0, 100%, 100%)')
   })
 
   test('should serialize translucent color with alpha', () => {
-    expect(hsvaToHsvString(hsva(120, 50, 80, 0.5))).toBe(
+    expect(hsvaToHsvString(hsva(120, 0.5, 0.8, 0.5))).toBe(
       'hsva(120, 50%, 80%, 0.5)'
     )
   })

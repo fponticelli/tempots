@@ -84,35 +84,35 @@ describe('rgba', () => {
 
 describe('hsla', () => {
   test('creates an HSLA color', () => {
-    const c = hsla(120, 100, 50)
+    const c = hsla(120, 1, 0.5)
     expect(c.space).toBe('hsl')
     expect(c.h).toBe(120)
-    expect(c.s).toBe(100)
-    expect(c.l).toBe(50)
+    expect(c.s).toBe(1)
+    expect(c.l).toBe(0.5)
     expect(c.alpha).toBe(1)
   })
 
   test('wraps hue above 360', () => {
-    expect(hsla(370, 100, 50).h).toBe(10)
+    expect(hsla(370, 1, 0.5).h).toBe(10)
   })
 
   test('wraps negative hue', () => {
-    expect(hsla(-10, 100, 50).h).toBe(350)
+    expect(hsla(-10, 1, 0.5).h).toBe(350)
   })
 
   test('clamps saturation and lightness', () => {
-    expect(hsla(0, 150, -10).s).toBe(100)
-    expect(hsla(0, 150, -10).l).toBe(0)
+    expect(hsla(0, 1.5, -0.1).s).toBe(1)
+    expect(hsla(0, 1.5, -0.1).l).toBe(0)
   })
 })
 
 describe('hsva', () => {
   test('creates an HSVA color', () => {
-    const c = hsva(0, 100, 100)
+    const c = hsva(0, 1, 1)
     expect(c.space).toBe('hsv')
     expect(c.h).toBe(0)
-    expect(c.s).toBe(100)
-    expect(c.v).toBe(100)
+    expect(c.s).toBe(1)
+    expect(c.v).toBe(1)
     expect(c.alpha).toBe(1)
   })
 
@@ -140,33 +140,33 @@ describe('hwba', () => {
 
 describe('laba', () => {
   test('creates a LABA color', () => {
-    const c = laba(50, -20, 30)
+    const c = laba(0.5, -20, 30)
     expect(c.space).toBe('lab')
-    expect(c.l).toBe(50)
+    expect(c.l).toBe(0.5)
     expect(c.a).toBe(-20)
     expect(c.b).toBe(30)
     expect(c.alpha).toBe(1)
   })
 
   test('clamps alpha', () => {
-    expect(laba(50, 0, 0, 2).alpha).toBe(1)
-    expect(laba(50, 0, 0, -1).alpha).toBe(0)
+    expect(laba(0.5, 0, 0, 2).alpha).toBe(1)
+    expect(laba(0.5, 0, 0, -1).alpha).toBe(0)
   })
 })
 
 describe('lcha', () => {
   test('creates a LCHA color', () => {
-    const c = lcha(50, 36, 326)
+    const c = lcha(0.5, 36, 326)
     expect(c.space).toBe('lch')
-    expect(c.l).toBe(50)
+    expect(c.l).toBe(0.5)
     expect(c.c).toBe(36)
     expect(c.h).toBe(326)
     expect(c.alpha).toBe(1)
   })
 
   test('wraps hue', () => {
-    expect(lcha(50, 36, 370).h).toBe(10)
-    expect(lcha(50, 36, -10).h).toBe(350)
+    expect(lcha(0.5, 36, 370).h).toBe(10)
+    expect(lcha(0.5, 36, -10).h).toBe(350)
   })
 })
 
@@ -205,11 +205,11 @@ describe('type guards', () => {
   const colors = {
     rgb: rgba(1, 0, 0),
     rgb8: rgb8a(255, 0, 0),
-    hsl: hsla(0, 100, 50),
-    hsv: hsva(0, 100, 100),
+    hsl: hsla(0, 1, 0.5),
+    hsv: hsva(0, 1, 1),
     hwb: hwba(0, 0, 0),
-    lab: laba(50, 0, 0),
-    lch: lcha(50, 36, 0),
+    lab: laba(0.5, 0, 0),
+    lch: lcha(0.5, 36, 0),
     oklab: oklaba(0.5, 0, 0),
     oklch: oklcha(0.5, 0.15, 0),
   }
@@ -433,12 +433,12 @@ describe('convertColor', () => {
     expect(hsl.space).toBe('hsl')
     const h = hsl as ReturnType<typeof hsla>
     expect(h.h).toBeCloseTo(0, 0)
-    expect(h.s).toBeCloseTo(100, 0)
-    expect(h.l).toBeCloseTo(50, 0)
+    expect(h.s).toBeCloseTo(1, 2)
+    expect(h.l).toBeCloseTo(0.5, 2)
   })
 
   test('converts hsla green to rgb8', () => {
-    const rgb = convertColor(hsla(120, 100, 50), 'rgb8')
+    const rgb = convertColor(hsla(120, 1, 0.5), 'rgb8')
     expect(rgb.space).toBe('rgb8')
     const r = rgb as RGB8A
     expect(r.g).toBeCloseTo(255, 0)
@@ -473,7 +473,7 @@ describe('colorToString', () => {
   })
 
   test('serializes HSLA starting with hsl(', () => {
-    const s = colorToString(hsla(0, 100, 50))
+    const s = colorToString(hsla(0, 1, 0.5))
     expect(s.startsWith('hsl(')).toBe(true)
   })
 })

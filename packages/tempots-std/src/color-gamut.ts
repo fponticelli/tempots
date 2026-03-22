@@ -111,12 +111,12 @@ const toUnclampedSrgb = (c: Color): [number, number, number, number] => {
       return [linearToSrgb(rl), linearToSrgb(gl), linearToSrgb(bl), c.alpha]
     }
     case 'lab': {
-      const [x, y, z] = labToXyz(c.l, c.a, c.b)
+      const [x, y, z] = labToXyz(c.l * 100, c.a, c.b)
       const [rl, gl, bl] = xyzToLinearRgb(x, y, z)
       return [linearToSrgb(rl), linearToSrgb(gl), linearToSrgb(bl), c.alpha]
     }
     case 'lch': {
-      const [ll, la, lb] = lchToLab(c.l, c.c, c.h)
+      const [ll, la, lb] = lchToLab(c.l * 100, c.c, c.h)
       const [x, y, z] = labToXyz(ll, la, lb)
       const [rl, gl, bl] = xyzToLinearRgb(x, y, z)
       return [linearToSrgb(rl), linearToSrgb(gl), linearToSrgb(bl), c.alpha]

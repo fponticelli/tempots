@@ -29,8 +29,8 @@ describe('isInGamut', () => {
   })
 
   test('hsl colors are always in gamut', () => {
-    expect(isInGamut(hsla(0, 100, 50))).toBe(true)
-    expect(isInGamut(hsla(120, 50, 75))).toBe(true)
+    expect(isInGamut(hsla(0, 1, 0.5))).toBe(true)
+    expect(isInGamut(hsla(120, 0.5, 0.75))).toBe(true)
   })
 
   test('oklch with moderate chroma is in gamut', () => {
@@ -42,11 +42,11 @@ describe('isInGamut', () => {
   })
 
   test('lab with extreme values is out of gamut', () => {
-    expect(isInGamut(laba(50, 125, 125))).toBe(false)
+    expect(isInGamut(laba(0.5, 125, 125))).toBe(false)
   })
 
   test('lch with very high chroma is out of gamut', () => {
-    expect(isInGamut(lcha(50, 150, 150))).toBe(false)
+    expect(isInGamut(lcha(0.5, 150, 150))).toBe(false)
   })
 
   test('oklch black and white are in gamut', () => {
@@ -69,7 +69,7 @@ describe('clampToGamut', () => {
   })
 
   test('preserves original color space', () => {
-    const c = laba(50, 125, 125)
+    const c = laba(0.5, 125, 125)
     const clamped = clampToGamut(c)
     expect(clamped.space).toBe('lab')
     expect(isInGamut(clamped)).toBe(true)
@@ -96,7 +96,7 @@ describe('clampToGamutOklch', () => {
   })
 
   test('preserves original color space', () => {
-    const c = lcha(50, 150, 150)
+    const c = lcha(0.5, 150, 150)
     const clamped = clampToGamutOklch(c)
     expect(clamped.space).toBe('lch')
     expect(isInGamut(clamped)).toBe(true)

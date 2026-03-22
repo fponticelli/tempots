@@ -16,7 +16,7 @@ describe('getChannel', () => {
   })
 
   test('reads h from hsl', () => {
-    expect(getChannel(hsla(120, 50, 75), 'h')).toBe(120)
+    expect(getChannel(hsla(120, 0.5, 0.75), 'h')).toBe(120)
   })
 
   test('reads alpha', () => {
@@ -36,8 +36,8 @@ describe('getChannels', () => {
   })
 
   test('works for hsl', () => {
-    const channels = getChannels(hsla(120, 50, 75, 0.8))
-    expect(channels).toEqual({ h: 120, s: 50, l: 75, alpha: 0.8 })
+    const channels = getChannels(hsla(120, 0.5, 0.75, 0.8))
+    expect(channels).toEqual({ h: 120, s: 0.5, l: 0.75, alpha: 0.8 })
   })
 })
 
@@ -47,13 +47,13 @@ describe('getChannelsAsArray', () => {
   })
 
   test('hsl returns [h, s, l, alpha]', () => {
-    expect(getChannelsAsArray(hsla(120, 50, 75, 0.5))).toEqual([
-      120, 50, 75, 0.5,
+    expect(getChannelsAsArray(hsla(120, 0.5, 0.75, 0.5))).toEqual([
+      120, 0.5, 0.75, 0.5,
     ])
   })
 
   test('hsv returns [h, s, v, alpha]', () => {
-    expect(getChannelsAsArray(hsva(0, 100, 100))).toEqual([0, 100, 100, 1])
+    expect(getChannelsAsArray(hsva(0, 1, 1))).toEqual([0, 1, 1, 1])
   })
 
   test('oklch returns [l, c, h, alpha]', () => {
@@ -77,10 +77,10 @@ describe('withColor', () => {
   })
 
   test('changes hue in hsl', () => {
-    const result = withColor(hsla(0, 100, 50), { h: 120 })
+    const result = withColor(hsla(0, 1, 0.5), { h: 120 })
     expect(result.space).toBe('hsl')
     expect(result.h).toBe(120)
-    expect(result.s).toBe(100)
+    expect(result.s).toBe(1)
   })
 
   test('clamps out-of-range values', () => {
@@ -89,7 +89,7 @@ describe('withColor', () => {
   })
 
   test('wraps hue', () => {
-    const result = withColor(hsla(0, 100, 50), { h: 400 })
+    const result = withColor(hsla(0, 1, 0.5), { h: 400 })
     expect(result.h).toBe(40)
   })
 
@@ -133,7 +133,7 @@ describe('withAlpha', () => {
   })
 
   test('preserves type', () => {
-    const result = withAlpha(hsla(120, 100, 50), 0.3)
+    const result = withAlpha(hsla(120, 1, 0.5), 0.3)
     expect(result.space).toBe('hsl')
     expect(result.h).toBe(120)
   })

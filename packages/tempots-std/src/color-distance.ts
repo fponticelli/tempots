@@ -28,7 +28,9 @@ const deg2rad = (d: number): number => (d * Math.PI) / 180
 export const colorDistanceSimple = (a: Color, b: Color): number => {
   const lab1 = convertColor(a, 'lab') as LABA
   const lab2 = convertColor(b, 'lab') as LABA
-  const dL = lab1.l - lab2.l
+  const l1 = lab1.l * 100
+  const l2 = lab2.l * 100
+  const dL = l1 - l2
   const da = lab1.a - lab2.a
   const db = lab1.b - lab2.b
   return Math.sqrt(dL * dL + da * da + db * db)
@@ -59,10 +61,10 @@ export const colorDistance = (a: Color, b: Color): number => {
   const lab1 = convertColor(a, 'lab') as LABA
   const lab2 = convertColor(b, 'lab') as LABA
 
-  const L1 = lab1.l
+  const L1 = lab1.l * 100
   const a1 = lab1.a
   const b1 = lab1.b
-  const L2 = lab2.l
+  const L2 = lab2.l * 100
   const a2 = lab2.a
   const b2 = lab2.b
 
