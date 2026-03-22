@@ -1,5 +1,6 @@
 import { Prop } from '@tempots/core'
 import { Renderable } from '../types/domain'
+import type { HTMLEvents } from '../types/html-events'
 import { attr } from './attribute'
 import { Fragment } from './fragment'
 import {
@@ -22,7 +23,7 @@ import {
  */
 export const BindDate = (
   prop: Prop<Date>,
-  handler: keyof typeof on = 'input'
+  handler: keyof HTMLEvents = 'input'
 ): Renderable =>
   Fragment(
     attr.valueAsDate(prop),
@@ -38,7 +39,7 @@ export const BindDate = (
  */
 export const BindDateTime = (
   prop: Prop<Date>,
-  handler: keyof typeof on = 'input'
+  handler: keyof HTMLEvents = 'input'
 ): Renderable =>
   Fragment(
     attr.valueAsDate(prop),
@@ -54,7 +55,7 @@ export const BindDateTime = (
  */
 export const BindNumber = (
   prop: Prop<number>,
-  handler: keyof typeof on = 'input'
+  handler: keyof HTMLEvents = 'input'
 ): Renderable =>
   Fragment(
     attr.valueAsNumber(prop),
@@ -70,7 +71,7 @@ export const BindNumber = (
  */
 export const BindText = (
   prop: Prop<string>,
-  handler: keyof typeof on = 'input'
+  handler: keyof HTMLEvents = 'input'
 ): Renderable =>
   Fragment(attr.value(prop), on[handler](emitValue(v => prop.set(v))))
 

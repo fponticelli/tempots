@@ -2,6 +2,7 @@ import type { Renderable } from '../types/domain'
 import type { HTMLEvents } from '../types/html-events'
 import { DOMContext, HandlerOptions } from '../dom/dom-context'
 import { domRenderable } from '../types/domain'
+import { BrowserContext } from '../dom/browser-context'
 
 const handler = <T extends Event>(
   name: string,
@@ -14,6 +15,40 @@ const handler = <T extends Event>(
   r.kind = 'dynamic-attr'
   return r
 }
+
+const globalHandler =
+  (target: 'document' | 'window') =>
+  <T extends Event>(
+    name: string,
+    handler: (event: T, ctx: DOMContext) => void,
+    options?: HandlerOptions
+  ): Renderable => {
+    const r = domRenderable((ctx: DOMContext) => {
+      if (!ctx.isBrowser()) {
+        return () => {}
+      }
+
+      const bc = ctx as BrowserContext
+      const el = bc.element
+      const eventTarget = target === 'document' ? bc.document : bc.getWindow()
+      let disposed = false
+      const listener = (event: Event) => {
+        if (disposed || !el.isConnected) return
+        handler(event as T, ctx)
+      }
+
+      eventTarget.addEventListener(name, listener, options)
+      return () => {
+        disposed = true
+        eventTarget.removeEventListener(name, listener, options)
+      }
+    }) as Renderable & Record<string, unknown>
+    r.kind = 'dynamic-attr'
+    return r
+  }
+
+const documentHandler = globalHandler('document')
+const windowHandler = globalHandler('window')
 
 /**
  * Attaches an event handler to the 'click' event that triggers when a checkbox is checked or unchecked.
@@ -32,11 +67,37 @@ export const OnChecked = (fn: (event: boolean, ctx: DOMContext) => void) =>
     }, 0)
   })
 
+type EventHandlerMap = {
+  [EN in keyof HTMLEvents]: (
+    handler: (event: HTMLEvents[EN], ctx: DOMContext) => void,
+    options?: HandlerOptions
+  ) => Renderable
+}
+
+const makeEventProxy = (
+  factory: <T extends Event>(
+    name: string,
+    handler: (event: T, ctx: DOMContext) => void,
+    options?: HandlerOptions
+  ) => Renderable
+): EventHandlerMap =>
+  new Proxy({} as EventHandlerMap, {
+    get: (_, name: keyof HTMLEvents) => {
+      return (
+        fn: (event: HTMLEvents[typeof name], ctx: DOMContext) => void,
+        options?: HandlerOptions
+      ) => factory(name, fn, options)
+    },
+  })
+
 /**
  * Provides type-safe event handlers for all HTML events.
  *
  * The `on` object is a proxy that provides access to all standard HTML events with proper
  * TypeScript typing. Each event handler receives the native event object and the DOM context.
+ *
+ * Use `on.document` to attach listeners to `document` and `on.window` to attach listeners
+ * to `window`. These listeners are automatically removed when the component is disposed.
  *
  * @example
  * ```typescript
@@ -86,23 +147,60 @@ export const OnChecked = (fn: (event: boolean, ctx: DOMContext) => void) =>
  * )
  * ```
  *
+ * @example
+ * ```typescript
+ * // Global keyboard shortcut scoped to a component's lifetime
+ * html.div(
+ *   on.document.keydown((event) => {
+ *     if (event.key === 'Escape') {
+ *       console.log('Escape pressed anywhere!')
+ *     }
+ *   }),
+ *   'Press Escape anywhere'
+ * )
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Window resize listener scoped to a component's lifetime
+ * html.div(
+ *   on.window.resize(() => {
+ *     console.log('Window resized!')
+ *   }),
+ *   'Resize the window'
+ * )
+ * ```
+ *
  * @public
  */
-export const on = new Proxy(
-  {} as {
-    [EN in keyof HTMLEvents]: (
-      handler: (event: HTMLEvents[EN], ctx: DOMContext) => void
-    ) => Renderable
+export const on: EventHandlerMap & {
+  /**
+   * Attaches event listeners to `document`. The listener is automatically
+   * removed when the component is disposed.
+   */
+  document: EventHandlerMap
+  /**
+   * Attaches event listeners to `window`. The listener is automatically
+   * removed when the component is disposed.
+   */
+  window: EventHandlerMap
+} = new Proxy(
+  {} as EventHandlerMap & {
+    document: EventHandlerMap
+    window: EventHandlerMap
   },
   {
-    /**
-     * @param name - The name of the event handler.
-     * @param fn - The function to call when the event is triggered.
-     * @returns A `Renderable` function that adds the event listener to the element.
-     */
-    get: (_, name: keyof HTMLEvents) => {
-      return (fn: (event: HTMLEvents[typeof name], ctx: DOMContext) => void) =>
-        handler(name, fn)
+    get: (_, name: string) => {
+      if (name === 'document') {
+        return makeEventProxy(documentHandler)
+      }
+      if (name === 'window') {
+        return makeEventProxy(windowHandler)
+      }
+      return (
+        fn: (event: HTMLEvents[keyof HTMLEvents], ctx: DOMContext) => void,
+        options?: HandlerOptions
+      ) => handler(name, fn, options)
     },
   }
 )

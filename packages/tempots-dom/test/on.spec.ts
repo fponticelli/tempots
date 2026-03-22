@@ -502,6 +502,219 @@ describe('Event Handlers', () => {
     })
   })
 
+  describe('on.document', () => {
+    test('should attach event listener to document', () => {
+      const keydownHandler = vi.fn()
+
+      const clear = render(
+        html.div(
+          on.document.keydown(keydownHandler),
+          'Press a key'
+        ),
+        document.body
+      )
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+
+      expect(keydownHandler).toHaveBeenCalledTimes(1)
+      expect(keydownHandler).toHaveBeenCalledWith(
+        expect.any(KeyboardEvent),
+        expect.any(Object)
+      )
+      clear()
+    })
+
+    test('should remove listener on dispose', () => {
+      const clickHandler = vi.fn()
+
+      const clear = render(
+        html.div(on.document.click(clickHandler), 'Click anywhere'),
+        document.body
+      )
+
+      document.dispatchEvent(new MouseEvent('click'))
+      expect(clickHandler).toHaveBeenCalledTimes(1)
+
+      clear()
+
+      document.dispatchEvent(new MouseEvent('click'))
+      expect(clickHandler).toHaveBeenCalledTimes(1)
+    })
+
+    test('should support multiple document listeners', () => {
+      const keydownHandler = vi.fn()
+      const clickHandler = vi.fn()
+
+      const clear = render(
+        html.div(
+          on.document.keydown(keydownHandler),
+          on.document.click(clickHandler),
+          'Multi listener'
+        ),
+        document.body
+      )
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))
+      document.dispatchEvent(new MouseEvent('click'))
+
+      expect(keydownHandler).toHaveBeenCalledTimes(1)
+      expect(clickHandler).toHaveBeenCalledTimes(1)
+      clear()
+    })
+
+    test('should pass DOMContext to handler', () => {
+      let receivedCtx: unknown = null
+
+      const clear = render(
+        html.div(
+          on.document.click((_event, ctx) => {
+            receivedCtx = ctx
+          }),
+          'Click'
+        ),
+        document.body
+      )
+
+      document.dispatchEvent(new MouseEvent('click'))
+      expect(receivedCtx).not.toBeNull()
+      expect(receivedCtx).toHaveProperty('element')
+      clear()
+    })
+
+    test('should be no-op in headless environment', () => {
+      const clickHandler = vi.fn()
+
+      const { root, clear } = runHeadless(() =>
+        html.div(on.document.click(clickHandler), 'Click')
+      )
+
+      expect(root.contentToHTML()).toBe('<div>Click</div>')
+      clear()
+    })
+
+    test('should not fire after parent element is removed from DOM', () => {
+      const clickHandler = vi.fn()
+
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+
+      const clear = render(
+        html.div(on.document.click(clickHandler), 'Click'),
+        container
+      )
+
+      document.dispatchEvent(new MouseEvent('click'))
+      expect(clickHandler).toHaveBeenCalledTimes(1)
+
+      // Remove the parent from DOM without calling clear
+      container.remove()
+
+      document.dispatchEvent(new MouseEvent('click'))
+      expect(clickHandler).toHaveBeenCalledTimes(1)
+
+      clear()
+    })
+  })
+
+  describe('on.window', () => {
+    test('should attach event listener to window', () => {
+      const resizeHandler = vi.fn()
+
+      const clear = render(
+        html.div(on.window.resize(resizeHandler), 'Resize'),
+        document.body
+      )
+
+      window.dispatchEvent(new Event('resize'))
+
+      expect(resizeHandler).toHaveBeenCalledTimes(1)
+      expect(resizeHandler).toHaveBeenCalledWith(
+        expect.any(Event),
+        expect.any(Object)
+      )
+      clear()
+    })
+
+    test('should remove listener on dispose', () => {
+      const resizeHandler = vi.fn()
+
+      const clear = render(
+        html.div(on.window.resize(resizeHandler), 'Resize'),
+        document.body
+      )
+
+      window.dispatchEvent(new Event('resize'))
+      expect(resizeHandler).toHaveBeenCalledTimes(1)
+
+      clear()
+
+      window.dispatchEvent(new Event('resize'))
+      expect(resizeHandler).toHaveBeenCalledTimes(1)
+    })
+
+    test('should support scroll events on window', () => {
+      const scrollHandler = vi.fn()
+
+      const clear = render(
+        html.div(on.window.scroll(scrollHandler), 'Scroll'),
+        document.body
+      )
+
+      window.dispatchEvent(new Event('scroll'))
+
+      expect(scrollHandler).toHaveBeenCalledTimes(1)
+      clear()
+    })
+
+    test('should support keyboard events on window', () => {
+      const keydownHandler = vi.fn()
+
+      const clear = render(
+        html.div(on.window.keydown(keydownHandler), 'Key'),
+        document.body
+      )
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+
+      expect(keydownHandler).toHaveBeenCalledTimes(1)
+      clear()
+    })
+
+    test('should be no-op in headless environment', () => {
+      const resizeHandler = vi.fn()
+
+      const { root, clear } = runHeadless(() =>
+        html.div(on.window.resize(resizeHandler), 'Resize')
+      )
+
+      expect(root.contentToHTML()).toBe('<div>Resize</div>')
+      clear()
+    })
+
+    test('should not fire after parent element is removed from DOM', () => {
+      const resizeHandler = vi.fn()
+
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+
+      const clear = render(
+        html.div(on.window.resize(resizeHandler), 'Resize'),
+        container
+      )
+
+      window.dispatchEvent(new Event('resize'))
+      expect(resizeHandler).toHaveBeenCalledTimes(1)
+
+      // Remove the parent from DOM without calling clear
+      container.remove()
+
+      window.dispatchEvent(new Event('resize'))
+      expect(resizeHandler).toHaveBeenCalledTimes(1)
+
+      clear()
+    })
+  })
+
   describe('emit with preventDefault option', () => {
     test('should prevent default and call function', () => {
       const mockFn = vi.fn()
