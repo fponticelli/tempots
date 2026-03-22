@@ -57,6 +57,10 @@
       "import": "./color-distance.js",
       "require": "./color-distance.cjs"
     },
+    "./color-gamut": {
+      "import": "./color-gamut.js",
+      "require": "./color-gamut.cjs"
+    },
     "./color-harmony": {
       "import": "./color-harmony.js",
       "require": "./color-harmony.cjs"
@@ -219,6 +223,9 @@
       ],
       "color-distance": [
         "./color-distance.d.ts"
+      ],
+      "color-gamut": [
+        "./color-gamut.d.ts"
       ],
       "color-harmony": [
         "./color-harmony.d.ts"
