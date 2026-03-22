@@ -45,6 +45,10 @@
       "import": "./color-adjust.js",
       "require": "./color-adjust.cjs"
     },
+    "./color-channel": {
+      "import": "./color-channel.js",
+      "require": "./color-channel.cjs"
+    },
     "./color-contrast": {
       "import": "./color-contrast.js",
       "require": "./color-contrast.cjs"
@@ -206,6 +210,9 @@
       ],
       "color-adjust": [
         "./color-adjust.d.ts"
+      ],
+      "color-channel": [
+        "./color-channel.d.ts"
       ],
       "color-contrast": [
         "./color-contrast.d.ts"
