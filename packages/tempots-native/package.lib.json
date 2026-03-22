@@ -1,6 +1,6 @@
 {
   "name": "@tempots/native",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "sideEffects": false,
   "main": "./index.cjs",
@@ -15,8 +15,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@tempots/core": "^3.0.1",
-    "@tempots/render": "^0.0.7"
+    "@tempots/core": "^3.2.1",
+    "@tempots/render": "^0.0.8"
   },
   "description": "Native iOS/Android rendering for the Tempo framework via JSI bridge",
   "keywords": [

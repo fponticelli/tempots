@@ -1,6 +1,6 @@
 {
   "name": "@tempots/dom",
-  "version": "37.4.0",
+  "version": "37.4.1",
   "type": "module",
   "sideEffects": false,
   "main": "./index.cjs",
@@ -15,8 +15,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@tempots/core": "^3.2.0",
-    "@tempots/render": "^0.0.7"
+    "@tempots/core": "^3.2.1",
+    "@tempots/render": "^0.0.8"
   },
   "description": "Fully-typed frontend framework alternative to React and Angular",
   "keywords": [
