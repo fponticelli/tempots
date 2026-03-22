@@ -49,6 +49,22 @@
       "import": "./dist/boolean.js",
       "require": "./dist/boolean.cjs"
     },
+    "./color-adjust": {
+      "import": "./dist/color-adjust.js",
+      "require": "./dist/color-adjust.cjs"
+    },
+    "./color-contrast": {
+      "import": "./dist/color-contrast.js",
+      "require": "./dist/color-contrast.cjs"
+    },
+    "./color-distance": {
+      "import": "./dist/color-distance.js",
+      "require": "./dist/color-distance.cjs"
+    },
+    "./color-harmony": {
+      "import": "./dist/color-harmony.js",
+      "require": "./dist/color-harmony.cjs"
+    },
     "./color-hsl": {
       "import": "./dist/color-hsl.js",
       "require": "./dist/color-hsl.cjs"
@@ -65,6 +81,10 @@
       "import": "./dist/color-lab.js",
       "require": "./dist/color-lab.cjs"
     },
+    "./color-mix": {
+      "import": "./dist/color-mix.js",
+      "require": "./dist/color-mix.cjs"
+    },
     "./color-named": {
       "import": "./dist/color-named.js",
       "require": "./dist/color-named.cjs"
@@ -76,6 +96,10 @@
     "./color-rgb": {
       "import": "./dist/color-rgb.js",
       "require": "./dist/color-rgb.cjs"
+    },
+    "./color-utils": {
+      "import": "./dist/color-utils.js",
+      "require": "./dist/color-utils.cjs"
     },
     "./color": {
       "import": "./dist/color.js",
@@ -228,6 +252,18 @@
       "boolean": [
         "./dist/boolean.d.ts"
       ],
+      "color-adjust": [
+        "./dist/color-adjust.d.ts"
+      ],
+      "color-contrast": [
+        "./dist/color-contrast.d.ts"
+      ],
+      "color-distance": [
+        "./dist/color-distance.d.ts"
+      ],
+      "color-harmony": [
+        "./dist/color-harmony.d.ts"
+      ],
       "color-hsl": [
         "./dist/color-hsl.d.ts"
       ],
@@ -240,6 +276,9 @@
       "color-lab": [
         "./dist/color-lab.d.ts"
       ],
+      "color-mix": [
+        "./dist/color-mix.d.ts"
+      ],
       "color-named": [
         "./dist/color-named.d.ts"
       ],
@@ -248,6 +287,9 @@
       ],
       "color-rgb": [
         "./dist/color-rgb.d.ts"
+      ],
+      "color-utils": [
+        "./dist/color-utils.d.ts"
       ],
       "color": [
         "./dist/color.d.ts"

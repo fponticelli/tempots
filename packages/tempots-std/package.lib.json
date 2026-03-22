@@ -41,6 +41,22 @@
       "import": "./boolean.js",
       "require": "./boolean.cjs"
     },
+    "./color-adjust": {
+      "import": "./color-adjust.js",
+      "require": "./color-adjust.cjs"
+    },
+    "./color-contrast": {
+      "import": "./color-contrast.js",
+      "require": "./color-contrast.cjs"
+    },
+    "./color-distance": {
+      "import": "./color-distance.js",
+      "require": "./color-distance.cjs"
+    },
+    "./color-harmony": {
+      "import": "./color-harmony.js",
+      "require": "./color-harmony.cjs"
+    },
     "./color-hsl": {
       "import": "./color-hsl.js",
       "require": "./color-hsl.cjs"
@@ -57,6 +73,10 @@
       "import": "./color-lab.js",
       "require": "./color-lab.cjs"
     },
+    "./color-mix": {
+      "import": "./color-mix.js",
+      "require": "./color-mix.cjs"
+    },
     "./color-named": {
       "import": "./color-named.js",
       "require": "./color-named.cjs"
@@ -68,6 +88,10 @@
     "./color-rgb": {
       "import": "./color-rgb.js",
       "require": "./color-rgb.cjs"
+    },
+    "./color-utils": {
+      "import": "./color-utils.js",
+      "require": "./color-utils.cjs"
     },
     "./color": {
       "import": "./color.js",
@@ -180,6 +204,18 @@
       "boolean": [
         "./boolean.d.ts"
       ],
+      "color-adjust": [
+        "./color-adjust.d.ts"
+      ],
+      "color-contrast": [
+        "./color-contrast.d.ts"
+      ],
+      "color-distance": [
+        "./color-distance.d.ts"
+      ],
+      "color-harmony": [
+        "./color-harmony.d.ts"
+      ],
       "color-hsl": [
         "./color-hsl.d.ts"
       ],
@@ -192,6 +228,9 @@
       "color-lab": [
         "./color-lab.d.ts"
       ],
+      "color-mix": [
+        "./color-mix.d.ts"
+      ],
       "color-named": [
         "./color-named.d.ts"
       ],
@@ -200,6 +239,9 @@
       ],
       "color-rgb": [
         "./color-rgb.d.ts"
+      ],
+      "color-utils": [
+        "./color-utils.d.ts"
       ],
       "color": [
         "./color.d.ts"
