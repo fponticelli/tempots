@@ -190,14 +190,6 @@ export class Signal<T> implements ReadSignal<T> {
    */
   protected _onDisposeListeners: Array<() => void> | null = null
   /**
-   * Monotonically increasing counter, bumped each time `_setAndNotify`
-   * accepts a genuinely new value. Used by `Computed._scheduleNotify` to
-   * detect whether any parent actually changed before re-running `_fn`.
-   * @internal
-   */
-  _generation = 0
-
-  /**
    * Represents a signal with a value of type T.
    *
    * @param value - The initial value of the signal.
@@ -335,7 +327,6 @@ export class Signal<T> implements ReadSignal<T> {
     const same = this.equals(currentValue, newV)
     if (!same) {
       this._value = newV
-      this._generation++
       const derivatives = this._derivatives
       if (derivatives !== null) {
         for (let i = 0; i < derivatives.length; i++) derivatives[i].setDirty()
@@ -859,14 +850,6 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
    * Used for structural disposal: Computed.dispose() removes itself from parents.
    */
   _parents: Array<Signal<unknown>> | null = null
-  /**
-   * Sum of parent `_generation` counters at the time of the last computation.
-   * If the sum hasn't changed when a scheduled notify fires, no parent
-   * actually produced a new value and `_fn` can be skipped.
-   * Starts at -1 so the first computation always runs.
-   * @internal
-   */
-  protected _parentGenSum = -1
 
   /**
    * Creates a new Computed signal.
@@ -946,21 +929,7 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
     queue(() => {
       if (this._scheduleCount !== count || this._disposed) return
       if (this._isDirty) {
-        // Force parents to settle while still dirty, so any re-entry
-        // via parent._setAndNotify → this.setDirty() is a no-op.
-        const parents = this._parents
-        if (parents !== null) {
-          let genSum = 0
-          for (let i = 0; i < parents.length; i++) {
-            parents[i].get()
-            genSum += parents[i]._generation
-          }
-          this._isDirty = false
-          if (genSum === this._parentGenSum) return // no parent changed
-          this._parentGenSum = genSum
-        } else {
-          this._isDirty = false
-        }
+        this._isDirty = false
         this._setAndNotify(this._fn())
       }
     })
@@ -981,14 +950,6 @@ export class Computed<T> extends Signal<T> implements ReadSignal<T> {
   get() {
     if (this._isDirty && !this._disposed) {
       this._isDirty = false
-      const parents = this._parents
-      if (parents !== null) {
-        let genSum = 0
-        for (let i = 0; i < parents.length; i++) {
-          genSum += parents[i]._generation
-        }
-        this._parentGenSum = genSum
-      }
       this._setAndNotify(this._fn())
     }
     return this._value
@@ -1243,7 +1204,26 @@ export const effect = (
       }
     }
   }
-  const signal = computed(actualFn, signals)
+  // Wrap fn to snapshot dependency values and skip when unchanged.
+  // This prevents effects from re-running when an intermediate computed
+  // is marked dirty but recomputes to the same value.
+  const wrappedFn = actualFn
+  const len = signals.length
+  const prev: unknown[] = new Array(len)
+  let initialized = false
+  const guardedFn = () => {
+    let changed = !initialized
+    for (let i = 0; i < len; i++) {
+      const v = signals[i].get()
+      if (v !== prev[i]) {
+        prev[i] = v
+        changed = true
+      }
+    }
+    initialized = true
+    if (changed) wrappedFn()
+  }
+  const signal = computed(guardedFn, signals)
   const clear = () => {
     signal.dispose()
     if (options.abortSignal != null) {
