@@ -49,6 +49,38 @@
       "import": "./dist/boolean.js",
       "require": "./dist/boolean.cjs"
     },
+    "./color-hsl": {
+      "import": "./dist/color-hsl.js",
+      "require": "./dist/color-hsl.cjs"
+    },
+    "./color-hsv": {
+      "import": "./dist/color-hsv.js",
+      "require": "./dist/color-hsv.cjs"
+    },
+    "./color-hwb": {
+      "import": "./dist/color-hwb.js",
+      "require": "./dist/color-hwb.cjs"
+    },
+    "./color-lab": {
+      "import": "./dist/color-lab.js",
+      "require": "./dist/color-lab.cjs"
+    },
+    "./color-named": {
+      "import": "./dist/color-named.js",
+      "require": "./dist/color-named.cjs"
+    },
+    "./color-oklab": {
+      "import": "./dist/color-oklab.js",
+      "require": "./dist/color-oklab.cjs"
+    },
+    "./color-rgb": {
+      "import": "./dist/color-rgb.js",
+      "require": "./dist/color-rgb.cjs"
+    },
+    "./color": {
+      "import": "./dist/color.js",
+      "require": "./dist/color.cjs"
+    },
     "./date": {
       "import": "./dist/date.js",
       "require": "./dist/date.cjs"
@@ -195,6 +227,30 @@
       ],
       "boolean": [
         "./dist/boolean.d.ts"
+      ],
+      "color-hsl": [
+        "./dist/color-hsl.d.ts"
+      ],
+      "color-hsv": [
+        "./dist/color-hsv.d.ts"
+      ],
+      "color-hwb": [
+        "./dist/color-hwb.d.ts"
+      ],
+      "color-lab": [
+        "./dist/color-lab.d.ts"
+      ],
+      "color-named": [
+        "./dist/color-named.d.ts"
+      ],
+      "color-oklab": [
+        "./dist/color-oklab.d.ts"
+      ],
+      "color-rgb": [
+        "./dist/color-rgb.d.ts"
+      ],
+      "color": [
+        "./dist/color.d.ts"
       ],
       "date": [
         "./dist/date.d.ts"

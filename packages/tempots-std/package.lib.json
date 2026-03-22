@@ -41,6 +41,38 @@
       "import": "./boolean.js",
       "require": "./boolean.cjs"
     },
+    "./color-hsl": {
+      "import": "./color-hsl.js",
+      "require": "./color-hsl.cjs"
+    },
+    "./color-hsv": {
+      "import": "./color-hsv.js",
+      "require": "./color-hsv.cjs"
+    },
+    "./color-hwb": {
+      "import": "./color-hwb.js",
+      "require": "./color-hwb.cjs"
+    },
+    "./color-lab": {
+      "import": "./color-lab.js",
+      "require": "./color-lab.cjs"
+    },
+    "./color-named": {
+      "import": "./color-named.js",
+      "require": "./color-named.cjs"
+    },
+    "./color-oklab": {
+      "import": "./color-oklab.js",
+      "require": "./color-oklab.cjs"
+    },
+    "./color-rgb": {
+      "import": "./color-rgb.js",
+      "require": "./color-rgb.cjs"
+    },
+    "./color": {
+      "import": "./color.js",
+      "require": "./color.cjs"
+    },
     "./date": {
       "import": "./date.js",
       "require": "./date.cjs"
@@ -147,6 +179,30 @@
       ],
       "boolean": [
         "./boolean.d.ts"
+      ],
+      "color-hsl": [
+        "./color-hsl.d.ts"
+      ],
+      "color-hsv": [
+        "./color-hsv.d.ts"
+      ],
+      "color-hwb": [
+        "./color-hwb.d.ts"
+      ],
+      "color-lab": [
+        "./color-lab.d.ts"
+      ],
+      "color-named": [
+        "./color-named.d.ts"
+      ],
+      "color-oklab": [
+        "./color-oklab.d.ts"
+      ],
+      "color-rgb": [
+        "./color-rgb.d.ts"
+      ],
+      "color": [
+        "./color.d.ts"
       ],
       "date": [
         "./date.d.ts"
