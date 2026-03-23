@@ -1,7 +1,7 @@
 {
   "name": "@tempots/server",
   "private": false,
-  "version": "0.0.5",
+  "version": "0.0.7",
   "priority": 3,
   "description": "Server-side rendering utilities for Tempo applications",
   "keywords": [

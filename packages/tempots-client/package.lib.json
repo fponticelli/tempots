@@ -1,6 +1,6 @@
 {
   "name": "@tempots/client",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "type": "module",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -35,6 +35,6 @@
   },
   "peerDependencies": {
     "@tempots/core": "^3.2.1",
-    "@tempots/dom": "^37.4.1"
+    "@tempots/dom": "^37.4.3"
   }
 }

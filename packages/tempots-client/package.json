@@ -1,7 +1,7 @@
 {
   "name": "@tempots/client",
   "private": false,
-  "version": "0.0.5",
+  "version": "0.0.7",
   "priority": 3,
   "description": "Client-side hydration utilities for Tempo SSR applications",
   "keywords": [
