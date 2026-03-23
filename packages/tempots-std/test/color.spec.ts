@@ -465,11 +465,11 @@ describe('convertColor', () => {
 
 describe('colorToString', () => {
   test('serializes RGB8A as rgb()', () => {
-    expect(colorToString(rgb8a(255, 0, 0))).toBe('rgb(255, 0, 0)')
+    expect(colorToString(rgb8a(255, 0, 0))).toBe('rgb(255 0 0)')
   })
 
-  test('serializes RGBA (0-1) as rgb() via conversion', () => {
-    expect(colorToString(rgba(1, 0, 0))).toBe('rgb(255, 0, 0)')
+  test('serializes RGBA (0-1) as rgb() with percentages', () => {
+    expect(colorToString(rgba(1, 0, 0))).toBe('rgb(100% 0% 0%)')
   })
 
   test('serializes HSLA starting with hsl(', () => {

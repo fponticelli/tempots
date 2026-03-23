@@ -195,12 +195,12 @@ describe('rgb8aToHexString', () => {
 
 describe('rgb8aToRgbString', () => {
   test('serializes opaque color as rgb()', () => {
-    expect(rgb8aToRgbString(rgb8a(255, 0, 0))).toBe('rgb(255, 0, 0)')
+    expect(rgb8aToRgbString(rgb8a(255, 0, 0))).toBe('rgb(255 0 0)')
   })
 
-  test('serializes translucent color as rgba()', () => {
+  test('serializes translucent color with alpha', () => {
     expect(rgb8aToRgbString(rgb8a(255, 0, 0, 0.5))).toBe(
-      'rgba(255, 0, 0, 0.5)'
+      'rgb(255 0 0 / 0.5)'
     )
   })
 })

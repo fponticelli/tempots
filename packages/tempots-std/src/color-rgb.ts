@@ -6,7 +6,7 @@
 
 import { ParsingError } from './error'
 import { clampInt, toHex } from './number'
-import { type RGB8A, rgb8a, parseAlpha } from './color'
+import { type RGB8A, type RGBA, rgb8a, parseAlpha } from './color'
 import { NAMED_COLORS } from './color-named'
 
 // ---------------------------------------------------------------------------
@@ -15,11 +15,21 @@ import { NAMED_COLORS } from './color-named'
 
 const HEX_RE = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i
 
+// Integer values: rgb(255, 0, 0) or rgba(255, 0, 0, 0.5)
 const RGB_LEGACY_RE =
   /^rgba?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*(?:,\s*([\d.]+%?)\s*)?\)$/i
 
+// Integer values: rgb(255 0 0) or rgb(255 0 0 / 0.5)
 const RGB_MODERN_RE =
   /^rgba?\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*(?:\/\s*([\d.]+%?)\s*)?\)$/i
+
+// Percentage values: rgb(100%, 0%, 0%) or rgba(100%, 0%, 0%, 0.5)
+const RGB_PCT_LEGACY_RE =
+  /^rgba?\(\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*,\s*(\d+(?:\.\d+)?)%\s*(?:,\s*([\d.]+%?)\s*)?\)$/i
+
+// Percentage values: rgb(100% 0% 0%) or rgb(100% 0% 0% / 0.5)
+const RGB_PCT_MODERN_RE =
+  /^rgba?\(\s*(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%\s*(?:\/\s*([\d.]+%?)\s*)?\)$/i
 
 // ---------------------------------------------------------------------------
 // Hex
@@ -106,18 +116,25 @@ export const parseHex = (s: string): RGB8A => {
  * ```ts
  * canParseRgb('rgb(255, 0, 0)') // true
  * canParseRgb('rgb(255 0 0 / 0.5)') // true
+ * canParseRgb('rgb(100% 0% 0%)') // true
  * canParseRgb('#ff0000') // false
  * ```
  */
 export const canParseRgb = (s: string): boolean => {
   const trimmed = s.trim()
-  return RGB_LEGACY_RE.test(trimmed) || RGB_MODERN_RE.test(trimmed)
+  return (
+    RGB_LEGACY_RE.test(trimmed) ||
+    RGB_MODERN_RE.test(trimmed) ||
+    RGB_PCT_LEGACY_RE.test(trimmed) ||
+    RGB_PCT_MODERN_RE.test(trimmed)
+  )
 }
 
 /**
  * Parses an `rgb()` or `rgba()` color string into an RGB8A color.
  *
- * Supports both legacy comma-separated and modern space-separated syntax.
+ * Supports integer values (0–255), percentage values (0%–100%), both
+ * legacy comma-separated and modern space-separated syntax.
  *
  * @param s - The string to parse.
  * @returns An RGB8A color.
@@ -126,20 +143,36 @@ export const canParseRgb = (s: string): boolean => {
  * @example
  * ```ts
  * parseRgb('rgb(255, 0, 0)') // rgb8a(255, 0, 0)
- * parseRgb('rgba(255, 0, 0, 0.5)') // rgb8a(255, 0, 0, 0.5)
  * parseRgb('rgb(255 0 0 / 50%)') // rgb8a(255, 0, 0, 0.5)
+ * parseRgb('rgb(100% 0% 0%)') // rgb8a(255, 0, 0)
  * ```
  */
 export const parseRgb = (s: string): RGB8A => {
   const trimmed = s.trim()
+
+  // Try integer patterns first
   const m = RGB_LEGACY_RE.exec(trimmed) ?? RGB_MODERN_RE.exec(trimmed)
-  if (!m) throw new ParsingError(`Invalid rgb color: '${s}'`)
-  return rgb8a(
-    clampInt(parseFloat(m[1]), 0, 255),
-    clampInt(parseFloat(m[2]), 0, 255),
-    clampInt(parseFloat(m[3]), 0, 255),
-    parseAlpha(m[4])
-  )
+  if (m) {
+    return rgb8a(
+      clampInt(parseFloat(m[1]), 0, 255),
+      clampInt(parseFloat(m[2]), 0, 255),
+      clampInt(parseFloat(m[3]), 0, 255),
+      parseAlpha(m[4])
+    )
+  }
+
+  // Try percentage patterns
+  const mp = RGB_PCT_LEGACY_RE.exec(trimmed) ?? RGB_PCT_MODERN_RE.exec(trimmed)
+  if (mp) {
+    return rgb8a(
+      Math.round((parseFloat(mp[1]) / 100) * 255),
+      Math.round((parseFloat(mp[2]) / 100) * 255),
+      Math.round((parseFloat(mp[3]) / 100) * 255),
+      parseAlpha(mp[4])
+    )
+  }
+
+  throw new ParsingError(`Invalid rgb color: '${s}'`)
 }
 
 // ---------------------------------------------------------------------------
@@ -214,11 +247,34 @@ export const rgb8aToHexString = (c: RGB8A): string => {
  * @public
  * @example
  * ```ts
- * rgb8aToRgbString(rgb8a(255, 0, 0)) // 'rgb(255, 0, 0)'
- * rgb8aToRgbString(rgb8a(255, 0, 0, 0.5)) // 'rgba(255, 0, 0, 0.5)'
+ * rgb8aToRgbString(rgb8a(255, 0, 0)) // 'rgb(255 0 0)'
+ * rgb8aToRgbString(rgb8a(255, 0, 0, 0.5)) // 'rgb(255 0 0 / 0.5)'
  * ```
  */
 export const rgb8aToRgbString = (c: RGB8A): string => {
-  if (c.alpha >= 1) return `rgb(${c.r}, ${c.g}, ${c.b})`
-  return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.alpha})`
+  if (c.alpha >= 1) return `rgb(${c.r} ${c.g} ${c.b})`
+  return `rgb(${c.r} ${c.g} ${c.b} / ${c.alpha})`
 }
+
+/**
+ * Serializes an RGBA color (0–1) to an `rgb()` CSS string using
+ * percentage values.
+ *
+ * @param c - The RGBA color to serialize.
+ * @returns A CSS color string.
+ * @public
+ * @example
+ * ```ts
+ * rgbaToRgbString(rgba(1, 0, 0)) // 'rgb(100% 0% 0%)'
+ * rgbaToRgbString(rgba(1, 0, 0, 0.5)) // 'rgb(100% 0% 0% / 0.5)'
+ * ```
+ */
+export const rgbaToRgbString = (c: RGBA): string => {
+  const r = round2(c.r * 100)
+  const g = round2(c.g * 100)
+  const b = round2(c.b * 100)
+  if (c.alpha >= 1) return `rgb(${r}% ${g}% ${b}%)`
+  return `rgb(${r}% ${g}% ${b}% / ${c.alpha})`
+}
+
+const round2 = (v: number): number => Math.round(v * 100) / 100

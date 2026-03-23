@@ -18,6 +18,7 @@ import {
   parseNamedColor,
   rgb8aToHexString,
   rgb8aToRgbString,
+  rgbaToRgbString,
 } from './color-rgb'
 import {
   canParseHsl,
@@ -783,14 +784,14 @@ export const convertColor = (c: Color, to: ColorSpace): Color => {
  * @public
  * @example
  * ```ts
- * colorToString(rgb8a(255, 0, 0)) // 'rgb(255, 0, 0)'
- * colorToString(hsla(0, 100, 50)) // 'hsl(0, 100%, 50%)'
+ * colorToString(rgb8a(255, 0, 0)) // 'rgb(255 0 0)'
+ * colorToString(hsla(0, 1, 0.5)) // 'hsl(0 100% 50%)'
  * ```
  */
 export const colorToString = (c: Color): string => {
   switch (c.space) {
     case 'rgb':
-      return rgb8aToRgbString(rgbaToRgb8a(c))
+      return rgbaToRgbString(c)
     case 'rgb8':
       return rgb8aToRgbString(c)
     case 'hsl':

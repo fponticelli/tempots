@@ -110,12 +110,12 @@ describe('round-trip rgb8a -> hsva -> rgb8a', () => {
 
 describe('hsvaToHsvString', () => {
   test('should serialize opaque color without alpha', () => {
-    expect(hsvaToHsvString(hsva(0, 1, 1))).toBe('hsv(0, 100%, 100%)')
+    expect(hsvaToHsvString(hsva(0, 1, 1))).toBe('hsv(0 100% 100%)')
   })
 
   test('should serialize translucent color with alpha', () => {
     expect(hsvaToHsvString(hsva(120, 0.5, 0.8, 0.5))).toBe(
-      'hsva(120, 50%, 80%, 0.5)'
+      'hsv(120 50% 80% / 0.5)'
     )
   })
 })

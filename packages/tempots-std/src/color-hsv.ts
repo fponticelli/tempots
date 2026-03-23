@@ -250,6 +250,9 @@ export const hsvaToHsla = (c: HSVA): HSLA => {
  * ```
  */
 export const hsvaToHsvString = (c: HSVA): string => {
-  if (c.alpha >= 1) return `hsv(${c.h}, ${c.s * 100}%, ${c.v * 100}%)`
-  return `hsva(${c.h}, ${c.s * 100}%, ${c.v * 100}%, ${c.alpha})`
+  const h = c.h
+  const s = Math.round(c.s * 10000) / 100
+  const v = Math.round(c.v * 10000) / 100
+  if (c.alpha >= 1) return `hsv(${h} ${s}% ${v}%)`
+  return `hsv(${h} ${s}% ${v}% / ${c.alpha})`
 }

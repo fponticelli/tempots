@@ -201,16 +201,16 @@ export const hslaToRgb8a = (c: HSLA): RGB8A => {
  * @public
  * @example
  * ```ts
- * hslaToHslString(hsla(0, 1, 0.5)) // 'hsl(0, 100%, 50%)'
- * hslaToHslString(hsla(120, 0.5, 0.75, 0.5)) // 'hsla(120, 50%, 75%, 0.5)'
+ * hslaToHslString(hsla(0, 1, 0.5)) // 'hsl(0 100% 50%)'
+ * hslaToHslString(hsla(120, 0.5, 0.75, 0.5)) // 'hsl(120 50% 75% / 0.5)'
  * ```
  */
 export const hslaToHslString = (c: HSLA): string => {
   const h = round2(c.h)
   const s = round2(c.s * 100)
   const l = round2(c.l * 100)
-  if (c.alpha >= 1) return `hsl(${h}, ${s}%, ${l}%)`
-  return `hsla(${h}, ${s}%, ${l}%, ${c.alpha})`
+  if (c.alpha >= 1) return `hsl(${h} ${s}% ${l}%)`
+  return `hsl(${h} ${s}% ${l}% / ${c.alpha})`
 }
 
 // ---------------------------------------------------------------------------
