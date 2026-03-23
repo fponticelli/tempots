@@ -252,11 +252,39 @@ async function main() {
     },
   ]);
 
-  const selectedPackages = packagesWithVersions.filter((pkg) =>
-    selected.includes(pkg.name)
-  );
+  // Step 2b: Auto-include transitive dependents
+  const selectedSet = new Set(selected);
+  const autoAdded = new Set();
+
+  // Resolve dependents in priority order (low priority = leaf packages come last)
+  const sorted = [...packagesWithVersions].sort((a, b) => a.priority - b.priority);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const pkg of sorted) {
+      if (selectedSet.has(pkg.name)) continue;
+      const needsPublish = pkg.dependencies.some((dep) => selectedSet.has(dep));
+      if (needsPublish) {
+        selectedSet.add(pkg.name);
+        autoAdded.add(pkg.name);
+        changed = true;
+      }
+    }
+  }
+
+  if (autoAdded.size > 0) {
+    console.log("\n  Auto-including dependents:");
+    for (const name of autoAdded) {
+      const pkg = packagesWithVersions.find((p) => p.name === name);
+      console.log(`    ${name}  (${pkg.currentVersion}) — depends on selected packages`);
+    }
+    console.log();
+  }
+
+  const selectedPackages = sorted.filter((pkg) => selectedSet.has(pkg.name));
 
   // Step 3: For each selected package, pick a version bump type
+  //         Auto-added packages default to patch (no prompt)
   const publishPlan = [];
 
   for (const pkg of selectedPackages) {
@@ -266,6 +294,18 @@ async function main() {
       major: incrementVersion(pkg.currentVersion, "major"),
       next: incrementVersion(pkg.currentVersion, "next"),
     };
+
+    if (autoAdded.has(pkg.name)) {
+      console.log(`  ${pkg.name} (${pkg.currentVersion}) — auto patch -> ${choices.patch}`);
+      publishPlan.push({
+        ...pkg,
+        type: "patch",
+        oldVersion: pkg.currentVersion,
+        newVersion: choices.patch,
+        auto: true,
+      });
+      continue;
+    }
 
     const { bumpType } = await inquirer.prompt([
       {
@@ -296,11 +336,12 @@ async function main() {
   console.log("=".repeat(60));
 
   for (const p of publishPlan) {
-    console.log(`  ${p.name}:  ${p.oldVersion}  ->  ${p.newVersion}  (${p.type})`);
+    const tag = p.auto ? " [auto]" : "";
+    console.log(`  ${p.name}:  ${p.oldVersion}  ->  ${p.newVersion}  (${p.type})${tag}`);
   }
 
   const skipped = packagesWithVersions.filter(
-    (pkg) => !selected.includes(pkg.name)
+    (pkg) => !selectedSet.has(pkg.name)
   );
   if (skipped.length > 0) {
     console.log("\n  Skipping:");
