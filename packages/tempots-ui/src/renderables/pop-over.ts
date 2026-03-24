@@ -162,6 +162,8 @@ export const PopOver = (
             html.div(
               WithElement((floatingEl: HTMLElement) => {
                 floatingEl.style.position = 'absolute'
+                floatingEl.style.top = '0'
+                floatingEl.style.left = '0'
                 const target =
                   typeof properties?.target === 'string'
                     ? (parentElement!.querySelector(
@@ -225,8 +227,7 @@ export const PopOver = (
                   })
 
                   const { x, y, middlewareData } = result
-                  floatingEl.style.top = `${y}px`
-                  floatingEl.style.left = `${x}px`
+                  floatingEl.style.transform = `translate(${x}px, ${y}px)`
 
                   // Position arrow if it exists
                   if (arrowEl != null && middlewareData.arrow != null) {
