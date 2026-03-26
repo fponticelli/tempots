@@ -22,6 +22,8 @@ import { AsyncResult, NonLoading } from '@tempots/std'
  * @public
  */
 export interface QueryDisplayOptions<Res, E> {
+  /** Function to render when the query has not been requested yet. */
+  notAsked?: () => TNode
   /** Function to render when the query is loading. */
   pending?: (options: {
     previous: Signal<Res | undefined>
@@ -31,7 +33,18 @@ export interface QueryDisplayOptions<Res, E> {
   /** Function to render when the query has failed to load. */
   failure?: (options: { error: Signal<E>; reload: () => void }) => TNode
   /** Function to render when the query has successfully loaded. */
-  success: (options: { value: Signal<Res>; reload: () => void }) => TNode
+  success: (options: {
+    value: Signal<Res>
+    reload: () => void
+    loading: Signal<boolean>
+  }) => TNode
+  /**
+   * When true, the success view stays mounted during reloads instead of
+   * switching to the pending view. The `loading` signal passed to `success`
+   * indicates when a reload is in progress. Only applies when the query
+   * was already in a success state before the reload.
+   */
+  keepOnReload?: boolean
 }
 
 /**
@@ -49,18 +62,37 @@ export const QueryDisplay = <Res, E>(
   query: QueryResource<Res, E>,
   options: QueryDisplayOptions<Res, E>
 ): Renderable => {
-  const { status, dispose, reload } = query
-  const { pending: loading, failure: error, success } = options
+  const { status, dispose, reload, loading: loadingSignal } = query
+  const {
+    notAsked: notAskedFn,
+    pending: pendingFn,
+    failure: error,
+    success,
+    keepOnReload = false,
+  } = options
+
+  const displayStatus = keepOnReload
+    ? status.map(current => {
+        if (
+          AsyncResult.isLoading(current) &&
+          current.previousValue !== undefined
+        ) {
+          return AsyncResult.success(current.previousValue as Res)
+        }
+        return current
+      })
+    : status
 
   return Fragment(
     OnDispose(dispose),
-    AsyncResultView(status, {
+    AsyncResultView(displayStatus, {
+      notAsked: notAskedFn,
       loading:
-        loading != null
-          ? v => loading({ previous: v, reload, cancel: query.cancel })
+        pendingFn != null
+          ? v => pendingFn({ previous: v, reload, cancel: query.cancel })
           : undefined,
       failure: error != null ? e => error({ error: e, reload }) : undefined,
-      success: v => success({ value: v, reload }),
+      success: v => success({ value: v, reload, loading: loadingSignal }),
     })
   )
 }
@@ -195,9 +227,11 @@ export const Query = <Req, Res, E = unknown>({
   onSuccess,
   onError,
   onSettled,
+  notAsked,
   success,
   pending,
   failure,
+  keepOnReload,
 }: {
   request: Value<Req>
   load: (options: QueryResourceLoadOptions<Req, Res, E>) => Promise<Res>
@@ -214,5 +248,11 @@ export const Query = <Req, Res, E = unknown>({
     onError,
     onSettled,
   })
-  return QueryDisplay(query, { success, pending, failure })
+  return QueryDisplay(query, {
+    notAsked,
+    success,
+    pending,
+    failure,
+    keepOnReload,
+  })
 }

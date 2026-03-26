@@ -119,8 +119,9 @@ export const makeMutationResource = <Req, Res, E>({
       onSuccess?.(result, request)
     } catch (error) {
       abortController = undefined
-      status.set(AsyncResult.failure(convertError(error)))
-      onError?.(convertError(error), request)
+      const converted = convertError(error)
+      status.set(AsyncResult.failure(converted))
+      onError?.(converted, request)
     }
     onSettled?.(status.get(), request)
   }

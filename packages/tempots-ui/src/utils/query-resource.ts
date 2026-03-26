@@ -41,11 +41,8 @@ export interface QueryResourceLoadOptions<Req, Res, E> {
   readonly abortSignal: AbortSignal
   /** The previous result of the query loading, if any. */
   readonly previous: AsyncResult<Res, E>
-
-  /** Side-effects */
-  readonly onSuccess?: (value: Res, req: Req) => void
-  readonly onError?: (error: E, req: Req) => void
-  readonly onSettled?: (result: AsyncResult<Res, E>, req: Req) => void
+  /** Abort the current in-flight request and optionally set a new state. */
+  readonly cancel: (newState?: NonLoading<Res, E>) => void
 }
 
 /**
@@ -108,7 +105,12 @@ export const makeQueryResource = <Req, Res, E>({
     const previous = status.get()
     status.set(AsyncResult.loading(AsyncResult.getOrUndefined(previous)))
     try {
-      const result = await load({ request: req, abortSignal, previous })
+      const result = await load({
+        request: req,
+        abortSignal,
+        previous,
+        cancel,
+      })
       // Forces a microtask boundary when load resolves synchronously,
       // ensuring the Loading status propagates before being replaced by Success.
       await Promise.resolve()
@@ -117,8 +119,9 @@ export const makeQueryResource = <Req, Res, E>({
       onSuccess?.(result, req)
     } catch (error) {
       abortController = undefined
-      status.set(AsyncResult.failure(convertError(error)))
-      onError?.(convertError(error), req)
+      const converted = convertError(error)
+      status.set(AsyncResult.failure(converted))
+      onError?.(converted, req)
     }
     onSettled?.(status.get(), req)
   }
