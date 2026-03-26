@@ -710,6 +710,98 @@ describe('createRenderKit', () => {
     })
   })
 
+  describe('Catch', () => {
+    it('renders children normally when no error', () => {
+      const { ctx, element } = createRoot()
+      const clear = kit
+        .Catch(
+          'hello',
+          (error) => 'fallback'
+        )
+        .render(ctx)
+      expect(getTexts(element)).toEqual(['hello'])
+      clear(true)
+    })
+
+    it('renders fallback when children throw', () => {
+      const { ctx, element } = createRoot()
+      const throwingRenderable = mockRenderable(() => {
+        throw new Error('boom')
+      })
+      const clear = kit
+        .Catch(throwingRenderable, (error) => `error: ${error.value.message}`)
+        .render(ctx)
+      expect(getTexts(element)).toEqual(['error: boom'])
+      clear(true)
+    })
+
+    it('retry succeeds after error is fixed', () => {
+      const { ctx, element } = createRoot()
+      let shouldThrow = true
+      const throwingRenderable = mockRenderable((ctx) => {
+        if (shouldThrow) throw new Error('fail')
+        const textCtx = ctx.makeChildText('recovered')
+        return (removeTree: boolean) => {
+          textCtx.clear(removeTree)
+        }
+      })
+      let retryFn: (() => void) | undefined
+      const clear = kit
+        .Catch(throwingRenderable, (error, retry) => {
+          retryFn = retry
+          return `error: ${error.value.message}`
+        })
+        .render(ctx)
+      expect(getTexts(element)).toEqual(['error: fail'])
+
+      shouldThrow = false
+      retryFn!()
+      expect(getTexts(element)).toEqual(['recovered'])
+      clear(true)
+    })
+
+    it('error signal updates on retry failure', () => {
+      const { ctx, element } = createRoot()
+      let throwCount = 0
+      const throwingRenderable = mockRenderable(() => {
+        throwCount++
+        throw new Error(`fail-${throwCount}`)
+      })
+      let retryFn: (() => void) | undefined
+      let errorSignal: Signal<Error> | undefined
+      const clear = kit
+        .Catch(throwingRenderable, (error, retry) => {
+          retryFn = retry
+          errorSignal = error
+          return `error: ${error.value.message}`
+        })
+        .render(ctx)
+      expect(errorSignal!.value.message).toBe('fail-1')
+
+      retryFn!()
+      expect(errorSignal!.value.message).toBe('fail-2')
+      clear(true)
+    })
+
+    it('cleans up on outer disposal', () => {
+      const { ctx, element } = createRoot()
+      const disposeSpy = vi.fn()
+      const childRenderable = mockRenderable((ctx) => {
+        const textCtx = ctx.makeChildText('child')
+        return (removeTree: boolean) => {
+          disposeSpy()
+          textCtx.clear(removeTree)
+        }
+      })
+      const clear = kit
+        .Catch(childRenderable, (error) => 'fallback')
+        .render(ctx)
+      expect(getTexts(element)).toEqual(['child'])
+      clear(true)
+      expect(disposeSpy).toHaveBeenCalled()
+    })
+  })
+
   describe('Conjunction', () => {
     it('creates separators based on position', () => {
       const { ctx, element } = createRoot()

@@ -1579,6 +1579,67 @@ export function createRenderKit<
     return WithProvider(({ tryUse }) => childFn(tryUse(provider)))
   }
 
+  const Catch = (
+    children: TNode<CTX, TType>,
+    fallback: (
+      error: Signal<Error>,
+      retry: () => void
+    ) => TNode<CTX, TType>
+  ): Renderable<CTX, TType> => {
+    const normalized = renderableOfTNode(children)
+    return create((ctx: CTX) => {
+      const markerCtx = ctx.makeMarker() as CTX
+      let currentClear: Clear = () => {}
+      let currentScope: DisposalScope | null = null
+      let errorSignal: Prop<Error> | null = null
+
+      const renderChildren = () => {
+        // Dispose previous content
+        currentScope?.dispose()
+        currentClear(true)
+
+        // Attempt children render
+        currentScope = new DisposalScope()
+        try {
+          currentClear = withScope(currentScope, () =>
+            normalized.render(markerCtx)
+          )
+        } catch (e) {
+          // Dispose the failed scope (cleans up any partial render)
+          currentScope.dispose()
+          currentClear(true)
+
+          const error = e instanceof Error ? e : new Error(String(e))
+
+          // Render fallback
+          currentScope = new DisposalScope()
+
+          if (errorSignal == null) {
+            errorSignal = prop(error)
+          } else {
+            errorSignal.set(error)
+          }
+
+          const fallbackRenderable = renderableOfTNode(
+            fallback(errorSignal, renderChildren)
+          )
+          currentClear = withScope(currentScope, () =>
+            fallbackRenderable.render(markerCtx)
+          )
+        }
+      }
+
+      renderChildren()
+
+      return (removeTree: boolean) => {
+        currentScope?.dispose()
+        currentClear(removeTree)
+        errorSignal?.dispose()
+        markerCtx.clear(removeTree)
+      }
+    })
+  }
+
   return {
     Empty,
     Fragment,
@@ -1602,6 +1663,7 @@ export function createRenderKit<
     OnDispose,
     Conjunction,
     WithScope,
+    Catch,
     WithProvider,
     Provide,
     Use,
