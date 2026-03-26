@@ -4,6 +4,7 @@ import type { Renderable } from '@tempots/dom'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { tempoHmrPlugin } from './hmr/plugin'
 
 /**
  * Rendering mode for the Tempo Vite plugin.
@@ -272,6 +273,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
     container = '#app',
     hydrate = mode === 'ssr' || mode === 'islands',
     outDir = 'dist',
+    hmr = true,
   } = options
 
   // Suppress unused variable warning - entry is for configuration documentation
@@ -538,7 +540,14 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
     },
   }
 
-  return [mainPlugin, ssgPlugin, ssrDevPlugin]
+  const hmrEnabled = hmr !== false
+  const plugins: Plugin[] = [mainPlugin, ssgPlugin, ssrDevPlugin]
+
+  if (hmrEnabled) {
+    plugins.push(tempoHmrPlugin(true))
+  }
+
+  return plugins
 }
 
 /**

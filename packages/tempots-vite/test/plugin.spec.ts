@@ -8,7 +8,7 @@ describe("tempo plugin", () => {
       const plugins = tempo();
 
       expect(Array.isArray(plugins)).toBe(true);
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should have correct plugin names", () => {
@@ -17,6 +17,7 @@ describe("tempo plugin", () => {
       expect(plugins[0].name).toBe("tempo");
       expect(plugins[1].name).toBe("tempo:ssg");
       expect(plugins[2].name).toBe("tempo:ssr-dev");
+      expect(plugins[3].name).toBe("tempo:hmr");
     });
 
     it("should accept mode option", () => {
@@ -25,10 +26,33 @@ describe("tempo plugin", () => {
       const islandsPlugins = tempo({ mode: "islands" });
       const hybridPlugins = tempo({ mode: "hybrid" });
 
-      expect(ssgPlugins.length).toBe(3);
-      expect(ssrPlugins.length).toBe(3);
-      expect(islandsPlugins.length).toBe(3);
-      expect(hybridPlugins.length).toBe(3);
+      expect(ssgPlugins.length).toBe(4);
+      expect(ssrPlugins.length).toBe(4);
+      expect(islandsPlugins.length).toBe(4);
+      expect(hybridPlugins.length).toBe(4);
+    });
+
+    describe("HMR plugin", () => {
+      it("should include HMR plugin in returned array by default", () => {
+        const plugins = tempo();
+        expect(plugins.length).toBe(4);
+        expect(plugins[3].name).toBe("tempo:hmr");
+      });
+
+      it("should include HMR plugin when hmr is true", () => {
+        const plugins = tempo({ hmr: true });
+        expect(plugins.some((p) => p.name === "tempo:hmr")).toBe(true);
+      });
+
+      it("should not include HMR plugin when hmr is false", () => {
+        const plugins = tempo({ hmr: false });
+        expect(plugins.some((p) => p.name === "tempo:hmr")).toBe(false);
+      });
+
+      it("should include HMR plugin when hmr is an options object", () => {
+        const plugins = tempo({ hmr: { errorBoundary: false } });
+        expect(plugins.some((p) => p.name === "tempo:hmr")).toBe(true);
+      });
     });
 
     it("should accept routes as string array", () => {
@@ -36,7 +60,7 @@ describe("tempo plugin", () => {
         routes: ["/", "/about", "/contact"],
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept routes as RouteConfig array", () => {
@@ -47,7 +71,7 @@ describe("tempo plugin", () => {
         ],
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept routes as async function", () => {
@@ -55,7 +79,7 @@ describe("tempo plugin", () => {
         routes: async () => ["/", "/about"],
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept custom entry path", () => {
@@ -63,7 +87,7 @@ describe("tempo plugin", () => {
         entry: "src/main.ts",
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept custom template path", () => {
@@ -71,7 +95,7 @@ describe("tempo plugin", () => {
         template: "public/index.html",
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept custom container selector", () => {
@@ -79,7 +103,7 @@ describe("tempo plugin", () => {
         container: "#root",
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept hydrate option", () => {
@@ -87,7 +111,7 @@ describe("tempo plugin", () => {
         hydrate: true,
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept custom outDir", () => {
@@ -95,7 +119,7 @@ describe("tempo plugin", () => {
         outDir: "build",
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept routes as 'crawl' string", () => {
@@ -103,7 +127,7 @@ describe("tempo plugin", () => {
         routes: "crawl",
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should accept seedRoutes option", () => {
@@ -112,14 +136,14 @@ describe("tempo plugin", () => {
         seedRoutes: ["/", "/api"],
       });
 
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
 
     it("should default routes to 'crawl'", () => {
       const plugins = tempo({});
 
       // Just verify it doesn't throw - actual crawling happens at build time
-      expect(plugins.length).toBe(3);
+      expect(plugins.length).toBe(4);
     });
   });
 
