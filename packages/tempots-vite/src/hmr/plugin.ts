@@ -100,18 +100,14 @@ function splitArgs(argsStr: string): string[] {
  *
  * Exported for testing.
  */
-export function transformTempoHmr(
-  code: string,
-  id: string
-): string | null {
+export function transformTempoHmr(code: string, id: string): string | null {
   // Only process ts/js files
   if (!/\.[tjm]sx?$/.test(id)) {
     return null
   }
 
   // Find render import from @tempots/dom
-  const importRegex =
-    /import\s*\{([^}]*)\}\s*from\s*['"]@tempots\/dom['"]/
+  const importRegex = /import\s*\{([^}]*)\}\s*from\s*['"]@tempots\/dom['"]/
   const importMatch = importRegex.exec(code)
   if (!importMatch) {
     return null
@@ -184,8 +180,7 @@ export function transformTempoHmr(
       `  import.meta.hot.dispose(() => { ${varName}.dispose() })\n` +
       `}`
 
-    result =
-      result.slice(0, site.start) + replacement + result.slice(site.end)
+    result = result.slice(0, site.start) + replacement + result.slice(site.end)
   }
 
   // Add virtual module import at top

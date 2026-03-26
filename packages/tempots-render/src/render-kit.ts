@@ -190,10 +190,7 @@ export interface RenderKit<
   ) => Renderable<CTX, TType>
   Catch: (
     children: TNode<CTX, TType>,
-    fallback: (
-      error: Signal<Error>,
-      retry: () => void
-    ) => TNode<CTX, TType>
+    fallback: (error: Signal<Error>, retry: () => void) => TNode<CTX, TType>
   ) => Renderable<CTX, TType>
   WithProvider: (
     fn: (opts: ProviderOptions<CTX>) => TNode<CTX, TType> | void
@@ -1581,10 +1578,7 @@ export function createRenderKit<
 
   const Catch = (
     children: TNode<CTX, TType>,
-    fallback: (
-      error: Signal<Error>,
-      retry: () => void
-    ) => TNode<CTX, TType>
+    fallback: (error: Signal<Error>, retry: () => void) => TNode<CTX, TType>
   ): Renderable<CTX, TType> => {
     const normalized = renderableOfTNode(children)
     return create((ctx: CTX) => {
