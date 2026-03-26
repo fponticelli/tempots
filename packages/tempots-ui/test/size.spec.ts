@@ -155,6 +155,15 @@ describe('size.ts', () => {
       expect(rect1.equals(rect3)).toBe(false)
     })
 
+    it('should compare localLeft and localTop in equality', () => {
+      const rect1 = new Rect(10, 20, 100, 50, 5, 10)
+      const rect2 = new Rect(10, 20, 100, 50, 5, 10)
+      const rect3 = new Rect(10, 20, 100, 50, 99, 99)
+
+      expect(rect1.equals(rect2)).toBe(true)
+      expect(rect1.equals(rect3)).toBe(false)
+    })
+
     it('should handle near-equal values in equality comparison', () => {
       const rect1 = new Rect(10, 20, 100, 50)
       const rect2 = new Rect(10.0000000001, 20, 100, 50) // Very close values (smaller difference)

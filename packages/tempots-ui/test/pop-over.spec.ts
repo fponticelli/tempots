@@ -601,6 +601,38 @@ describe('PopOver', () => {
 
 
 
+  test('flip middleware should only be added once', async () => {
+    const { flip } = await import('@floating-ui/dom')
+    const isOpen = prop(false)
+
+    const popover = html.div(
+      PopOver((open, _close) => {
+        return html.button(
+          attr.class('flip-test-trigger'),
+          on.click(() => open({
+            content: html.div('flip test'),
+            placement: 'top'
+          })),
+          'Open'
+        )
+      }, { isOpen })
+    )
+
+    const clear = render(popover, document.body)
+    await sleep(0)
+
+    // Open popover to trigger middleware setup
+    const button = document.querySelector('.flip-test-trigger') as HTMLButtonElement
+    button.click()
+    await sleep(10)
+
+    // flip() is called to build each middleware entry — count how many times
+    const flipCallCount = (flip as ReturnType<typeof vi.fn>).mock.calls.length
+    expect(flipCallCount).toBe(1)
+
+    clear()
+  })
+
   test('popover with string target selector using class', async () => {
     // Additional test to ensure string selector works with querySelector
     const isOpen = prop(false)

@@ -116,90 +116,43 @@ export const QueryDisplay = <Res, E>(
  *     if (!response.ok) throw new Error('Failed to load user')
  *     return response.json()
  *   },
- *   loading: () => html.div('Loading user...'),
- *   failure: (error, reload) => html.div(
+ *   pending: () => html.div('Loading user...'),
+ *   failure: ({ error, reload }) => html.div(
  *     'Error: ', error,
  *     html.button(on.click(reload), 'Retry')
  *   ),
- *   success: (user) => html.div(
- *     html.h2(user.map(u => u.name)),
- *     html.p(user.map(u => u.email))
+ *   success: ({ value }) => html.div(
+ *     html.h2(value.map(u => u.name)),
+ *     html.p(value.map(u => u.email))
  *   )
  * })
  * ```
  *
  * @example
  * ```typescript
- * // Query with dependencies
+ * // Query with keepOnReload — success view stays mounted during reloads
  * const searchQuery = prop('')
- * const filters = prop({ category: 'all', sort: 'name' })
  *
  * const SearchResults = Query({
- *   request: computed(() => ({
- *     query: searchQuery.value,
- *     ...filters.value
- *   })),
+ *   request: searchQuery,
+ *   keepOnReload: true,
  *   load: async ({ request, abortSignal }) => {
- *     const params = new URLSearchParams(request)
- *     const response = await fetch(`/api/search?${params}`, {
+ *     const response = await fetch(`/api/search?q=${request}`, {
  *       signal: abortSignal
  *     })
  *     return response.json()
  *   },
  *   convertError: (error) => error instanceof Error ? error.message : 'Unknown error',
- *   loading: (previous) => html.div(
- *     'Searching...',
- *     previous.value && html.div('Previous results:', previous.value.length)
- *   ),
- *   failure: (error, reload) => html.div(
+ *   pending: () => html.div('Searching...'),
+ *   failure: ({ error, reload }) => html.div(
  *     attr.class('error'),
  *     'Search failed: ', error,
  *     html.button(on.click(reload), 'Try again')
  *   ),
- *   success: (results, reload) => html.div(
+ *   success: ({ value, reload, loading }) => html.div(
  *     html.button(on.click(reload), 'Refresh'),
- *     ForEach(results, result => SearchResultItem(result))
- *   )
- * })
- * ```
- *
- * @example
- * ```typescript
- * // File upload query
- * const selectedFile = prop<File | null>(null)
- *
- * const FileUpload = Query({
- *   request: selectedFile,
- *   load: async ({ request }) => {
- *     if (!request) throw new Error('No file selected')
- *
- *     const formData = new FormData()
- *     formData.append('file', request)
- *
- *     const response = await fetch('/api/upload', {
- *       method: 'POST',
- *       body: formData
- *     })
- *
- *     if (!response.ok) throw new Error('Upload failed')
- *     return response.json()
- *   },
- *   loading: () => html.div(
- *     attr.class('upload-progress'),
- *     'Uploading file...'
- *   ),
- *   failure: (error, reload) => html.div(
- *     attr.class('upload-error'),
- *     'Upload failed: ', error,
- *     html.button(on.click(reload), 'Retry upload')
- *   ),
- *   success: (result) => html.div(
- *     attr.class('upload-success'),
- *     'File uploaded successfully!',
- *     html.a(
- *       attr.href(result.map(r => r.url)),
- *       'View file'
- *     )
+ *     loading.map(l => l ? html.div('Refreshing...') : null),
+ *     ForEach(value, result => SearchResultItem(result))
  *   )
  * })
  * ```
@@ -214,10 +167,12 @@ export const QueryDisplay = <Res, E>(
  * @param options.onSuccess - Optional callback for successful loads
  * @param options.onError - Optional callback for failed loads
  * @param options.onSettled - Optional callback for both successful and failed loads
+ * @param options.notAsked - Optional function to render before the first load
  * @param options.success - Function to render when the query has successfully loaded
  * @param options.pending - Optional function to render when the query is loading
  * @param options.failure - Optional function to render when the query has failed to load
- * @returns Function that takes display options and returns a renderable component
+ * @param options.keepOnReload - When true, keeps the success view mounted during reloads
+ * @returns A renderable component
  * @public
  */
 export const Query = <Req, Res, E = unknown>({

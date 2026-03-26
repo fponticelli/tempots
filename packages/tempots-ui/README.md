@@ -92,13 +92,12 @@ const userProfile = Query({
     if (!response.ok) throw new Error('Failed to load user')
     return response.json()
   },
-  mapError: error => error instanceof Error ? error.message : String(error),
-})({
-  loading: () => html.div('Loading user...'),
-  failure: error => html.div(error.map(message => `Error: ${message}`)),
-  success: user => html.div(
-    html.h2(user.map(u => u.name)),
-    html.p(user.map(u => u.email)),
+  convertError: error => error instanceof Error ? error.message : String(error),
+  pending: () => html.div('Loading user...'),
+  failure: ({ error }) => html.div(error.map(message => `Error: ${message}`)),
+  success: ({ value }) => html.div(
+    html.h2(value.map(u => u.name)),
+    html.p(value.map(u => u.email)),
   ),
 })
 
@@ -114,29 +113,25 @@ import { html, render, prop, on, attr } from '@tempots/dom'
 import { PopOver } from '@tempots/ui'
 
 function TooltipExample() {
-  const showTooltip = prop(false)
-
   return html.div(
-    html.button(
-      on.mouseenter(() => showTooltip.value = true),
-      on.mouseleave(() => showTooltip.value = false),
-      'Hover me',
-      PopOver({
-        open: showTooltip,
-        placement: 'top',
-        content: () => html.div(
-          { style: 'padding: 8px; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);' },
-          'This is a tooltip with an arrow!'
-        ),
-        arrow: {
-          padding: 4,
+    PopOver((open, close) => {
+      return html.button(
+        on.click(() => open({
           content: html.div(
+            attr.style('padding: 8px; background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'),
+            'This is a tooltip with an arrow!'
+          ),
+          placement: 'top',
+          arrowPadding: 4,
+          arrow: (arrowSignal) => html.div(
             attr.class('tooltip-arrow'),
             attr.style('background: white; border: 1px solid #ccc; transform: rotate(45deg); width: 8px; height: 8px;')
-          )
-        }
-      })
-    )
+          ),
+          onClickOutside: close,
+        })),
+        'Click me'
+      )
+    })
   )
 }
 ```

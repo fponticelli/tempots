@@ -22,7 +22,7 @@ export interface MutationResource<Req, Res, E> {
   /** Execute the mutation. */
   readonly execute: (
     request: Req,
-    options?: MutationResourceExecuteOptions<Req, Res, E>
+    options?: MutationResourceExecuteOptions<Req, Res>
   ) => void
 
   /** Abort the current in-flight request (if any) and clean up. */
@@ -33,17 +33,33 @@ export interface MutationResource<Req, Res, E> {
 }
 
 /**
- * Execution-time options for a mutation.
- * Useful for optimistic UI and side-effects.
+ * Options passed to the mutate function.
+ *
+ * @typeParam Req - The request payload/type.
+ * @typeParam Res - The response/value type on success.
+ * @typeParam E   - The error type on failure.
+ * @public
  */
-export interface MutationResourceExecuteOptions<Req, Res, E> {
+export interface MutationResourceLoadOptions<Req, Res, E> {
   /** The request to execute the mutation. */
   readonly request: Req
-  /** External abort signal for this single execution. */
+  /** Abort signal for this execution. */
   readonly abortSignal: AbortSignal
   /** The previous result of the mutation, if any. */
   readonly previous: AsyncResult<Res, E>
+  /** Abort the current in-flight request and optionally set a new state. */
+  readonly cancel: (newState?: NonLoading<Res, E>) => void
+}
 
+/**
+ * Caller-controlled options for execute().
+ * Useful for optimistic UI.
+ *
+ * @typeParam Req - The request payload/type.
+ * @typeParam Res - The response/value type on success.
+ * @public
+ */
+export interface MutationResourceExecuteOptions<Req, Res> {
   /**
    * Optionally provide an optimistic value to set immediately.
    * This will set status to Loading with value prefilled.
@@ -55,11 +71,6 @@ export interface MutationResourceExecuteOptions<Req, Res, E> {
    * Runs only if optimisticValue is not provided.
    */
   readonly optimisticFromRequest?: (req: Req) => Res
-
-  /** Side-effects */
-  readonly onSuccess?: (value: Res, req: Req) => void
-  readonly onError?: (error: E, req: Req) => void
-  readonly onSettled?: (result: AsyncResult<Res, E>, req: Req) => void
 }
 
 export const makeMutationResource = <Req, Res, E>({
@@ -69,7 +80,7 @@ export const makeMutationResource = <Req, Res, E>({
   onError,
   onSettled,
 }: {
-  mutate: (options: MutationResourceExecuteOptions<Req, Res, E>) => Promise<Res>
+  mutate: (options: MutationResourceLoadOptions<Req, Res, E>) => Promise<Res>
   convertError: (error: unknown) => E
   onSuccess?: (value: Res, req: Req) => void
   onError?: (error: E, req: Req) => void
@@ -96,7 +107,7 @@ export const makeMutationResource = <Req, Res, E>({
 
   const execute = async (
     request: Req,
-    options?: MutationResourceExecuteOptions<Req, Res, E>
+    options?: MutationResourceExecuteOptions<Req, Res>
   ) => {
     abort()
     abortController = new AbortController()
@@ -113,7 +124,7 @@ export const makeMutationResource = <Req, Res, E>({
       status.set(AsyncResult.loading(AsyncResult.getOrUndefined(previous)))
     }
     try {
-      const result = await mutate({ request, abortSignal, previous })
+      const result = await mutate({ request, abortSignal, previous, cancel })
       abortController = undefined
       status.set(AsyncResult.success(result))
       onSuccess?.(result, request)

@@ -257,7 +257,9 @@ export class Rect {
       nearEqual(this.left, other.left) &&
       nearEqual(this.top, other.top) &&
       nearEqual(this.width, other.width) &&
-      nearEqual(this.height, other.height)
+      nearEqual(this.height, other.height) &&
+      nearEqual(this.localLeft, other.localLeft) &&
+      nearEqual(this.localTop, other.localTop)
     )
   }
 }

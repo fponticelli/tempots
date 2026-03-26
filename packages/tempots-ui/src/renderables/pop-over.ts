@@ -137,7 +137,6 @@ export const PopOver = (
   fn: (open: (options: PopOverOptions) => void, close: () => void) => TNode,
   options: { isOpen: Value<boolean> } = { isOpen: false }
 ) => {
-  const disposables = [] as Array<() => void>
   let properties: PopOverOptions | null = null
   const isOpen = Value.deriveProp(options.isOpen)
   function open(passOptions: PopOverOptions) {
@@ -146,8 +145,6 @@ export const PopOver = (
   }
   function close() {
     isOpen.set(false)
-    disposables.forEach(fn => fn())
-    disposables.length = 0
   }
   return Fragment(
     fn(open, close),
@@ -206,7 +203,6 @@ export const PopOver = (
                       crossAxis: crossAxis.get(),
                     }),
                     shift(),
-                    flip(),
                   ]
 
                   // Add arrow middleware if arrow element exists
