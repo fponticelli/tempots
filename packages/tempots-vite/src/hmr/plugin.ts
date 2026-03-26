@@ -47,6 +47,13 @@ export function createHmrBoundary(render, factory, target, options) {
 `
 
 /**
+ * Escapes special regex characters in a string.
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
  * Finds the end index of a balanced parenthesized expression
  * starting from the opening paren at `start`.
  */
@@ -127,6 +134,26 @@ export function transformTempoHmr(code: string, id: string): string | null {
     return null
   }
 
+  // Find prop factory imports from @tempots/dom and @tempots/core
+  const PROP_FACTORIES = ['prop', 'localStorageProp', 'sessionStorageProp', 'storedProp']
+  const propFactoryLocalNames: string[] = []
+
+  const allImportRegex = /import\s*\{([^}]*)\}\s*from\s*['"]@tempots\/(?:dom|core)['"]/g
+  let impMatch: RegExpExecArray | null
+  while ((impMatch = allImportRegex.exec(code)) !== null) {
+    const specifiers = impMatch[1].split(',').map((s) => s.trim()).filter(Boolean)
+    for (const spec of specifiers) {
+      const aliasM = /^(\w+)\s+as\s+(\w+)$/.exec(spec)
+      if (aliasM) {
+        if (PROP_FACTORIES.includes(aliasM[1])) {
+          propFactoryLocalNames.push(aliasM[2])
+        }
+      } else if (PROP_FACTORIES.includes(spec)) {
+        propFactoryLocalNames.push(spec)
+      }
+    }
+  }
+
   // Find all render() call sites
   const callRegex = new RegExp(`\\b${renderName}\\s*\\(`, 'g')
 
@@ -170,11 +197,15 @@ export function transformTempoHmr(code: string, id: string): string | null {
     const site = callSites[i]
     const varName = useSuffix ? `__hmr_${i}` : '__hmr'
     const factoryExpr = `() => ${site.firstArg}`
-    const restArgsStr =
-      site.restArgs.length > 0 ? ', ' + site.restArgs.join(', ') : ''
+
+    // Separate target (first rest arg) and options (second rest arg)
+    const targetArg = site.restArgs.length > 0 ? site.restArgs[0] : ''
+    const optionsArg = site.restArgs.length > 1 ? site.restArgs[1] : 'undefined'
+    const targetStr = targetArg ? ', ' + targetArg : ''
+    const optionsStr = ', ' + optionsArg
 
     const replacement =
-      `const ${varName} = __createHmrBoundary(${renderName}, ${factoryExpr}${restArgsStr})\n` +
+      `const ${varName} = __createHmrBoundary(${renderName}, ${factoryExpr}${targetStr}${optionsStr}, __hmr_props, '${id}')\n` +
       `if (import.meta.hot) {\n` +
       `  import.meta.hot.dispose(() => { ${varName}.dispose() })\n` +
       `  import.meta.hot.accept()\n` +
@@ -182,6 +213,54 @@ export function transformTempoHmr(code: string, id: string): string | null {
 
     result = result.slice(0, site.start) + replacement + result.slice(site.end)
   }
+
+  // Label prop assignments and collect names
+  const labeledPropNames: string[] = []
+
+  if (propFactoryLocalNames.length > 0) {
+    const escapedNames = propFactoryLocalNames.map(escapeRegex).join('|')
+    const propAssignRegex = new RegExp(
+      `((?:const|let|var)\\s+(\\w+)\\s*=\\s*(?:${escapedNames})\\s*\\()`,
+      'g'
+    )
+
+    interface PropSite {
+      varName: string
+      insertPos: number
+    }
+
+    const propSites: PropSite[] = []
+    let propMatch: RegExpExecArray | null
+
+    while ((propMatch = propAssignRegex.exec(result)) !== null) {
+      const parenStart = propMatch.index + propMatch[0].length - 1
+      const parenEnd = findBalancedParen(result, parenStart)
+      if (parenEnd === -1) continue
+
+      propSites.push({
+        varName: propMatch[2],
+        insertPos: parenEnd + 1,
+      })
+    }
+
+    // Process from end to start to preserve indices
+    for (let i = propSites.length - 1; i >= 0; i--) {
+      const site = propSites[i]
+      const label = `; ${site.varName}.__hmr_label = '${site.varName}'`
+      result =
+        result.slice(0, site.insertPos) + label + result.slice(site.insertPos)
+    }
+
+    // Collect names in order
+    for (const site of propSites) {
+      labeledPropNames.push(site.varName)
+    }
+  }
+
+  // Insert __hmr_props array before the first __hmr boundary declaration
+  const propsArray = `const __hmr_props = [${labeledPropNames.join(', ')}]\n`
+  const hmrDeclIndex = result.indexOf('const __hmr')
+  result = result.slice(0, hmrDeclIndex) + propsArray + result.slice(hmrDeclIndex)
 
   // Add virtual module import at top
   const virtualImport = `import { createHmrBoundary as __createHmrBoundary } from '${VIRTUAL_MODULE_ID}'\n`

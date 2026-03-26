@@ -51,7 +51,7 @@ render(App(), document.getElementById('app')!, { hydrate: true })
 
     expect(result).not.toBeNull()
     expect(result).toContain(
-      "__createHmrBoundary(render, () => App(), document.getElementById('app')!, { hydrate: true })"
+      "__createHmrBoundary(render, () => App(), document.getElementById('app')!, { hydrate: true }, __hmr_props, 'src/main.ts')"
     )
   })
 
@@ -75,7 +75,7 @@ render(html.div('hello'), document.body)
 
     expect(result).not.toBeNull()
     expect(result).toContain(
-      "__createHmrBoundary(render, () => html.div('hello'), document.body)"
+      "__createHmrBoundary(render, () => html.div('hello'), document.body, undefined, __hmr_props, 'src/main.ts')"
     )
   })
 
@@ -108,5 +108,106 @@ render(App(), document.getElementById('app')!)
 
     expect(result).not.toBeNull()
     expect(result).toContain("import { render } from '@tempots/dom'")
+  })
+
+  describe('prop labeling', () => {
+    it('should label prop() assigned to const', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("count.__hmr_label = 'count'")
+    })
+
+    it('should label localStorageProp() assigned to const', () => {
+      const code = `import { render, localStorageProp } from '@tempots/dom'
+const state = localStorageProp({ key: 'app', defaultValue: {} })
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("state.__hmr_label = 'state'")
+    })
+
+    it('should label sessionStorageProp and storedProp', () => {
+      const code = `import { render, sessionStorageProp, storedProp, MemoryStore } from '@tempots/dom'
+const data = sessionStorageProp({ key: 'data', defaultValue: '' })
+const cache = storedProp(new MemoryStore(), { key: 'cache', defaultValue: 0 })
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("data.__hmr_label = 'data'")
+      expect(result).toContain("cache.__hmr_label = 'cache'")
+    })
+
+    it('should not label signal() or computed()', () => {
+      const code = `import { render, prop, signal, computed } from '@tempots/dom'
+const count = prop(0)
+const s = signal(0)
+const c = computed(() => count.value * 2, [count])
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("count.__hmr_label = 'count'")
+      expect(result).not.toContain("s.__hmr_label")
+      expect(result).not.toContain("c.__hmr_label")
+    })
+
+    it('should not label prop() not assigned to a variable', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+doSomething(prop(0))
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).not.toContain('__hmr_label')
+    })
+
+    it('should generate __hmr_props array with labeled props', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+const name = prop('hello')
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain('const __hmr_props = [count, name]')
+    })
+
+    it('should generate empty __hmr_props when no props labeled', () => {
+      const code = `import { render } from '@tempots/dom'
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain('const __hmr_props = []')
+    })
+
+    it('should pass __hmr_props and module ID to createHmrBoundary', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain('__hmr_props')
+      expect(result).toContain("'src/main.ts'")
+    })
+
+    it('should handle let and var declarations', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+let count = prop(0)
+var name = prop('hello')
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts')
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("count.__hmr_label = 'count'")
+      expect(result).toContain("name.__hmr_label = 'name'")
+    })
   })
 })
