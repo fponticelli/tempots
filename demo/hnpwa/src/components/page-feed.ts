@@ -13,15 +13,7 @@ import { Route } from '../route'
 import { Item, PageFeed } from '../types'
 import { LinkRoute } from './link-route'
 import { Pagination } from './pagination'
-
-export const ItemLink = (item: Signal<Item>) =>
-  LinkRoute({
-    route: item.map(i => {
-      if (i.url.type === 'External') return Route.externalRoute(i.url.path)
-      else return Route.item(i.id)
-    }),
-    children: item.at('title').map(v => v ?? ''),
-  })
+import { ItemLink } from './item-link'
 
 export const ItemMainLink = (item: Signal<Item>) => html.h2(ItemLink(item))
 
