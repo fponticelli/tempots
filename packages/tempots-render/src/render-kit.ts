@@ -188,6 +188,13 @@ export interface RenderKit<
   WithScope: (
     fn: (scope: DisposalScope) => TNode<CTX, TType>
   ) => Renderable<CTX, TType>
+  Catch: (
+    children: TNode<CTX, TType>,
+    fallback: (
+      error: Signal<Error>,
+      retry: () => void
+    ) => TNode<CTX, TType>
+  ) => Renderable<CTX, TType>
   WithProvider: (
     fn: (opts: ProviderOptions<CTX>) => TNode<CTX, TType> | void
   ) => Renderable<CTX, TType>
