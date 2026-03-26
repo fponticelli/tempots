@@ -12,6 +12,19 @@ import { pathToFileURL } from 'node:url'
 export type TempoMode = 'ssg' | 'ssr' | 'islands' | 'hybrid'
 
 /**
+ * HMR configuration options.
+ * @public
+ */
+export interface TempoHmrOptions {
+  /**
+   * Inject a Catch error boundary around the root renderable
+   * during HMR updates.
+   * @default true
+   */
+  errorBoundary?: boolean
+}
+
+/**
  * Route configuration for SSG.
  * @public
  */
@@ -100,6 +113,13 @@ export interface TempoViteOptions {
    * @default "dist"
    */
   outDir?: string
+
+  /**
+   * HMR configuration. Set to false to disable.
+   * Enabled by default in dev mode.
+   * @default true
+   */
+  hmr?: boolean | TempoHmrOptions
 }
 
 /**
