@@ -38,6 +38,7 @@ export const {
   Use,
   UseMany,
   UseOptional,
+  Catch,
   handleValueOrSignal,
   createReactiveRenderable,
   renderableOfTNode,
