@@ -164,13 +164,22 @@ export function transformTempoHmr(code: string, id: string): string | null {
   }
 
   // Find prop factory imports from @tempots/dom and @tempots/core
-  const PROP_FACTORIES = ['prop', 'localStorageProp', 'sessionStorageProp', 'storedProp']
+  const PROP_FACTORIES = [
+    'prop',
+    'localStorageProp',
+    'sessionStorageProp',
+    'storedProp',
+  ]
   const propFactoryLocalNames: string[] = []
 
-  const allImportRegex = /import\s*\{([^}]*)\}\s*from\s*['"]@tempots\/(?:dom|core)['"]/g
+  const allImportRegex =
+    /import\s*\{([^}]*)\}\s*from\s*['"]@tempots\/(?:dom|core)['"]/g
   let impMatch: RegExpExecArray | null
   while ((impMatch = allImportRegex.exec(code)) !== null) {
-    const specifiers = impMatch[1].split(',').map((s) => s.trim()).filter(Boolean)
+    const specifiers = impMatch[1]
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
     for (const spec of specifiers) {
       const aliasM = /^(\w+)\s+as\s+(\w+)$/.exec(spec)
       if (aliasM) {
@@ -289,7 +298,8 @@ export function transformTempoHmr(code: string, id: string): string | null {
   // Insert __hmr_props array before the first __hmr boundary declaration
   const propsArray = `const __hmr_props = [${labeledPropNames.join(', ')}]\n`
   const hmrDeclIndex = result.indexOf('const __hmr')
-  result = result.slice(0, hmrDeclIndex) + propsArray + result.slice(hmrDeclIndex)
+  result =
+    result.slice(0, hmrDeclIndex) + propsArray + result.slice(hmrDeclIndex)
 
   // Add virtual module import at top
   const virtualImport = `import { createHmrBoundary as __createHmrBoundary } from '${VIRTUAL_MODULE_ID}'\n`
