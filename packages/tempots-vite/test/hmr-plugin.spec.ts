@@ -38,8 +38,9 @@ render(App(), document.getElementById('app')!)
     expect(result).toContain('import.meta.hot.dispose')
     // Should use __hmr (no suffix for single call)
     expect(result).toContain('const __hmr =')
-    expect(result).toContain('__hmr.update')
     expect(result).toContain('__hmr.dispose')
+    // Should use bare accept() (no callback) so module re-evaluates
+    expect(result).toContain('import.meta.hot.accept()')
   })
 
   it('transforms render with options argument', () => {
@@ -88,8 +89,8 @@ render(Sidebar(), document.getElementById('sidebar')!)
     expect(result).not.toBeNull()
     expect(result).toContain('const __hmr_0 =')
     expect(result).toContain('const __hmr_1 =')
-    expect(result).toContain('__hmr_0.update')
-    expect(result).toContain('__hmr_1.update')
+    expect(result).toContain('__hmr_0.dispose')
+    expect(result).toContain('__hmr_1.dispose')
   })
 
   it('returns null for non-ts/js files', () => {

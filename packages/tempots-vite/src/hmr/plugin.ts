@@ -176,8 +176,8 @@ export function transformTempoHmr(code: string, id: string): string | null {
     const replacement =
       `const ${varName} = __createHmrBoundary(${renderName}, ${factoryExpr}${restArgsStr})\n` +
       `if (import.meta.hot) {\n` +
-      `  import.meta.hot.accept(() => { ${varName}.update(${factoryExpr}) })\n` +
       `  import.meta.hot.dispose(() => { ${varName}.dispose() })\n` +
+      `  import.meta.hot.accept()\n` +
       `}`
 
     result = result.slice(0, site.start) + replacement + result.slice(site.end)
