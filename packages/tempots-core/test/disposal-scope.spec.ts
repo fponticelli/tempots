@@ -227,4 +227,33 @@ describe("DisposalScope", () => {
       expect(callback).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("getTrackedSignals()", () => {
+    test("returns empty array when no signals tracked", () => {
+      const scope = new DisposalScope();
+      expect(scope.getTrackedSignals()).toEqual([]);
+    });
+
+    test("returns tracked signals", () => {
+      const scope = new DisposalScope();
+      const s1 = prop(0);
+      const s2 = prop("hello");
+      scope.track(s1);
+      scope.track(s2);
+
+      const tracked = scope.getTrackedSignals();
+      expect(tracked).toHaveLength(2);
+      expect(tracked[0]).toBe(s1);
+      expect(tracked[1]).toBe(s2);
+    });
+
+    test("returns empty array after dispose", () => {
+      const scope = new DisposalScope();
+      const s = prop(0);
+      scope.track(s);
+
+      scope.dispose();
+      expect(scope.getTrackedSignals()).toEqual([]);
+    });
+  });
 });

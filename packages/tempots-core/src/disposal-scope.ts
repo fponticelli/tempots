@@ -86,6 +86,17 @@ export class DisposalScope implements Scope {
   }
 
   /**
+   * Returns the signals tracked by this scope.
+   * Used by dev tools (HMR, signal inspector) to introspect scope contents.
+   *
+   * @returns Read-only array of tracked signals, empty if none or after disposal
+   * @public
+   */
+  getTrackedSignals(): ReadonlyArray<AnySignal> {
+    return this._signals ?? []
+  }
+
+  /**
    * Creates a prop signal and tracks it in this scope.
    * Use this method in async contexts where automatic tracking doesn't work.
    *
