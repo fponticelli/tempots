@@ -22,9 +22,15 @@ import { DisposalScope, withScope, Value } from '@tempots/core'
  * @returns A function that can be called to clear the rendered node.
  * @public
  */
-export const renderWithContext = (renderable: Renderable, ctx: DOMContext) => {
+export const renderWithContext = (
+  renderable: Renderable,
+  ctx: DOMContext,
+  onScope?: (scope: DisposalScope) => void
+) => {
   // Create a disposal scope for automatic signal tracking
   const scope = new DisposalScope()
+
+  onScope?.(scope)
 
   // Execute the renderable within the scope context
   const clear = withScope(scope, () => renderable.render(ctx))
@@ -57,6 +63,11 @@ export type RenderOptions = {
    * The providers to use for the renderable.
    */
   providers?: Providers
+  /**
+   * Callback to capture the DisposalScope created during rendering.
+   * Used by HMR runtime for signal introspection.
+   */
+  onScope?: (scope: DisposalScope) => void
 }
 
 /**
@@ -72,7 +83,13 @@ export type RenderOptions = {
 export const render = (
   node: Renderable,
   parent: Node | string,
-  { doc, clear, disposeWithParent = true, providers = {} }: RenderOptions = {}
+  {
+    doc,
+    clear,
+    disposeWithParent = true,
+    providers = {},
+    onScope,
+  }: RenderOptions = {}
 ) => {
   const el =
     typeof parent === 'string'
@@ -89,7 +106,7 @@ export const render = (
   const element = _getSelfOrParentElement(el)
   const ref = _isElement(el) || _isFragment(el) ? undefined : el
   const ctx = BrowserContext.of(element, ref, providers)
-  const clearDOM = renderWithContext(node, ctx)
+  const clearDOM = renderWithContext(node, ctx, onScope)
   let disposeObserver: MutationObserver | undefined
   if (disposeWithParent && el.parentElement != null) {
     disposeObserver = new MutationObserver(e => {

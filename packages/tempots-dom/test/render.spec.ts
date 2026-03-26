@@ -167,6 +167,56 @@ describe('Render', () => {
       expect(document.body.innerHTML).toBe('<div>test</div>')
       clear()
     })
+
+    test('should call onScope with the DisposalScope', () => {
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+      let capturedScope: any = null
+
+      const clear = render(html.div('Hello'), container, {
+        onScope: (scope) => {
+          capturedScope = scope
+        },
+      })
+
+      expect(capturedScope).not.toBeNull()
+      expect(capturedScope.getTrackedSignals).toBeInstanceOf(Function)
+
+      clear()
+      document.body.removeChild(container)
+    })
+
+    test('should work without onScope callback', () => {
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+
+      const clear = render(html.div('Hello'), container)
+      expect(container.innerHTML).toBe('<div>Hello</div>')
+
+      clear()
+      document.body.removeChild(container)
+    })
+
+    test('onScope should receive scope with tracked signals from render', () => {
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+      let capturedScope: any = null
+
+      const clear = render(html.div('Hello'), container, {
+        onScope: (scope) => {
+          capturedScope = scope
+          // Explicitly track a signal via the scope to verify tracking works
+          const count = prop(0)
+          scope.track(count)
+        },
+      })
+
+      const tracked = capturedScope.getTrackedSignals()
+      expect(tracked.length).toBeGreaterThan(0)
+
+      clear()
+      document.body.removeChild(container)
+    })
   })
 
   describe('renderWithContext', () => {
