@@ -4,7 +4,29 @@ const VIRTUAL_MODULE_ID = 'virtual:tempo-hmr-runtime'
 const RESOLVED_VIRTUAL_MODULE_ID = '\0virtual:tempo-hmr-runtime'
 
 const HMR_RUNTIME_SOURCE = `\
-export function createHmrBoundary(render, factory, target, options) {
+const _snapshot = new Map()
+
+function snapshotProps(props, moduleId) {
+  for (const p of props) {
+    if (p.__hmr_label != null && p.$__prop__ === true) {
+      _snapshot.set(moduleId + ':' + p.__hmr_label, p.value)
+    }
+  }
+}
+
+function restoreProps(props, moduleId) {
+  for (const p of props) {
+    if (p.__hmr_label != null && p.$__prop__ === true) {
+      const key = moduleId + ':' + p.__hmr_label
+      if (_snapshot.has(key)) {
+        p.set(_snapshot.get(key))
+        _snapshot.delete(key)
+      }
+    }
+  }
+}
+
+export function createHmrBoundary(render, factory, target, options, moduleProps, moduleId) {
   let clear = null
 
   const doRender = (f) => {
@@ -13,6 +35,10 @@ export function createHmrBoundary(render, factory, target, options) {
   }
 
   doRender(factory)
+
+  if (moduleProps != null && moduleId != null) {
+    restoreProps(moduleProps, moduleId)
+  }
 
   return {
     update(newFactory) {
@@ -37,6 +63,9 @@ export function createHmrBoundary(render, factory, target, options) {
       }
     },
     dispose() {
+      if (moduleProps != null && moduleId != null) {
+        snapshotProps(moduleProps, moduleId)
+      }
       if (clear != null) {
         clear()
         clear = null

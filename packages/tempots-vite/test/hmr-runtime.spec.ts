@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createHmrBoundary } from '../src/hmr/runtime'
 
+const makeRenderable = () => 'renderable'
+
 describe('createHmrBoundary', () => {
   it('calls render with factory result on creation', () => {
     const clearFn = vi.fn()
@@ -127,5 +129,107 @@ describe('createHmrBoundary', () => {
     expect(() => boundary.dispose()).not.toThrow()
 
     errorSpy.mockRestore()
+  })
+})
+
+describe('snapshot/restore', () => {
+  it('should restore prop values after dispose/re-create cycle', () => {
+    const oldProp: any = { value: 42, __hmr_label: 'count', $__prop__: true, set: vi.fn() }
+    const newProp: any = { value: 0, __hmr_label: 'count', $__prop__: true, set: vi.fn() }
+
+    const clearFn = vi.fn()
+    const mockRender = vi.fn().mockReturnValue(clearFn)
+    const target = {} as Node
+
+    const hmr = createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [oldProp], 'test-module'
+    )
+    hmr.dispose()
+
+    createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [newProp], 'test-module'
+    )
+
+    expect(newProp.set).toHaveBeenCalledWith(42)
+  })
+
+  it('should not restore props with no matching label', () => {
+    const oldProp: any = { value: 42, __hmr_label: 'count', $__prop__: true, set: vi.fn() }
+    const newProp: any = { value: 0, __hmr_label: 'name', $__prop__: true, set: vi.fn() }
+
+    const clearFn = vi.fn()
+    const mockRender = vi.fn().mockReturnValue(clearFn)
+    const target = {} as Node
+
+    const hmr = createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [oldProp], 'test-module'
+    )
+    hmr.dispose()
+
+    createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [newProp], 'test-module'
+    )
+
+    expect(newProp.set).not.toHaveBeenCalled()
+  })
+
+  it('should namespace snapshots by module ID', () => {
+    const prop1: any = { value: 10, __hmr_label: 'count', $__prop__: true, set: vi.fn() }
+    const prop2: any = { value: 0, __hmr_label: 'count', $__prop__: true, set: vi.fn() }
+
+    const clearFn = vi.fn()
+    const mockRender = vi.fn().mockReturnValue(clearFn)
+    const target = {} as Node
+
+    const hmrA = createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [prop1], 'module-a'
+    )
+    hmrA.dispose()
+
+    createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [prop2], 'module-b'
+    )
+
+    expect(prop2.set).not.toHaveBeenCalled()
+  })
+
+  it('should handle dispose without moduleProps gracefully', () => {
+    const clearFn = vi.fn()
+    const mockRender = vi.fn().mockReturnValue(clearFn)
+    const target = {} as Node
+
+    const hmr = createHmrBoundary(mockRender, makeRenderable, target)
+    expect(() => hmr.dispose()).not.toThrow()
+  })
+
+  it('should restore multiple props', () => {
+    const oldA: any = { value: 'hello', __hmr_label: 'name', $__prop__: true, set: vi.fn() }
+    const oldB: any = { value: 99, __hmr_label: 'age', $__prop__: true, set: vi.fn() }
+    const newA: any = { value: '', __hmr_label: 'name', $__prop__: true, set: vi.fn() }
+    const newB: any = { value: 0, __hmr_label: 'age', $__prop__: true, set: vi.fn() }
+
+    const clearFn = vi.fn()
+    const mockRender = vi.fn().mockReturnValue(clearFn)
+    const target = {} as Node
+
+    const hmr = createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [oldA, oldB], 'mod'
+    )
+    hmr.dispose()
+
+    createHmrBoundary(
+      mockRender, makeRenderable, target,
+      undefined, [newA, newB], 'mod'
+    )
+
+    expect(newA.set).toHaveBeenCalledWith('hello')
+    expect(newB.set).toHaveBeenCalledWith(99)
   })
 })

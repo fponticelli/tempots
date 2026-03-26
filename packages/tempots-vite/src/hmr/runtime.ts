@@ -16,16 +16,48 @@ type RenderFn = (
   options?: Record<string, unknown>
 ) => () => void
 
+type LabeledProp = {
+  value: unknown
+  __hmr_label?: string
+  $__prop__?: boolean
+  set: (value: unknown) => void
+}
+
 export interface HmrBoundary {
   update: (factory: () => AnyRenderable) => void
   dispose: () => void
+}
+
+// Module-level snapshot storage -- survives across boundary instances
+const _snapshot = new Map<string, unknown>()
+
+function snapshotProps(props: LabeledProp[], moduleId: string) {
+  for (const p of props) {
+    if (p.__hmr_label != null && p.$__prop__ === true) {
+      _snapshot.set(`${moduleId}:${p.__hmr_label}`, p.value)
+    }
+  }
+}
+
+function restoreProps(props: LabeledProp[], moduleId: string) {
+  for (const p of props) {
+    if (p.__hmr_label != null && p.$__prop__ === true) {
+      const key = `${moduleId}:${p.__hmr_label}`
+      if (_snapshot.has(key)) {
+        p.set(_snapshot.get(key))
+        _snapshot.delete(key)
+      }
+    }
+  }
 }
 
 export function createHmrBoundary(
   render: RenderFn,
   factory: () => AnyRenderable,
   target: Node | string,
-  options?: Record<string, unknown>
+  options?: Record<string, unknown>,
+  moduleProps?: LabeledProp[],
+  moduleId?: string
 ): HmrBoundary {
   let clear: (() => void) | null = null
 
@@ -37,14 +69,17 @@ export function createHmrBoundary(
   // Initial render
   doRender(factory)
 
+  // Restore state from previous module evaluation
+  if (moduleProps != null && moduleId != null) {
+    restoreProps(moduleProps, moduleId)
+  }
+
   return {
     update(newFactory: () => AnyRenderable) {
-      // Teardown previous render
       if (clear != null) {
         clear()
         clear = null
       }
-
       try {
         doRender(newFactory)
       } catch (e) {
@@ -54,6 +89,10 @@ export function createHmrBoundary(
     },
 
     dispose() {
+      // Snapshot prop values before teardown
+      if (moduleProps != null && moduleId != null) {
+        snapshotProps(moduleProps, moduleId)
+      }
       if (clear != null) {
         clear()
         clear = null
