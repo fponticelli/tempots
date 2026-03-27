@@ -9,5 +9,5 @@ export const ItemLink = (item: Signal<Item>) =>
       if (i.url.type === 'External') return Route.externalRoute(i.url.path)
       else return Route.item(i.id)
     }),
-    children: item.at('title').map(v => v?.toLocaleUpperCase() ?? ''),
+    children: item.at('title').map(v => v ?? ''),
   })

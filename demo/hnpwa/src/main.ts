@@ -1,11 +1,9 @@
 import './assets/style.scss'
 import { render } from '@tempots/dom'
-import { loadRoute, makeRouteFlow, Route } from './route'
+import { loadRoute } from './route'
 import { Page } from './types'
 import { App } from './components/app'
-
-export const globalRoute = makeRouteFlow()
-export const setGlobalRoute = (v: Route) => globalRoute.set(v)
+import { globalRoute } from './state'
 
 const page = globalRoute
   .mapAsync(loadRoute, Page.loading)

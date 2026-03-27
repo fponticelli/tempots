@@ -1,7 +1,7 @@
 import { attr, TNode, html, Renderable, on, Signal } from '@tempots/dom'
 import { getCurrentPath, isGithub } from '../config'
 import { Route, toTitle, toUrl } from '../route'
-import { setGlobalRoute } from '../main'
+import { setGlobalRoute } from '../state'
 import { handleAnchorClick } from '@tempots/ui'
 
 export interface LinkRouteProps {
