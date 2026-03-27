@@ -581,6 +581,8 @@ export function transformPropDevtools(
 ): string | null {
   if (!/\.[tjm]sx?$/.test(id)) return null
   if (/node_modules|\/dist\//.test(id)) return null
+  // Skip if already processed by transformTempoHmr with devtools
+  if (code.includes('__devtoolsRegister')) return null
 
   // Find prop factory imports
   const PROP_FACTORIES = [

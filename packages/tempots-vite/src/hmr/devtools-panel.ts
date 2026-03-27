@@ -43,7 +43,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   style.textContent = [
     ':host { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #e0e0e0; }',
     '*, *::before, *::after { font-family: inherit; box-sizing: border-box; }',
-    '.panel { position: fixed; width: 320px; height: 400px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }',
+    '.panel { position: fixed; width: 320px; height: 400px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #e0e0e0; }',
     '.collapsed-btn { position: fixed; width: 32px; height: 32px; border-radius: 50%; background: #1a1a2e; border: 1px solid #555; color: #7ecfff; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }',
     '.collapsed-btn:hover { background: #252542; border-color: #7ecfff; }',
     '.header { display: flex; align-items: center; background: #16162a; cursor: grab; user-select: none; padding: 0; flex-shrink: 0; border-bottom: 1px solid #333; }',
@@ -184,6 +184,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   tabSignals.addEventListener('click', function(e) {
     e.stopPropagation()
     activeTab = 'signals'
+    _needsFullRebuild = true
     updateTabs()
     renderBody()
   })
@@ -191,6 +192,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   tabPerf.addEventListener('click', function(e) {
     e.stopPropagation()
     activeTab = 'performance'
+    _lastRenderStatsSize = -1
     updateTabs()
     renderBody()
   })
@@ -259,6 +261,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   // --- Render: Signals tab ---
   function renderSignals() {
     body.textContent = ''
+    _valueSpans = []
     var signals = data.getSignals()
 
     if (!signals || signals.length === 0) {
@@ -288,14 +291,15 @@ export const DEVTOOLS_PANEL_SOURCE = `
           row.appendChild(el('span', 'badge', 'Prop'))
           row.appendChild(el('span', 'signal-name', sig.label))
 
-          var valSpan = el('span', 'signal-value', formatValue(sig.value))
+          var valSpan = el('span', 'signal-value', formatValue(sig.prop.value))
           row.appendChild(valSpan)
+          _valueSpans.push({ sig: sig, span: valSpan })
 
           var detailEl = null
 
           row.addEventListener('click', function(e) {
             if (e.target === valSpan) return
-            var key = sig.module + ':' + sig.label
+            var key = sig.moduleId + ':' + sig.label
             if (expandedSignal === key) {
               expandedSignal = null
               if (detailEl && detailEl.parentNode) detailEl.parentNode.removeChild(detailEl)
@@ -310,9 +314,9 @@ export const DEVTOOLS_PANEL_SOURCE = `
               }
               var pre = el('pre', '')
               try {
-                pre.textContent = JSON.stringify(sig.value, null, 2)
+                pre.textContent = JSON.stringify(sig.prop.value, null, 2)
               } catch(err) {
-                pre.textContent = String(sig.value)
+                pre.textContent = String(sig.prop.value)
               }
               detailEl.appendChild(pre)
               row.parentNode.insertBefore(detailEl, row.nextSibling)
@@ -321,16 +325,16 @@ export const DEVTOOLS_PANEL_SOURCE = `
 
           valSpan.addEventListener('click', function(e) {
             e.stopPropagation()
-            var key = sig.module + ':' + sig.label
+            var key = sig.moduleId + ':' + sig.label
             if (editingSignal === key) return
             editingSignal = key
 
             var input = document.createElement('input')
             input.className = 'edit-input'
             try {
-              input.value = JSON.stringify(sig.value)
+              input.value = JSON.stringify(sig.prop.value)
             } catch(err) {
-              input.value = String(sig.value)
+              input.value = String(sig.prop.value)
             }
 
             valSpan.textContent = ''
@@ -340,7 +344,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
 
             function finish() {
               editingSignal = null
-              valSpan.textContent = formatValue(sig.value)
+              valSpan.textContent = formatValue(sig.prop.value)
             }
 
             input.addEventListener('keydown', function(ev) {
@@ -350,7 +354,6 @@ export const DEVTOOLS_PANEL_SOURCE = `
                   var parsed = JSON.parse(input.value)
                   if (sig.prop && typeof sig.prop.set === 'function') {
                     sig.prop.set(parsed)
-                    sig.value = parsed
                   }
                 } catch(err) {
                   // Invalid JSON — ignore
@@ -506,11 +509,45 @@ export const DEVTOOLS_PANEL_SOURCE = `
 
   // --- Polling loop ---
   var lastPoll = 0
+  var _valueSpans = []
+  var _lastSignalCount = -1
+  var _lastRenderStatsSize = -1
+  var _needsFullRebuild = true
+
+  function updateSignalValues() {
+    var signals = data.getSignals()
+    if (signals.length !== _lastSignalCount) {
+      _needsFullRebuild = true
+    }
+    if (_needsFullRebuild && activeTab === 'signals') {
+      _needsFullRebuild = false
+      _lastSignalCount = signals.length
+      renderSignals()
+      return
+    }
+    // Just update text content of existing value spans
+    for (var i = 0; i < _valueSpans.length; i++) {
+      var entry = _valueSpans[i]
+      if (entry && entry.sig && entry.span && !editingSignal) {
+        entry.span.textContent = formatValue(entry.sig.prop.value)
+      }
+    }
+  }
+
   function poll(timestamp) {
     if (timestamp - lastPoll >= POLL_INTERVAL) {
       lastPoll = timestamp
       if (isOpen) {
-        renderBody()
+        if (activeTab === 'signals') {
+          updateSignalValues()
+        } else {
+          // Performance tab: only rebuild if data changed
+          var renderStats = data.getRenderStats ? data.getRenderStats() : new Map()
+          if (renderStats.size !== _lastRenderStatsSize) {
+            _lastRenderStatsSize = renderStats.size
+            renderPerformance()
+          }
+        }
       }
     }
     requestAnimationFrame(poll)
