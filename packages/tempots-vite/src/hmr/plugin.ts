@@ -6,6 +6,7 @@ const RESOLVED_VIRTUAL_MODULE_ID = '\0virtual:tempo-hmr-runtime'
 
 const HMR_RUNTIME_SOURCE = `\
 const _snapshot = new Map()
+const _knownModules = new Set()
 
 function snapshotProps(props, moduleId) {
   for (const p of props) {
@@ -35,7 +36,14 @@ export function createHmrBoundary(render, factory, target, options, moduleProps,
     clear = render(renderable, target, options)
   }
 
+  var renderStart = typeof performance !== 'undefined' ? performance.now() : 0
   doRender(factory)
+  var renderTime = typeof performance !== 'undefined' ? performance.now() - renderStart : 0
+
+  if (moduleId != null && _knownModules.has(moduleId) && typeof devtoolsRecordHmr === 'function') {
+    devtoolsRecordHmr(moduleId + ' (full)', 0, renderTime)
+  }
+  if (moduleId != null) _knownModules.add(moduleId)
 
   if (moduleProps != null && moduleId != null) {
     restoreProps(moduleProps, moduleId)
@@ -130,8 +138,18 @@ export function devtoolsRecordHmr(moduleId, boundaryCount, duration) {
 }
 
 export function devtoolsWrapSet(prop, key) {
-  const origSet = prop.set.bind(prop)
-  prop.set = (v) => { devtoolsSignalUpdate(key); origSet(v) }
+  var origSet = prop.set.bind(prop)
+  prop.set = function(v) { devtoolsSignalUpdate(key); origSet(v) }
+  var proto = Object.getPrototypeOf(prop)
+  var desc = Object.getOwnPropertyDescriptor(proto, 'value')
+  if (desc && desc.set) {
+    var origValueSet = desc.set
+    Object.defineProperty(prop, 'value', {
+      get: desc.get,
+      set: function(v) { devtoolsSignalUpdate(key); origValueSet.call(prop, v) },
+      configurable: true,
+    })
+  }
 }
 
 export function devtoolsGetSignals() {
