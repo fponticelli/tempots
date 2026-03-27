@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite'
+import { DEVTOOLS_PANEL_SOURCE } from './devtools-panel'
 
 const VIRTUAL_MODULE_ID = 'virtual:tempo-hmr-runtime'
 const RESOLVED_VIRTUAL_MODULE_ID = '\0virtual:tempo-hmr-runtime'
@@ -95,8 +96,57 @@ export function hmrNotify(moduleId, newModule) {
   }
 }
 
-export function devtoolsRegister() {}
-export function devtoolsWrapSet() {}
+const _devSignals = []
+const _devSignalUpdates = new Map()
+const _devRenderStats = new Map()
+const _devHmrLog = []
+
+export function devtoolsRegister(prop, label, moduleId) {
+  _devSignals.push({ prop, label, moduleId })
+}
+
+export function devtoolsSignalUpdate(key) {
+  _devSignalUpdates.set(key, (_devSignalUpdates.get(key) || 0) + 1)
+}
+
+export function devtoolsRecordRender(moduleId, exportName, duration) {
+  const key = moduleId + ':' + exportName
+  const existing = _devRenderStats.get(key)
+  if (existing != null) {
+    existing.renderCount++
+    existing.totalTime += duration
+    existing.avgTime = existing.totalTime / existing.renderCount
+    existing.maxTime = Math.max(existing.maxTime, duration)
+  } else {
+    _devRenderStats.set(key, {
+      renderCount: 1, totalTime: duration, avgTime: duration, maxTime: duration
+    })
+  }
+}
+
+export function devtoolsRecordHmr(moduleId, boundaryCount, duration) {
+  _devHmrLog.unshift({ moduleId, boundaryCount, duration, timestamp: Date.now() })
+  if (_devHmrLog.length > 20) _devHmrLog.length = 20
+}
+
+export function devtoolsWrapSet(prop, key) {
+  const origSet = prop.set.bind(prop)
+  prop.set = (v) => { devtoolsSignalUpdate(key); origSet(v) }
+}
+
+export function devtoolsGetSignals() { return _devSignals }
+export function devtoolsGetRenderStats() { return _devRenderStats }
+export function devtoolsGetSignalUpdates() { return _devSignalUpdates }
+export function devtoolsGetHmrLog() { return _devHmrLog }
+
+if (typeof window !== 'undefined') {
+  window.__tempo_devtools_data = {
+    getSignals: devtoolsGetSignals,
+    getRenderStats: devtoolsGetRenderStats,
+    getSignalUpdates: devtoolsGetSignalUpdates,
+    getHmrLog: devtoolsGetHmrLog,
+  }
+}
 
 export function componentBoundary(moduleId, exportName, factory, initialComponent, createRenderable) {
   return createRenderable((ctx) => {
@@ -554,6 +604,12 @@ export function tempoHmrPlugin(enabled = true, devtools = false): Plugin {
       const componentResult = transformComponentHmr(componentInput, id)
 
       return componentResult ?? entryResult
+    },
+
+    transformIndexHtml(html) {
+      if (!devtools) return html
+      const panelScript = `<script type="module">\n${DEVTOOLS_PANEL_SOURCE}\n</script>`
+      return html.replace('</body>', `${panelScript}\n</body>`)
     },
   }
 }
