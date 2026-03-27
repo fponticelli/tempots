@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { transformTempoHmr } from '../src/hmr/plugin'
+import { transformTempoHmr, transformComponentHmr } from '../src/hmr/plugin'
 
 describe('transformTempoHmr', () => {
   it('returns null for files without render import', () => {
@@ -209,5 +209,119 @@ render(App(), '#app')`
       expect(result).toContain("count.__hmr_label = 'count'")
       expect(result).toContain("name.__hmr_label = 'name'")
     })
+  })
+})
+
+describe('transformComponentHmr', () => {
+  it('should return null for non-ts/js files', () => {
+    const code = `import { ItemLink } from './item-link'`
+    expect(transformComponentHmr(code, 'src/style.css')).toBeNull()
+  })
+
+  it('should return null when no relative PascalCase imports', () => {
+    const code = `import { loadRoute } from './route'
+import { When } from '@tempots/dom'
+loadRoute()
+When(true, () => 'yes')`
+    expect(transformComponentHmr(code, 'src/app.ts')).toBeNull()
+  })
+
+  it('should return null when PascalCase imports are from packages', () => {
+    const code = `import { When, ForEach } from '@tempots/dom'
+When(true, () => 'yes')`
+    expect(transformComponentHmr(code, 'src/app.ts')).toBeNull()
+  })
+
+  it('should wrap PascalCase function calls from relative imports', () => {
+    const code = `import { ItemLink } from './item-link'
+html.li(ItemLink(item))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain('__componentBoundary')
+    expect(result).toContain("'./item-link'")
+    expect(result).toContain("'ItemLink'")
+    expect(result).toContain('(ItemLink) => ItemLink(item)')
+  })
+
+  it('should not wrap camelCase function calls from relative imports', () => {
+    const code = `import { ItemLink, formatItem } from './item-link'
+html.li(ItemLink(item), formatItem(item))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain('__componentBoundary')
+    expect(result).toContain('formatItem(item)')
+    expect(result).not.toContain("'formatItem'")
+  })
+
+  it('should add dependency accept for each wrapped module', () => {
+    const code = `import { ItemLink } from './item-link'
+import { Pagination } from './pagination'
+html.div(ItemLink(item), Pagination(data))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain("import.meta.hot.accept('./item-link'")
+    expect(result).toContain("import.meta.hot.accept('./pagination'")
+    expect(result).toContain('__hmrNotify')
+  })
+
+  it('should add virtual module import', () => {
+    const code = `import { ItemLink } from './item-link'
+html.li(ItemLink(item))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain("from 'virtual:tempo-hmr-runtime'")
+    expect(result).toContain('__componentBoundary')
+    expect(result).toContain('__hmrNotify')
+  })
+
+  it('should handle multiple components from same module', () => {
+    const code = `import { ItemLink, ItemMainLink } from './item-link'
+html.div(ItemLink(item), ItemMainLink(item))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain("'ItemLink'")
+    expect(result).toContain("'ItemMainLink'")
+    const acceptCount = (result!.match(/hot\.accept\('\.\/item-link'/g) || []).length
+    expect(acceptCount).toBe(1)
+  })
+
+  it('should handle aliased imports', () => {
+    const code = `import { ItemLink as IL } from './item-link'
+html.li(IL(item))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain("'ItemLink'")
+    expect(result).toContain('(IL) => IL(item)')
+  })
+
+  it('should return null when PascalCase import is not called', () => {
+    const code = `import { ItemLink } from './item-link'
+const ref = ItemLink
+console.log(ref)`
+    expect(transformComponentHmr(code, 'src/app.ts')).toBeNull()
+  })
+
+  it('should handle components with complex arguments', () => {
+    const code = `import { ProfileView } from './profile'
+ProfileView({ user: e.at('user'), theme: 'dark' })`
+    const result = transformComponentHmr(code, 'src/app.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain("(ProfileView) => ProfileView({ user: e.at('user'), theme: 'dark' })")
+  })
+
+  it('should import domRenderable from @tempots/dom', () => {
+    const code = `import { ItemLink } from './item-link'
+html.li(ItemLink(item))`
+    const result = transformComponentHmr(code, 'src/page-feed.ts')
+
+    expect(result).not.toBeNull()
+    expect(result).toContain("import { domRenderable as __domRenderable } from '@tempots/dom'")
   })
 })

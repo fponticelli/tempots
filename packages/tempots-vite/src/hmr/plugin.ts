@@ -309,6 +309,130 @@ export function transformTempoHmr(code: string, id: string): string | null {
 }
 
 /**
+ * Transform source code to wrap PascalCase function calls imported from
+ * relative paths in `__componentBoundary()` calls, and add
+ * `import.meta.hot.accept()` for each dependency.
+ *
+ * Exported for testing.
+ */
+export function transformComponentHmr(
+  code: string,
+  id: string
+): string | null {
+  if (!/\.[tjm]sx?$/.test(id)) return null
+
+  // Collect PascalCase imports from relative paths only
+  const relativeImportRegex =
+    /import\s*\{([^}]*)\}\s*from\s*['"](\.[^'"]+)['"]/g
+
+  interface ComponentImport {
+    localName: string
+    exportName: string
+    moduleSpecifier: string
+  }
+
+  const componentImports: ComponentImport[] = []
+  const moduleSpecifiers = new Set<string>()
+
+  let impMatch: RegExpExecArray | null
+  while ((impMatch = relativeImportRegex.exec(code)) !== null) {
+    const specifiers = impMatch[1]
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+    const moduleSpec = impMatch[2]
+
+    for (const spec of specifiers) {
+      const aliasM = /^(\w+)\s+as\s+(\w+)$/.exec(spec)
+      const exportName = aliasM ? aliasM[1] : spec
+      const localName = aliasM ? aliasM[2] : spec
+
+      if (/^[A-Z]/.test(exportName)) {
+        componentImports.push({
+          localName,
+          exportName,
+          moduleSpecifier: moduleSpec,
+        })
+        moduleSpecifiers.add(moduleSpec)
+      }
+    }
+  }
+
+  if (componentImports.length === 0) return null
+
+  // Find call sites for each component import
+  interface ComponentCallSite {
+    start: number
+    end: number
+    localName: string
+    exportName: string
+    moduleSpecifier: string
+    argsStr: string
+  }
+
+  const callSites: ComponentCallSite[] = []
+
+  for (const ci of componentImports) {
+    const callRegex = new RegExp(
+      `\\b${escapeRegex(ci.localName)}\\s*\\(`,
+      'g'
+    )
+    let cm: RegExpExecArray | null
+    while ((cm = callRegex.exec(code)) !== null) {
+      const parenStart = cm.index + cm[0].length - 1
+      const parenEnd = findBalancedParen(code, parenStart)
+      if (parenEnd === -1) continue
+
+      callSites.push({
+        start: cm.index,
+        end: parenEnd + 1,
+        localName: ci.localName,
+        exportName: ci.exportName,
+        moduleSpecifier: ci.moduleSpecifier,
+        argsStr: code.slice(parenStart + 1, parenEnd).trim(),
+      })
+    }
+  }
+
+  if (callSites.length === 0) return null
+
+  // Sort descending by position for safe replacement
+  callSites.sort((a, b) => b.start - a.start)
+
+  let result = code
+
+  for (const site of callSites) {
+    const factoryBody = site.argsStr
+      ? `${site.localName}(${site.argsStr})`
+      : `${site.localName}()`
+
+    const replacement =
+      `__componentBoundary('${site.moduleSpecifier}', '${site.exportName}', ` +
+      `(${site.localName}) => ${factoryBody}, ${site.localName}, __domRenderable)`
+
+    result =
+      result.slice(0, site.start) + replacement + result.slice(site.end)
+  }
+
+  // Append dependency acceptance
+  const acceptLines: string[] = []
+  for (const modSpec of moduleSpecifiers) {
+    acceptLines.push(
+      `  import.meta.hot.accept('${modSpec}', (mod) => __hmrNotify('${modSpec}', mod))`
+    )
+  }
+  result += `\nif (import.meta.hot) {\n${acceptLines.join('\n')}\n}`
+
+  // Prepend imports
+  const imports =
+    `import { componentBoundary as __componentBoundary, hmrNotify as __hmrNotify } from '${VIRTUAL_MODULE_ID}'\n` +
+    `import { domRenderable as __domRenderable } from '@tempots/dom'\n`
+  result = imports + result
+
+  return result
+}
+
+/**
  * Creates the Tempo HMR Vite plugin.
  *
  * @param enabled - Whether HMR transform is enabled. Defaults to true.
