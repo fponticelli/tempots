@@ -361,6 +361,20 @@ console.log(ref)`
     expect(transformComponentHmr(code, 'src/app.ts')).toBeNull()
   })
 
+  it('should only accept modules with actual call sites, not reference-only imports', () => {
+    const code = `import { ItemLink } from './item-link'
+import { Temperature } from './temperature'
+html.li(ItemLink(item))
+const ref = Temperature`
+    const result = transformComponentHmr(code, 'src/app.ts')
+
+    expect(result).not.toBeNull()
+    // ItemLink is called — should have accept
+    expect(result).toContain("hot.accept('./item-link'")
+    // Temperature is only used as reference — should NOT have accept
+    expect(result).not.toContain("hot.accept('./temperature'")
+  })
+
   it('should handle components with complex arguments', () => {
     const code = `import { ProfileView } from './profile'
 ProfileView({ user: e.at('user'), theme: 'dark' })`

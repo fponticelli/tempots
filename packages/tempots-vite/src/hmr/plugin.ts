@@ -607,9 +607,13 @@ export function transformComponentHmr(code: string, id: string): string | null {
     result = result.slice(0, site.start) + replacement + result.slice(site.end)
   }
 
-  // Append dependency acceptance
+  // Append dependency acceptance — only for modules that had actual call sites wrapped
+  const wrappedModules = new Set<string>()
+  for (const site of callSites) {
+    wrappedModules.add(site.moduleSpecifier)
+  }
   const acceptLines: string[] = []
-  for (const modSpec of moduleSpecifiers) {
+  for (const modSpec of wrappedModules) {
     acceptLines.push(
       `  import.meta.hot.accept('${modSpec}', (mod) => { if (!__hmrNotify('${modSpec}', mod)) import.meta.hot.invalidate() })`
     )
