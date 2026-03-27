@@ -7,8 +7,16 @@
  */
 export const DEVTOOLS_PANEL_SOURCE = `
 (function() {
-  var data = window.__tempo_devtools_data
-  if (!data) return
+  function init() {
+    var data = window.__tempo_devtools_data
+    if (!data) {
+      // Virtual module hasn't loaded yet — retry
+      setTimeout(init, 50)
+      return
+    }
+    boot(data)
+  }
+  function boot(data) {
 
   var LS_OPEN = '__tempo_devtools_open'
   var LS_POS = '__tempo_devtools_pos'
@@ -498,5 +506,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   // --- Init ---
   showState()
   requestAnimationFrame(poll)
+  } // end boot()
+  init()
 })()
 `
