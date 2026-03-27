@@ -132,7 +132,9 @@ export function hmrNotify(
 export function componentBoundary(
   moduleId: string,
   exportName: string,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   factory: (component: Function) => unknown,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   initialComponent: Function,
   renderFn: (renderable: unknown) => () => void
 ): ComponentBoundaryInstance {
@@ -143,6 +145,7 @@ export function componentBoundary(
 
   const instance: ComponentBoundaryInstance = {
     update(newModule: Record<string, unknown>) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
       const newComponent = newModule[exportName] as Function
       if (newComponent == null) {
         console.error(

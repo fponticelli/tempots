@@ -378,10 +378,7 @@ export function transformTempoHmr(code: string, id: string): string | null {
  *
  * Exported for testing.
  */
-export function transformComponentHmr(
-  code: string,
-  id: string
-): string | null {
+export function transformComponentHmr(code: string, id: string): string | null {
   if (!/\.[tjm]sx?$/.test(id)) return null
 
   // Collect PascalCase imports from relative paths only
@@ -436,10 +433,7 @@ export function transformComponentHmr(
   const callSites: ComponentCallSite[] = []
 
   for (const ci of componentImports) {
-    const callRegex = new RegExp(
-      `\\b${escapeRegex(ci.localName)}\\s*\\(`,
-      'g'
-    )
+    const callRegex = new RegExp(`\\b${escapeRegex(ci.localName)}\\s*\\(`, 'g')
     let cm: RegExpExecArray | null
     while ((cm = callRegex.exec(code)) !== null) {
       const parenStart = cm.index + cm[0].length - 1
@@ -473,8 +467,7 @@ export function transformComponentHmr(
       `__componentBoundary('${site.moduleSpecifier}', '${site.exportName}', ` +
       `(${site.localName}) => ${factoryBody}, ${site.localName}, __domRenderable)`
 
-    result =
-      result.slice(0, site.start) + replacement + result.slice(site.end)
+    result = result.slice(0, site.start) + replacement + result.slice(site.end)
   }
 
   // Append dependency acceptance
