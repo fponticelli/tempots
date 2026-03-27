@@ -203,7 +203,7 @@ interface HmrEvent {
   timestamp: number
 }
 
-const _devSignals: RegisteredSignal[] = []
+const _devSignals = new Map<string, RegisteredSignal>()
 const _devSignalUpdates = new Map<string, number>()
 const _devRenderStats = new Map<string, RenderStat>()
 const _devHmrLog: HmrEvent[] = []
@@ -213,7 +213,7 @@ export function devtoolsRegister(
   label: string,
   moduleId: string
 ): void {
-  _devSignals.push({ prop, label, moduleId })
+  _devSignals.set(`${moduleId}:${label}`, { prop, label, moduleId })
 }
 
 export function devtoolsSignalUpdate(key: string): void {
@@ -259,7 +259,7 @@ export function devtoolsRecordHmr(
 }
 
 export function devtoolsGetSignals(): ReadonlyArray<RegisteredSignal> {
-  return _devSignals
+  return Array.from(_devSignals.values())
 }
 
 export function devtoolsGetSignalUpdates(): ReadonlyMap<string, number> {
@@ -275,7 +275,7 @@ export function devtoolsGetHmrLog(): ReadonlyArray<HmrEvent> {
 }
 
 export function devtoolsClear(): void {
-  _devSignals.length = 0
+  _devSignals.clear()
   _devSignalUpdates.clear()
   _devRenderStats.clear()
   _devHmrLog.length = 0

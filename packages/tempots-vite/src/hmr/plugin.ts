@@ -96,13 +96,13 @@ export function hmrNotify(moduleId, newModule) {
   }
 }
 
-const _devSignals = []
+const _devSignals = new Map()
 const _devSignalUpdates = new Map()
 const _devRenderStats = new Map()
 const _devHmrLog = []
 
 export function devtoolsRegister(prop, label, moduleId) {
-  _devSignals.push({ prop, label, moduleId })
+  _devSignals.set(moduleId + ':' + label, { prop, label, moduleId })
 }
 
 export function devtoolsSignalUpdate(key) {
@@ -134,7 +134,7 @@ export function devtoolsWrapSet(prop, key) {
   prop.set = (v) => { devtoolsSignalUpdate(key); origSet(v) }
 }
 
-export function devtoolsGetSignals() { return _devSignals }
+export function devtoolsGetSignals() { return Array.from(_devSignals.values()) }
 export function devtoolsGetRenderStats() { return _devRenderStats }
 export function devtoolsGetSignalUpdates() { return _devSignalUpdates }
 export function devtoolsGetHmrLog() { return _devHmrLog }
@@ -206,6 +206,19 @@ export function componentBoundary(moduleId, exportName, factory, initialComponen
 /**
  * Escapes special regex characters in a string.
  */
+/**
+ * Returns the brace nesting depth at a given position in the code.
+ * Depth 0 means module scope.
+ */
+function braceDepthAt(code: string, pos: number): number {
+  let depth = 0
+  for (let i = 0; i < pos && i < code.length; i++) {
+    if (code[i] === '{') depth++
+    else if (code[i] === '}') depth--
+  }
+  return depth
+}
+
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -400,6 +413,7 @@ export function transformTempoHmr(
     interface PropSite {
       varName: string
       insertPos: number
+      isModuleScope: boolean
     }
 
     const propSites: PropSite[] = []
@@ -413,6 +427,7 @@ export function transformTempoHmr(
       propSites.push({
         varName: propMatch[2],
         insertPos: parenEnd + 1,
+        isModuleScope: braceDepthAt(result, propMatch.index) === 0,
       })
     }
 
@@ -429,9 +444,11 @@ export function transformTempoHmr(
         result.slice(0, site.insertPos) + label + result.slice(site.insertPos)
     }
 
-    // Collect names in order
+    // Collect only module-scope props for __hmr_props
     for (const site of propSites) {
-      labeledPropNames.push(site.varName)
+      if (site.isModuleScope) {
+        labeledPropNames.push(site.varName)
+      }
     }
   }
 
