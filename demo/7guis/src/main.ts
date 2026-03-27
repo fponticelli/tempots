@@ -69,15 +69,15 @@ export function App(): Renderable {
         ...demos.map(demo => demoButton(demo, currentDemo))
       ),
       OneOfValue(currentDemo, {
-        Counter: Counter,
-        Temperature: Temperature,
-        'Flight Booker': FlightBooker,
-        Timer: Timer,
-        CRUD: Crud,
-        'Circle Drawer': CircleDrawer,
-        Cells: Cells,
-        Repeat: RepeatDemo,
-        'For Each': ForEachDemo,
+        Counter: () => Counter(),
+        Temperature: () => Temperature(),
+        'Flight Booker': () => FlightBooker(),
+        Timer: () => Timer(),
+        CRUD: () => Crud(),
+        'Circle Drawer': () => CircleDrawer(),
+        Cells: () => Cells(),
+        Repeat: () => RepeatDemo(),
+        'For Each': () => ForEachDemo(),
       })
     )
   )

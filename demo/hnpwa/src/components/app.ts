@@ -94,11 +94,11 @@ export function App(route: Signal<Route>, page: Signal<Page>) {
     html.section(
       OneOfType(page, {
         Article: p => Article(p.at('item')),
-        PageFeed: PageFeedView,
+        PageFeed: p => PageFeedView(p),
         Profile: e => ProfileView({ user: e.at('user') }),
-        NotFound: NotFound,
-        Error: ErrorView,
-        Loading: Loading,
+        NotFound: () => NotFound(),
+        Error: e => ErrorView(e),
+        Loading: () => Loading(),
       })
     )
   )
