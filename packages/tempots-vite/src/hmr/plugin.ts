@@ -88,11 +88,7 @@ const __hmr_registry = new Map()
 export function hmrNotify(moduleId, newModule) {
   const boundaries = __hmr_registry.get(moduleId)
   if (boundaries == null || boundaries.size === 0) {
-    // No boundaries registered — this module's exports are used as references
-    // (e.g., passed to OneOfValue), not wrapped in componentBoundary.
-    // Invalidate so the update propagates to the entry boundary for a full re-render.
-    if (import.meta.hot) import.meta.hot.invalidate()
-    return
+    return false
   }
   const start = typeof performance !== 'undefined' ? performance.now() : 0
   let count = 0
@@ -108,6 +104,7 @@ export function hmrNotify(moduleId, newModule) {
   if (typeof performance !== 'undefined' && typeof devtoolsRecordHmr === 'function') {
     devtoolsRecordHmr(moduleId, count, performance.now() - start)
   }
+  return true
 }
 
 const _devSignals = new Map()
@@ -614,7 +611,7 @@ export function transformComponentHmr(code: string, id: string): string | null {
   const acceptLines: string[] = []
   for (const modSpec of moduleSpecifiers) {
     acceptLines.push(
-      `  import.meta.hot.accept('${modSpec}', (mod) => __hmrNotify('${modSpec}', mod))`
+      `  import.meta.hot.accept('${modSpec}', (mod) => { if (!__hmrNotify('${modSpec}', mod)) import.meta.hot.invalidate() })`
     )
   }
   result += `\nif (import.meta.hot) {\n${acceptLines.join('\n')}\n}`

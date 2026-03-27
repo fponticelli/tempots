@@ -1,33 +1,31 @@
 import { Txt } from './components/txt'
 import {
-  emitValue,
-  Signal,
   attr,
   on,
   prop,
   type Renderable,
+  emitValueAsNumber,
 } from '@tempots/dom'
-import { InputText } from './ui'
+import { InputNumber } from './ui'
 import { flex } from './components/flex'
 
 export interface TempChange {
   unit: 'c' | 'f'
-  value: string
+  value: number
 }
 
 function round(value: number, decimals: number = 2) {
-  return String(
-    Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals)
-  )
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals)
 }
 
 export function Temperature(): Renderable {
-  const celsius = prop<string | number>('22')
-  const fahrenheit = prop<string | number>('71.6')
-  const tchange = prop<TempChange>({ unit: 'c', value: '' })
+  const celsius = prop(22)
+  const fahrenheit = prop(71.6)
+  const tchange = prop<TempChange>({ unit: 'c', value: NaN })
   tchange.on(tchange => {
-    const value = Number(tchange.value)
-    if (tchange.value.trim() === '' || !Number.isFinite(value)) {
+    const value = tchange.value
+    console.log(value)
+    if (!Number.isFinite(value)) {
       return
     }
     if (tchange.unit === 'c') {
@@ -40,14 +38,14 @@ export function Temperature(): Renderable {
     attr.class('gap-2'),
     flex.row(
       attr.class('gap-2 items-center'),
-      InputText(
-        attr.value(celsius as Signal<string>),
-        on.input(emitValue(v => tchange.set({ unit: 'c', value: v })))
+      InputNumber(
+        attr.value(celsius.map(String)),
+        on.input(emitValueAsNumber(v => tchange.set({ unit: 'c', value: v })))
       ),
       Txt('°C'),
-      InputText(
-        attr.value(fahrenheit as Signal<string>),
-        on.input(emitValue(v => tchange.set({ unit: 'f', value: v })))
+      InputNumber(
+        attr.value(fahrenheit.map(String)),
+        on.input(emitValueAsNumber(v => tchange.set({ unit: 'f', value: v })))
       ),
       Txt('°F')
     )
