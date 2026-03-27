@@ -1134,17 +1134,25 @@ export function createRenderKit<
           return Object.keys(value)[0] as keyof T
         })
         let currentKey: keyof T | undefined
+        let currentScope: DisposalScope | null = null
         const clearSignal = keySignal.on(newKey => {
           if (newKey !== currentKey) {
             currentKey = newKey
+            currentScope?.dispose()
             matched?.dispose()
             clearRenderable?.(true)
+            currentScope = new DisposalScope()
             matched = matchSignal.map(value => value[newKey])
-            const child = cases[newKey](matched)
-            clearRenderable = renderableOfTNode(child).render(newCtx)
+            const child = withScope(currentScope, () =>
+              cases[newKey](matched!)
+            )
+            clearRenderable = withScope(currentScope, () =>
+              renderableOfTNode(child).render(newCtx)
+            )
           }
         })
         return (removeTree: boolean) => {
+          currentScope?.dispose()
           matched?.dispose()
           clearSignal()
           newCtx.clear(removeTree)
