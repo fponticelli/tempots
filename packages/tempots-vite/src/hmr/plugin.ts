@@ -200,8 +200,11 @@ function splitArgs(argsStr: string): string[] {
  * Exported for testing.
  */
 export function transformTempoHmr(code: string, id: string): string | null {
-  // Only process ts/js files
+  // Only process ts/js files, skip built files and dependencies
   if (!/\.[tjm]sx?$/.test(id)) {
+    return null
+  }
+  if (/node_modules|\/dist\//.test(id)) {
     return null
   }
 
@@ -380,6 +383,8 @@ export function transformTempoHmr(code: string, id: string): string | null {
  */
 export function transformComponentHmr(code: string, id: string): string | null {
   if (!/\.[tjm]sx?$/.test(id)) return null
+  // Skip built files and dependencies
+  if (/node_modules|\/dist\//.test(id)) return null
 
   // Collect PascalCase imports from relative paths only
   const relativeImportRegex =
