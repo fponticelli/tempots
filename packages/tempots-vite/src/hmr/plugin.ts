@@ -156,6 +156,8 @@ if (typeof window !== 'undefined') {
     getRenderStats: devtoolsGetRenderStats,
     getSignalUpdates: devtoolsGetSignalUpdates,
     getHmrLog: devtoolsGetHmrLog,
+    clearRenderStats: function() { _devRenderStats.clear() },
+    clearSignalUpdates: function() { _devSignalUpdates.clear() },
   }
 }
 

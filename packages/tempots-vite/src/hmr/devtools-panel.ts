@@ -70,7 +70,9 @@ export const DEVTOOLS_PANEL_SOURCE = `
     '.signal-value:hover { background: #2a3a5c; }',
     '.signal-detail { padding: 4px 8px; font-size: 10px; color: #888; background: #12122a; border-radius: 3px; margin: 2px 0 4px 0; }',
     '.signal-detail pre { margin: 4px 0; color: #a0d0a0; white-space: pre-wrap; word-break: break-all; max-height: 80px; overflow-y: auto; }',
-    '.edit-input { background: #0e0e22; border: 1px solid #7ecfff; color: #e0e0e0; font-family: inherit; font-size: 11px; padding: 2px 4px; border-radius: 2px; width: 100px; outline: none; }',
+    '.edit-input { background: #0e0e22; border: 1px solid #7ecfff; color: #e0e0e0; font-family: inherit; font-size: 11px; padding: 2px 4px; border-radius: 2px; outline: none; box-sizing: border-box; }',
+    'input.edit-input { width: 100px; }',
+    'textarea.edit-input { width: 100%; font-family: monospace; }',
 
     // Performance tab
     '.perf-section { margin-bottom: 10px; }',
@@ -288,7 +290,6 @@ export const DEVTOOLS_PANEL_SOURCE = `
       for (var j = 0; j < groups[mod].length; j++) {
         (function(sig) {
           var row = el('div', 'signal-row')
-          row.appendChild(el('span', 'badge', 'Prop'))
           row.appendChild(el('span', 'signal-name', sig.label))
 
           var valSpan = el('span', 'signal-value', formatValue(sig.prop.value))
@@ -329,18 +330,23 @@ export const DEVTOOLS_PANEL_SOURCE = `
             if (editingSignal === key) return
             editingSignal = key
 
-            var input = document.createElement('input')
+            var val = sig.prop.value
+            var isObject = val != null && typeof val === 'object'
+            var input = document.createElement(isObject ? 'textarea' : 'input')
             input.className = 'edit-input'
+            if (isObject) {
+              input.style.cssText = 'width:100%;min-height:60px;resize:vertical;'
+            }
             try {
-              input.value = JSON.stringify(sig.prop.value)
+              input[isObject ? 'value' : 'value'] = JSON.stringify(val, null, isObject ? 2 : 0)
             } catch(err) {
-              input.value = String(sig.prop.value)
+              input.value = String(val)
             }
 
             valSpan.textContent = ''
             valSpan.appendChild(input)
             input.focus()
-            input.select()
+            if (!isObject) input.select()
 
             function finish() {
               editingSignal = null
@@ -348,21 +354,28 @@ export const DEVTOOLS_PANEL_SOURCE = `
             }
 
             input.addEventListener('keydown', function(ev) {
-              if (ev.key === 'Enter') {
+              if (ev.key === 'Enter' && !isObject) {
                 ev.preventDefault()
-                try {
-                  var parsed = JSON.parse(input.value)
-                  if (sig.prop && typeof sig.prop.set === 'function') {
-                    sig.prop.set(parsed)
-                  }
-                } catch(err) {
-                  // Invalid JSON — ignore
-                }
-                finish()
+                trySubmit()
+              } else if (ev.key === 'Enter' && ev.metaKey && isObject) {
+                ev.preventDefault()
+                trySubmit()
               } else if (ev.key === 'Escape') {
                 finish()
               }
             })
+
+            function trySubmit() {
+              try {
+                var parsed = JSON.parse(input.value)
+                if (sig.prop && typeof sig.prop.set === 'function') {
+                  sig.prop.set(parsed)
+                }
+              } catch(err) {
+                // Invalid JSON — ignore
+              }
+              finish()
+            }
 
             input.addEventListener('blur', function() {
               setTimeout(finish, 100)
