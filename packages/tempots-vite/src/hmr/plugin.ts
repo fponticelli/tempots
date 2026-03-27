@@ -570,6 +570,91 @@ export function transformComponentHmr(code: string, id: string): string | null {
 }
 
 /**
+ * Transform any file that imports prop factories to add devtools registration.
+ * Runs on ALL source files (not just entry files), when devtools is enabled.
+ *
+ * Exported for testing.
+ */
+export function transformPropDevtools(
+  code: string,
+  id: string
+): string | null {
+  if (!/\.[tjm]sx?$/.test(id)) return null
+  if (/node_modules|\/dist\//.test(id)) return null
+
+  // Find prop factory imports
+  const PROP_FACTORIES = [
+    'prop',
+    'localStorageProp',
+    'sessionStorageProp',
+    'storedProp',
+  ]
+  const propFactoryLocalNames: string[] = []
+
+  const allImportRegex =
+    /import\s*\{([^}]*)\}\s*from\s*['"]@tempots\/(?:dom|core)['"]/g
+  let impMatch: RegExpExecArray | null
+  while ((impMatch = allImportRegex.exec(code)) !== null) {
+    const specifiers = impMatch[1]
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+    for (const spec of specifiers) {
+      const aliasM = /^(\w+)\s+as\s+(\w+)$/.exec(spec)
+      if (aliasM) {
+        if (PROP_FACTORIES.includes(aliasM[1])) {
+          propFactoryLocalNames.push(aliasM[2])
+        }
+      } else if (PROP_FACTORIES.includes(spec)) {
+        propFactoryLocalNames.push(spec)
+      }
+    }
+  }
+
+  if (propFactoryLocalNames.length === 0) return null
+
+  // Find prop assignments
+  const escapedNames = propFactoryLocalNames.map(escapeRegex).join('|')
+  const propAssignRegex = new RegExp(
+    `((?:const|let|var)\\s+(\\w+)\\s*=\\s*(?:${escapedNames})\\s*\\()`,
+    'g'
+  )
+
+  interface PropSite {
+    varName: string
+    insertPos: number
+  }
+
+  let result = code
+  const propSites: PropSite[] = []
+  let propMatch: RegExpExecArray | null
+
+  while ((propMatch = propAssignRegex.exec(result)) !== null) {
+    const parenStart = propMatch.index + propMatch[0].length - 1
+    const parenEnd = findBalancedParen(result, parenStart)
+    if (parenEnd === -1) continue
+    propSites.push({ varName: propMatch[2], insertPos: parenEnd + 1 })
+  }
+
+  if (propSites.length === 0) return null
+
+  // Insert devtools calls from end to start
+  for (let i = propSites.length - 1; i >= 0; i--) {
+    const site = propSites[i]
+    const insert =
+      `; __devtoolsRegister(${site.varName}, '${site.varName}', '${id}')` +
+      `; __devtoolsWrapSet(${site.varName}, '${id}:${site.varName}')`
+    result = result.slice(0, site.insertPos) + insert + result.slice(site.insertPos)
+  }
+
+  // Add virtual module import
+  const devImport = `import { devtoolsRegister as __devtoolsRegister, devtoolsWrapSet as __devtoolsWrapSet } from '${VIRTUAL_MODULE_ID}'\n`
+  result = devImport + result
+
+  return result
+}
+
+/**
  * Creates the Tempo HMR Vite plugin.
  *
  * @param enabled - Whether HMR transform is enabled. Defaults to true.
@@ -603,7 +688,16 @@ export function tempoHmrPlugin(enabled = true, devtools = false): Plugin {
       const componentInput = entryResult ?? code
       const componentResult = transformComponentHmr(componentInput, id)
 
-      return componentResult ?? entryResult
+      let result = componentResult ?? entryResult
+
+      // Devtools prop registration (all files with prop imports)
+      if (devtools) {
+        const devtoolsInput = result ?? code
+        const devtoolsResult = transformPropDevtools(devtoolsInput, id)
+        result = devtoolsResult ?? result
+      }
+
+      return result
     },
 
     transformIndexHtml(html) {

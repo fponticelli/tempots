@@ -23,12 +23,12 @@ export const DEVTOOLS_PANEL_SOURCE = `
   var POLL_INTERVAL = 500
 
   // --- State ---
-  var isOpen = localStorage.getItem(LS_OPEN) !== 'false'
+  var isOpen = sessionStorage.getItem(LS_OPEN) !== 'false'
   var activeTab = 'signals'
   var expandedSignal = null
   var editingSignal = null
   var savedPos = null
-  try { savedPos = JSON.parse(localStorage.getItem(LS_POS)) } catch(e) {}
+  try { savedPos = JSON.parse(sessionStorage.getItem(LS_POS)) } catch(e) {}
 
   // --- Host element ---
   var host = document.createElement('div')
@@ -42,6 +42,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   var style = document.createElement('style')
   style.textContent = [
     ':host { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #e0e0e0; }',
+    '*, *::before, *::after { font-family: inherit; box-sizing: border-box; }',
     '.panel { position: fixed; width: 320px; height: 400px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }',
     '.collapsed-btn { position: fixed; width: 32px; height: 32px; border-radius: 50%; background: #1a1a2e; border: 1px solid #555; color: #7ecfff; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }',
     '.collapsed-btn:hover { background: #252542; border-color: #7ecfff; }',
@@ -197,13 +198,13 @@ export const DEVTOOLS_PANEL_SOURCE = `
   minimizeBtn.addEventListener('click', function(e) {
     e.stopPropagation()
     isOpen = false
-    localStorage.setItem(LS_OPEN, 'false')
+    sessionStorage.setItem(LS_OPEN, 'false')
     showState()
   })
 
   collapsedBtn.addEventListener('click', function() {
     isOpen = true
-    localStorage.setItem(LS_OPEN, 'true')
+    sessionStorage.setItem(LS_OPEN, 'true')
     showState()
   })
 
@@ -236,7 +237,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
     if (!dragging) return
     dragging = false
     if (savedPos) {
-      localStorage.setItem(LS_POS, JSON.stringify(savedPos))
+      sessionStorage.setItem(LS_POS, JSON.stringify(savedPos))
     }
   })
 
