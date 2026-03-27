@@ -16,7 +16,7 @@ pnpm add @tempots/vite
 - **SSR Mode**: Server-side render on each request with HMR support
 - **Islands Mode**: Static by default, hydrate only marked interactive components
 - **Hybrid Mode**: Combine SSG for static pages with SSR for dynamic ones
-- **Vite Integration**: Full HMR support in development
+- **HMR**: Component-level hot module replacement with state preservation
 
 ## Usage
 
@@ -76,6 +76,33 @@ export default defineConfig({
 })
 ```
 
+## HMR (Hot Module Replacement)
+
+The plugin provides automatic HMR for Tempo applications in dev mode. No code changes required — just add the plugin.
+
+### How It Works
+
+- **File-level HMR**: The plugin detects `render()` calls and wraps them in an HMR boundary. When any file changes, the app re-renders without a full page reload.
+- **Component-level HMR**: Calls to PascalCase functions imported from local modules (e.g., `ItemLink(item)`) are wrapped in component boundaries. When a component's source file changes, only the subtrees using that component re-render — the rest of the page is untouched.
+- **State preservation**: `Prop` signals assigned to variables (`const count = prop(0)`) are automatically labeled in dev mode. Their values are snapshotted before a hot update and restored after re-render.
+- **Error overlay**: If a re-render throws, Vite's native error overlay shows the error. Fixing the code and saving dismisses it automatically.
+
+### Component Naming Convention
+
+The component-level HMR uses PascalCase as a heuristic to identify component functions:
+
+- `ItemLink`, `PageFeedView`, `App` — **wrapped** (PascalCase, imported from relative path)
+- `loadRoute`, `formatItem` — **not wrapped** (camelCase)
+- `When`, `ForEach`, `Fragment` — **not wrapped** (imported from `@tempots/dom`, not a relative path)
+
+### HMR Configuration
+
+HMR is enabled by default in dev mode. To disable:
+
+```typescript
+tempo({ hmr: false })
+```
+
 ## Configuration
 
 ### Options
@@ -91,6 +118,7 @@ export default defineConfig({
 | `container` | `string` | `'#app'` | App container selector |
 | `hydrate` | `boolean` | `true` for SSR/islands | Generate hydration markers |
 | `outDir` | `string` | `'dist'` | Output directory |
+| `hmr` | `boolean \| { errorBoundary?: boolean }` | `true` | HMR configuration (dev mode only) |
 
 ### Route Configuration
 

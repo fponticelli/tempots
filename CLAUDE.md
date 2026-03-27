@@ -52,7 +52,7 @@ Additional packages:
 - `@tempots/std` — standard library (independent, no framework deps)
 - `@tempots/server` — SSR utilities (depends on core + dom)
 - `@tempots/client` — hydration utilities (depends on core + dom)
-- `@tempots/vite` — Vite plugin for SSR/SSG/Islands (depends on dom + server)
+- `@tempots/vite` — Vite plugin for SSR/SSG/Islands/HMR (depends on dom + server)
 - `@tempots/eslint-plugin` — signal disposal linting (independent, published from src)
 
 ### Monorepo Structure

@@ -527,6 +527,27 @@ html.div(
 )
 ```
 
+## Error Boundaries
+
+`Catch` wraps a renderable subtree and renders a fallback if it throws during rendering. This prevents a single failing component from crashing the entire app.
+
+```ts
+import { Catch, html, on } from '@tempots/dom'
+
+Catch(
+  MyComponent(),
+  (error, retry) => html.div(
+    html.p('Something went wrong: ', error.map(e => e.message)),
+    html.button(on.click(retry), 'Retry')
+  )
+)
+```
+
+- `error` is a `Signal<Error>` — the fallback reactively displays the error message
+- `retry` is a function that disposes the fallback and re-attempts rendering the children
+- If retry also fails, the error signal updates with the new error (fallback stays rendered)
+- Catches synchronous render errors only (not event handlers or async code)
+
 ## Fragment/Empty
 
 You can use `Fragment` where a single renderable is expected but you want to render multiple components. Similarly, you can use `Empty` to fill a slot with nothing.
