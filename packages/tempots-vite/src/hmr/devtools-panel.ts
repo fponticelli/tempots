@@ -514,10 +514,17 @@ export const DEVTOOLS_PANEL_SOURCE = `
   var _lastRenderStatsSize = -1
   var _needsFullRebuild = true
 
+  function signalsChanged(signals) {
+    if (signals.length !== _valueSpans.length) return true
+    for (var i = 0; i < signals.length; i++) {
+      if (!_valueSpans[i] || _valueSpans[i].sig.prop !== signals[i].prop) return true
+    }
+    return false
+  }
+
   function updateSignalValues() {
     var signals = data.getSignals()
-    if (signals.length !== _lastSignalCount) {
-      _lastSignalCount = signals.length
+    if (signalsChanged(signals)) {
       renderSignals()
       return
     }
