@@ -134,7 +134,17 @@ export function devtoolsWrapSet(prop, key) {
   prop.set = (v) => { devtoolsSignalUpdate(key); origSet(v) }
 }
 
-export function devtoolsGetSignals() { return Array.from(_devSignals.values()) }
+export function devtoolsGetSignals() {
+  var result = []
+  _devSignals.forEach(function(entry, key) {
+    if (entry.prop && typeof entry.prop.isDisposed === 'function' && entry.prop.isDisposed()) {
+      _devSignals.delete(key)
+    } else {
+      result.push(entry)
+    }
+  })
+  return result
+}
 export function devtoolsGetRenderStats() { return _devRenderStats }
 export function devtoolsGetSignalUpdates() { return _devSignalUpdates }
 export function devtoolsGetHmrLog() { return _devHmrLog }
