@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createHmrBoundary } from '../src/hmr/runtime'
+import {
+  createHmrBoundary,
+  componentBoundary,
+  hmrNotify,
+  hmrRegistry,
+} from '../src/hmr/runtime'
 
 const makeRenderable = () => 'renderable'
 
@@ -231,5 +236,148 @@ describe('snapshot/restore', () => {
 
     expect(newA.set).toHaveBeenCalledWith('hello')
     expect(newB.set).toHaveBeenCalledWith(99)
+  })
+})
+
+describe('componentBoundary', () => {
+  it('should render the component via factory on creation', () => {
+    const clear = vi.fn()
+    const renderFn = vi.fn().mockReturnValue(clear)
+    const MyComp = (x: number) => ({ rendered: x })
+
+    const boundary = componentBoundary(
+      './my-comp', 'MyComp',
+      (Comp: any) => Comp(42),
+      MyComp, renderFn
+    )
+
+    expect(renderFn).toHaveBeenCalledOnce()
+    expect(renderFn).toHaveBeenCalledWith({ rendered: 42 })
+    boundary.dispose()
+  })
+
+  it('should register in the registry on creation', () => {
+    const renderFn = vi.fn().mockReturnValue(vi.fn())
+
+    const boundary = componentBoundary(
+      './reg-test', 'MyComp',
+      (Comp: any) => Comp(),
+      () => 'result', renderFn
+    )
+
+    expect(hmrRegistry.has('./reg-test')).toBe(true)
+    expect(hmrRegistry.get('./reg-test')!.size).toBeGreaterThanOrEqual(1)
+    boundary.dispose()
+  })
+
+  it('should deregister from registry on dispose', () => {
+    const renderFn = vi.fn().mockReturnValue(vi.fn())
+
+    const boundary = componentBoundary(
+      './dereg-test', 'Comp',
+      (Comp: any) => Comp(),
+      () => 'result', renderFn
+    )
+
+    boundary.dispose()
+    expect(hmrRegistry.get('./dereg-test')!.size).toBe(0)
+  })
+
+  it('should call clear on dispose', () => {
+    const clear = vi.fn()
+    const renderFn = vi.fn().mockReturnValue(clear)
+
+    const boundary = componentBoundary(
+      './clear-test', 'Comp',
+      (Comp: any) => Comp(),
+      () => 'result', renderFn
+    )
+
+    boundary.dispose()
+    expect(clear).toHaveBeenCalledOnce()
+  })
+
+  it('should re-render with new component on update', () => {
+    const clear1 = vi.fn()
+    const clear2 = vi.fn()
+    const renderFn = vi.fn()
+      .mockReturnValueOnce(clear1)
+      .mockReturnValueOnce(clear2)
+
+    const OldComp = () => ({ version: 1 })
+    const NewComp = () => ({ version: 2 })
+
+    const boundary = componentBoundary(
+      './update-test', 'MyComp',
+      (Comp: any) => Comp(),
+      OldComp, renderFn
+    )
+
+    boundary.update({ MyComp: NewComp })
+
+    expect(clear1).toHaveBeenCalledOnce()
+    expect(renderFn).toHaveBeenCalledTimes(2)
+    expect(renderFn.mock.calls[1][0]).toEqual({ version: 2 })
+    boundary.dispose()
+  })
+
+  it('should handle multiple boundaries for same module', () => {
+    const renderFn = vi.fn().mockReturnValue(vi.fn())
+    const Comp = () => 'result'
+
+    const b1 = componentBoundary('./multi', 'C', (C: any) => C(1), Comp, renderFn)
+    const b2 = componentBoundary('./multi', 'C', (C: any) => C(2), Comp, renderFn)
+    const b3 = componentBoundary('./multi', 'C', (C: any) => C(3), Comp, renderFn)
+
+    expect(hmrRegistry.get('./multi')!.size).toBe(3)
+
+    b1.dispose()
+    expect(hmrRegistry.get('./multi')!.size).toBe(2)
+
+    b2.dispose()
+    b3.dispose()
+  })
+})
+
+describe('hmrNotify', () => {
+  it('should call update on all boundaries for a module', () => {
+    const renderFn = vi.fn().mockReturnValue(vi.fn())
+    const Comp = () => 'old'
+
+    const b1 = componentBoundary('./notify', 'Comp', (C: any) => C(1), Comp, renderFn)
+    const b2 = componentBoundary('./notify', 'Comp', (C: any) => C(2), Comp, renderFn)
+
+    hmrNotify('./notify', { Comp: () => 'new' })
+
+    // 2 initial + 2 updates = 4
+    expect(renderFn).toHaveBeenCalledTimes(4)
+
+    b1.dispose()
+    b2.dispose()
+  })
+
+  it('should not throw when notifying unknown module', () => {
+    expect(() => hmrNotify('./unknown', {})).not.toThrow()
+  })
+
+  it('should catch errors in update and continue to next boundary', () => {
+    const renderFn = vi.fn()
+      .mockReturnValueOnce(vi.fn())
+      .mockReturnValueOnce(vi.fn())
+      .mockImplementationOnce(() => { throw new Error('fail') })
+      .mockReturnValueOnce(vi.fn())
+
+    const Comp = () => 'v1'
+    const b1 = componentBoundary('./err', 'A', (C: any) => C(), Comp, renderFn)
+    const b2 = componentBoundary('./err', 'B', (C: any) => C(), Comp, renderFn)
+
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    hmrNotify('./err', { A: () => 'a2', B: () => 'b2' })
+    spy.mockRestore()
+
+    expect(renderFn).toHaveBeenCalledTimes(4)
+
+    b1.dispose()
+    b2.dispose()
   })
 })

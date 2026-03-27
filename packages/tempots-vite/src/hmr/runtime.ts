@@ -100,3 +100,80 @@ export function createHmrBoundary(
     },
   }
 }
+
+// --- Component-level HMR ---
+
+export interface ComponentBoundaryInstance {
+  update: (newModule: Record<string, unknown>) => void
+  dispose: () => void
+}
+
+export const hmrRegistry = new Map<string, Set<ComponentBoundaryInstance>>()
+
+export function hmrNotify(
+  moduleId: string,
+  newModule: Record<string, unknown>
+): void {
+  const boundaries = hmrRegistry.get(moduleId)
+  if (boundaries == null) return
+  for (const boundary of boundaries) {
+    try {
+      boundary.update(newModule)
+    } catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e))
+      console.error(
+        `[tempo:hmr] Error updating boundary for ${moduleId}:`,
+        error
+      )
+    }
+  }
+}
+
+export function componentBoundary(
+  moduleId: string,
+  exportName: string,
+  factory: (component: Function) => unknown,
+  initialComponent: Function,
+  renderFn: (renderable: unknown) => () => void
+): ComponentBoundaryInstance {
+  let clear: (() => void) | null = null
+
+  const renderable = factory(initialComponent)
+  clear = renderFn(renderable)
+
+  const instance: ComponentBoundaryInstance = {
+    update(newModule: Record<string, unknown>) {
+      const newComponent = newModule[exportName] as Function
+      if (newComponent == null) {
+        console.error(
+          `[tempo:hmr] Export '${exportName}' not found in ${moduleId}`
+        )
+        return
+      }
+
+      if (clear != null) {
+        clear()
+        clear = null
+      }
+
+      const newRenderable = factory(newComponent)
+      clear = renderFn(newRenderable)
+    },
+
+    dispose() {
+      const set = hmrRegistry.get(moduleId)
+      if (set != null) set.delete(instance)
+      if (clear != null) {
+        clear()
+        clear = null
+      }
+    },
+  }
+
+  if (!hmrRegistry.has(moduleId)) {
+    hmrRegistry.set(moduleId, new Set())
+  }
+  hmrRegistry.get(moduleId)!.add(instance)
+
+  return instance
+}
