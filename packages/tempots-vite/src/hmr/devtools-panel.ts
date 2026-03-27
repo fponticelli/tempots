@@ -517,10 +517,6 @@ export const DEVTOOLS_PANEL_SOURCE = `
   function updateSignalValues() {
     var signals = data.getSignals()
     if (signals.length !== _lastSignalCount) {
-      _needsFullRebuild = true
-    }
-    if (_needsFullRebuild && activeTab === 'signals') {
-      _needsFullRebuild = false
       _lastSignalCount = signals.length
       renderSignals()
       return
@@ -529,7 +525,10 @@ export const DEVTOOLS_PANEL_SOURCE = `
     for (var i = 0; i < _valueSpans.length; i++) {
       var entry = _valueSpans[i]
       if (entry && entry.sig && entry.span && !editingSignal) {
-        entry.span.textContent = formatValue(entry.sig.prop.value)
+        var newText = formatValue(entry.sig.prop.value)
+        if (entry.span.textContent !== newText) {
+          entry.span.textContent = newText
+        }
       }
     }
   }
@@ -541,12 +540,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
         if (activeTab === 'signals') {
           updateSignalValues()
         } else {
-          // Performance tab: only rebuild if data changed
-          var renderStats = data.getRenderStats ? data.getRenderStats() : new Map()
-          if (renderStats.size !== _lastRenderStatsSize) {
-            _lastRenderStatsSize = renderStats.size
-            renderPerformance()
-          }
+          renderPerformance()
         }
       }
     }

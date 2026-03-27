@@ -102,7 +102,7 @@ const _devRenderStats = new Map()
 const _devHmrLog = []
 
 export function devtoolsRegister(prop, label, moduleId) {
-  _devSignals.set(moduleId + ':' + label, { prop, label, moduleId })
+  _devSignals.set(moduleId + ':' + label, { ref: new WeakRef(prop), label, moduleId })
 }
 
 export function devtoolsSignalUpdate(key) {
@@ -137,10 +137,11 @@ export function devtoolsWrapSet(prop, key) {
 export function devtoolsGetSignals() {
   var result = []
   _devSignals.forEach(function(entry, key) {
-    if (entry.prop && typeof entry.prop.isDisposed === 'function' && entry.prop.isDisposed()) {
+    var prop = entry.ref.deref()
+    if (!prop || (typeof prop.isDisposed === 'function' && prop.isDisposed())) {
       _devSignals.delete(key)
     } else {
-      result.push(entry)
+      result.push({ prop: prop, label: entry.label, moduleId: entry.moduleId })
     }
   })
   return result
