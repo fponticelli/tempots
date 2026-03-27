@@ -376,6 +376,8 @@ html.li(ItemLink(item))`
     const result = transformComponentHmr(code, 'src/page-feed.ts')
 
     expect(result).not.toBeNull()
-    expect(result).toContain("import { domRenderable as __domRenderable } from '@tempots/dom'")
+    expect(result).toContain("domRenderable as __domRenderable")
+    expect(result).toContain("DisposalScope as __DisposalScope")
+    expect(result).toContain("withScope as __withScope")
   })
 })

@@ -159,16 +159,19 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export function componentBoundary(moduleId, exportName, factory, initialComponent, createRenderable) {
+export function componentBoundary(moduleId, exportName, factory, initialComponent, createRenderable, ScopeClass, scopeWith) {
   return createRenderable((ctx) => {
     const markerCtx = ctx.makeRef()
     let clear = null
+    let currentScope = null
 
     function doRender(component) {
       const start = typeof performance !== 'undefined' ? performance.now() : 0
-      const renderable = factory(component)
+      if (currentScope) { currentScope.dispose(); currentScope = null }
+      currentScope = new ScopeClass()
+      const renderable = scopeWith(currentScope, function() { return factory(component) })
       if (renderable != null && typeof renderable.render === 'function') {
-        clear = renderable.render(markerCtx)
+        clear = scopeWith(currentScope, function() { return renderable.render(markerCtx) })
       }
       if (typeof performance !== 'undefined' && typeof devtoolsRecordRender === 'function') {
         devtoolsRecordRender(moduleId, exportName, performance.now() - start)
@@ -184,6 +187,7 @@ export function componentBoundary(moduleId, exportName, factory, initialComponen
           console.error('[tempo:hmr] Export ' + exportName + ' not found in ' + moduleId)
           return
         }
+        if (currentScope) { currentScope.dispose(); currentScope = null }
         if (clear != null) { clear(true); clear = null }
         try {
           doRender(newComp)
@@ -199,6 +203,7 @@ export function componentBoundary(moduleId, exportName, factory, initialComponen
       dispose() {
         const set = __hmr_registry.get(moduleId)
         if (set) set.delete(instance)
+        if (currentScope) { currentScope.dispose(); currentScope = null }
       },
     }
 
@@ -574,7 +579,7 @@ export function transformComponentHmr(code: string, id: string): string | null {
 
     const replacement =
       `__componentBoundary('${site.moduleSpecifier}', '${site.exportName}', ` +
-      `(${site.localName}) => ${factoryBody}, ${site.localName}, __domRenderable)`
+      `(${site.localName}) => ${factoryBody}, ${site.localName}, __domRenderable, __DisposalScope, __withScope)`
 
     result = result.slice(0, site.start) + replacement + result.slice(site.end)
   }
@@ -591,7 +596,7 @@ export function transformComponentHmr(code: string, id: string): string | null {
   // Prepend imports
   const imports =
     `import { componentBoundary as __componentBoundary, hmrNotify as __hmrNotify } from '${VIRTUAL_MODULE_ID}'\n` +
-    `import { domRenderable as __domRenderable } from '@tempots/dom'\n`
+    `import { domRenderable as __domRenderable, DisposalScope as __DisposalScope, withScope as __withScope } from '@tempots/dom'\n`
   result = imports + result
 
   return result
