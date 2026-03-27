@@ -115,8 +115,13 @@ export const DEVTOOLS_PANEL_SOURCE = `
     if (v === undefined) return 'undefined'
     if (typeof v === 'string') return JSON.stringify(v)
     if (typeof v === 'number' || typeof v === 'boolean') return String(v)
+    if (v instanceof Date) return v.toISOString()
     if (Array.isArray(v)) return '[...' + v.length + ']'
     if (typeof v === 'object') {
+      try {
+        var json = JSON.stringify(v)
+        if (json.length <= 40) return json
+      } catch(e) {}
       var keys = Object.keys(v)
       var display = keys.slice(0, 3).join(', ')
       if (keys.length > 3) display += ', ...'
@@ -509,7 +514,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
         var timeEl = el('span', 'hmr-time ' + timeColor(dur / 50), dur.toFixed(0) + 'ms')
         row.appendChild(timeEl)
 
-        row.appendChild(el('span', 'hmr-module', shortPath(h.module)))
+        row.appendChild(el('span', 'hmr-module', shortPath(h.moduleId)))
         var countText = h.boundaryCount != null
           ? (h.boundaryCount === 0 ? 'full re-render' : h.boundaryCount + ' boundar' + (h.boundaryCount !== 1 ? 'ies' : 'y'))
           : ''
