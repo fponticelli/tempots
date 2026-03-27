@@ -335,7 +335,11 @@ export const DEVTOOLS_PANEL_SOURCE = `
             var input = document.createElement(isObject ? 'textarea' : 'input')
             input.className = 'edit-input'
             if (isObject) {
-              input.style.cssText = 'width:100%;min-height:60px;resize:vertical;'
+              var jsonStr = ''
+              try { jsonStr = JSON.stringify(val, null, 2) } catch(err) { jsonStr = String(val) }
+              var lines = jsonStr.split('\\n').length
+              var h = Math.max(80, Math.min(200, lines * 16 + 16))
+              input.style.cssText = 'width:280px;height:' + h + 'px;resize:vertical;'
             }
             try {
               input[isObject ? 'value' : 'value'] = JSON.stringify(val, null, isObject ? 2 : 0)
@@ -442,12 +446,19 @@ export const DEVTOOLS_PANEL_SOURCE = `
     }
     body.appendChild(section1)
 
-    // Signal Updates
+    // Signal Updates — filter to only live signals
     var updatesMap = data.getSignalUpdates ? data.getSignalUpdates() : new Map()
+    var liveSignals = data.getSignals ? data.getSignals() : []
+    var liveKeys = {}
+    for (var li = 0; li < liveSignals.length; li++) {
+      liveKeys[liveSignals[li].moduleId + ':' + liveSignals[li].label] = true
+    }
     var updates = []
     if (updatesMap && typeof updatesMap.forEach === 'function') {
       updatesMap.forEach(function(count, key) {
-        updates.push({ key: key, label: key.split(':').pop() || key, count: count })
+        if (liveKeys[key]) {
+          updates.push({ key: key, label: key.split(':').pop() || key, count: count })
+        }
       })
     }
     var section2 = el('div', 'perf-section')
