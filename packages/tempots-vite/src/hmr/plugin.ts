@@ -79,13 +79,19 @@ const __hmr_registry = new Map()
 export function hmrNotify(moduleId, newModule) {
   const boundaries = __hmr_registry.get(moduleId)
   if (boundaries == null) return
+  const start = typeof performance !== 'undefined' ? performance.now() : 0
+  let count = 0
   for (const boundary of boundaries) {
     try {
       boundary.update(newModule)
+      count++
     } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e))
       console.error('[tempo:hmr] Error updating boundary for ' + moduleId + ':', error)
     }
+  }
+  if (typeof performance !== 'undefined' && typeof devtoolsRecordHmr === 'function') {
+    devtoolsRecordHmr(moduleId, count, performance.now() - start)
   }
 }
 
@@ -98,9 +104,13 @@ export function componentBoundary(moduleId, exportName, factory, initialComponen
     let clear = null
 
     function doRender(component) {
+      const start = typeof performance !== 'undefined' ? performance.now() : 0
       const renderable = factory(component)
       if (renderable != null && typeof renderable.render === 'function') {
         clear = renderable.render(markerCtx)
+      }
+      if (typeof performance !== 'undefined' && typeof devtoolsRecordRender === 'function') {
+        devtoolsRecordRender(moduleId, exportName, performance.now() - start)
       }
     }
 
