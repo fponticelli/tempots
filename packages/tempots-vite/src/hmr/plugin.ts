@@ -89,6 +89,9 @@ export function hmrNotify(moduleId, newModule) {
   }
 }
 
+export function devtoolsRegister() {}
+export function devtoolsWrapSet() {}
+
 export function componentBoundary(moduleId, exportName, factory, initialComponent, createRenderable) {
   return createRenderable((ctx) => {
     const markerCtx = ctx.makeRef()
@@ -201,7 +204,11 @@ function splitArgs(argsStr: string): string[] {
  *
  * Exported for testing.
  */
-export function transformTempoHmr(code: string, id: string): string | null {
+export function transformTempoHmr(
+  code: string,
+  id: string,
+  devtools = false
+): string | null {
   // Only process ts/js files, skip built files and dependencies
   if (!/\.[tjm]sx?$/.test(id)) {
     return null
@@ -352,7 +359,12 @@ export function transformTempoHmr(code: string, id: string): string | null {
     // Process from end to start to preserve indices
     for (let i = propSites.length - 1; i >= 0; i--) {
       const site = propSites[i]
-      const label = `; ${site.varName}.__hmr_label = '${site.varName}'`
+      let label = `; ${site.varName}.__hmr_label = '${site.varName}'`
+      if (devtools) {
+        label +=
+          `; __devtoolsRegister(${site.varName}, '${site.varName}', '${id}')` +
+          `; __devtoolsWrapSet(${site.varName}, '${id}:${site.varName}')`
+      }
       result =
         result.slice(0, site.insertPos) + label + result.slice(site.insertPos)
     }
@@ -370,7 +382,9 @@ export function transformTempoHmr(code: string, id: string): string | null {
     result.slice(0, hmrDeclIndex) + propsArray + result.slice(hmrDeclIndex)
 
   // Add virtual module import at top
-  const virtualImport = `import { createHmrBoundary as __createHmrBoundary } from '${VIRTUAL_MODULE_ID}'\n`
+  const virtualImport = devtools
+    ? `import { createHmrBoundary as __createHmrBoundary, devtoolsRegister as __devtoolsRegister, devtoolsWrapSet as __devtoolsWrapSet } from '${VIRTUAL_MODULE_ID}'\n`
+    : `import { createHmrBoundary as __createHmrBoundary } from '${VIRTUAL_MODULE_ID}'\n`
   result = virtualImport + result
 
   return result
@@ -523,7 +537,7 @@ export function tempoHmrPlugin(enabled = true, devtools = false): Plugin {
       if (!enabled) return null
 
       // Entry-file transform (render() wrapping + prop labeling)
-      const entryResult = transformTempoHmr(code, id)
+      const entryResult = transformTempoHmr(code, id, devtools)
 
       // Component-level transform (PascalCase wrapping + dep acceptance)
       const componentInput = entryResult ?? code

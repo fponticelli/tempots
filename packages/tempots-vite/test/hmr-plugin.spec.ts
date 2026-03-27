@@ -210,6 +210,60 @@ render(App(), '#app')`
       expect(result).toContain("name.__hmr_label = 'name'")
     })
   })
+
+  describe('devtools registration', () => {
+    it('should add __devtoolsRegister when devtools enabled', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts', true)
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("__devtoolsRegister(count, 'count', 'src/main.ts')")
+    })
+
+    it('should not add __devtoolsRegister when devtools disabled', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts', false)
+
+      expect(result).not.toBeNull()
+      expect(result).not.toContain('__devtoolsRegister')
+    })
+
+    it('should add __devtoolsWrapSet when devtools enabled', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts', true)
+
+      expect(result).not.toBeNull()
+      expect(result).toContain("__devtoolsWrapSet(count, 'src/main.ts:count')")
+    })
+
+    it('should not add __devtoolsWrapSet when devtools disabled', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts', false)
+
+      expect(result).not.toBeNull()
+      expect(result).not.toContain('__devtoolsWrapSet')
+    })
+
+    it('should import devtools functions when devtools enabled', () => {
+      const code = `import { render, prop } from '@tempots/dom'
+const count = prop(0)
+render(App(), '#app')`
+      const result = transformTempoHmr(code, 'src/main.ts', true)
+
+      expect(result).not.toBeNull()
+      expect(result).toContain('__devtoolsRegister')
+      expect(result).toContain('__devtoolsWrapSet')
+      expect(result).toContain("from 'virtual:tempo-hmr-runtime'")
+    })
+  })
 })
 
 describe('transformComponentHmr', () => {
