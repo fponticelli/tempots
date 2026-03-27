@@ -180,3 +180,103 @@ export function componentBoundary(
 
   return instance
 }
+
+// --- DevTools data collection ---
+
+interface RegisteredSignal {
+  prop: { value: unknown }
+  label: string
+  moduleId: string
+}
+
+interface RenderStat {
+  renderCount: number
+  totalTime: number
+  avgTime: number
+  maxTime: number
+}
+
+interface HmrEvent {
+  moduleId: string
+  boundaryCount: number
+  duration: number
+  timestamp: number
+}
+
+const _devSignals: RegisteredSignal[] = []
+const _devSignalUpdates = new Map<string, number>()
+const _devRenderStats = new Map<string, RenderStat>()
+const _devHmrLog: HmrEvent[] = []
+
+export function devtoolsRegister(
+  prop: { value: unknown },
+  label: string,
+  moduleId: string
+): void {
+  _devSignals.push({ prop, label, moduleId })
+}
+
+export function devtoolsSignalUpdate(key: string): void {
+  _devSignalUpdates.set(key, (_devSignalUpdates.get(key) ?? 0) + 1)
+}
+
+export function devtoolsRecordRender(
+  moduleId: string,
+  exportName: string,
+  duration: number
+): void {
+  const key = `${moduleId}:${exportName}`
+  const existing = _devRenderStats.get(key)
+  if (existing != null) {
+    existing.renderCount++
+    existing.totalTime += duration
+    existing.avgTime = existing.totalTime / existing.renderCount
+    existing.maxTime = Math.max(existing.maxTime, duration)
+  } else {
+    _devRenderStats.set(key, {
+      renderCount: 1,
+      totalTime: duration,
+      avgTime: duration,
+      maxTime: duration,
+    })
+  }
+}
+
+export function devtoolsRecordHmr(
+  moduleId: string,
+  boundaryCount: number,
+  duration: number
+): void {
+  _devHmrLog.unshift({
+    moduleId,
+    boundaryCount,
+    duration,
+    timestamp: Date.now(),
+  })
+  if (_devHmrLog.length > 20) {
+    _devHmrLog.length = 20
+  }
+}
+
+export function devtoolsGetSignals(): ReadonlyArray<RegisteredSignal> {
+  return _devSignals
+}
+
+export function devtoolsGetSignalUpdates(): ReadonlyMap<string, number> {
+  return _devSignalUpdates
+}
+
+export function devtoolsGetRenderStats(): ReadonlyMap<string, RenderStat> {
+  return _devRenderStats
+}
+
+export function devtoolsGetHmrLog(): ReadonlyArray<HmrEvent> {
+  return _devHmrLog
+}
+
+export function devtoolsClear(): void {
+  _devSignals.length = 0
+  _devSignalUpdates.clear()
+  _devRenderStats.clear()
+  _devHmrLog.length = 0
+}
