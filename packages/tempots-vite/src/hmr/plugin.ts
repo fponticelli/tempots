@@ -87,7 +87,13 @@ const __hmr_registry = new Map()
 
 export function hmrNotify(moduleId, newModule) {
   const boundaries = __hmr_registry.get(moduleId)
-  if (boundaries == null) return
+  if (boundaries == null || boundaries.size === 0) {
+    // No boundaries registered — this module's exports are used as references
+    // (e.g., passed to OneOfValue), not wrapped in componentBoundary.
+    // Invalidate so the update propagates to the entry boundary for a full re-render.
+    if (import.meta.hot) import.meta.hot.invalidate()
+    return
+  }
   const start = typeof performance !== 'undefined' ? performance.now() : 0
   let count = 0
   for (const boundary of boundaries) {
