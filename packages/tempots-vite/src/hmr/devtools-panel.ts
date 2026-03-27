@@ -41,7 +41,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   // --- Styles ---
   var style = document.createElement('style')
   style.textContent = [
-    ':host { font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace; font-size: 12px; color: #e0e0e0; }',
+    ':host { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #e0e0e0; }',
     '.panel { position: fixed; width: 320px; height: 400px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }',
     '.collapsed-btn { position: fixed; width: 32px; height: 32px; border-radius: 50%; background: #1a1a2e; border: 1px solid #555; color: #7ecfff; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }',
     '.collapsed-btn:hover { background: #252542; border-color: #7ecfff; }',
@@ -271,7 +271,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
     var order = []
     for (var i = 0; i < signals.length; i++) {
       var s = signals[i]
-      var mod = shortPath(s.module)
+      var mod = shortPath(s.moduleId)
       if (!groups[mod]) { groups[mod] = []; order.push(mod) }
       groups[mod].push(s)
     }
@@ -380,7 +380,13 @@ export const DEVTOOLS_PANEL_SOURCE = `
     body.textContent = ''
 
     // Component Renders
-    var renderStats = data.getRenderStats ? data.getRenderStats() : []
+    var renderStatsMap = data.getRenderStats ? data.getRenderStats() : new Map()
+    var renderStats = []
+    if (renderStatsMap && typeof renderStatsMap.forEach === 'function') {
+      renderStatsMap.forEach(function(v, k) {
+        renderStats.push({ key: k, name: k.split(':').pop() || k, avgTime: v.avgTime, maxTime: v.maxTime, renderCount: v.renderCount, totalTime: v.totalTime })
+      })
+    }
     var section1 = el('div', 'perf-section')
     var heading1 = el('div', 'perf-heading')
     heading1.appendChild(el('span', '', 'Component Renders'))
@@ -420,7 +426,13 @@ export const DEVTOOLS_PANEL_SOURCE = `
     body.appendChild(section1)
 
     // Signal Updates
-    var updates = data.getSignalUpdates ? data.getSignalUpdates() : []
+    var updatesMap = data.getSignalUpdates ? data.getSignalUpdates() : new Map()
+    var updates = []
+    if (updatesMap && typeof updatesMap.forEach === 'function') {
+      updatesMap.forEach(function(count, key) {
+        updates.push({ key: key, label: key.split(':').pop() || key, count: count })
+      })
+    }
     var section2 = el('div', 'perf-section')
     var heading2 = el('div', 'perf-heading')
     heading2.appendChild(el('span', '', 'Signal Updates'))
