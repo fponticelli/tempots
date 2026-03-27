@@ -499,9 +499,10 @@ export function transformComponentHmr(code: string, id: string): string | null {
  * Creates the Tempo HMR Vite plugin.
  *
  * @param enabled - Whether HMR transform is enabled. Defaults to true.
+ * @param devtools - Whether DevTools is enabled. Defaults to false.
  * @returns A Vite plugin.
  */
-export function tempoHmrPlugin(enabled = true): Plugin {
+export function tempoHmrPlugin(enabled = true, devtools = false): Plugin {
   return {
     name: 'tempo:hmr',
     apply: 'serve',

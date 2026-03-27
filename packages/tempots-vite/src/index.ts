@@ -121,6 +121,13 @@ export interface TempoViteOptions {
    * @default true
    */
   hmr?: boolean | TempoHmrOptions
+
+  /**
+   * Enable Tempo DevTools panel in dev mode.
+   * Shows signal inspector and performance profiler.
+   * @default false
+   */
+  devtools?: boolean
 }
 
 /**
@@ -274,6 +281,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
     hydrate = mode === 'ssr' || mode === 'islands',
     outDir = 'dist',
     hmr = true,
+    devtools = false,
   } = options
 
   // Suppress unused variable warning - entry is for configuration documentation
@@ -544,7 +552,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
   const plugins: Plugin[] = [mainPlugin, ssgPlugin, ssrDevPlugin]
 
   if (hmrEnabled) {
-    plugins.push(tempoHmrPlugin(true))
+    plugins.push(tempoHmrPlugin(true, devtools))
   }
 
   return plugins

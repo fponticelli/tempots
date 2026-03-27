@@ -55,6 +55,18 @@ describe("tempo plugin", () => {
       });
     });
 
+    describe("devtools option", () => {
+      it("should accept devtools: true", () => {
+        const plugins = tempo({ devtools: true });
+        expect(plugins.length).toBe(4);
+      });
+
+      it("should accept devtools: false", () => {
+        const plugins = tempo({ devtools: false });
+        expect(plugins.length).toBe(4);
+      });
+    });
+
     it("should accept routes as string array", () => {
       const plugins = tempo({
         routes: ["/", "/about", "/contact"],
