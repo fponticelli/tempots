@@ -73,6 +73,69 @@ export function createHmrBoundary(render, factory, target, options, moduleProps,
     },
   }
 }
+
+const __hmr_registry = new Map()
+
+export function hmrNotify(moduleId, newModule) {
+  const boundaries = __hmr_registry.get(moduleId)
+  if (boundaries == null) return
+  for (const boundary of boundaries) {
+    try {
+      boundary.update(newModule)
+    } catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e))
+      console.error('[tempo:hmr] Error updating boundary for ' + moduleId + ':', error)
+    }
+  }
+}
+
+export function componentBoundary(moduleId, exportName, factory, initialComponent, createRenderable) {
+  return createRenderable((ctx) => {
+    let clear = null
+
+    function doRender(component) {
+      const renderable = factory(component)
+      if (renderable != null && typeof renderable.render === 'function') {
+        clear = renderable.render(ctx)
+      }
+    }
+
+    doRender(initialComponent)
+
+    const instance = {
+      update(newModule) {
+        const newComp = newModule[exportName]
+        if (newComp == null) {
+          console.error('[tempo:hmr] Export ' + exportName + ' not found in ' + moduleId)
+          return
+        }
+        if (clear != null) { clear(true); clear = null }
+        try {
+          doRender(newComp)
+        } catch (e) {
+          const error = e instanceof Error ? e : new Error(String(e))
+          if (import.meta.hot) {
+            import.meta.hot.send('vite:error', {
+              err: { message: error.message, stack: error.stack || '' },
+            })
+          }
+        }
+      },
+      dispose() {
+        const set = __hmr_registry.get(moduleId)
+        if (set) set.delete(instance)
+      },
+    }
+
+    if (!__hmr_registry.has(moduleId)) __hmr_registry.set(moduleId, new Set())
+    __hmr_registry.get(moduleId).add(instance)
+
+    return (removeTree) => {
+      instance.dispose()
+      if (clear != null) { clear(removeTree); clear = null }
+    }
+  })
+}
 `
 
 /**
@@ -457,7 +520,15 @@ export function tempoHmrPlugin(enabled = true): Plugin {
 
     transform(code, id) {
       if (!enabled) return null
-      return transformTempoHmr(code, id)
+
+      // Entry-file transform (render() wrapping + prop labeling)
+      const entryResult = transformTempoHmr(code, id)
+
+      // Component-level transform (PascalCase wrapping + dep acceptance)
+      const componentInput = entryResult ?? code
+      const componentResult = transformComponentHmr(componentInput, id)
+
+      return componentResult ?? entryResult
     },
   }
 }
