@@ -91,12 +91,13 @@ export function hmrNotify(moduleId, newModule) {
 
 export function componentBoundary(moduleId, exportName, factory, initialComponent, createRenderable) {
   return createRenderable((ctx) => {
+    const markerCtx = ctx.makeRef()
     let clear = null
 
     function doRender(component) {
       const renderable = factory(component)
       if (renderable != null && typeof renderable.render === 'function') {
-        clear = renderable.render(ctx)
+        clear = renderable.render(markerCtx)
       }
     }
 
@@ -133,6 +134,7 @@ export function componentBoundary(moduleId, exportName, factory, initialComponen
     return (removeTree) => {
       instance.dispose()
       if (clear != null) { clear(removeTree); clear = null }
+      markerCtx.clear(removeTree)
     }
   })
 }
