@@ -119,6 +119,7 @@ export type {
 } from '@tempots/core'
 // Export DOM-specific types (Renderable, TNode, etc. specialized for DOMContext)
 export type * from './types/domain'
+export { domRenderable } from './types/domain'
 export * from './dom/attr'
 export * from './dom/browser-context'
 export * from './dom/dom-context'
