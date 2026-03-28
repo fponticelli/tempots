@@ -635,10 +635,7 @@ export function transformComponentHmr(code: string, id: string): string | null {
  *
  * Exported for testing.
  */
-export function transformPropDevtools(
-  code: string,
-  id: string
-): string | null {
+export function transformPropDevtools(code: string, id: string): string | null {
   if (!/\.[tjm]sx?$/.test(id)) return null
   if (/node_modules|\/dist\//.test(id)) return null
   // Skip if already processed by transformTempoHmr with devtools
@@ -706,7 +703,8 @@ export function transformPropDevtools(
     const insert =
       `; __devtoolsRegister(${site.varName}, '${site.varName}', '${id}')` +
       `; __devtoolsWrapSet(${site.varName}, '${id}:${site.varName}')`
-    result = result.slice(0, site.insertPos) + insert + result.slice(site.insertPos)
+    result =
+      result.slice(0, site.insertPos) + insert + result.slice(site.insertPos)
   }
 
   // Add virtual module import

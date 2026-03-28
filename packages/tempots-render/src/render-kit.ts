@@ -1143,9 +1143,7 @@ export function createRenderKit<
             clearRenderable?.(true)
             currentScope = new DisposalScope()
             matched = matchSignal.map(value => value[newKey])
-            const child = withScope(currentScope, () =>
-              cases[newKey](matched!)
-            )
+            const child = withScope(currentScope, () => cases[newKey](matched!))
             clearRenderable = withScope(currentScope, () =>
               renderableOfTNode(child).render(newCtx)
             )
