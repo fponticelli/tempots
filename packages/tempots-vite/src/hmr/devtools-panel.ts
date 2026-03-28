@@ -23,7 +23,7 @@ export const DEVTOOLS_PANEL_SOURCE = `
   var POLL_INTERVAL = 500
 
   // --- State ---
-  var isOpen = sessionStorage.getItem(LS_OPEN) !== 'false'
+  var isOpen = sessionStorage.getItem(LS_OPEN) === 'true'
   var activeTab = 'signals'
   var expandedSignal = null
   var editingSignal = null
