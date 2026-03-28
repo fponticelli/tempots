@@ -4,5 +4,5 @@ import { tempo } from '@tempots/vite'
 
 export default defineConfig({
   base: '',
-  plugins: [tempo()],
+  plugins: [tempo({ devtools: true })],
 })

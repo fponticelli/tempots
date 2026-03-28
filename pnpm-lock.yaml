@@ -189,6 +189,9 @@ importers:
       '@tempots/eslint-plugin':
         specifier: workspace:*
         version: link:../../packages/tempots-eslint-plugin
+      '@tempots/vite':
+        specifier: workspace:*
+        version: link:../../packages/tempots-vite
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.56.0
         version: 8.56.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
@@ -235,6 +238,9 @@ importers:
       '@tempots/eslint-plugin':
         specifier: workspace:*
         version: link:../../packages/tempots-eslint-plugin
+      '@tempots/vite':
+        specifier: workspace:^
+        version: link:../../packages/tempots-vite
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.56.0
         version: 8.56.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
@@ -403,6 +409,9 @@ importers:
       '@tempots/eslint-plugin':
         specifier: workspace:*
         version: link:../../packages/tempots-eslint-plugin
+      '@tempots/vite':
+        specifier: workspace:^
+        version: link:../../packages/tempots-vite
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.56.0
         version: 8.56.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
