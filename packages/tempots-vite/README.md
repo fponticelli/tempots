@@ -1,6 +1,6 @@
 # @tempots/vite
 
-Vite plugin for Tempo applications with SSG and SSR support.
+Vite plugin for Tempo applications with SPA, SSG, and SSR support.
 
 ## Installation
 
@@ -12,6 +12,7 @@ pnpm add @tempots/vite
 
 ## Features
 
+- **SPA Mode** (default): Pure client-side rendering, no server pipeline
 - **SSG Mode**: Pre-render pages at build time for static hosting
 - **SSR Mode**: Server-side render on each request with HMR support
 - **Islands Mode**: Static by default, hydrate only marked interactive components
@@ -19,6 +20,20 @@ pnpm add @tempots/vite
 - **HMR**: Component-level hot module replacement with state preservation
 
 ## Usage
+
+### Single-Page Application (SPA)
+
+Pure client-side rendering — the default. No `entry-server.ts` required:
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { tempo } from '@tempots/vite'
+
+export default defineConfig({
+  plugins: [tempo()]
+})
+```
 
 ### Static Site Generation (SSG)
 
@@ -109,7 +124,7 @@ tempo({ hmr: false })
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `mode` | `'ssg' \| 'ssr' \| 'islands' \| 'hybrid'` | `'ssg'` | Rendering mode |
+| `mode` | `'spa' \| 'ssg' \| 'ssr' \| 'islands' \| 'hybrid'` | `'spa'` | Rendering mode |
 | `routes` | `string[] \| RouteConfig[] \| (() => Promise<...>) \| 'crawl'` | `'crawl'` | Routes to pre-render (SSG) |
 | `seedRoutes` | `string[]` | `['/']` | Seed routes for crawl mode |
 | `entry` | `string` | `'src/entry-client.ts'` | Client entry file |

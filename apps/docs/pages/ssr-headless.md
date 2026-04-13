@@ -184,7 +184,7 @@ import { tempo } from '@tempots/vite'
 export default defineConfig({
   plugins: [
     tempo({
-      mode: 'ssg',           // or 'ssr', 'islands', 'hybrid'
+      mode: 'ssg',           // 'spa' (default), 'ssg', 'ssr', 'islands', or 'hybrid'
       routes: 'crawl',       // Auto-discover routes (default)
       seedRoutes: ['/'],     // Starting points for crawling
       ssrEntry: 'src/entry-server.ts',

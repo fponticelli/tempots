@@ -10,7 +10,7 @@ import { tempoHmrPlugin } from './hmr/plugin'
  * Rendering mode for the Tempo Vite plugin.
  * @public
  */
-export type TempoMode = 'ssg' | 'ssr' | 'islands' | 'hybrid'
+export type TempoMode = 'spa' | 'ssg' | 'ssr' | 'islands' | 'hybrid'
 
 /**
  * HMR configuration options.
@@ -48,12 +48,13 @@ export interface RouteConfig {
 export interface TempoViteOptions {
   /**
    * Rendering mode.
+   * - "spa": Single-Page Application - pure client-side rendering, no SSR/SSG pipeline
    * - "ssg": Static Site Generation - pre-render pages at build time
    * - "ssr": Server-Side Rendering - render on each request
    * - "islands": Islands architecture - static by default, hydrate marked components
    * - "hybrid": Combine SSG for static pages with SSR for dynamic ones
    *
-   * @default "ssg"
+   * @default "spa"
    */
   mode?: TempoMode
 
@@ -270,7 +271,7 @@ async function crawlRoutes(
  */
 export function tempo(options: TempoViteOptions = {}): Plugin[] {
   const {
-    mode = 'ssg',
+    mode = 'spa',
     routes: routesOption = 'crawl',
     seedRoutes = ['/'],
     // entry is accepted for configuration but handled by Vite's default behavior
@@ -549,7 +550,14 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
   }
 
   const hmrEnabled = hmr !== false
-  const plugins: Plugin[] = [mainPlugin, ssgPlugin, ssrDevPlugin]
+  const plugins: Plugin[] = [mainPlugin]
+
+  if (mode === 'ssg' || mode === 'hybrid') {
+    plugins.push(ssgPlugin)
+  }
+  if (mode === 'ssr' || mode === 'hybrid') {
+    plugins.push(ssrDevPlugin)
+  }
 
   if (hmrEnabled) {
     plugins.push(tempoHmrPlugin(true, devtools))

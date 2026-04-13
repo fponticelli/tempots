@@ -1,4 +1,4 @@
-Tempo Vite is a Vite plugin for building Tempo applications with SSR, SSG, or islands architecture. It provides automatic route discovery, static site generation, and seamless integration with Vite's build system.
+Tempo Vite is a Vite plugin for building Tempo applications as SPAs, SSR, SSG, or islands architecture. It provides automatic route discovery, static site generation, and seamless integration with Vite's build system.
 
 ## Installation
 
@@ -8,6 +8,7 @@ npm install @tempots/vite
 
 ## Features
 
+- **SPA Mode** (default) - Pure client-side rendering, no server pipeline
 - **SSG Mode** - Static site generation with pre-rendered HTML
 - **SSR Mode** - Server-side rendering for dynamic content
 - **Islands Mode** - Selective hydration of interactive components
