@@ -19,7 +19,7 @@
     "@tempots/std": "workspace:*",
     "@tempots/ui": "workspace:*",
     "@tempots/vite": "workspace:*",
-    "happy-dom": "20.6.1"
+    "happy-dom": "20.8.9"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

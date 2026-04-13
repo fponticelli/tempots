@@ -75,7 +75,7 @@
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
-    "happy-dom": "20.6.1",
+    "happy-dom": "20.8.9",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
