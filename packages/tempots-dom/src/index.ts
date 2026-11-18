@@ -101,6 +101,7 @@ export type {
   AtGetter,
   ListenerOptions,
   Primitive,
+  StorageFailure,
   StoredPropOptions,
   SyncPropOptions,
   RenderContext,

@@ -264,10 +264,15 @@ type StorageOptions<T> = {
   serialize?: (v: T) => string // Custom serialization (default: JSON.stringify)
   deserialize?: (v: string) => T // Custom deserialization (default: JSON.parse)
   equals?: (a: T, b: T) => boolean // Equality function
+  onPersistenceError?: (failure: StorageFailure) => void // Handle storage failures
   syncTabs?: boolean // Sync localStorage values across tabs (default: true)
   onKeyChange?: 'load' | 'migrate' | 'keep' // Behavior when key changes
 }
 ```
+
+The prop remains usable in memory when storage is blocked, full, or unreadable.
+Unreadable values stay in storage until an explicit write replaces them.
+`onPersistenceError` receives the key, failed operation, and original error.
 
 When calling `storedProp` with a custom store, supply `syncNamespace` to enable cross-tab synchronization. Use the same namespace only for props that share a backing store and schema.
 

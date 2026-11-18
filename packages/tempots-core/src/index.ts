@@ -95,7 +95,11 @@ export {
   createSelector,
 } from './signal-utils'
 
-export type { StoredPropOptions, SyncPropOptions } from './signal-utils'
+export type {
+  StorageFailure,
+  StoredPropOptions,
+  SyncPropOptions,
+} from './signal-utils'
 
 // History / Undo-Redo
 export { propHistory } from './prop-history'

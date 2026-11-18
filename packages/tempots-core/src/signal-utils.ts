@@ -40,6 +40,20 @@ export class MemoryStore {
   }
 }
 
+/** A failed storage operation. @public */
+export type StorageFailure = {
+  key: string
+  operation: 'access' | 'read' | 'decode' | 'write' | 'sync'
+  error: unknown
+}
+
+function reportStorageFailure({ key, operation }: StorageFailure): void {
+  console.warn(`Failed to ${operation} stored prop for key "${key}"`)
+}
+
+const missingStoredValue = Symbol('missing stored value')
+const failedStoredValue = Symbol('failed stored value')
+
 /**
  * Represents the properties required for storing and retrieving a value of type `T`.
  *
@@ -99,6 +113,12 @@ export type StoredPropOptions<T> = {
    */
   onLoad?: (value: T) => T
   /**
+   * Reports storage failures. The prop remains usable in memory.
+   * Unreadable values are preserved until the prop is explicitly written.
+   * Defaults to logging the failed operation and key.
+   */
+  onPersistenceError?: (failure: StorageFailure) => void
+  /**
    * Whether to sync the value across tabs when a namespace is configured.
    * Defaults to `true`.
    */
@@ -143,21 +163,55 @@ const createStoredProp = <T>(
     deserialize = JSON.parse,
     equals = strictEquals as (a: T, b: T) => boolean,
     onLoad = value => value,
+    onPersistenceError = reportStorageFailure,
     syncTabs = true,
     onKeyChange = 'load',
   }: StoredPropOptions<T>,
   channelNamespace: readonly string[] | undefined
 ): Prop<T> => {
   let currentKey = Value.get(key)
-  const initialValue = store.getItem(currentKey)
+  const load = (
+    key: string
+  ): T | typeof missingStoredValue | typeof failedStoredValue => {
+    let raw: string | null
+    try {
+      raw = store.getItem(key)
+    } catch (error) {
+      onPersistenceError({ key, operation: 'read', error })
+      return failedStoredValue
+    }
+    if (raw === null) return missingStoredValue
+    try {
+      return onLoad(deserialize(raw))
+    } catch (error) {
+      onPersistenceError({ key, operation: 'decode', error })
+      return failedStoredValue
+    }
+  }
+  const persist = (key: string, value: T): boolean => {
+    try {
+      const encoded = serialize(value)
+      if (typeof encoded !== 'string') {
+        throw new TypeError('Stored prop serializer must return a string')
+      }
+      store.setItem(key, encoded)
+      return true
+    } catch (error) {
+      onPersistenceError({ key, operation: 'write', error })
+      return false
+    }
+  }
+
+  const initialValue = load(currentKey)
   const prop = new Prop<T>(
-    initialValue != null
-      ? onLoad(deserialize(initialValue))
+    initialValue !== missingStoredValue && initialValue !== failedStoredValue
+      ? initialValue
       : typeof defaultValue === 'function'
         ? (defaultValue as () => T)()
         : defaultValue,
     equals
   )
+  if (initialValue !== failedStoredValue) persist(currentKey, prop.get())
 
   const windowRef = getWindow() as Window & {
     BroadcastChannel?: typeof BroadcastChannel
@@ -173,21 +227,22 @@ const createStoredProp = <T>(
     if (!shouldSyncTabs) return null
 
     const channelName = `tempo:storedProp:${JSON.stringify([channelNamespace, channelKey])}`
-    const newChannel = new windowRef!.BroadcastChannel!(channelName)
+    let newChannel: BroadcastChannel
+    try {
+      newChannel = new windowRef!.BroadcastChannel!(channelName)
+    } catch (error) {
+      onPersistenceError({ key: channelKey, operation: 'sync', error })
+      return null
+    }
 
     newChannel.addEventListener('message', (event: MessageEvent<unknown>) => {
       if (channel !== newChannel || event.data !== channelKey) return
+      const nextValue = load(channelKey)
+      if (nextValue === missingStoredValue || nextValue === failedStoredValue)
+        return
+      syncingFromChannel = true
       try {
-        const storedValue = store.getItem(channelKey)
-        if (storedValue === null) return
-        const nextValue = onLoad(deserialize(storedValue))
-        syncingFromChannel = true
         prop.set(nextValue)
-      } catch (error) {
-        console.warn(
-          `Failed to sync storedProp for key "${channelKey}" via BroadcastChannel`,
-          error
-        )
       } finally {
         syncingFromChannel = false
       }
@@ -202,13 +257,7 @@ const createStoredProp = <T>(
   })
 
   const handleKeyChange = (newKey: string) => {
-    const oldKey = currentKey
-    if (oldKey === newKey) return
-
-    // Store current value at old key before switching
-    const currentValue = prop.get()
-    const serialized = serialize(currentValue)
-    store.setItem(oldKey, serialized)
+    if (newKey === currentKey) return
 
     // Close old channel
     channel?.close()
@@ -220,24 +269,15 @@ const createStoredProp = <T>(
     // Handle key change strategy
     if (onKeyChange === 'load') {
       // Load value from new key
-      const storedValue = store.getItem(newKey)
-      if (storedValue != null) {
-        try {
-          const loadedValue = onLoad(deserialize(storedValue))
-          prop.set(loadedValue)
-        } catch (error) {
-          console.warn(
-            `Failed to load storedProp from new key "${newKey}"`,
-            error
-          )
-        }
-      } else {
-        // No value at new key, store current value there
-        store.setItem(newKey, serialized)
+      const storedValue = load(newKey)
+      if (storedValue === missingStoredValue) {
+        persist(newKey, prop.get())
+      } else if (storedValue !== failedStoredValue) {
+        prop.set(storedValue)
       }
     } else if (onKeyChange === 'migrate') {
       // Move current value to new key
-      store.setItem(newKey, serialized)
+      persist(newKey, prop.get())
     }
     // 'keep' does nothing - current value stays, no load from new key
 
@@ -247,21 +287,21 @@ const createStoredProp = <T>(
 
   // Watch for key changes if key is a signal
   if (Signal.is(key)) {
-    prop.onDispose(key.on(handleKeyChange))
+    prop.onDispose(key.onChange(handleKeyChange))
   }
 
-  store.setItem(currentKey, serialize(prop.get()))
-  prop.on(
-    value => {
-      if (syncingFromChannel) {
-        syncingFromChannel = false
-        return
-      }
-      store.setItem(currentKey, serialize(value))
+  prop.onChange(value => {
+    if (syncingFromChannel) {
+      syncingFromChannel = false
+      return
+    }
+    if (!persist(currentKey, value)) return
+    try {
       channel?.postMessage(currentKey)
-    },
-    { skipInitial: true }
-  )
+    } catch (error) {
+      onPersistenceError({ key: currentKey, operation: 'sync', error })
+    }
+  })
 
   return prop
 }
@@ -272,52 +312,31 @@ const createStoredProp = <T>(
  * @typeParam T - The type of the value to be stored.
  * @public
  */
-export type StorageOptions<T> = {
-  /**
-   * The key to use for storing and retrieving the value.
-   * Can be a static string or a reactive signal that changes over time.
-   */
-  key: Value<string>
-  /**
-   * The default value to use if the value is not found in the store.
-   * This can be a value of type `T` or a function that returns a value of type `T`.
-   * If a function is provided, it will be called to get the default value.
-   */
-  defaultValue: T | (() => T)
-  /**
-   * A function that serializes a value of type `T` to a string.
-   * The default implementation uses `JSON.stringify`.
-   */
-  // istanbul ignore next
-  serialize?: (v: T) => string
-  /**
-   * A function that deserializes a string to a value of type `T`.
-   * The default implementation uses `JSON.parse`.
-   */
-  // istanbul ignore next
-  deserialize?: (v: string) => T
-  /**
-   * A function that compares two values of type `T` for equality.
-   * The default implementation uses strict equality (`===`).
-   */
-  // istanbul ignore next
-  equals?: (a: T, b: T) => boolean
-  /**
-   * A function that is called when a value is loaded from the store.
-   * The default implementation returns the value as is.
-   */
-  onLoad?: (value: T) => T
-  /**
-   * Whether to sync localStorage values across tabs. Defaults to `true`.
-   */
-  syncTabs?: boolean
-  /**
-   * Strategy for handling key changes when using a reactive key.
-   * - 'load' (default): Load value from new key, the current state is already stored at this point
-   * - 'migrate': Move current value to new key and continue with current value
-   * - 'keep': Keep current value without loading from new key
-   */
-  onKeyChange?: 'load' | 'migrate' | 'keep'
+export type StorageOptions<T> = Omit<
+  StoredPropOptions<T>,
+  'store' | 'syncNamespace'
+>
+
+function browserStorageProp<T>(
+  kind: 'localStorage' | 'sessionStorage',
+  options: StorageOptions<T>
+): Prop<T> {
+  const { onPersistenceError = reportStorageFailure } = options
+  let storage: Storage | undefined
+  try {
+    const candidate = getWindow()?.[kind]
+    if (typeof candidate?.getItem === 'function') storage = candidate
+  } catch (error) {
+    onPersistenceError({
+      key: Value.get(options.key),
+      operation: 'access',
+      error,
+    })
+  }
+  return createStoredProp(
+    { ...options, store: storage ?? new MemoryStore() },
+    storage && kind === 'localStorage' ? [kind] : undefined
+  )
 }
 
 /**
@@ -329,15 +348,8 @@ export type StorageOptions<T> = {
  * @returns The created prop.
  * @public
  */
-export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
-  const win = getWindow()
-  const storage = win?.localStorage
-  // Ensure we have a valid storage object with getItem/setItem methods
-  if (storage && typeof storage.getItem === 'function') {
-    return createStoredProp({ ...options, store: storage }, ['localStorage'])
-  }
-  return createStoredProp({ ...options, store: new MemoryStore() }, undefined)
-}
+export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
+  browserStorageProp('localStorage', options)
 
 /**
  * Creates a prop backed by sessionStorage when available. Its memory fallback
@@ -349,16 +361,8 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
  * @returns A prop that stores its value in the session storage.
  * @public
  */
-export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
-  const win = getWindow()
-  const storage = win?.sessionStorage
-  // Ensure we have a valid storage object with getItem/setItem methods
-  const store =
-    storage && typeof storage.getItem === 'function'
-      ? storage
-      : new MemoryStore()
-  return createStoredProp({ ...options, store }, undefined)
-}
+export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> =>
+  browserStorageProp('sessionStorage', options)
 
 function raf(fn: FrameRequestCallback) {
   if (typeof requestAnimationFrame === 'function') {
