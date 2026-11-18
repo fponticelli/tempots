@@ -271,23 +271,27 @@ describe("Signal", () => {
   //   await sleep(duration * 0.75)
   //   expect(animated.value).toStrictEqual(10);
   // })
-  test("interrupt animateSignal", async () => {
-    const duration = 40
-    const source = prop(10);
-    const animated = animateSignal(
-      source, {
-        initialValue: 0,
-        duration
-      }
-    );
-    expect(animated.value).toStrictEqual(0);
-    await sleep(duration / 2)
-    expect(animated.value).toBeGreaterThan(0);
-    expect(animated.value).toBeLessThanOrEqual(10);
-    source.dispose();
-    await sleep(duration * 0.75)
-    expect(animated.value).toBeGreaterThan(0);
-    expect(animated.value).toBeLessThan(10);
+  test("interrupt animateSignal", () => {
+    vi.useFakeTimers({
+      toFake: ["performance", "requestAnimationFrame", "cancelAnimationFrame"],
+    })
+    try {
+      const duration = 40
+      const source = prop(10)
+      const animated = animateSignal(source, { initialValue: 0, duration })
+      expect(animated.value).toBe(0)
+
+      vi.advanceTimersToNextFrame()
+      const intermediate = animated.value
+      expect(intermediate).toBeGreaterThan(0)
+      expect(intermediate).toBeLessThan(10)
+
+      source.dispose()
+      vi.advanceTimersByTime(duration)
+      expect(animated.value).toBe(intermediate)
+    } finally {
+      vi.useRealTimers()
+    }
   })
   test("Signal.mapAsync", async() => {
     const p = prop(1)
