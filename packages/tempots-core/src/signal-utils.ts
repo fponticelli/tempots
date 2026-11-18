@@ -40,24 +40,6 @@ export class MemoryStore {
   }
 }
 
-// Singleton instances for fallback storage
-let memoryLocalStorage: MemoryStore | null = null
-let memorySessionStorage: MemoryStore | null = null
-
-const getMemoryLocalStorage = (): MemoryStore => {
-  if (!memoryLocalStorage) {
-    memoryLocalStorage = new MemoryStore()
-  }
-  return memoryLocalStorage
-}
-
-const getMemorySessionStorage = (): MemoryStore => {
-  if (!memorySessionStorage) {
-    memorySessionStorage = new MemoryStore()
-  }
-  return memorySessionStorage
-}
-
 /**
  * Represents the properties required for storing and retrieving a value of type `T`.
  *
@@ -355,7 +337,9 @@ export type StorageOptions<T> = {
 }
 
 /**
- * Creates a prop that is backed by the localStorage or a MemoryStore.
+ * Creates a prop backed by localStorage when available. Its memory fallback
+ * belongs to this prop instance. To share state on a server, pass an explicit
+ * request-owned store to {@link storedProp}.
  *
  * @param options - The options for creating the prop.
  * @returns The created prop.
@@ -368,7 +352,7 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
   const store =
     storage && typeof storage.getItem === 'function'
       ? storage
-      : getMemoryLocalStorage()
+      : new MemoryStore()
   return storedProp({
     ...options,
     store,
@@ -376,7 +360,9 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
 }
 
 /**
- * Creates a prop that stores its value in the session storage.
+ * Creates a prop backed by sessionStorage when available. Its memory fallback
+ * belongs to this prop instance. To share state on a server, pass an explicit
+ * request-owned store to {@link storedProp}.
  *
  * @param options - The options for the storage prop.
  * @returns A prop that stores its value in the session storage.
@@ -389,7 +375,7 @@ export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
   const store =
     storage && typeof storage.getItem === 'function'
       ? storage
-      : getMemorySessionStorage()
+      : new MemoryStore()
   return storedProp({
     ...options,
     store,

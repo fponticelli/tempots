@@ -1,6 +1,18 @@
 import { describe, expect, test, vi } from 'vitest'
 import { renderToStream, renderToString, renderToStaticMarkup, createRenderer } from '../src/index'
-import { html, attr, prop, ForEach, When, TextNode, Fragment, Renderable } from '@tempots/dom'
+import {
+  html,
+  attr,
+  prop,
+  ForEach,
+  When,
+  TextNode,
+  Fragment,
+  Renderable,
+  localStorageProp,
+  sessionStorageProp,
+  WithCtx,
+} from '@tempots/dom'
 
 describe('renderToString', () => {
   describe('basic rendering', () => {
@@ -69,6 +81,29 @@ describe('renderToString', () => {
   })
 
   describe('reactive content', () => {
+    test.each([
+      ['local storage', localStorageProp],
+      ['session storage', sessionStorageProp],
+    ] as const)(
+      'should isolate %s between headless renders',
+      async (_, createStoredProp) => {
+        const renderPreference = (choice?: string) =>
+          renderToString(
+            WithCtx(() => {
+              const preference = createStoredProp({
+                key: 'render-preference',
+                defaultValue: 'default choice',
+              })
+              if (choice !== undefined) preference.set(choice)
+              return html.div(preference)
+            })
+          )
+
+        expect(await renderPreference('first choice')).toBe('<div>first choice</div>')
+        expect(await renderPreference()).toBe('<div>default choice</div>')
+      }
+    )
+
     test('should render with props', async () => {
       const App = () => {
         const message = prop('Hello from prop!')
