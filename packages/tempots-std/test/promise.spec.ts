@@ -153,34 +153,32 @@ describe('Promise utilities', () => {
         expect(rejected).toBe(false);
       });
 
-      test('rejects when signal is already aborted', async () => {
+      test('rejects when signal is already aborted without scheduling a timer', async () => {
         const controller = new AbortController();
-        controller.abort(); // Abort before creating the promise
+        controller.abort();
 
-        const promise = sleep(1000, { abortSignal: controller.signal });
+        const settled = sleep(1000, { abortSignal: controller.signal }).then(
+          () => null,
+          error => error
+        );
+        const pendingTimers = vi.getTimerCount();
+        await vi.runAllTimersAsync();
 
-        // The current implementation doesn't check if signal is already aborted
-        // It only listens for future abort events, so this test should expect
-        // the promise to resolve normally unless we trigger the abort event
-        let resolved = false;
-        let rejected = false;
-        let rejectionReason: any;
+        expect(await settled).toMatchObject({ name: 'AbortError', message: 'Aborted' });
+        expect(pendingTimers).toBe(0);
+      });
 
-        promise.then(() => { resolved = true; });
-        promise.catch(error => {
-          rejected = true;
-          rejectionReason = error;
-        });
+      test.each([false, true])('removes the abort listener after settling (abort=%s)', async abort => {
+        const controller = new AbortController();
+        const added = vi.spyOn(controller.signal, 'addEventListener');
+        const removed = vi.spyOn(controller.signal, 'removeEventListener');
+        const settled = sleep(100, { abortSignal: controller.signal }).catch(() => {});
 
-        // Since the signal was already aborted, but the implementation doesn't check
-        // for pre-existing abort state, we need to advance time to see normal resolution
-        vi.advanceTimersByTime(1000);
-        await Promise.resolve();
+        if (abort) controller.abort();
+        else vi.advanceTimersByTime(100);
+        await settled;
 
-        // The promise should resolve normally since the implementation doesn't check
-        // if the signal was already aborted when the promise was created
-        expect(resolved).toBe(true);
-        expect(rejected).toBe(false);
+        expect(removed).toHaveBeenCalledWith('abort', added.mock.calls[0][1]);
       });
 
       test('clears timeout when aborted', async () => {
