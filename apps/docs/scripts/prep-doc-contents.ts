@@ -11,6 +11,11 @@ import {
   markdownWithFM,
 } from './utils/markdown'
 import { Demo, Page, Library, Toc, Section } from '../src/model/domain'
+import {
+  libraryOverviewDirectory,
+  libraryOverviewKey,
+  pageContentFile,
+} from '../src/services/content-paths'
 
 const rootFolder = '../..'
 const docsFolder = path.join(rootFolder, 'apps/docs')
@@ -218,6 +223,11 @@ async function collectLibrary(
       },
     }
   )
+  const hasOverview = content.trim() !== ''
+  if (hasOverview) {
+    const dest = path.join(pubFolder, pageContentFile(libraryOverviewKey(library)))
+    await fsp.writeFile(dest, content)
+  }
   return {
     priority: pack.priority ?? 0,
     data: {
@@ -226,7 +236,7 @@ async function collectLibrary(
       description: pack.description,
       version: pack.version,
       keywords: pack.keywords ?? [],
-      content,
+      hasOverview,
       hasApiDocs: fs.existsSync(apiDocsPath),
     },
   }
@@ -909,6 +919,7 @@ async function main() {
   })
 
   // libraries
+  await prepDir(path.join(pubFolder, libraryOverviewDirectory))
   const librariesData = await collectLibraries(libraries, librariesFolderSrc)
 
   const outputContent: Toc = {

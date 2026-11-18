@@ -23,3 +23,22 @@ test('generated docs contain their article content and identify it for client st
     expect(article.find('h1, h2').length, output).toBeGreaterThan(0)
   }
 })
+
+test('the shared TOC contains metadata while library routes render their own overviews', async () => {
+  const toc: Toc = JSON.parse(await readDist('toc.json'))
+  for (const library of toc.libraries) {
+    expect(library).not.toHaveProperty('content')
+  }
+
+  const withOverview = toc.libraries.filter(library => library.hasOverview)
+  expect(withOverview.length).toBeGreaterThan(0)
+  for (const library of withOverview) {
+    const output = `library/${library.name}.html`
+    const page = load(await readDist(output))
+    const overview = load(await readDist(`library-overviews/${library.name}.html`), {}, false)
+    const article = page(`[data-tempo-doc-page="library/${library.name}"]`)
+    expect(article.length, output).toBe(1)
+    expect(article.text(), output).toBe(overview.root().text())
+    expect(article.text().trim().length, output).toBeGreaterThan(0)
+  }
+})

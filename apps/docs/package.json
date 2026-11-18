@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "format": "eslint src --fix",
+    "test:ssg": "vitest run test/static-pages.spec.ts",
     "docs:prep": "tsx ./scripts/prep-doc-contents.ts"
   },
   "dependencies": {

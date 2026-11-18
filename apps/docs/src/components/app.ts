@@ -2,8 +2,9 @@ import { Location, RootRouter } from '@tempots/ui'
 import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
-import { Library, Toc } from '../model/domain'
-import { pagePathFromRoute, type PageSnapshot } from '../services/page-service'
+import type { Toc } from '../model/domain'
+import { libraryFromRoute, pagePathFromRoute } from '../services/content-paths'
+import type { PageSnapshot } from '../services/page-service'
 import { tocAsMap } from '../services/toc-service'
 import { SideBar } from './layout/sidebar'
 import { LibraryView } from './element/library-view'
@@ -14,22 +15,6 @@ import { DemosView } from './element/demos-view'
 import { HomeView } from './element/home-view'
 import { Ensure, Fragment, OnDispose, Provide, Use } from '@tempots/dom'
 import { NavigationService } from '@tempots/ui'
-
-function mapPathToLibraryPageURL(path: string) {
-  if (path.startsWith('/library/')) {
-    path = path.slice('/library/'.length)
-  }
-  if (path.endsWith('.html')) {
-    path = path.slice(0, -5)
-  }
-  if (path.endsWith('/')) {
-    path = path.slice(0, -1)
-  }
-  const parts = path.split('.')
-  const lib = parts.shift()!.substring('tempots-'.length)
-  const sub = parts.length === 0 ? undefined : parts.join('.')
-  return [lib, sub]
-}
 
 export const AppRouter = (toc: Toc, initialPage?: PageSnapshot) => {
   const map = tocAsMap(toc)
@@ -44,15 +29,17 @@ export const AppRouter = (toc: Toc, initialPage?: PageSnapshot) => {
         () => '404 Not Found'
       ),
     '/libraries.html': () => LibrariesView(toc.libraries),
-    '/library/:id': info => {
-      const url = info.$.path.map(mapPathToLibraryPageURL)
-      return LibraryView(
-        url.map(([id, path]): { library: Library; path?: string } => ({
-          library: map.libraries.get(`tempots-${id}`)!,
-          path,
-        }))
-      )
-    },
+    '/library/:id': info =>
+      Ensure(
+        info.$.path.map(path => {
+          const route = libraryFromRoute(path)
+          if (!route) return
+          const library = map.libraries.get(route.name)
+          return library ? { library, path: route.apiPath } : undefined
+        }),
+        library => LibraryView(library, initialPage),
+        () => '404 Not Found'
+      ),
     '/demos.html': () => DemosView(toc.demos),
     '/demo/:id': info =>
       DemoView(

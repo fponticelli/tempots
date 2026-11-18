@@ -3,7 +3,7 @@ export type Library = {
   title: string
   version: string
   keywords: string[]
-  content: string
+  hasOverview: boolean
   description?: string
   hasApiDocs?: boolean
 }

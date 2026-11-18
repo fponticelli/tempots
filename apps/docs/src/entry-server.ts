@@ -4,12 +4,34 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { App } from './components/app'
 import type { Toc } from './model/domain'
-import { pagePathFromRoute, type PageSnapshot } from './services/page-service'
+import {
+  libraryFromRoute,
+  libraryOverviewKey,
+  pageContentFile,
+  pagePathFromRoute,
+} from './services/content-paths'
+import type { PageSnapshot } from './services/page-service'
 
 const publicDir = resolve(process.cwd(), 'public')
 const toc: Toc = JSON.parse(
   readFileSync(resolve(publicDir, 'toc.json'), 'utf8')
 )
+
+function contentKeyForRoute(pathname: string): string | undefined {
+  const page = pagePathFromRoute(pathname)
+  if (page !== undefined && toc.pages.some(entry => entry.path === page))
+    return page
+
+  const library = libraryFromRoute(pathname)
+  if (library === undefined || library.apiPath !== undefined) return
+  if (
+    toc.libraries.some(
+      entry => entry.name === library.name && entry.hasOverview
+    )
+  ) {
+    return libraryOverviewKey(library.name)
+  }
+}
 
 const renderer = createRenderer(
   ({ initialPage }: { initialPage: PageSnapshot | undefined }) =>
@@ -18,15 +40,13 @@ const renderer = createRenderer(
     selector: '#app',
     hydrate: false,
     async getData(url) {
-      const path = pagePathFromRoute(new URL(url).pathname)
-      const page = toc.pages.find(page => page.path === path)
-      if (!page) return { initialPage: undefined }
-
+      const path = contentKeyForRoute(new URL(url).pathname)
+      if (path === undefined) return { initialPage: undefined }
       const html = await readFile(
-        resolve(publicDir, 'pages', `${page.path}.html`),
+        resolve(publicDir, pageContentFile(path)),
         'utf8'
       )
-      return { initialPage: { path: page.path, html } }
+      return { initialPage: { path, html } }
     },
   }
 )

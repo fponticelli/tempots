@@ -36,6 +36,8 @@ jobs:
         run: pnpm run docs
       - name: Build Docs
         run: pnpm run build --filter=@tempos/docs
+      - name: Verify generated docs
+        run: pnpm --filter @tempos/docs test:ssg
       - name: Upload artifact
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/upload-pages-artifact@v3

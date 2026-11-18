@@ -1,7 +1,6 @@
 import {
   attr,
   computed,
-  Ensure,
   ForEach,
   Fragment,
   html,
@@ -9,6 +8,7 @@ import {
   Use,
   Value,
   When,
+  WithBrowserCtx,
 } from '@tempots/dom'
 import { Library } from '../../model/domain'
 import { Styles } from '../styles'
@@ -19,6 +19,8 @@ import { CheckCode } from './check-code'
 import { HTMLTitle, Location } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
 import { EmbedHTMLFragmentFromURL } from './embed-html-fragment'
+import { libraryOverviewKey } from '../../services/content-paths'
+import { usePageContent, type PageSnapshot } from '../../services/page-service'
 
 export function LibraryInfo(library: Value<Library>) {
   return html.div(
@@ -50,7 +52,10 @@ export function LibraryInfo(library: Value<Library>) {
   )
 }
 
-export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
+export function LibraryView(
+  data: Signal<{ library: Library; path: string | undefined }>,
+  initialPage?: PageSnapshot
+) {
   return Use(Location, location => {
     const library = data.$.library
     const path = data.$.path
@@ -74,17 +79,18 @@ export function LibraryView(data: Signal<{ library: Library; path?: string }>) {
       When(isRoot, () =>
         Fragment(
           LibraryInfo(library),
-          Ensure(
-            library.map(v => (v.content === '' ? null : v.content)),
-            content =>
-              html.div(
-                attr.class('p-4 border rounded-md'),
-                EmbedHTMLPage(content)
-              )
-          )
+          When(library.$.hasOverview, () => {
+            const key = library.$.name.map(libraryOverviewKey)
+            return html.div(
+              attr.class('p-4 border rounded-md'),
+              EmbedHTMLPage(usePageContent(key, initialPage), key)
+            )
+          })
         )
       ),
-      When(hasApiDocs, () => EmbedHTMLFragmentFromURL(apiUrl))
+      When(hasApiDocs, () =>
+        WithBrowserCtx(() => EmbedHTMLFragmentFromURL(apiUrl))
+      )
     )
   })
 }

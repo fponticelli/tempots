@@ -3,11 +3,6 @@ export type PageSnapshot = { path: string; html: string }
 export const pageSnapshotKey = 'tempo-doc-page'
 const pageSnapshotAttribute = `data-${pageSnapshotKey}`
 
-export function pagePathFromRoute(pathname: string): string | undefined {
-  if (pathname === '/') return 'index'
-  return /^\/page\/([^/]+)\.html\/?$/.exec(pathname)?.[1]
-}
-
 export function readPageSnapshot(
   container: HTMLElement
 ): PageSnapshot | undefined {
@@ -16,10 +11,29 @@ export function readPageSnapshot(
   return article && path ? { path, html: article.innerHTML } : undefined
 }
 
-export async function fetchPage(path: string, signal: AbortSignal) {
-  const response = await fetch(`/pages/${encodeURIComponent(path)}.html`, {
-    signal,
-  })
-  if (!response.ok) throw new Error(`Page ${path} returned ${response.status}`)
-  return response.text()
+export function usePageContent(
+  key: Signal<string>,
+  initialPage?: PageSnapshot
+) {
+  const content = key.mapAsync<PageSnapshot | undefined>(
+    async (path, { abortSignal }) => {
+      if (initialPage?.path === path) return initialPage
+      const file = pageContentFile(path)
+        .split('/')
+        .map(encodeURIComponent)
+        .join('/')
+      const response = await fetch(`/${file}`, { signal: abortSignal })
+      if (!response.ok)
+        throw new Error(`Page ${path} returned ${response.status}`)
+      return { path, html: await response.text() }
+    },
+    initialPage,
+    () => ({ path: key.value, html: 'Unable to load this page.' })
+  )
+  return computedOf(
+    key,
+    content
+  )((path, page) => (page?.path === path ? page.html : 'loading...'))
 }
+import { computedOf, type Signal } from '@tempots/dom'
+import { pageContentFile } from './content-paths'
