@@ -75,7 +75,9 @@ export default defineConfig({
 
 ### Islands Architecture
 
-Static by default, hydrate only interactive components:
+Pre-render routes at build time and render them on demand in Vite development.
+Use the server entry to mark interactive components and register them in the
+client entry.
 
 ```typescript
 // vite.config.ts
@@ -90,6 +92,31 @@ export default defineConfig({
   ]
 })
 ```
+
+```typescript
+// In the shared app
+import { islandMarker } from '@tempots/client'
+import { Attr, html } from '@tempots/dom'
+
+const counterIsland = html.div(
+  ...islandMarker('Counter', { initial: 3 }, 'visible').map(
+    ({ name, value }) => Attr(name, value)
+  ),
+  html.span('3')
+)
+```
+
+```typescript
+// src/entry-client.ts
+import { startClient } from '@tempots/client'
+import { Counter } from './islands'
+
+startClient({ islands: { Counter } })
+```
+
+Export `App` or `render(url)` from the server entry. A custom `render` controls
+its own full-tree hydration markers. The islands registry uses
+`data-tempo-island` attributes independently.
 
 ## HMR (Hot Module Replacement)
 
@@ -131,7 +158,7 @@ tempo({ hmr: false })
 | `ssrEntry` | `string` | `'src/entry-server.ts'` | Server entry file (exports `render` or `App`) |
 | `template` | `string` | `'index.html'` | HTML template file |
 | `container` | `string` | `'#app'` | App container selector |
-| `hydrate` | `boolean` | `true` for SSR/islands | Generate hydration markers |
+| `hydrate` | `boolean` | `true` for SSR | Generate full-tree hydration markers for an `App` export |
 | `outDir` | `string` | `'dist'` | Output directory |
 | `hmr` | `boolean \| { errorBoundary?: boolean }` | `true` | HMR configuration (dev mode only) |
 

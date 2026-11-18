@@ -147,16 +147,20 @@ export const Counter = (options: unknown) => {
 }
 
 // Mark islands in your SSR template
-import { islandMarker, attr } from '@tempots/dom'
+import { islandMarker } from '@tempots/client'
+import { Attr } from '@tempots/dom'
 
 const CounterIsland = (initial: number) => html.div(
   ...islandMarker('Counter', { initial }, 'visible').map(
-    ({ name, value }) => attr[name](value)
+    ({ name, value }) => Attr(name, value)
   ),
   // Static placeholder content
   html.span(String(initial))
 )
 ```
+
+Vite's `mode: 'islands'` pre-renders routes for production and serves rendered
+HTML in development. Register each island with `startClient({ islands })`.
 
 Hydration strategies:
 - `"immediate"` - Hydrate as soon as possible

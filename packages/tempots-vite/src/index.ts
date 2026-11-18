@@ -54,7 +54,8 @@ export interface TempoViteOptions {
    * - "spa": Single-Page Application - pure client-side rendering, no SSR/SSG pipeline
    * - "ssg": Static Site Generation - pre-render pages at build time
    * - "ssr": Server-Side Rendering - render on each request
-   * - "islands": Islands architecture - static by default, hydrate marked components
+   * - "islands": Pre-render routes for production and render on demand in development.
+   *   Use @tempots/client to activate the marked islands.
    * - "hybrid": Combine SSG for static pages with SSR for dynamic ones
    *
    * @default "spa"
@@ -107,9 +108,9 @@ export interface TempoViteOptions {
   container?: string
 
   /**
-   * Whether to generate hydration markers in the HTML.
-   * Required for client-side hydration.
-   * @default true for "ssr" and "islands" modes, false for "ssg"
+   * Whether to generate full-tree hydration markers for an App export.
+   * Island attributes are authored by the app and work independently.
+   * @default true for "ssr", false for other modes
    */
   hydrate?: boolean
 
@@ -266,7 +267,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
     ssrEntry = 'src/entry-server.ts',
     template = 'index.html',
     container = '#app',
-    hydrate = mode === 'ssr' || mode === 'islands',
+    hydrate = mode === 'ssr',
     outDir = 'dist',
     hmr = true,
     devtools = false,
@@ -291,10 +292,6 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
     apply: 'build',
 
     async closeBundle() {
-      if (mode !== 'ssg' && mode !== 'hybrid') {
-        return
-      }
-
       const outPath = path.resolve(config.root, outDir)
       const builtTemplatePath = path.join(outPath, 'index.html')
       if (!fs.existsSync(builtTemplatePath)) {
@@ -444,10 +441,6 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
     apply: 'serve',
 
     configureServer(server) {
-      if (mode !== 'ssr' && mode !== 'hybrid') {
-        return
-      }
-
       server.middlewares.use(async (req, res, next) => {
         const url = req.url
 
@@ -520,10 +513,10 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
   const hmrEnabled = hmr !== false
   const plugins: Plugin[] = [mainPlugin]
 
-  if (mode === 'ssg' || mode === 'hybrid') {
+  if (mode === 'ssg' || mode === 'hybrid' || mode === 'islands') {
     plugins.push(ssgPlugin)
   }
-  if (mode === 'ssr' || mode === 'hybrid') {
+  if (mode === 'ssr' || mode === 'hybrid' || mode === 'islands') {
     plugins.push(ssrDevPlugin)
   }
 
