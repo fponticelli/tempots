@@ -27,6 +27,22 @@ describe('NativeContext', () => {
     expect(bridge.root.children.length).toBe(0)
   })
 
+  test('nested markers and their children share the visible parent', () => {
+    const { bridge, ctx } = createContext()
+    const before = ctx.makeChildText('before')
+    const outer = ctx.makeMarker()
+    const after = ctx.makeChildText('after')
+    const inner = outer.makeMarker()
+    const row = inner.makeChildView('View')
+    const label = inner.makeChildText('visible')
+
+    expect(bridge.getChildren(ctx.handle)).toEqual([
+      before.handle, row.handle, label.handle, inner.handle, outer.handle, after.handle,
+    ])
+    expect(bridge.getChildren(outer.handle)).toEqual([])
+    expect(bridge.getChildren(inner.handle)).toEqual([])
+  })
+
   test('makeChildText creates a text view', () => {
     const { bridge, ctx } = createContext()
     const textCtx = ctx.makeChildText('Hello')

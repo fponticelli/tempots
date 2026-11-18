@@ -26,6 +26,14 @@ export class NativeContext implements BaseRenderContext {
     private readonly _parentHandle?: NativeViewHandle
   ) {}
 
+  private get childParent(): NativeViewHandle {
+    return this._isRef ? this._parentHandle! : this.handle
+  }
+
+  private get childReference(): NativeViewHandle | undefined {
+    return this._isRef ? this.handle : undefined
+  }
+
   // --- BaseRenderContext (HierarchicalContext) ---
 
   /**
@@ -48,14 +56,18 @@ export class NativeContext implements BaseRenderContext {
    * @returns A new context representing the ref marker
    */
   makeRef(): this {
-    // Create an invisible marker view (zero-size view)
-    const refHandle = this.bridge.createView('__ref__', this.handle)
+    const parent = this.childParent
+    const refHandle = this.bridge.createView(
+      '__ref__',
+      parent,
+      this.childReference
+    )
     return new NativeContext(
       this.bridge,
       refHandle,
       this._providers,
       true,
-      this.handle // remember the parent so children go into parent, before the ref
+      parent
     ) as this
   }
 
@@ -78,8 +90,8 @@ export class NativeContext implements BaseRenderContext {
   makeChildText(text: Primitive): NativeContext {
     const textHandle = this.bridge.createTextView(
       String(text),
-      this._isRef ? this._parentHandle! : this.handle,
-      this._isRef ? this.handle : undefined
+      this.childParent,
+      this.childReference
     )
     return new NativeContext(this.bridge, textHandle, this._providers)
   }
@@ -170,8 +182,8 @@ export class NativeContext implements BaseRenderContext {
   makeChildView(viewType: string): NativeContext {
     const childHandle = this.bridge.createView(
       viewType,
-      this._isRef ? this._parentHandle! : this.handle,
-      this._isRef ? this.handle : undefined
+      this.childParent,
+      this.childReference
     )
     return new NativeContext(this.bridge, childHandle, this._providers)
   }
@@ -233,7 +245,7 @@ export class NativeContext implements BaseRenderContext {
     const start = (startRef as NativeContext).handle
     const end = (endRef as NativeContext).handle
     const target = (targetRef as NativeContext).handle
-    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+    const parentHandle = this.childParent
 
     const children = this.bridge.getChildren(parentHandle)
     const startIdx = children.indexOf(start)
@@ -250,7 +262,7 @@ export class NativeContext implements BaseRenderContext {
   removeRange(startRef: BaseRenderContext, endRef: BaseRenderContext): void {
     const start = (startRef as NativeContext).handle
     const end = (endRef as NativeContext).handle
-    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+    const parentHandle = this.childParent
 
     const children = this.bridge.getChildren(parentHandle)
     const startIdx = children.indexOf(start)
@@ -265,7 +277,7 @@ export class NativeContext implements BaseRenderContext {
 
   removeAllBefore(ref: BaseRenderContext): void {
     const marker = (ref as NativeContext).handle
-    const parentHandle = this._isRef ? this._parentHandle! : this.handle
+    const parentHandle = this.childParent
     const children = this.bridge.getChildren(parentHandle)
     const markerIdx = children.indexOf(marker)
     if (markerIdx <= 0) return
