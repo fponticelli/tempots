@@ -185,7 +185,7 @@ describe("renderApp", () => {
     const result = await renderApp(App(), { hydrate: true });
 
     expect(result).toContain("<div");
-    expect(result).toContain("<span>Hello World</span>");
+    expect(result).toMatch(/<span [^>]*data-tempo-position=":0"[^>]*><!--tempo-node:text::0-->Hello World<\/span>/);
     expect(result).toContain("data-tempo-id");
   });
 
