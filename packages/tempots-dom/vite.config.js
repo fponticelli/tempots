@@ -9,6 +9,11 @@ export default defineConfig({
   test: {
     ...configDefaults,
     environment: 'happy-dom',
+    // Let Happy DOM supply its Window storage even on Node versions that
+    // expose an experimental storage global without a configured backing file.
+    execArgv: process.allowedNodeEnvironmentFlags.has('--no-experimental-webstorage')
+      ? ['--no-experimental-webstorage']
+      : [],
     environmentOptions: {
       happyDOM: {
         settings: {
