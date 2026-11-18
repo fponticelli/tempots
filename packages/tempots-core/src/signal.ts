@@ -644,31 +644,14 @@ export class Signal<T> implements ReadSignal<T> {
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = strictEquals
   ) {
-    const p = prop(alt, equals)
-    let count = 0
-    let abortController = new AbortController()
-    p.onDispose(
-      this.on(async v => {
-        const current = ++count
-        abortController.abort()
-        abortController = new AbortController()
-        try {
-          const value = await fn(v, { abortSignal: abortController.signal })
-          if (current === count) {
-            p.set(value)
-          }
-        } catch (error) {
-          if (current === count) {
-            if (recover != null) {
-              p.set(recover(error))
-            } else {
-              throw error
-            }
-          }
-        }
-      })
+    return this.mapAsyncValues(
+      async (value, abortSignal, emit) => {
+        emit(await fn(value, { abortSignal }))
+      },
+      alt,
+      recover,
+      equals
     )
-    return p
   }
 
   /**
@@ -706,7 +689,7 @@ export class Signal<T> implements ReadSignal<T> {
    * ```
    *
    * @typeParam O - The type of the yielded values.
-   * @param fn - The async generator function that yields values over time. The second argument provides an AbortSignal to cancel the generator when a new value arrives.
+   * @param fn - The async generator function that yields values over time. The second argument provides an AbortSignal to cancel the generator when a new value arrives or the result is disposed.
    * @param alt - The initial value to use before the first yield.
    * @param recover - Optional function to handle errors thrown by the generator.
    * @param equals - Optional equality function to compare yielded values.
@@ -721,32 +704,85 @@ export class Signal<T> implements ReadSignal<T> {
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = strictEquals
   ) {
-    const p = prop(alt, equals)
-    let count = 0
-    let abortController = new AbortController()
-    p.onDispose(
-      this.on(async v => {
-        const current = ++count
-        abortController.abort()
-        abortController = new AbortController()
-        try {
-          const generator = fn(v, { abortSignal: abortController.signal })
-          for await (const yielded of generator) {
-            if (current !== count) return // Stale generator, stop iterating
-            p.set(yielded)
-          }
-        } catch (error) {
-          if (current === count) {
-            if (recover != null) {
-              p.set(recover(error))
-            } else {
-              throw error
-            }
-          }
+    return this.mapAsyncValues(
+      async (value, abortSignal, emit) => {
+        const iterator = fn(value, { abortSignal })
+        let complete = false
+        let closing: Promise<IteratorResult<O, void>> | undefined
+        const close = () =>
+          (closing ??= Promise.resolve().then(() => iterator.return()))
+        const abort = () => {
+          // The finally block also awaits this request. Observe rejection
+          // here in case next() is still waiting for external work.
+          void close().catch(() => {})
         }
-      })
+
+        abortSignal.addEventListener('abort', abort)
+        try {
+          while (!abortSignal.aborted) {
+            const item = await iterator.next()
+            if (item.done) {
+              complete = true
+              return
+            }
+            emit(item.value)
+          }
+        } finally {
+          abortSignal.removeEventListener('abort', abort)
+          if (!complete) await close()
+        }
+      },
+      alt,
+      recover,
+      equals
     )
-    return p
+  }
+
+  private mapAsyncValues<O>(
+    run: (
+      value: T,
+      abortSignal: AbortSignal,
+      emit: (value: O) => void
+    ) => Promise<void>,
+    alt: O,
+    recover: ((error: unknown) => O) | undefined,
+    equals: (a: O, b: O) => boolean
+  ) {
+    const result = prop(alt, equals)
+    let pending: AbortController | undefined
+
+    const mapValue = async (value: T) => {
+      const previous = pending
+      const controller = new AbortController()
+      pending = controller
+      previous?.abort()
+      if (pending !== controller) return
+
+      const emit = (next: O) => {
+        if (pending === controller) result.set(next)
+      }
+      try {
+        await run(value, controller.signal, emit)
+      } catch (error) {
+        if (pending === controller) {
+          if (!recover) throw error
+          emit(recover(error))
+        }
+      } finally {
+        if (pending === controller) pending = undefined
+      }
+    }
+
+    const initial = this.get()
+    const unsubscribe = this.onChange(mapValue, { noAutoDispose: true })
+    result.onDispose(() => {
+      unsubscribe()
+      const current = pending
+      pending = undefined
+      current?.abort()
+    })
+    void mapValue(initial)
+    return result
   }
 
   /**

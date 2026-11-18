@@ -207,7 +207,9 @@ export const computedOf = <T extends Value<unknown>[]>(...args: T) => {
     equals?: (a: O, b: O) => boolean
   ) => {
     if (args.length === 1) {
-      return Value.toSignal(args[0]).map(fn as (value: T[0]) => O)
+      const value = args[0]
+      const source = Signal.is(value) ? value : signal(value)
+      return source.map(fn as (value: T[0]) => O)
     }
     const signals = args.filter(arg => Signal.is(arg)) as Signal<unknown>[]
     return computed(
@@ -260,7 +262,8 @@ export const computedOfAsync = <T extends Value<unknown>[]>(...args: T) => {
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = strictEquals
   ) => {
-    return computedOf(...args)((...args) => args).mapAsync(
+    const combined = computedOf(...args)((...args) => args)
+    const result = combined.mapAsync(
       ([...args], options) =>
         fn(
           ...([...args, options] as [
@@ -272,6 +275,8 @@ export const computedOfAsync = <T extends Value<unknown>[]>(...args: T) => {
       recover,
       equals
     )
+    result.onDispose(() => combined.dispose())
+    return result
   }
 }
 
@@ -327,7 +332,8 @@ export const computedOfAsyncGenerator = <T extends Value<unknown>[]>(
     recover?: (error: unknown) => O,
     equals: (a: O, b: O) => boolean = strictEquals
   ) => {
-    return computedOf(...args)((...args) => args).mapAsyncGenerator(
+    const combined = computedOf(...args)((...args) => args)
+    const result = combined.mapAsyncGenerator(
       ([...args], options) =>
         fn(
           ...([...args, options] as [
@@ -339,6 +345,8 @@ export const computedOfAsyncGenerator = <T extends Value<unknown>[]>(
       recover,
       equals
     )
+    result.onDispose(() => combined.dispose())
+    return result
   }
 }
 
