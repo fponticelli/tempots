@@ -1,4 +1,4 @@
-import type { Providers, Renderable } from '../types/domain'
+import type { Clear, Providers, Renderable } from '../types/domain'
 import { DOMContext } from '../dom/dom-context'
 import {
   _getSelfOrParentElement,
@@ -26,17 +26,24 @@ export const renderWithContext = (
   renderable: Renderable,
   ctx: DOMContext,
   onScope?: (scope: DisposalScope) => void
-) => {
-  // Create a disposal scope for automatic signal tracking
+) => renderScoped(() => renderable.render(ctx), onScope)
+
+function renderScoped(
+  render: () => Clear,
+  onScope?: (scope: DisposalScope) => void
+) {
   const scope = new DisposalScope()
+  let clear: Clear
 
-  onScope?.(scope)
-
-  // Execute the renderable within the scope context
-  const clear = withScope(scope, () => renderable.render(ctx))
+  try {
+    onScope?.(scope)
+    clear = withScope(scope, render)
+  } catch (error) {
+    scope.dispose()
+    throw error
+  }
 
   return (removeTree: boolean = true) => {
-    // Dispose all tracked signals before clearing the DOM
     scope.dispose()
     clear(removeTree)
   }
@@ -172,7 +179,10 @@ export const runHeadless = (
   const currentURL = Value.toSignal(startUrl).deriveProp()
   const root = new HeadlessPortal(selector, undefined)
   const ctx = new HeadlessContext(root, undefined, { currentURL }, providers)
-  const clear = renderWithContext(makeRenderable(), ctx)
+  const clear = renderScoped(
+    () => makeRenderable().render(ctx),
+    scope => scope.track(currentURL)
+  )
   return {
     clear,
     root,

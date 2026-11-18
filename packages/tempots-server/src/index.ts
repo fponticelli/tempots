@@ -95,6 +95,13 @@ export function renderToStream(
   renderable: Renderable,
   options: RenderOptions = {}
 ): Readable {
+  return renderFactoryToStream(() => renderable, options)
+}
+
+function renderFactoryToStream(
+  factory: () => Renderable,
+  options: RenderOptions
+): Readable {
   const {
     url = 'https://example.com',
     selector = 'body',
@@ -116,7 +123,7 @@ export function renderToStream(
 
   // Try to render synchronously, but capture any errors for the stream
   try {
-    renderResult = runHeadless(() => renderable, {
+    renderResult = runHeadless(factory, {
       startUrl: url,
       selector,
       providers,
@@ -194,6 +201,13 @@ export async function renderToString(
   renderable: Renderable,
   options: Omit<RenderOptions, 'onShellReady' | 'onAllReady'> = {}
 ): Promise<string> {
+  return renderFactoryToString(() => renderable, options)
+}
+
+async function renderFactoryToString(
+  factory: () => Renderable,
+  options: Omit<RenderOptions, 'onShellReady' | 'onAllReady'>
+): Promise<string> {
   const {
     url = 'https://example.com',
     selector = 'body',
@@ -204,19 +218,17 @@ export async function renderToString(
 
   try {
     // Render to headless context
-    const { root, clear } = runHeadless(() => renderable, {
+    const { root, clear } = runHeadless(factory, {
       startUrl: url,
       selector,
       providers,
     })
 
-    // Collect all HTML from portals
-    const html = collectPortalHTML(root, generatePlaceholders)
-
-    // Cleanup
-    clear(false)
-
-    return html
+    try {
+      return collectPortalHTML(root, generatePlaceholders)
+    } finally {
+      clear(false)
+    }
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error))
     onError?.(err)
@@ -405,7 +417,7 @@ export function createRenderer<O extends Record<string, unknown>>(
   async function render(url: string): Promise<string> {
     const data = getData ? await getData(url) : ({} as O)
 
-    return renderToString(App(data), {
+    return renderFactoryToString(() => App(data), {
       url,
       selector,
       providers,
@@ -427,7 +439,7 @@ export function createRenderer<O extends Record<string, unknown>>(
       // Start async data fetch, then pipe the real stream
       Promise.resolve(getData(url))
         .then(data => {
-          const realStream = renderToStream(App(data), {
+          const realStream = renderFactoryToStream(() => App(data), {
             url,
             selector,
             providers,
@@ -448,7 +460,7 @@ export function createRenderer<O extends Record<string, unknown>>(
     }
 
     // No getData, render synchronously
-    return renderToStream(App({} as O), {
+    return renderFactoryToStream(() => App({} as O), {
       url,
       selector,
       providers,

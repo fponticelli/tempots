@@ -454,4 +454,37 @@ describe('createRenderer', () => {
     }
     expect(chunks.join('')).toContain('Default Title')
   })
+
+  test('releases subscriptions created by the app factory after each request', async () => {
+    const source = prop(1)
+    const renderer = createRenderer(({ label }) => {
+      const value = source.map(current => label + current)
+      return html.div(value)
+    }, {
+      hydrate: false,
+      getData: async (url) => ({ label: url }),
+    })
+
+    expect(await renderer.render('/string')).toBe('<div>/string1</div>')
+    expect(source.hasListeners()).toBe(false)
+
+    const chunks: string[] = []
+    for await (const chunk of renderer.renderStream('/stream')) chunks.push(String(chunk))
+    expect(chunks.join('')).toBe('<div>/stream1</div>')
+    expect(source.hasListeners()).toBe(false)
+  })
+
+  test('releases factory subscriptions when rendering or serialization throws', async () => {
+    const source = prop('shared')
+    const brokenApp = createRenderer(() => {
+      source.map(value => value)
+      throw new Error('factory failed')
+    })
+    await expect(brokenApp.render('/')).rejects.toThrow('factory failed')
+    expect(source.hasListeners()).toBe(false)
+
+    const brokenHTML = createRenderer(() => html.style(source.map(value => value)))
+    await expect(brokenHTML.render('/')).rejects.toThrow('trusted innerHTML')
+    expect(source.hasListeners()).toBe(false)
+  })
 })
