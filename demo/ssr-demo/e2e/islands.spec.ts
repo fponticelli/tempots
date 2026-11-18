@@ -1,25 +1,32 @@
 import { test, expect } from "@playwright/test";
 
+test.describe("Server HTML", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("renders the page and island placeholders without JavaScript", async ({ page }) => {
+    const response = await page.goto("/");
+    expect(response?.ok()).toBe(true);
+    await expect(page.getByRole("heading", { name: "Tempo SSR Demo" })).toBeVisible();
+    await expect(page.getByText(/Server rendered at:/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "SSR Features" })).toBeVisible();
+    const mainCounter = page.locator('[data-tempo-island="Counter"]');
+    await expect(mainCounter).toHaveAttribute("data-tempo-hydrate", "immediate");
+    await expect(mainCounter.locator(".counter span")).toHaveText("0");
+    await expect(page.locator('[data-tempo-island="IslandCounter"]')).toHaveCount(3);
+  });
+});
+
 test.describe("SSR Demo - Islands Architecture", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:3000");
-  });
-
-  test("should render server-side content", async ({ page }) => {
-    // Check main heading
-    await expect(page.getByRole("heading", { name: "Tempo SSR Demo" })).toBeVisible();
-
-    // Check server timestamp is present
-    await expect(page.getByText(/Server rendered at:/)).toBeVisible();
-
-    // Check SSR features section
-    await expect(page.getByRole("heading", { name: "SSR Features" })).toBeVisible();
+    await page.goto("/");
   });
 
   test("should hydrate main counter island", async ({ page }) => {
     // Find the main counter
     const counterSection = page.locator(".card").first();
     await expect(counterSection.getByRole("heading", { name: "Interactive Counter" })).toBeVisible();
+
+    await expect(counterSection).not.toHaveAttribute("data-tempo-island");
 
     // Initial value should be 0
     const valueDisplay = counterSection.locator(".counter span");
@@ -43,6 +50,9 @@ test.describe("SSR Demo - Islands Architecture", () => {
     const visibleIsland = page.locator(".island-container").first();
     await expect(visibleIsland.getByRole("heading", { name: /Visible Island/ })).toBeVisible();
 
+    await visibleIsland.scrollIntoViewIfNeeded();
+    await expect(visibleIsland).not.toHaveAttribute("data-tempo-island");
+
     // Initial value should be 10
     const valueDisplay = visibleIsland.locator(".counter span");
     await expect(valueDisplay).toHaveText("10");
@@ -61,8 +71,7 @@ test.describe("SSR Demo - Islands Architecture", () => {
     const valueDisplay = idleIsland.locator(".counter span");
     await expect(valueDisplay).toHaveText("20");
 
-    // Wait a bit for idle callback to fire, then test interactivity
-    await page.waitForTimeout(100);
+    await expect(idleIsland).not.toHaveAttribute("data-tempo-island");
     await idleIsland.getByRole("button", { name: "-" }).click();
     await expect(valueDisplay).toHaveText("19");
   });
@@ -75,6 +84,8 @@ test.describe("SSR Demo - Islands Architecture", () => {
     // Initial value should be 30
     const valueDisplay = immediateIsland.locator(".counter span");
     await expect(valueDisplay).toHaveText("30");
+
+    await expect(immediateIsland).not.toHaveAttribute("data-tempo-island");
 
     // Should be immediately interactive
     await immediateIsland.getByRole("button", { name: "+" }).click();
@@ -97,6 +108,11 @@ test.describe("SSR Demo - Islands Architecture", () => {
     await expect(idleIsland).toHaveText("20");
     await expect(immediateIsland).toHaveText("30");
 
+    const firstIsland = page.locator(".island-container").first();
+    await firstIsland.scrollIntoViewIfNeeded();
+    await expect(firstIsland).not.toHaveAttribute("data-tempo-island");
+    await expect(page.locator("[data-tempo-island]")).toHaveCount(0);
+
     // Increment each one
     await page.locator(".card").first().getByRole("button", { name: "+" }).click();
     await page.locator(".island-container").nth(0).getByRole("button", { name: "+" }).click();
@@ -111,17 +127,11 @@ test.describe("SSR Demo - Islands Architecture", () => {
   });
 
   test("should log initialization messages", async ({ page }) => {
-    const logs: string[] = [];
-    page.on("console", (msg) => {
-      if (msg.type() === "log") {
-        logs.push(msg.text());
-      }
-    });
-
-    await page.goto("http://localhost:3000");
-    await page.waitForTimeout(100);
-
-    // In SSR mode, the message includes "SSR mode:"
-    expect(logs.some((log) => log.includes("Islands initialized!"))).toBe(true);
+    await Promise.all([
+      page.waitForEvent("console", {
+        predicate: message => message.text().includes("Islands initialized!"),
+      }),
+      page.goto("/"),
+    ]);
   });
 });

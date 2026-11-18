@@ -38,6 +38,12 @@ jobs:
       - name: Build packages
         run: pnpm run build
         
+      - name: Install Chromium for the SSR browser tests
+        run: pnpm --filter ssr-demo exec playwright install --with-deps chromium
+
+      - name: Test server HTML and island interactivity
+        run: pnpm --filter ssr-demo test:e2e
+
       - name: Run tests with coverage
         run: pnpm run test:coverage
         

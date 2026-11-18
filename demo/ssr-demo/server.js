@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { createServer as createHttpServer } from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
@@ -8,24 +9,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 async function createServer() {
   const app = express()
+  const server = createHttpServer(app)
 
   // Create Vite server in middleware mode
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: { server } },
     appType: 'custom',
   })
 
   // Use Vite's connect instance as middleware
   app.use(vite.middlewares)
 
-  app.use('*', async (req, res, next) => {
+  app.use(async (req, res, next) => {
     const url = req.originalUrl
+    const extension = path.extname(req.path)
 
     // Skip non-page requests (static assets, special paths, etc.)
     if (
-      url.startsWith('/.well-known') ||
-      url.startsWith('/@') ||
-      url.includes('.') && !url.endsWith('.html')
+      (req.method !== 'GET' && req.method !== 'HEAD') ||
+      req.path.startsWith('/.well-known') ||
+      req.path.startsWith('/@') ||
+      (extension !== '' && extension !== '.html')
     ) {
       return next()
     }
@@ -47,7 +51,7 @@ async function createServer() {
       const appHtml = await render(url)
 
       // Inject the rendered app HTML into the template
-      const html = template.replace(`<!--ssr-outlet-->`, appHtml)
+      const html = template.replace('<!--ssr-outlet-->', () => appHtml)
 
       // Send the HTML
       res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
@@ -59,8 +63,8 @@ async function createServer() {
     }
   })
 
-  const port = process.env.PORT || 3000
-  app.listen(port, () => {
+  const port = Number(process.env.PORT ?? 3000)
+  server.listen(port, process.env.HOST, () => {
     console.log(`\n  🚀 SSR Demo Server running at http://localhost:${port}\n`)
     console.log(`  Features demonstrated:`)
     console.log(`    - Server-side rendering with @tempots/server`)
