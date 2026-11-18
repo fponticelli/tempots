@@ -259,7 +259,7 @@ describe("HydrationContext", () => {
       expect(refCtx.reference).toBe(emptyText);
     });
 
-    it("should create new text node if none exists", () => {
+    it("should create a browser anchor if none exists", () => {
       const div = document.createElement("div");
       div.innerHTML = "Some content";
       container.appendChild(div);
@@ -267,7 +267,7 @@ describe("HydrationContext", () => {
       const ctx = new HydrationContext(document, div, undefined, {}, new Map(), 0);
 
       const refCtx = ctx.makeRef();
-      expect(refCtx.reference).toBeInstanceOf(Text);
+      expect(refCtx.reference).toBeInstanceOf(Comment);
     });
   });
 
@@ -397,7 +397,7 @@ describe("HydrationContext", () => {
   });
 
   describe("type guards", () => {
-    it("should identify as browser environment but not BrowserContext", () => {
+    it("should identify as a browser context", () => {
       const ctx = new HydrationContext(
         document,
         container,
@@ -407,10 +407,8 @@ describe("HydrationContext", () => {
         0
       );
 
-      // isBrowser() returns true since hydration runs in browser environment
       expect(ctx.isBrowser()).toBe(true);
-      // isBrowserDOM() returns false since this is not a BrowserContext instance
-      expect(ctx.isBrowserDOM()).toBe(false);
+      expect(ctx.isBrowserDOM()).toBe(true);
       expect(ctx.isHeadless()).toBe(false);
       expect(ctx.isHeadlessDOM()).toBe(false);
     });

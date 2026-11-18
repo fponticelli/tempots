@@ -1,4 +1,14 @@
-import { html, KeyedForEach, prop, runHeadless, When } from '@tempots/dom'
+import {
+  attr,
+  BrowserContext,
+  html,
+  KeyedForEach,
+  prop,
+  runHeadless,
+  style,
+  When,
+  WithBrowserCtx,
+} from '@tempots/dom'
 import { afterEach, expect, test } from 'vitest'
 import { hydrate } from '../src'
 
@@ -16,6 +26,32 @@ function fromHeadless(factory: Parameters<typeof runHeadless>[0]) {
   containers.push(container)
   return container
 }
+
+test('hydrated bindings use browser attribute and CSS accessors', () => {
+  const view = (state: ReturnType<typeof prop<string>>) =>
+    html.div(attr['data-state'](state), style.variable('--state', state))
+  const container = fromHeadless(() => view(prop('initial')))
+  const original = container.firstElementChild as HTMLElement
+  const state = prop('initial')
+  const clear = hydrate(view(state), container)
+  state.set('updated')
+
+  expect(container.firstElementChild).toBe(original)
+  expect(original.getAttribute('data-state')).toBe('updated')
+  expect(original.style.getPropertyValue('--state')).toBe('updated')
+  clear()
+})
+
+test('browser-only renderables receive a real browser context during hydration', () => {
+  const container = fromHeadless(() => html.div())
+  const original = container.firstElementChild
+  const clear = hydrate(html.div(WithBrowserCtx(ctx => {
+    expect(ctx).toBeInstanceOf(BrowserContext)
+    expect(ctx.element).toBe(original)
+    expect(ctx.getWindow()).toBe(window)
+  })), container)
+  clear()
+})
 
 test('hydrates mixed and adjacent siblings in order and keeps them reactive', () => {
   const view = (label: ReturnType<typeof prop<string>>) => html.div(

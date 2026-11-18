@@ -213,7 +213,7 @@ export class BrowserContext implements DOMContext {
    * @returns A new `DOMContext` instance with the provided `element`.
    */
   withElement(element: HTMLElement): BrowserContext {
-    return new BrowserContext(
+    return this.deriveContext(
       element.ownerDocument ?? this.document,
       element,
       undefined,
@@ -283,7 +283,7 @@ export class BrowserContext implements DOMContext {
    * @returns A new `DOMContext` instance with the specified reference.
    */
   withReference(reference: Node | undefined): DOMContext {
-    return new BrowserContext(
+    return this.deriveContext(
       this.document,
       this.element,
       reference,
@@ -303,10 +303,25 @@ export class BrowserContext implements DOMContext {
     value: T,
     onUse: undefined | (() => void)
   ): DOMContext {
-    return new BrowserContext(this.document, this.element, this.reference, {
+    return this.deriveContext(this.document, this.element, this.reference, {
       ...this.providers,
       [mark]: [value, onUse],
     })
+  }
+
+  /** @internal */
+  protected deriveContext(
+    document: Document,
+    element: HTMLElement,
+    reference: Node | undefined,
+    providers: Providers
+  ): BrowserContext {
+    return new BrowserContext(document, element, reference, providers)
+  }
+
+  /** @internal */
+  canCloneTemplates(): boolean {
+    return true
   }
 
   /**

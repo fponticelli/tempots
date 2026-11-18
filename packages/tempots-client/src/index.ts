@@ -1,12 +1,10 @@
-import { DisposalScope, withScope } from '@tempots/core'
-import type { Renderable, Providers, ProviderMark, Clear } from '@tempots/dom'
+import { DisposalScope, withScope, type Primitive } from '@tempots/core'
+import type { Renderable, Providers } from '@tempots/dom'
 import {
   BrowserContext,
   DOMContext,
   HYDRATION_ID_ATTR,
   HYDRATION_POSITION_ATTR,
-  HeadlessContext,
-  type HandlerOptions,
 } from '@tempots/dom'
 import { HydrationState } from './hydration-state'
 
@@ -113,25 +111,27 @@ function removeHydrationMarkers(container: HTMLElement): void {
  *
  * @public
  */
-export class HydrationContext implements DOMContext {
+export class HydrationContext extends BrowserContext {
   constructor(
-    readonly document: Document,
-    readonly element: HTMLElement,
-    readonly reference: Node | undefined,
-    readonly providers: Providers,
+    document: Document,
+    element: HTMLElement,
+    reference: Node | undefined,
+    providers: Providers,
     private readonly hydrationMap: Map<string, HTMLElement>,
     private readonly startIndex: number,
     private readonly state = new HydrationState(false)
-  ) {}
+  ) {
+    super(document, element, reference, providers)
+  }
 
   /**
    * Finds the next child element instead of creating a new one.
    * Falls back to creating a new element if hydration fails.
    */
-  readonly makeChildElement = (
+  override makeChildElement(
     tagName: string,
     namespace: string | undefined
-  ): DOMContext => {
+  ): DOMContext {
     const child = this.state.take(
       this.element,
       this.reference,
@@ -145,23 +145,16 @@ export class HydrationContext implements DOMContext {
           (namespace ?? 'http://www.w3.org/1999/xhtml')
     ) as HTMLElement | undefined
 
-    const element =
-      child ??
-      (namespace === undefined
-        ? this.document.createElement(tagName)
-        : (this.document.createElementNS(namespace, tagName) as HTMLElement))
-    if (!child) {
-      if (this.state.active) {
-        console.warn(
-          `Hydration mismatch: could not find element <${tagName}> in container`
-        )
-      }
-      this.appendOrInsert(element)
+    if (child) return this.withElement(child)
+    if (this.state.active) {
+      console.warn(
+        `Hydration mismatch: could not find element <${tagName}> in container`
+      )
     }
-    return this.childContext(element, undefined)
+    return super.makeChildElement(tagName, namespace)
   }
 
-  readonly makeChildText = (value: string): DOMContext => {
+  override makeChildText(value: Primitive): DOMContext {
     const text = String(value)
     const child = this.state.take(
       this.element,
@@ -170,38 +163,12 @@ export class HydrationContext implements DOMContext {
       'text',
       candidate => candidate.nodeType === 3
     )
-    if (child) {
-      if (child.nodeValue !== text) child.nodeValue = text
-      return this.childContext(this.element, child)
-    }
-    const node = this.document.createTextNode(text)
-    this.appendOrInsert(node)
-    return this.childContext(this.element, node)
+    if (!child) return super.makeChildText(text)
+    if (child.nodeValue !== text) child.nodeValue = text
+    return this.withReference(child)
   }
 
-  private childContext(element: HTMLElement, reference: Node | undefined) {
-    return new HydrationContext(
-      this.document,
-      element,
-      reference,
-      this.providers,
-      this.hydrationMap,
-      0,
-      this.state
-    )
-  }
-
-  readonly setText = (text: string): void => {
-    if (this.reference) {
-      this.reference.nodeValue = text
-    }
-  }
-
-  readonly getText = (): string => {
-    return this.reference?.nodeValue ?? this.element.textContent ?? ''
-  }
-
-  readonly makeRef = (): DOMContext => {
+  override makeRef(): DOMContext {
     const child = this.state.take(
       this.element,
       this.reference,
@@ -211,209 +178,51 @@ export class HydrationContext implements DOMContext {
         candidate.nodeType === 8 ||
         (candidate.nodeType === 3 && candidate.nodeValue === '')
     )
-    if (child) return this.childContext(this.element, child)
-    const ref = this.document.createTextNode('')
-    this.appendOrInsert(ref)
-    return this.childContext(this.element, ref)
+    return child ? this.withReference(child) : super.makeRef()
   }
 
-  readonly makeMarker = (): DOMContext => {
-    return this.makeRef()
-  }
-
-  readonly makePortal = (selector: string | HTMLElement): DOMContext => {
-    const target =
-      typeof selector === 'string'
-        ? (this.document.querySelector(selector) as HTMLElement | null)
-        : selector
-
-    if (target == null) {
-      throw new Error(`Cannot find element by selector for portal: ${selector}`)
+  protected override deriveContext(
+    document: Document,
+    element: HTMLElement,
+    reference: Node | undefined,
+    providers: Providers
+  ): BrowserContext {
+    if (!this.state.active) {
+      return super.deriveContext(document, element, reference, providers)
     }
-
-    return this.childContext(target, undefined)
-  }
-
-  private readonly appendOrInsert = (child: Node): void => {
-    if (this.reference === undefined) {
-      this.element.appendChild(child)
-    } else {
-      this.element.insertBefore(child, this.reference)
-    }
-  }
-
-  readonly setProvider = <T>(
-    mark: ProviderMark<T>,
-    value: T,
-    onUse: undefined | (() => void)
-  ): DOMContext =>
-    new HydrationContext(
-      this.document,
-      this.element,
-      this.reference,
-      { ...this.providers, [mark]: [value, onUse] },
+    return new HydrationContext(
+      document,
+      element,
+      reference,
+      providers,
       this.hydrationMap,
-      this.startIndex,
+      element === this.element ? this.startIndex : 0,
       this.state
     )
-
-  readonly getProvider = <T>(mark: ProviderMark<T>) => {
-    if (this.providers[mark] === undefined) {
-      throw new Error(`Provider not found: ${String(mark)}`)
-    }
-    const [value, onUse] = this.providers[mark]! as [
-      T,
-      undefined | (() => void),
-    ]
-    return { value, onUse }
   }
 
-  readonly tryGetProvider = <T>(
-    mark: ProviderMark<T>
-  ): { value: T; onUse?: () => void } | undefined => {
-    if (this.providers[mark] === undefined) {
-      return undefined
-    }
-    const [value, onUse] = this.providers[mark]! as [
-      T,
-      undefined | (() => void),
-    ]
-    return { value, onUse }
+  override canCloneTemplates(): boolean {
+    return !this.state.active
   }
 
-  readonly clear = (removeTree: boolean): void => {
-    if (removeTree) {
-      if (this.reference !== undefined) {
-        this.reference.parentNode?.removeChild(this.reference)
-      } else {
-        this.element.parentNode?.removeChild(this.element)
-      }
-    }
-  }
-
-  readonly addClasses = (tokens: string[]): void => {
-    this.element.classList.add(...tokens)
-  }
-
-  readonly removeClasses = (tokens: string[]): void => {
-    this.element.classList.remove(...tokens)
-  }
-
-  readonly getClasses = (): string[] => {
-    return Array.from(this.element.classList)
-  }
-
-  readonly on = <E>(
-    event: string,
-    listener: (event: E, ctx: DOMContext) => void,
-    options?: HandlerOptions
-  ): Clear => {
-    const handler = (event: Event) => listener(event as E, this)
-    this.element.addEventListener(event, handler, options)
-    return (removeTree: boolean) => {
-      if (removeTree) {
-        this.element.removeEventListener(event, handler, options)
-      }
-    }
-  }
-
-  // HydrationContext runs in a browser environment, so isBrowser() returns true
-  // to ensure browser-specific code paths (like Location provider) work correctly.
-  // Note: isBrowserDOM returns false since this is not a BrowserContext instance.
-  readonly isBrowserDOM = (): this is BrowserContext => false
-  readonly isBrowser = (): this is BrowserContext => true as never
-  readonly isHeadlessDOM = (): this is HeadlessContext => false
-  readonly isHeadless = (): this is HeadlessContext => false
-
-  readonly setStyle = (name: string, value: string): void => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.element.style[name as any] = value
-  }
-
-  readonly getStyle = (name: string): string => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.element.style[name as any]
-  }
-
-  readonly makeAccessors = (
-    name: string
-  ): { get(): unknown; set(value: unknown): void } => {
-    const el = this.element as unknown as Record<string, unknown>
-    return {
-      get: () => el[name],
-      set: (value: unknown) => {
-        el[name] = value
-      },
-    }
-  }
-
-  readonly moveRangeBefore = (
+  override moveRangeBefore(
     startRef: DOMContext,
     endRef: DOMContext,
     targetRef: DOMContext
-  ): void => {
-    const start = (startRef as HydrationContext).reference!
-    const end = (endRef as HydrationContext).reference!
-    const target = (targetRef as HydrationContext).reference!
-    const parent = this.element
-
+  ): void {
     if (
       this.state.active &&
-      this.state.isServerAnchor(start) &&
-      this.state.isServerAnchor(end) &&
-      this.state.isServerAnchor(target)
+      this.state.isServerAnchor((startRef as BrowserContext).reference!) &&
+      this.state.isServerAnchor((endRef as BrowserContext).reference!) &&
+      this.state.isServerAnchor((targetRef as BrowserContext).reference!)
     ) {
       return
     }
-    if (end.nextSibling === target || start === target) return
-    const range = this.document.createRange()
-    range.setStartBefore(start)
-    range.setEndAfter(end)
-    parent.insertBefore(range.extractContents(), target)
+    super.moveRangeBefore(startRef, endRef, targetRef)
   }
 
-  readonly removeRange = (startRef: DOMContext, endRef: DOMContext): void => {
-    const start = (startRef as HydrationContext).reference!
-    const end = (endRef as HydrationContext).reference!
-    const parent = this.element
-
-    let current: Node | null = start
-    while (current !== null) {
-      const next: Node | null = current.nextSibling
-      parent.removeChild(current)
-      if (current === end) break
-      current = next
-    }
-  }
-
-  removeAllBefore(ref: DOMContext): void {
-    const marker = (ref as HydrationContext).reference!
-    const parent = this.element
-    if (!parent.firstChild || parent.firstChild === marker) return
-    const range = this.document.createRange()
-    range.setStartBefore(parent.firstChild)
-    range.setEndBefore(marker)
-    range.deleteContents()
-  }
-
-  private _detachedParent: Node | null = null
-  private _detachedNext: Node | null = null
-
-  detach(): void {
-    const el = this.element
-    if (el.parentNode) {
-      this._detachedParent = el.parentNode
-      this._detachedNext = el.nextSibling
-      el.remove()
-    }
-  }
-
-  reattach(): void {
-    if (this._detachedParent) {
-      this._detachedParent.insertBefore(this.element, this._detachedNext)
-      this._detachedParent = null
-      this._detachedNext = null
-    }
+  override detach(): void {
+    if (!this.state.active) super.detach()
   }
 }
 
