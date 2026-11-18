@@ -5,6 +5,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { tempoHmrPlugin } from './hmr/plugin'
+import { getSsgOutputPath, validateSsgRoutePath } from './ssg-path'
 
 /**
  * Rendering mode for the Tempo Vite plugin.
@@ -36,7 +37,8 @@ export interface RouteConfig {
   path: string
 
   /**
-   * Optional output file path. Defaults to path + "/index.html".
+   * Optional file path relative to the output directory. Defaults to the
+   * route path plus "/index.html" unless the route already ends in ".html".
    */
   output?: string
 }
@@ -150,25 +152,6 @@ function normalizeRoutes(
 }
 
 /**
- * Gets the output file path for a route.
- */
-function getOutputPath(route: RouteConfig, outDir: string): string {
-  if (route.output) {
-    return path.join(outDir, route.output)
-  }
-
-  // Convert /path to /path/index.html
-  let outputPath = route.path
-  if (outputPath.endsWith('/')) {
-    outputPath += 'index.html'
-  } else if (!outputPath.endsWith('.html')) {
-    outputPath += '/index.html'
-  }
-
-  return path.join(outDir, outputPath)
-}
-
-/**
  * Extracts internal links from HTML content.
  * Filters to paths starting with / (excluding // protocol-relative URLs)
  * and excludes static assets (URLs containing a dot in the path).
@@ -222,6 +205,7 @@ async function crawlRoutes(
 
   while (queue.length > 0) {
     const url = queue.shift()!
+    validateSsgRoutePath(url)
 
     if (discovered.has(url) || failed.has(url)) {
       continue
@@ -404,66 +388,79 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
         return
       }
 
-      // Resolve routes - support crawl mode, explicit arrays, and async functions
-      let routes: RouteConfig[]
-      const logger = { log: console.log }
+      try {
+        // Resolve routes - support crawl mode, explicit arrays, and async functions
+        let routes: RouteConfig[]
+        const logger = { log: console.log }
 
-      if (routesOption === 'crawl') {
-        // Crawl mode: discover routes by following links
-        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger)
-        routes = discoveredPaths.map(p => ({ path: p }))
-      } else if (typeof routesOption === 'function') {
-        // Async function mode
-        const resolvedRoutes = await routesOption()
-        routes = normalizeRoutes(resolvedRoutes)
-      } else if (Array.isArray(routesOption)) {
-        // Explicit array mode
-        routes = normalizeRoutes(routesOption)
-      } else {
-        // Fallback to crawl if no routes specified
-        const discoveredPaths = await crawlRoutes(renderFn, seedRoutes, logger)
-        routes = discoveredPaths.map(p => ({ path: p }))
-      }
-
-      console.log(`[tempo] Generating ${routes.length} static pages...`)
-
-      // Extract container ID for injection
-      const containerId = container.replace('#', '')
-      const containerRegex = new RegExp(
-        `(<[^>]*id="${containerId}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`
-      )
-
-      for (const route of routes) {
-        try {
-          // Render the app for this route
-          const appHtml = await renderFn(route.path)
-
-          // Inject rendered HTML into template
-          const html = templateHtml.replace(containerRegex, `$1${appHtml}$3`)
-
-          // Write to output file
-          const outputPath = getOutputPath(
-            route,
-            path.resolve(config.root, outDir)
+        if (routesOption === 'crawl') {
+          // Crawl mode: discover routes by following links
+          const discoveredPaths = await crawlRoutes(
+            renderFn,
+            seedRoutes,
+            logger
           )
+          routes = discoveredPaths.map(p => ({ path: p }))
+        } else if (typeof routesOption === 'function') {
+          // Async function mode
+          const resolvedRoutes = await routesOption()
+          routes = normalizeRoutes(resolvedRoutes)
+        } else if (Array.isArray(routesOption)) {
+          // Explicit array mode
+          routes = normalizeRoutes(routesOption)
+        } else {
+          // Fallback to crawl if no routes specified
+          const discoveredPaths = await crawlRoutes(
+            renderFn,
+            seedRoutes,
+            logger
+          )
+          routes = discoveredPaths.map(p => ({ path: p }))
+        }
 
-          const outputDir = path.dirname(outputPath)
-          if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true })
+        const outputRoot = fs.realpathSync(path.resolve(config.root, outDir))
+        for (const route of routes) getSsgOutputPath(route, outputRoot)
+
+        console.log(`[tempo] Generating ${routes.length} static pages...`)
+
+        // Extract container ID for injection
+        const containerId = container.replace('#', '')
+        const containerRegex = new RegExp(
+          `(<[^>]*id="${containerId}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`
+        )
+
+        for (const route of routes) {
+          let appHtml: string
+          try {
+            appHtml = await renderFn(route.path)
+          } catch (error) {
+            console.error(`  ✗ ${route.path}:`, error)
+            continue
           }
 
-          fs.writeFileSync(outputPath, html)
-          console.log(`  ✓ ${route.path}`)
-        } catch (error) {
-          console.error(`  ✗ ${route.path}:`, error)
-        }
-      }
+          // Recheck after rendering in case the filesystem changed during the await.
+          const outputPath = getSsgOutputPath(route, outputRoot)
+          try {
+            // Inject rendered HTML into template
+            const html = templateHtml.replace(containerRegex, `$1${appHtml}$3`)
 
-      // Clean up temporary SSR build
-      try {
-        fs.rmSync(ssrOutDir, { recursive: true, force: true })
-      } catch {
-        // Ignore cleanup errors
+            const outputDir = path.dirname(outputPath)
+            if (!fs.existsSync(outputDir)) {
+              fs.mkdirSync(outputDir, { recursive: true })
+            }
+
+            fs.writeFileSync(outputPath, html)
+            console.log(`  ✓ ${route.path}`)
+          } catch (error) {
+            console.error(`  ✗ ${route.path}:`, error)
+          }
+        }
+      } finally {
+        try {
+          fs.rmSync(ssrOutDir, { recursive: true, force: true })
+        } catch {
+          // Ignore cleanup errors
+        }
       }
 
       console.log(`[tempo] SSG complete!\n`)
