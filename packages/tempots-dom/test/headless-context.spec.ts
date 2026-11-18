@@ -547,12 +547,9 @@ describe('HeadlessContext', () => {
       expect(html).toBe('<div>Text content</div>')
     })
 
-    test('should handle HTML in text content', () => {
-      ctx.makeChildText('<script>alert("xss")</script>')
-
-      const html = ctx.element.toHTML()
-      // In headless mode, text content might not be escaped like in browser DOM
-      expect(html).toContain('<script>alert("xss")</script>')
+    test('should keep markup-like child text as text', () => {
+      ctx.makeChildText('A <draft> & notes')
+      expect(ctx.element.toHTML()).toBe('<div>A &lt;draft&gt; &amp; notes</div>')
     })
 
     test('should handle boolean attributes', () => {

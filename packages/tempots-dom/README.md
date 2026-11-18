@@ -40,6 +40,11 @@ const HelloWorld = html.h1('Hello World')
 render(HelloWorld, document.body)
 ```
 
+Headless HTML rendering escapes ordinary text and attribute values. Use
+`attr.innerHTML()` only with trusted HTML. On elements such as `script` and
+`style`, use that explicit path for trusted inline content because HTML parses
+their contents as raw text.
+
 ### Signals
 
 Signals are reactive values that automatically update the UI when they change:

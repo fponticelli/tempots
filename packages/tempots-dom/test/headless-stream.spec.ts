@@ -7,7 +7,62 @@ import {
 } from '../src/dom/headless-context'
 import { prop } from '@tempots/core'
 
+async function streamHTML(element: HeadlessElement): Promise<string> {
+  let markup = ''
+  for await (const chunk of element.toHTMLStream()) markup += chunk
+  return markup
+}
+
 describe('HeadlessElement toHTMLStream', () => {
+  test('should preserve text and attribute values through either HTML serializer', async () => {
+    const element = new HeadlessElement('div', undefined, undefined)
+    const ctx = new HeadlessContext(element, undefined, { currentURL: prop('/') }, {})
+    const text = 'A <draft> & the literal &copy;'
+    const title = 'Title "quoted" &copy;'
+    ctx.makeChildText(text)
+    ctx.makeAccessors('title').set(title)
+    ctx.addClasses(['label"', 'plain&copy;'])
+    ctx.setStyle('font-family', '"Quoted"')
+
+    for (const markup of [element.toHTML(), await streamHTML(element)]) {
+      const container = document.createElement('section')
+      container.innerHTML = markup
+      const child = container.firstElementChild!
+      expect(child.textContent).toBe(text)
+      expect(child.children).toHaveLength(0)
+      expect(child.getAttribute('title')).toBe(title)
+      expect(child.getAttribute('class')).toBe('label" plain&copy;')
+      expect(child.getAttribute('style')).toBe('font-family: "Quoted";')
+    }
+  })
+
+  test('should require explicit HTML for text in raw-text elements', async () => {
+    const element = new HeadlessElement('style', undefined, undefined)
+    const ctx = new HeadlessContext(element, undefined, { currentURL: prop('/') }, {})
+    const stylesheet = 'p { color: red; }'
+    ctx.makeChildText(stylesheet)
+    expect(() => element.toHTML()).toThrow(/innerHTML/)
+    await expect(streamHTML(element)).rejects.toThrow(/innerHTML/)
+
+    ctx.makeAccessors('innerHTML').set(stylesheet)
+    expect(element.toHTML()).toBe('<style>p { color: red; }</style>')
+    await expect(streamHTML(element)).resolves.toBe(element.toHTML())
+  })
+
+  test('should preserve empty raw-text elements and reject nonempty innerText', async () => {
+    const element = new HeadlessElement('script', undefined, undefined)
+    expect(element.toHTML()).toBe('<script></script>')
+    element.makeAccessors('innerText').set('inline text')
+    expect(() => element.toHTML()).toThrow(/innerHTML/)
+    await expect(streamHTML(element)).rejects.toThrow(/innerHTML/)
+  })
+
+  test('should reject the obsolete plaintext element during HTML serialization', async () => {
+    const element = new HeadlessElement('plaintext', undefined, undefined)
+    expect(() => element.toHTML()).toThrow(/plaintext/)
+    await expect(streamHTML(element)).rejects.toThrow(/plaintext/)
+  })
+
   describe('basic streaming', () => {
     test('should stream simple element', async () => {
       const element = new HeadlessElement('div', undefined, undefined)
@@ -272,6 +327,7 @@ describe('HeadlessText toHTMLStream', () => {
       chunks.push(chunk)
     }
 
-    expect(chunks[0]).toBe('Special <>&"\'')
+    expect(text.toHTML()).toBe('Special &lt;&gt;&amp;"\'')
+    expect(chunks[0]).toBe(text.toHTML())
   })
 })

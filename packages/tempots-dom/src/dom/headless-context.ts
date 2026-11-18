@@ -299,16 +299,25 @@ abstract class HeadlessBase {
   }
 }
 
-const quote = (value: string): string => {
-  return value.replace(/"/g, '&quot;')
-}
-
 const escapeHTML = (value: string): string => {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 }
+
+const serializeAttribute = (name: string, value: string): string =>
+  ` ${name}="${escapeHTML(value).replace(/"/g, '&quot;')}"`
+
+const rawTextTags = new Set([
+  'script',
+  'style',
+  'iframe',
+  'xmp',
+  'noembed',
+  'noframes',
+  'noscript',
+])
 
 export class HeadlessElement extends HeadlessBase {
   constructor(
@@ -331,21 +340,43 @@ export class HeadlessElement extends HeadlessBase {
     attrs: string
     innerHTML: string | null
   } {
+    const tag = this.tagName.toLowerCase()
+    if (tag === 'plaintext') {
+      throw new Error('Cannot serialize <plaintext> with a closing tag')
+    }
+
+    // Raw-text elements do not decode HTML entities. Require callers to opt
+    // into their special content semantics through the trusted HTML path.
+    if (
+      rawTextTags.has(tag) &&
+      (this.getInnerText() !== '' ||
+        (!this.hasInnerHTML() &&
+          !this.hasInnerText() &&
+          this.children.some(
+            child => !child.isText() || child.getText() !== ''
+          )))
+    ) {
+      throw new Error(`Use trusted innerHTML to serialize content in <${tag}>`)
+    }
+
     let innerHTML = null as string | null
-    const ns = this.namespace ? ` xmlns="${this.namespace}"` : ''
+    const ns = this.namespace ? serializeAttribute('xmlns', this.namespace) : ''
     const attrs = this.getVisibleAttributes()
       .map(([name, value]) => {
         if (name === 'class') {
-          return ` class="${(value as string[]).join(' ')}"`
+          return serializeAttribute(
+            name,
+            Array.isArray(value) ? value.join(' ') : String(value)
+          )
         }
         if (name === 'style') {
-          if (typeof value === 'string') {
-            return ` style="${value}"`
-          } else {
-            return ` style="${Object.entries(value)
-              .map(([name, value]) => `${name}: ${value};`)
-              .join(' ')}"`
-          }
+          const style =
+            typeof value === 'string'
+              ? value
+              : Object.entries(value)
+                  .map(([name, value]) => `${name}: ${value};`)
+                  .join(' ')
+          return serializeAttribute(name, style)
         }
         if (attributesWithNoValue.has(name)) {
           return ` ${name}`
@@ -358,7 +389,7 @@ export class HeadlessElement extends HeadlessBase {
           innerHTML = escapeHTML(value)
           return ''
         }
-        return ` ${name}="${quote(value as string)}"`
+        return serializeAttribute(name, String(value))
       })
       .join('')
     // When generating placeholders for hydration:
@@ -371,9 +402,9 @@ export class HeadlessElement extends HeadlessBase {
   }
 
   toHTML(generatePlaceholders: boolean = false): string {
-    const children = this.children.map(child => child.toHTML()).join('')
     const { attrs, innerHTML } =
       this.buildAttributesString(generatePlaceholders)
+    const children = this.children.map(child => child.toHTML()).join('')
     if (selfClosingTags.has(this.tagName) && children === '') {
       return `<${this.tagName}${attrs} />`
     }
@@ -476,7 +507,7 @@ export class HeadlessText {
     return this.text
   }
   toHTML(): string {
-    return this.text
+    return escapeHTML(this.text)
   }
 
   /**
@@ -488,7 +519,7 @@ export class HeadlessText {
   async *toHTMLStream(options?: StreamOptions): AsyncGenerator<string> {
     // Options parameter kept for API consistency with other toHTMLStream implementations
     void options
-    yield this.text
+    yield this.toHTML()
   }
 }
 
