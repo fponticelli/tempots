@@ -270,6 +270,44 @@ describe('propHistory', () => {
     h.dispose()
   })
 
+  test('a thrown transaction records applied changes and resumes recording', () => {
+    const p = prop(0)
+    const h = propHistory(p)
+    const failure = new Error('transaction failed')
+
+    expect(() => h.transaction(() => {
+      p.set(1)
+      p.set(2)
+      throw failure
+    })).toThrow(failure)
+
+    expect(h.entries.value).toEqual([0, 2])
+    p.set(3)
+    expect(h.entries.value).toEqual([0, 2, 3])
+    h.undo()
+    expect(p.value).toBe(2)
+  })
+
+  test('a nested transaction leaves the outer transaction in control of history', () => {
+    const p = prop(0)
+    const h = propHistory(p)
+
+    h.transaction(() => {
+      p.set(1)
+      expect(() => h.transaction(() => {
+        p.set(2)
+        throw new Error('nested transaction failed')
+      })).toThrow('nested transaction failed')
+      h.transaction(() => p.set(3))
+      expect(h.entries.value).toEqual([0])
+      p.set(4)
+    })
+
+    expect(h.entries.value).toEqual([0, 4])
+    h.undo()
+    expect(p.value).toBe(0)
+  })
+
   test('transaction respects filter', () => {
     const p = prop(0)
     const h = propHistory(p, {

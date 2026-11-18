@@ -49,7 +49,10 @@ export type PropHistory<T> = {
   readonly clear: (resetValue?: T) => void
   /** Pause recording. Returns a resume function. */
   readonly pause: () => () => void
-  /** Group multiple changes into a single undo step. */
+  /**
+   * Group multiple changes, including nested transactions, into one undo step.
+   * If the callback throws, applied changes are still recorded and the error propagates.
+   */
   readonly transaction: (fn: () => void) => void
   /** Dispose the controller (does NOT dispose the source signal). */
   readonly dispose: () => void
@@ -133,7 +136,6 @@ export function propHistory<T>(
   let isNavigating = false
   let isPaused = false
   let isInTransaction = false
-  let transactionStartIndex = 0
 
   // Reactive state — created outside any scope so they don't get auto-disposed
   const _canUndo = untracked(() => new Prop(false, strictEquals))
@@ -150,27 +152,25 @@ export function propHistory<T>(
     _index.set(currentIndex)
   }
 
-  // Listen for changes on the source signal
+  const record = (value: T, previousValue: T) => {
+    if (filter != null && !filter(value, previousValue)) return
+    history.length = currentIndex + 1
+    history.push(value)
+    currentIndex = history.length - 1
+
+    if (maxSize > 0 && history.length > maxSize) {
+      const excess = history.length - maxSize
+      history.splice(0, excess)
+      currentIndex -= excess
+    }
+    updateReactiveState()
+  }
+
   const removeListener = source.on(
     (value: T, previousValue: T | undefined) => {
       if (isNavigating || isPaused || isInTransaction) return
       if (previousValue === undefined) return
-
-      if (filter != null && !filter(value, previousValue)) return
-
-      // Trim any forward history
-      history.length = currentIndex + 1
-      history.push(value)
-      currentIndex = history.length - 1
-
-      // Enforce maxSize
-      if (maxSize > 0 && history.length > maxSize) {
-        const excess = history.length - maxSize
-        history.splice(0, excess)
-        currentIndex -= excess
-      }
-
-      updateReactiveState()
+      record(value, previousValue)
     },
     { skipInitial: true, noAutoDispose: true }
   )
@@ -223,31 +223,20 @@ export function propHistory<T>(
   }
 
   const transaction = (fn: () => void) => {
+    if (isInTransaction) {
+      fn()
+      return
+    }
     isInTransaction = true
-    transactionStartIndex = currentIndex
-    const startValue = history[currentIndex]
-    fn()
-    isInTransaction = false
-
-    // Check if the value actually changed during the transaction
-    const endValue = source.value
-    if (!source.equals(startValue, endValue)) {
-      // Apply the filter if present
-      if (filter != null && !filter(endValue, startValue)) return
-
-      // Trim any forward history from where we started
-      history.length = transactionStartIndex + 1
-      history.push(endValue)
-      currentIndex = history.length - 1
-
-      // Enforce maxSize
-      if (maxSize > 0 && history.length > maxSize) {
-        const excess = history.length - maxSize
-        history.splice(0, excess)
-        currentIndex -= excess
+    try {
+      fn()
+    } finally {
+      isInTransaction = false
+      const startValue = history[currentIndex]
+      const endValue = source.value
+      if (!source.equals(startValue, endValue)) {
+        record(endValue, startValue)
       }
-
-      updateReactiveState()
     }
   }
 
