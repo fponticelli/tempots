@@ -672,7 +672,7 @@ export function createRenderKit<
           const totalProp = prop(0)
 
           type KeyedEntry = {
-            key: K
+            readonly key: K
             valueProp: Prop<T>
             position: KeyedPosition | null
             tracked: AnySignal[] | null
@@ -922,52 +922,12 @@ export function createRenderKit<
               const newKeys = newArr.map(key)
               const newKeySet = new Set(newKeys)
 
-              // Fast path: full replacement (no surviving keys)
-              if (entries.length > 0) {
-                let hasSurvivor = false
-                for (let i = 0; i < entries.length; i++) {
-                  if (newKeySet.has(entries[i].key)) {
-                    hasSurvivor = true
-                    break
-                  }
-                }
-                if (!hasSurvivor) {
-                  // Reuse existing entries by updating values in-place.
-                  // Avoids destroy+create cycle — DOM stays, signals propagate new values.
-                  const reuseCount = Math.min(entries.length, newArr.length)
-
-                  keyToEntry.clear()
-                  for (let i = 0; i < reuseCount; i++) {
-                    const entry = entries[i]
-                    entry.key = newKeys[i]
-                    entry.valueProp.set(newArr[i])
-                    entry.position?.setIndex(i)
-                    keyToEntry.set(newKeys[i], entry)
-                  }
-
-                  // Remove excess old entries
-                  for (let i = entries.length - 1; i >= reuseCount; i--) {
-                    removeEntry(entries[i])
-                  }
-                  entries.length = reuseCount
-
-                  // Create new entries beyond reuse count
-                  if (newArr.length > reuseCount) {
-                    ctx.detach()
-                    for (let i = reuseCount; i < newArr.length; i++) {
-                      const entry = createEntry(newArr[i], i, outerRef)
-                      keyToEntry.set(newKeys[i], entry)
-                      entries.push(entry)
-                      if (separator && i > 0 && !entry.sepClear) {
-                        renderSeparator(entry, entry.startRef)
-                      }
-                    }
-                    ctx.reattach()
-                  }
-
-                  totalProp.set(newArr.length)
-                  return
-                }
+              // Remove old scopes in bulk when none of their keys survive.
+              if (
+                entries.length > 0 &&
+                !entries.some(entry => newKeySet.has(entry.key))
+              ) {
+                removeAllEntries()
               }
 
               // Detach from DOM during full create/replace to avoid layout thrashing
@@ -975,7 +935,6 @@ export function createRenderKit<
               if (wasBulkCreate) ctx.detach()
 
               // 1. Remove entries whose keys are no longer present
-              // (after full replacement, this loop is a no-op since entries is empty)
               for (let i = entries.length - 1; i >= 0; i--) {
                 const entry = entries[i]
                 if (!newKeySet.has(entry.key)) {

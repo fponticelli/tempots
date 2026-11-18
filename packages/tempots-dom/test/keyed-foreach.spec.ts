@@ -3,6 +3,9 @@ import {
   KeyedForEach,
   render,
   html,
+  on,
+  OnDispose,
+  WithCtx,
   prop,
   runHeadless,
   KeyedPosition,
@@ -42,6 +45,40 @@ describe('KeyedForEach', () => {
     } finally {
       clear()
     }
+  })
+
+  test('replacing all keys disposes old rows and mounts fresh state', () => {
+    const rows = prop(['first'])
+    const disposed: string[] = []
+    const clear = render(
+      KeyedForEach(rows, row => row, row => {
+        const key = row.get()
+        const draft = prop(`draft for ${key}`)
+        return WithCtx(() =>
+          html.button(
+            draft,
+            on.click(() => draft.set('edited draft')),
+            OnDispose(() => disposed.push(key))
+          )
+        )
+      }),
+      document.body
+    )
+
+    try {
+      const firstButton = document.querySelector('button')!
+      firstButton.click()
+      expect(firstButton.textContent).toBe('edited draft')
+
+      rows.set(['second'])
+      const nextButton = document.querySelector('button')!
+      expect(nextButton).not.toBe(firstButton)
+      expect(nextButton.textContent).toBe('draft for second')
+      expect(disposed).toEqual(['first'])
+    } finally {
+      clear()
+    }
+    expect(disposed).toEqual(['first', 'second'])
   })
 
   test('renders a static array of keyed items', () => {
