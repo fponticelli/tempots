@@ -196,7 +196,7 @@ When using `input` elements it is very common you want to specify the type of th
 
 ## bind
 
-Tempo provides functions to bind `Props` to input elements. For example, to bind a `string` prop to an `input` element, use `BindText`. Other bind functions include `BindNumber`, `BindDate`, `BindDateTime`, and `BindChecked`. These set a bidirectional binding between the prop and the input element.
+Pass a `Prop<T>` to a binding helper when the input should write changes directly to it. Tempo provides `BindText`, `BindNumber`, `BindDate`, `BindDateTime`, and `BindChecked`.
 
 ```ts
 import { prop, input, BindText, BindNumber, BindDate, BindDateTime, BindChecked } from '@tempots/dom'
@@ -220,6 +220,21 @@ input['datetime-local'](BindDateTime(appointmentTime))
 // Checkbox binding - syncs checked state
 const isSubscribed = prop(false)
 input.checkbox(BindChecked(isSubscribed))
+```
+
+Each helper also accepts `{ value, onValueChange }`. The input displays the `Signal<T>` in `value` and calls `onValueChange` with edits. Use this form when the caller owns how changes are applied.
+
+```ts
+import { BindText, input, prop, type Signal } from '@tempots/dom'
+
+function NameField(value: Signal<string>, onValueChange: (name: string) => void) {
+  return input.text(BindText({ value, onValueChange }, 'change'))
+}
+
+const account = prop({ name: 'Ada', id: 1 })
+NameField(account.at('name'), name => {
+  account.update(current => ({ ...current, name: name.trim() }))
+})
 ```
 
 ## Conditionals

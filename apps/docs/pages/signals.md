@@ -1,18 +1,16 @@
 ---
 title: Signals
 order: 40
-description: Signals are the reactive data stores. They are used to manage state and notify state changes.
+description: Read, derive, and update reactive values in Tempo.
 ---
 
 # Signals
 
-Signals are the reactive data stores. They are used to manage state and notify state changes.
+Signals hold reactive values. You can read a signal, listen for changes, and derive new signals from it.
 
 ## Create signals
 
-There are three types of signals: `Signal`, `Prop`, and `Computed`. A `Signal` is a readonly object that can be observed but not updated. A `Prop` is a writable object that can be updated. A `Computed` is a readonly object that is derived from other signals.
-
-To create a signal, use the `signal()`, `prop()`, and `computed()` (or `computedOf`) functions.
+`Signal<T>` is the common type for observing a value. `prop()` creates a `Prop<T>`, a writable signal. `computed()` and `computedOf()` create signals that derive their values from other signals. `signal()` creates a signal with a fixed value.
 
 ```tsx
 // create a signal that cannot be updated
@@ -29,6 +27,8 @@ const c1 = computed(() => s.value * 2, [s])
 // for multiple signals, prefer computedOf - cleaner syntax with type-safe values
 const c2 = computedOf(s, p)((sVal, pVal) => sVal + pVal)
 ```
+
+Use `Signal<T>` for a component parameter that only observes a value. It accepts both props and computed signals. Use `Prop<T>` when the component needs to write directly, as with a two-way input binding. If the caller owns how edits are applied, accept a `Signal<T>` and a callback such as `onValueChange`. See [input bindings](/page/renderables.html#bind) for an example.
 
 When you create a Computed signal, you need to provide a function that returns the value of the signal. The function will be called whenever the dependency signals in the second argument change. There is no magic here, if you don't provide the dependency signals, the computed signal will not update.
 

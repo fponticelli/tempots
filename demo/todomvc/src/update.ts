@@ -1,4 +1,4 @@
-import { Prop } from '@tempots/dom'
+import { Signal } from '@tempots/dom'
 import { State, Action, createTodo, Todo, Filter } from './types'
 
 export const filterF = (filter: Filter) => {
@@ -12,7 +12,8 @@ export const filterF = (filter: Filter) => {
 }
 
 export const changeF =
-  (filter: Filter, state: Prop<State>, dispatch: (_: Action) => void) => () => {
+  (filter: Filter, state: Signal<State>, dispatch: (_: Action) => void) =>
+  () => {
     if (state.get().filter !== filter)
       dispatch({ type: 'ToggleFilter', filter })
   }

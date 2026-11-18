@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach, vi } from 'vitest'
 import { BindDate, BindDateTime, BindNumber, BindText, BindChecked } from '../src/renderable/bind'
-import { render, html, attr, runHeadless, prop } from '../src'
+import { render, html, attr, runHeadless, prop, signal } from '../src'
 
 // Helper function to wait for DOM updates
 const waitForUpdate = () => new Promise(resolve => setTimeout(resolve, 0))
@@ -10,7 +10,118 @@ describe('Bind Functions', () => {
     document.body.innerHTML = ''
   })
 
+  describe('signal and callback bindings', () => {
+    test.each([
+      {
+        type: 'number',
+        bind: (onValueChange: (value: number) => void) =>
+          BindNumber({ value: signal(12), onValueChange }),
+        initial: '12',
+        edited: '25.5',
+        expected: 25.5,
+      },
+      {
+        type: 'date',
+        bind: (onValueChange: (value: Date) => void) =>
+          BindDate({
+            value: signal(new Date('2023-01-01T00:00:00Z')),
+            onValueChange,
+          }),
+        initial: '2023-01-01',
+        edited: '2023-07-04',
+        expected: new Date(2023, 6, 4),
+      },
+      {
+        type: 'datetime-local',
+        bind: (onValueChange: (value: Date) => void) =>
+          BindDateTime({
+            value: signal(new Date(2023, 0, 1, 9, 30)),
+            onValueChange,
+          }),
+        initial: '2023-01-01T09:30',
+        edited: '2023-07-04T16:00',
+        expected: new Date(2023, 6, 4, 16),
+      },
+    ] as const)(
+      '$type should display the signal and report a typed edit',
+      ({ type, bind, initial, edited, expected }) => {
+        const onValueChange = vi.fn<(value: number | Date) => void>()
+        const clear = render(
+          html.input(attr.type(type), bind(onValueChange)),
+          document.body
+        )
+
+        try {
+          const input = document.querySelector('input')!
+          expect(input.value).toBe(initial)
+
+          input.value = edited
+          input.dispatchEvent(new Event('input', { bubbles: true }))
+          expect(onValueChange).toHaveBeenCalledExactlyOnceWith(expected)
+        } finally {
+          clear()
+        }
+      }
+    )
+
+    test('checkbox should display the signal and report the requested checked state', async () => {
+      const onValueChange = vi.fn<(value: boolean) => void>()
+      const clear = render(
+        html.input(
+          attr.type('checkbox'),
+          BindChecked({ value: signal(false), onValueChange })
+        ),
+        document.body
+      )
+
+      try {
+        const input = document.querySelector('input')!
+        expect(input.checked).toBe(false)
+
+        input.dispatchEvent(new Event('click', { bubbles: true }))
+        await waitForUpdate()
+        expect(onValueChange).toHaveBeenCalledExactlyOnceWith(true)
+        expect(input.checked).toBe(false)
+      } finally {
+        clear()
+      }
+    })
+  })
+
   describe('BindText', () => {
+    test('should display a derived value and report edits to its owner', async () => {
+      const account = prop({ name: 'Ada', id: 1 })
+      const name = account.at('name')
+      const onValueChange = vi.fn((name: string) => {
+        account.update(current => ({ ...current, name: name.trim() }))
+      })
+      const clear = render(
+        html.input(
+          attr.type('text'),
+          BindText({ value: name, onValueChange }, 'change')
+        ),
+        document.body
+      )
+
+      try {
+        const input = document.querySelector('input')!
+        expect(input.value).toBe('Ada')
+
+        input.value = ' Grace '
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+        expect(onValueChange).not.toHaveBeenCalled()
+        expect(account.value.name).toBe('Ada')
+
+        input.dispatchEvent(new Event('change', { bubbles: true }))
+        await waitForUpdate()
+        expect(onValueChange).toHaveBeenCalledExactlyOnceWith(' Grace ')
+        expect(account.value).toEqual({ name: 'Grace', id: 1 })
+        expect(input.value).toBe('Grace')
+      } finally {
+        clear()
+      }
+    })
+
     test('should bind string property to input value', () => {
       const textProp = prop('initial text')
 
@@ -320,7 +431,7 @@ describe('Bind Functions', () => {
   })
 
   describe('BindDateTime', () => {
-    test.skip('should bind datetime property to input value', () => {
+    test('should bind datetime property to input value', () => {
       const testDate = new Date(2023, 11, 25, 14, 30, 0) // December 25, 2023 14:30:00
       const dateProp = prop(testDate)
 
@@ -338,7 +449,7 @@ describe('Bind Functions', () => {
       clear()
     })
 
-    test.skip('should update input when property changes', async () => {
+    test('should update input when property changes', async () => {
       const initialDate = new Date(2023, 0, 1, 9, 0, 0)
       const dateProp = prop(initialDate)
 
@@ -353,14 +464,18 @@ describe('Bind Functions', () => {
       const input = document.querySelector('input')! as HTMLInputElement
       expect(input.value).toBe('2023-01-01T09:00')
 
-      const newDate = new Date(2023, 5, 15, 18, 45, 0)
+      const newDate = new Date(2023, 5, 15, 18, 45, 17, 50)
       dateProp.set(newDate)
       await waitForUpdate()
-      expect(input.value).toBe('2023-06-15T18:45')
+      expect(input.value).toBe('2023-06-15T18:45:17.05')
+
+      dateProp.set(new Date(NaN))
+      await waitForUpdate()
+      expect(input.value).toBe('')
       clear()
     })
 
-    test.skip('should update property when input changes', async () => {
+    test('should update property when input changes', async () => {
       const dateProp = prop(new Date(2023, 0, 1))
 
       const clear = render(
@@ -381,7 +496,7 @@ describe('Bind Functions', () => {
       clear()
     })
 
-    test.skip('should use custom event handler', async () => {
+    test('should use custom event handler', async () => {
       const dateProp = prop(new Date(2023, 0, 1))
 
       const clear = render(
@@ -394,11 +509,11 @@ describe('Bind Functions', () => {
 
       const input = document.querySelector('input')! as HTMLInputElement
 
-      input.value = '2023-07-04T16:00'
+      input.value = '2023-07-04T16:00:45.125'
       input.dispatchEvent(new Event('change', { bubbles: true }))
 
       await waitForUpdate()
-      expect(dateProp.value).toEqual(new Date(2023, 6, 4, 16, 0, 0))
+      expect(dateProp.value).toEqual(new Date(2023, 6, 4, 16, 0, 45, 125))
       clear()
     })
   })
@@ -556,11 +671,11 @@ describe('Bind Functions', () => {
         )
       )
 
-      expect(root.contentToHTML()).toContain('valueAsDate="')
+      expect(root.contentToHTML()).toContain('value="2023-12-25T14:30"')
 
       dateProp.set(new Date(2024, 0, 1, 9, 15, 0))
       await waitForUpdate()
-      expect(root.contentToHTML()).toContain('valueAsDate="')
+      expect(root.contentToHTML()).toContain('value="2024-01-01T09:15"')
       clear()
     })
 

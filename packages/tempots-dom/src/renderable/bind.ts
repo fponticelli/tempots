@@ -1,4 +1,4 @@
-import { Prop } from '@tempots/core'
+import { Prop, type Signal } from '@tempots/core'
 import { Renderable } from '../types/domain'
 import type { HTMLEvents } from '../types/html-events'
 import { attr } from './attribute'
@@ -11,79 +11,132 @@ import {
   on,
   OnChecked,
 } from './on'
+import { WithScope } from './shared'
 
 /**
- * Binds a `Date` property to an input element. The binding is two-way.
+ * The source for an input binding. A Prop receives edits directly. With a
+ * signal and callback, the caller decides how to apply edits.
+ * @public
+ */
+export type InputBinding<T> =
+  | Prop<T>
+  | {
+      value: Signal<T>
+      onValueChange: (value: T) => void
+    }
+
+const isPropBinding = <T>(binding: InputBinding<T>): binding is Prop<T> =>
+  Prop.is<unknown>(binding)
+
+const resolveBinding = <T>(binding: InputBinding<T>) =>
+  isPropBinding(binding)
+    ? { value: binding, onValueChange: (value: T) => binding.set(value) }
+    : binding
+
+const formatLocalDateTime = (date: Date): string => {
+  const year = date.getFullYear()
+  if (!(year >= 1)) return ''
+
+  const pad = (part: number) => String(part).padStart(2, '0')
+  const day = `${String(year).padStart(4, '0')}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const seconds = date.getSeconds()
+  const milliseconds = date.getMilliseconds()
+  if (seconds === 0 && milliseconds === 0) return `${day}T${time}`
+
+  const fraction =
+    milliseconds === 0
+      ? ''
+      : `.${String(milliseconds).padStart(3, '0').replace(/0+$/, '')}`
+  return `${day}T${time}:${pad(seconds)}${fraction}`
+}
+
+/**
+ * Binds a date to an input element and reports edits.
  * Changes to the input element will update the property but will only be
  * affected by day changes and ignore time changes.
- * @param prop - The `Date` property to bind.
+ * @param binding - A date prop or a signal and change callback.
  * @param handler - The event handler to use (default: 'input').
  * @returns A Renderable.
  * @public
  */
 export const BindDate = (
-  prop: Prop<Date>,
+  binding: InputBinding<Date>,
   handler: keyof HTMLEvents = 'input'
-): Renderable =>
-  Fragment(
-    attr.valueAsDate(prop),
-    on[handler](emitValueAsDate(v => prop.set(v)))
+): Renderable => {
+  const { value, onValueChange } = resolveBinding(binding)
+  return Fragment(
+    attr.valueAsDate(value),
+    on[handler](emitValueAsDate(v => onValueChange(v)))
   )
+}
 
 /**
- * Binds a `Date` property to an input element. The binding is two-way.
- * @param prop - The `Date` property to bind.
+ * Binds a date to a `datetime-local` input and reports edits in local time.
+ * @param binding - A date prop or a signal and change callback.
  * @param handler - The event handler to use (default: 'input').
  * @returns A Renderable.
  * @public
  */
 export const BindDateTime = (
-  prop: Prop<Date>,
+  binding: InputBinding<Date>,
   handler: keyof HTMLEvents = 'input'
-): Renderable =>
-  Fragment(
-    attr.valueAsDate(prop),
-    on[handler](emitValueAsDateTime(v => prop.set(v)))
+): Renderable => {
+  const { value, onValueChange } = resolveBinding(binding)
+  return WithScope(() =>
+    Fragment(
+      attr.value(value.map(formatLocalDateTime)),
+      on[handler](emitValueAsDateTime(v => onValueChange(v)))
+    )
   )
+}
 
 /**
- * Binds a `number` property to an input element. The binding is two-way.
- * @param prop - The `number` property to bind.
+ * Binds a number to an input element and reports edits.
+ * @param binding - A number prop or a signal and change callback.
  * @param handler - The event handler to use (default: 'input').
  * @returns A Renderable.
  * @public
  */
 export const BindNumber = (
-  prop: Prop<number>,
+  binding: InputBinding<number>,
   handler: keyof HTMLEvents = 'input'
-): Renderable =>
-  Fragment(
-    attr.valueAsNumber(prop),
-    on[handler](emitValueAsNumber(v => prop.set(v)))
+): Renderable => {
+  const { value, onValueChange } = resolveBinding(binding)
+  return Fragment(
+    attr.valueAsNumber(value),
+    on[handler](emitValueAsNumber(v => onValueChange(v)))
   )
+}
 
 /**
- * Binds a `string` property to an input element. The binding is two-way.
- * @param prop - The `string` property to bind.
+ * Binds a string value to an input element and reports edits.
+ * @param binding - A string prop or a signal and change callback.
  * @param handler - The event handler to use (default: 'input').
  * @returns A Renderable.
  * @public
  */
 export const BindText = (
-  prop: Prop<string>,
+  binding: InputBinding<string>,
   handler: keyof HTMLEvents = 'input'
-): Renderable =>
-  Fragment(attr.value(prop), on[handler](emitValue(v => prop.set(v))))
+): Renderable => {
+  const { value, onValueChange } = resolveBinding(binding)
+  return Fragment(
+    attr.value(value),
+    on[handler](emitValue(v => onValueChange(v)))
+  )
+}
 
 /**
- * Binds a `boolean` property to the checked value of an input element. The binding is two-way.
- * @param prop - The `boolean` property to bind.
- * @param handler - The event handler to use (default: 'input').
+ * Binds the checked state of an input element and reports toggles.
+ * @param binding - A boolean prop or a signal and change callback.
  * @returns A Renderable.
  * @public
  */
-export const BindChecked = (prop: Prop<boolean>): Renderable =>
-  Fragment(
-    attr.checked(prop),
-    OnChecked(v => prop.set(v))
+export const BindChecked = (binding: InputBinding<boolean>): Renderable => {
+  const { value, onValueChange } = resolveBinding(binding)
+  return Fragment(
+    attr.checked(value),
+    OnChecked(v => onValueChange(v))
   )
+}

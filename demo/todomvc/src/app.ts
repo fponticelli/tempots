@@ -9,7 +9,6 @@ import {
   on,
   OnChecked,
   prop,
-  Prop,
   Signal,
   When,
   emitValue,
@@ -24,7 +23,7 @@ const FilterLink = ({
   filter,
   filterName,
 }: {
-  state: Prop<State>
+  state: Signal<State>
   filter: Filter
   dispatch: (action: Action) => void
   filterName: string

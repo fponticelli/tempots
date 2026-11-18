@@ -414,17 +414,18 @@ export const emitValueAsDateTime = (
     if (target.value === '') {
       return
     }
-    const parts = target.value.split('T')
-    const dateParts = parts[0].split('-')
-    const date = new Date(
-      Number(dateParts[0]),
-      Number(dateParts[1]) - 1,
-      Number(dateParts[2])
+    const [day, time] = target.value.split('T')
+    const [year, month, dayOfMonth] = day.split('-').map(Number)
+    const [hours, minutes, seconds = '0'] = time.split(':')
+    const [wholeSeconds, fraction = ''] = seconds.split('.')
+    const date = new Date(0)
+    date.setFullYear(year, month - 1, dayOfMonth)
+    date.setHours(
+      Number(hours),
+      Number(minutes),
+      Number(wholeSeconds),
+      Number(fraction.padEnd(3, '0'))
     )
-    const time = parts[1].split(':')
-    date.setHours(Number(time[0]))
-    date.setMinutes(Number(time[1]))
-    date.setSeconds(Number(time[2]))
     fn(date, event)
   }, options)
 
