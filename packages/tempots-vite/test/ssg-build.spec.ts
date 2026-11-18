@@ -1,9 +1,10 @@
 import { mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { build, createServer } from 'vite'
+import { build } from 'vite'
 import { expect, onTestFinished, test } from 'vitest'
 import { tempo, type TempoViteOptions } from '../src'
+import { serveFixture } from './serve-fixture'
 
 const template = '<!doctype html><html><body><div id="app"></div></body></html>'
 
@@ -93,20 +94,12 @@ test('islands mode pre-renders static content and only the requested island mark
 
 test('islands mode renders the same markers through the dev server', async () => {
   const root = await makeSite(islandEntry)
-  const server = await createServer({
+  const server = await serveFixture(
     root,
-    configFile: false,
-    logLevel: 'silent',
-    plugins: tempo({ mode: 'islands', ssrEntry: 'server.mjs', hmr: false }),
-    server: { host: '127.0.0.1', port: 0, watch: null, ws: false },
-  })
+    tempo({ mode: 'islands', ssrEntry: 'server.mjs', hmr: false })
+  )
   try {
-    await server.listen()
-    const address = server.httpServer?.address()
-    if (address == null || typeof address === 'string') {
-      throw new Error('Expected a Vite HTTP server address')
-    }
-    const response = await fetch(`http://127.0.0.1:${address.port}/guide`)
+    const response = await fetch(`${server.baseUrl}/guide`)
     expect(response.status).toBe(200)
     const html = await response.text()
     expect(html).toContain('<h1>Static article</h1>')
@@ -137,20 +130,12 @@ test('SSG accepts a default App and initializes the headless route URL', async (
 
 test('Vite development passes page URLs and query strings to the same App contract', async () => {
   const root = await makeSite(routeAwareApp)
-  const server = await createServer({
+  const server = await serveFixture(
     root,
-    configFile: false,
-    logLevel: 'silent',
-    plugins: tempo({ mode: 'ssr', ssrEntry: 'server.mjs', hydrate: false, hmr: false }),
-    server: { host: '127.0.0.1', port: 0, watch: null, ws: false },
-  })
+    tempo({ mode: 'ssr', ssrEntry: 'server.mjs', hydrate: false, hmr: false })
+  )
   try {
-    await server.listen()
-    const address = server.httpServer?.address()
-    if (address == null || typeof address === 'string') {
-      throw new Error('Expected a Vite HTTP server address')
-    }
-    const response = await fetch(`http://127.0.0.1:${address.port}/guide.html?format=a.b`)
+    const response = await fetch(`${server.baseUrl}/guide.html?format=a.b`)
     expect(response.status).toBe(200)
     expect(await response.text()).toContain(
       '<p>/guide.html?format=a.b</p><strong>/guide.html</strong>'

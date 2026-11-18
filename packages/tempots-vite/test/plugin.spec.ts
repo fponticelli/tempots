@@ -12,6 +12,7 @@ import {
   type TempoViteOptions,
 } from '../src/index'
 import { html } from '@tempots/dom'
+import { serveFixture } from './serve-fixture'
 
 const template = '<!doctype html><html><body><div id="app"></div></body></html>'
 const serverEntry = `
@@ -151,32 +152,15 @@ describe('tempo plugin', () => {
       'page.html': template.replace('id="app"', 'id="content"'),
       'server.mjs': serverEntry,
     })
-    const server = await createServer({
-      configFile: false,
-      root,
-      logLevel: 'silent',
-      plugins: tempo({
-        mode: 'ssr',
-        ssrEntry: 'server.mjs',
-        template: 'page.html',
-        container: '#content',
-      }),
-      server: {
-        host: '127.0.0.1',
-        port: 0,
-        strictPort: true,
-        watch: null,
-        ws: false,
-      },
-    })
+    const server = await serveFixture(root, tempo({
+      mode: 'ssr',
+      ssrEntry: 'server.mjs',
+      template: 'page.html',
+      container: '#content',
+    }))
 
     try {
-      await server.listen()
-      const address = server.httpServer?.address()
-      if (address == null || typeof address === 'string') {
-        throw new Error('Expected a Vite HTTP server address')
-      }
-      const response = await fetch(`http://127.0.0.1:${address.port}/about`)
+      const response = await fetch(`${server.baseUrl}/about`)
       expect(response.status).toBe(200)
       expect(await response.text()).toContain(
         '<div id="content"><main>/about</main></div>'
