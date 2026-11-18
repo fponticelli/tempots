@@ -20,8 +20,27 @@ describe("Headless Placeholders", () => {
     )
     const { root } = runHeadless(app)
     const output = root.contentToHTML(true)
-    // Should have data-tts-node and data-tempo-id attributes for hydration
-    expect(output).toMatch(/<div data-tts-node data-tempo-id="[a-z0-9]+"><span>Hello World<\/span><\/div>/)
+    const container = document.createElement('main')
+    container.innerHTML = output
+    expect(container.querySelector('div')?.getAttribute('data-tempo-position')).toBe(':0')
+    const span = container.querySelector('span')
+    expect(span?.getAttribute('data-tempo-position')).toBe(':0')
+    expect(span?.firstChild?.nodeValue).toBe('tempo-node:text::0')
+    expect(span?.textContent).toBe('Hello World')
+  })
+
+  test('serialized markers are excluded from raw text fields in both output modes', async () => {
+    const { root, clear } = runHeadless(() => html.textarea('Example'))
+    const htmlString = root.contentToHTML(true)
+    let streamed = ''
+    for await (const chunk of root.contentToHTMLStream({ generatePlaceholders: true })) {
+      streamed += chunk
+    }
+    const container = document.createElement('main')
+    container.innerHTML = htmlString
+    expect(container.querySelector('textarea')?.value).toBe('Example')
+    expect(streamed).toBe(htmlString)
+    clear()
   })
 
   test('restore placeholders', async () => {

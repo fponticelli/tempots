@@ -13,6 +13,18 @@ import { ProviderNotFoundError } from './errors'
  */
 export const HYDRATION_ID_ATTR = 'data-tempo-id'
 
+/** @internal */
+export const HYDRATION_POSITION_ATTR = 'data-tempo-position'
+
+/** @internal */
+export const HYDRATION_NODE_PREFIX = 'tempo-node:'
+
+type HydrationPosition = { order: number; owner?: number }
+
+function encodePosition(position: HydrationPosition): string {
+  return `${position.owner ?? ''}:${position.order}`
+}
+
 const classKey = Symbol('class')
 const styleKey = Symbol('style')
 const handlerKey = Symbol('handler')
@@ -39,6 +51,8 @@ export interface StreamOptions {
 
 abstract class HeadlessBase {
   readonly id = makeRandom()
+  hydrationPosition?: HydrationPosition
+  nextChildOrder = 0
   private readonly properties: Record<string, unknown> & {
     [classKey]?: string[]
     [styleKey]?: Record<string, string>
@@ -107,7 +121,7 @@ abstract class HeadlessBase {
     return this.children.filter(child => child.isElement()) as HeadlessBase[]
   }
 
-  abstract toHTML(): string
+  abstract toHTML(generatePlaceholders?: boolean): string
 
   hasInnerHTML(): boolean {
     return this.properties.innerHTML != null
@@ -395,8 +409,15 @@ export class HeadlessElement extends HeadlessBase {
     // When generating placeholders for hydration:
     // - data-tts-node marks the element as server-rendered
     // - data-tempo-id provides a unique identifier for hydration matching
+    const position = this.hydrationPosition
     const placeholder = generatePlaceholders
-      ? ` ${_NODE_PLACEHOLDER_ATTR} ${HYDRATION_ID_ATTR}="${this.id}"`
+      ? ` ${_NODE_PLACEHOLDER_ATTR} ${HYDRATION_ID_ATTR}="${this.id}"` +
+        (position
+          ? serializeAttribute(
+              HYDRATION_POSITION_ATTR,
+              encodePosition(position)
+            )
+          : '')
       : ''
     return { attrs: `${ns}${attrs}${placeholder}`, innerHTML }
   }
@@ -404,7 +425,10 @@ export class HeadlessElement extends HeadlessBase {
   toHTML(generatePlaceholders: boolean = false): string {
     const { attrs, innerHTML } =
       this.buildAttributesString(generatePlaceholders)
-    const children = this.children.map(child => child.toHTML()).join('')
+    const markChildren = generatePlaceholders && this.supportsChildMarkers()
+    const children = this.children
+      .map(child => child.toHTML(markChildren))
+      .join('')
     if (selfClosingTags.has(this.tagName) && children === '') {
       return `<${this.tagName}${attrs} />`
     }
@@ -436,13 +460,19 @@ export class HeadlessElement extends HeadlessBase {
     if (innerHTML !== null) {
       yield innerHTML
     } else {
+      const childOptions = this.supportsChildMarkers() ? options : undefined
       for (const child of this.children) {
-        yield* child.toHTMLStream(options)
+        yield* child.toHTMLStream(childOptions)
       }
     }
 
     // Closing tag
     yield `</${this.tagName}>`
+  }
+
+  private supportsChildMarkers(): boolean {
+    const tag = this.tagName.toLowerCase()
+    return tag !== 'title' && tag !== 'textarea' && !rawTextTags.has(tag)
   }
 }
 
@@ -496,7 +526,12 @@ export class HeadlessPortal extends HeadlessBase {
 
 export class HeadlessText {
   readonly id = makeRandom()
-  constructor(public text: string) {}
+  hydrationPosition?: HydrationPosition
+
+  constructor(
+    public text: string,
+    private readonly isAnchor: boolean = false
+  ) {}
   isElement(): this is HeadlessElement {
     return false
   }
@@ -506,20 +541,22 @@ export class HeadlessText {
   getText(): string {
     return this.text
   }
-  toHTML(): string {
-    return escapeHTML(this.text)
+  toHTML(generatePlaceholders: boolean = false): string {
+    const text = escapeHTML(this.text)
+    const position = this.hydrationPosition
+    if (!generatePlaceholders || !position) return text
+    const kind = this.isAnchor ? 'anchor' : 'text'
+    return `<!--${HYDRATION_NODE_PREFIX}${kind}:${encodePosition(position)}-->${text}`
   }
 
   /**
    * Streams the text content as a single chunk.
    *
-   * @param options - Options (unused for text nodes, kept for API consistency).
+   * @param options - Options for emitting hydration markers.
    * @yields The text content.
    */
   async *toHTMLStream(options?: StreamOptions): AsyncGenerator<string> {
-    // Options parameter kept for API consistency with other toHTMLStream implementations
-    void options
-    yield this.toHTML()
+    yield this.toHTML(options?.generatePlaceholders)
   }
 }
 
@@ -537,6 +574,10 @@ export class HeadlessContext implements DOMContext {
     readonly providers: Providers
   ) {}
   appendOrInsert(element: HeadlessNode): void {
+    element.hydrationPosition = {
+      order: this.element.nextChildOrder++,
+      owner: this.reference?.hydrationPosition?.order,
+    }
     if (this.reference != null) {
       const index = this.element.children.indexOf(this.reference)
       if (index >= 0) {
@@ -557,7 +598,9 @@ export class HeadlessContext implements DOMContext {
     )
   }
   makeChildText(text: Primitive): DOMContext {
-    const childTxt = new HeadlessText(String(text))
+    return this.insertText(new HeadlessText(String(text)))
+  }
+  private insertText(childTxt: HeadlessText): DOMContext {
     this.appendOrInsert(childTxt)
     return new HeadlessContext(
       this.element,
@@ -576,11 +619,10 @@ export class HeadlessContext implements DOMContext {
     return this.reference?.getText() ?? this.element.getText()
   }
   makeRef(): DOMContext {
-    return this.makeChildText('')
+    return this.insertText(new HeadlessText('', true))
   }
   makeMarker(): DOMContext {
-    // In headless mode, markers are just empty text nodes (same as makeRef)
-    return this.makeChildText('')
+    return this.makeRef()
   }
   makePortal(selector: string | HTMLElement): DOMContext {
     const portal = new HeadlessPortal(selector, this.element)

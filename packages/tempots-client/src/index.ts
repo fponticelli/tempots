@@ -4,9 +4,11 @@ import {
   BrowserContext,
   DOMContext,
   HYDRATION_ID_ATTR,
+  HYDRATION_POSITION_ATTR,
   HeadlessContext,
   type HandlerOptions,
 } from '@tempots/dom'
+import { HydrationState } from './hydration-state'
 
 /**
  * Options for client-side hydration.
@@ -54,11 +56,9 @@ export function hydrate(
   renderable: Renderable,
   container: HTMLElement,
   options: HydrateOptions = {}
-): () => void {
+): (removeTree?: boolean) => void {
   const { providers = {}, removeMarkers = true } = options
-
-  // Build a map of hydration IDs to elements
-  const hydrationMap = buildHydrationMap(container)
+  const state = new HydrationState(removeMarkers)
 
   // Create a disposal scope for automatic signal tracking
   const scope = new DisposalScope()
@@ -69,12 +69,14 @@ export function hydrate(
     container,
     undefined,
     providers,
-    hydrationMap,
-    0
+    new Map(),
+    0,
+    state
   )
 
   // Execute the renderable within the scope
   const clear = withScope(scope, () => renderable.render(ctx))
+  state.finish()
 
   // Remove hydration markers if requested
   if (removeMarkers) {
@@ -88,27 +90,6 @@ export function hydrate(
 }
 
 /**
- * Builds a map of hydration IDs to DOM elements.
- *
- * @param container - The container to scan for hydration IDs.
- * @returns A map of hydration ID to HTMLElement.
- * @internal
- */
-function buildHydrationMap(container: HTMLElement): Map<string, HTMLElement> {
-  const map = new Map<string, HTMLElement>()
-  const elements = container.querySelectorAll(`[${HYDRATION_ID_ATTR}]`)
-
-  elements.forEach(el => {
-    const id = el.getAttribute(HYDRATION_ID_ATTR)
-    if (id) {
-      map.set(id, el as HTMLElement)
-    }
-  })
-
-  return map
-}
-
-/**
  * Removes hydration marker attributes from all elements in the container.
  *
  * @param container - The container to clean up.
@@ -118,6 +99,7 @@ function removeHydrationMarkers(container: HTMLElement): void {
   const elements = container.querySelectorAll(`[${HYDRATION_ID_ATTR}]`)
   elements.forEach(el => {
     el.removeAttribute(HYDRATION_ID_ATTR)
+    el.removeAttribute(HYDRATION_POSITION_ATTR)
     el.removeAttribute('data-tts-node')
   })
 }
@@ -138,7 +120,8 @@ export class HydrationContext implements DOMContext {
     readonly reference: Node | undefined,
     readonly providers: Providers,
     private readonly hydrationMap: Map<string, HTMLElement>,
-    private childIndex: number
+    private readonly startIndex: number,
+    private readonly state = new HydrationState(false)
   ) {}
 
   /**
@@ -149,82 +132,62 @@ export class HydrationContext implements DOMContext {
     tagName: string,
     namespace: string | undefined
   ): DOMContext => {
-    // Try to find an existing child element
-    const children = this.element.children
+    const child = this.state.take(
+      this.element,
+      this.reference,
+      this.startIndex,
+      'element',
+      candidate =>
+        candidate.nodeType === 1 &&
+        (candidate as Element).localName.toLowerCase() ===
+          tagName.toLowerCase() &&
+        (candidate as Element).namespaceURI ===
+          (namespace ?? 'http://www.w3.org/1999/xhtml')
+    ) as HTMLElement | undefined
 
-    for (let i = this.childIndex; i < children.length; i++) {
-      const child = children[i] as HTMLElement
-
-      // Check if this element matches by tag name
-      if (child.tagName.toLowerCase() === tagName.toLowerCase()) {
-        this.childIndex = i + 1
-        return new HydrationContext(
-          this.document,
-          child,
-          undefined,
-          this.providers,
-          this.hydrationMap,
-          0
+    const element =
+      child ??
+      (namespace === undefined
+        ? this.document.createElement(tagName)
+        : (this.document.createElementNS(namespace, tagName) as HTMLElement))
+    if (!child) {
+      if (this.state.active) {
+        console.warn(
+          `Hydration mismatch: could not find element <${tagName}> in container`
         )
       }
+      this.appendOrInsert(element)
     }
-
-    // Fallback: create a new element (hydration mismatch)
-    console.warn(
-      `Hydration mismatch: could not find element <${tagName}> in container`
-    )
-    const newElement =
-      namespace !== undefined
-        ? (this.document.createElementNS(namespace, tagName) as HTMLElement)
-        : this.document.createElement(tagName)
-    this.appendOrInsert(newElement)
-    return new HydrationContext(
-      this.document,
-      newElement,
-      undefined,
-      this.providers,
-      this.hydrationMap,
-      0
-    )
+    return this.childContext(element, undefined)
   }
 
-  /**
-   * Finds the next text node instead of creating a new one.
-   */
-  readonly makeChildText = (text: string): DOMContext => {
-    // Find the next text node in children
-    const childNodes = this.element.childNodes
-
-    for (let i = this.childIndex; i < childNodes.length; i++) {
-      const child = childNodes[i]
-
-      if (child.nodeType === Node.TEXT_NODE) {
-        this.childIndex = i + 1
-        // Update the text content if needed
-        if (child.textContent !== text) {
-          child.textContent = text
-        }
-        return new HydrationContext(
-          this.document,
-          this.element,
-          child as Text,
-          this.providers,
-          this.hydrationMap,
-          this.childIndex
-        )
-      }
+  readonly makeChildText = (value: string): DOMContext => {
+    const text = String(value)
+    const child = this.state.take(
+      this.element,
+      this.reference,
+      this.startIndex,
+      'text',
+      candidate => candidate.nodeType === 3
+    )
+    if (child) {
+      if (child.nodeValue !== text) child.nodeValue = text
+      return this.childContext(this.element, child)
     }
+    const node = this.document.createTextNode(text)
+    this.appendOrInsert(node)
+    return this.childContext(this.element, node)
+  }
 
-    // Fallback: create a new text node
-    const textNode = this.document.createTextNode(text)
-    this.appendOrInsert(textNode)
+  private childContext(element: HTMLElement, reference: Node | undefined) {
     return new HydrationContext(
       this.document,
-      this.element,
-      textNode,
+      element,
+      reference,
       this.providers,
       this.hydrationMap,
-      this.childIndex
+      0,
+      this.state
     )
   }
 
@@ -239,39 +202,19 @@ export class HydrationContext implements DOMContext {
   }
 
   readonly makeRef = (): DOMContext => {
-    // Find an existing empty text node or create one
-    const childNodes = this.element.childNodes
-
-    for (let i = this.childIndex; i < childNodes.length; i++) {
-      const child = childNodes[i]
-
-      if (
-        child.nodeType === Node.TEXT_NODE &&
-        (child.textContent === '' || child.textContent === null)
-      ) {
-        this.childIndex = i + 1
-        return new HydrationContext(
-          this.document,
-          this.element,
-          child as Text,
-          this.providers,
-          this.hydrationMap,
-          this.childIndex
-        )
-      }
-    }
-
-    // Create a new empty text node
+    const child = this.state.take(
+      this.element,
+      this.reference,
+      this.startIndex,
+      'anchor',
+      candidate =>
+        candidate.nodeType === 8 ||
+        (candidate.nodeType === 3 && candidate.nodeValue === '')
+    )
+    if (child) return this.childContext(this.element, child)
     const ref = this.document.createTextNode('')
     this.appendOrInsert(ref)
-    return new HydrationContext(
-      this.document,
-      this.element,
-      ref,
-      this.providers,
-      this.hydrationMap,
-      this.childIndex
-    )
+    return this.childContext(this.element, ref)
   }
 
   readonly makeMarker = (): DOMContext => {
@@ -288,14 +231,7 @@ export class HydrationContext implements DOMContext {
       throw new Error(`Cannot find element by selector for portal: ${selector}`)
     }
 
-    return new HydrationContext(
-      this.document,
-      target,
-      undefined,
-      this.providers,
-      this.hydrationMap,
-      0
-    )
+    return this.childContext(target, undefined)
   }
 
   private readonly appendOrInsert = (child: Node): void => {
@@ -317,7 +253,8 @@ export class HydrationContext implements DOMContext {
       this.reference,
       { ...this.providers, [mark]: [value, onUse] },
       this.hydrationMap,
-      this.childIndex
+      this.startIndex,
+      this.state
     )
 
   readonly getProvider = <T>(mark: ProviderMark<T>) => {
@@ -420,13 +357,19 @@ export class HydrationContext implements DOMContext {
     const target = (targetRef as HydrationContext).reference!
     const parent = this.element
 
-    let current: Node | null = start
-    while (current !== null) {
-      const next: Node | null = current.nextSibling
-      parent.insertBefore(current, target)
-      if (current === end) break
-      current = next
+    if (
+      this.state.active &&
+      this.state.isServerAnchor(start) &&
+      this.state.isServerAnchor(end) &&
+      this.state.isServerAnchor(target)
+    ) {
+      return
     }
+    if (end.nextSibling === target || start === target) return
+    const range = this.document.createRange()
+    range.setStartBefore(start)
+    range.setEndAfter(end)
+    parent.insertBefore(range.extractContents(), target)
   }
 
   readonly removeRange = (startRef: DOMContext, endRef: DOMContext): void => {

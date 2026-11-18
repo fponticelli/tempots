@@ -118,7 +118,7 @@ export const domTemplateEngine: TemplateEngine<
   typeof DOM_RENDERABLE_TYPE
 > = {
   build(renderable: R, ctx: DOMContext): CompiledTemplate | null {
-    if (!ctx.isBrowser()) return null
+    if (!ctx.isBrowserDOM()) return null
     const node = renderable as unknown as TemplateNode
     if (node.kind === undefined) return null
 
