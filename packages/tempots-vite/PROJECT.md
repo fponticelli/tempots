@@ -38,10 +38,11 @@ export default defineConfig({
 
 ```typescript
 // Explicit routes
-tempo({ routes: ['/', '/about', '/contact'] })
+tempo({ mode: 'ssg', routes: ['/', '/about', '/contact'] })
 
 // Dynamic routes
 tempo({
+  mode: 'ssg',
   routes: async () => {
     const posts = await fetchBlogPosts()
     return ['/', ...posts.map(p => `/blog/${p.slug}`)]
@@ -50,6 +51,7 @@ tempo({
 
 // Crawl with seed routes (default)
 tempo({
+  mode: 'ssg',
   routes: 'crawl',
   seedRoutes: ['/', '/docs'],
 })

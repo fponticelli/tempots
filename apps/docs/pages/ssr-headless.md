@@ -201,16 +201,18 @@ export default defineConfig({
 
 ### Route Discovery
 
-By default, the plugin crawls your site starting from `/` and discovers all internal links:
+In SSG mode, the plugin crawls your site starting from `/` by default to discover internal routes.
 
 ```typescript
 // Explicit routes
 tempo({
+  mode: 'ssg',
   routes: ['/', '/about', '/contact'],
 })
 
 // Dynamic routes
 tempo({
+  mode: 'ssg',
   routes: async () => {
     const posts = await fetchBlogPosts()
     return ['/', ...posts.map(p => `/blog/${p.slug}`)]
@@ -219,6 +221,7 @@ tempo({
 
 // Crawl with multiple entry points
 tempo({
+  mode: 'ssg',
   routes: 'crawl',
   seedRoutes: ['/', '/docs', '/api'],
 })
