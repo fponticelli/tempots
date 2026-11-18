@@ -99,9 +99,15 @@ export type StoredPropOptions<T> = {
    */
   onLoad?: (value: T) => T
   /**
-   * Whether to sync the value across tabs. Defaults to `true`.
+   * Whether to sync the value across tabs when a namespace is configured.
+   * Defaults to `true`.
    */
   syncTabs?: boolean
+  /**
+   * Identifies a custom backing store and schema for cross-tab synchronization.
+   * Use the same namespace only for props that are intended to share values.
+   */
+  syncNamespace?: string
   /**
    * Strategy for handling key changes when using a reactive key.
    * - 'load' (default): Load value from new key, the current state is already stored at this point
@@ -119,17 +125,28 @@ export type StoredPropOptions<T> = {
  * @returns - The created stored property.
  * @public
  */
-export const storedProp = <T>({
-  key,
-  defaultValue,
-  store,
-  serialize = JSON.stringify,
-  deserialize = JSON.parse,
-  equals = strictEquals as (a: T, b: T) => boolean,
-  onLoad = value => value,
-  syncTabs = true,
-  onKeyChange = 'load',
-}: StoredPropOptions<T>): Prop<T> => {
+export const storedProp = <T>(options: StoredPropOptions<T>): Prop<T> =>
+  createStoredProp(
+    options,
+    options.syncNamespace === undefined
+      ? undefined
+      : ['custom', options.syncNamespace]
+  )
+
+const createStoredProp = <T>(
+  {
+    key,
+    defaultValue,
+    store,
+    serialize = JSON.stringify,
+    deserialize = JSON.parse,
+    equals = strictEquals as (a: T, b: T) => boolean,
+    onLoad = value => value,
+    syncTabs = true,
+    onKeyChange = 'load',
+  }: StoredPropOptions<T>,
+  channelNamespace: readonly string[] | undefined
+): Prop<T> => {
   let currentKey = Value.get(key)
   const initialValue = store.getItem(currentKey)
   const prop = new Prop<T>(
@@ -145,7 +162,9 @@ export const storedProp = <T>({
     BroadcastChannel?: typeof BroadcastChannel
   }
   const shouldSyncTabs =
-    syncTabs && typeof windowRef?.BroadcastChannel === 'function'
+    syncTabs &&
+    channelNamespace !== undefined &&
+    typeof windowRef?.BroadcastChannel === 'function'
   let syncingFromChannel = false
   let channel: BroadcastChannel | null = null
   let instanceId: string | null = null
@@ -153,7 +172,7 @@ export const storedProp = <T>({
   const createChannel = (channelKey: string) => {
     if (!shouldSyncTabs) return null
 
-    const channelName = `tempo:storedProp:${channelKey}`
+    const channelName = `tempo:storedProp:${JSON.stringify([channelNamespace, channelKey])}`
     const newChannel = new windowRef!.BroadcastChannel!(channelName)
     const newInstanceId = `${Date.now().toString(36)}-${Math.random()
       .toString(36)
@@ -324,7 +343,7 @@ export type StorageOptions<T> = {
    */
   onLoad?: (value: T) => T
   /**
-   * Whether to sync the value across tabs. Defaults to `true`.
+   * Whether to sync localStorage values across tabs. Defaults to `true`.
    */
   syncTabs?: boolean
   /**
@@ -349,20 +368,17 @@ export const localStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
   const win = getWindow()
   const storage = win?.localStorage
   // Ensure we have a valid storage object with getItem/setItem methods
-  const store =
-    storage && typeof storage.getItem === 'function'
-      ? storage
-      : new MemoryStore()
-  return storedProp({
-    ...options,
-    store,
-  })
+  if (storage && typeof storage.getItem === 'function') {
+    return createStoredProp({ ...options, store: storage }, ['localStorage'])
+  }
+  return createStoredProp({ ...options, store: new MemoryStore() }, undefined)
 }
 
 /**
  * Creates a prop backed by sessionStorage when available. Its memory fallback
  * belongs to this prop instance. To share state on a server, pass an explicit
  * request-owned store to {@link storedProp}.
+ * Session values are isolated to their browser session and are never broadcast.
  *
  * @param options - The options for the storage prop.
  * @returns A prop that stores its value in the session storage.
@@ -376,10 +392,7 @@ export const sessionStorageProp = <T>(options: StorageOptions<T>): Prop<T> => {
     storage && typeof storage.getItem === 'function'
       ? storage
       : new MemoryStore()
-  return storedProp({
-    ...options,
-    store,
-  })
+  return createStoredProp({ ...options, store }, undefined)
 }
 
 function raf(fn: FrameRequestCallback) {

@@ -222,7 +222,7 @@ nameProp.value = 'Jane' // Updates user.value.name
 
 ## Storage Utilities
 
-Tempo provides utilities for persisting signals to browser storage with automatic synchronization across tabs.
+Tempo provides utilities for persisting signals to browser storage. Local storage props can synchronize across tabs. Session storage props stay in their browser session.
 
 ### localStorageProp
 
@@ -264,10 +264,12 @@ type StorageOptions<T> = {
   serialize?: (v: T) => string // Custom serialization (default: JSON.stringify)
   deserialize?: (v: string) => T // Custom deserialization (default: JSON.parse)
   equals?: (a: T, b: T) => boolean // Equality function
-  syncTabs?: boolean // Sync across browser tabs (default: true)
+  syncTabs?: boolean // Sync localStorage values across tabs (default: true)
   onKeyChange?: 'load' | 'migrate' | 'keep' // Behavior when key changes
 }
 ```
+
+When calling `storedProp` with a custom store, supply `syncNamespace` to enable cross-tab synchronization. Use the same namespace only for props that share a backing store and schema.
 
 ### syncProp
 

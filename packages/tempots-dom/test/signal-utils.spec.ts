@@ -2,6 +2,8 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 import {
   MemoryStore,
   storedProp,
+  localStorageProp,
+  sessionStorageProp,
   animateSignals,
   computedRecord,
   merge,
@@ -229,6 +231,53 @@ describe('storedProp', () => {
       }
     })
 
+    test('should keep same-key local and session storage values separate', async () => {
+      const key = 'stored-prop-partitions'
+      const local = localStorageProp({ key, defaultValue: 'local' })
+      const session = sessionStorageProp({ key, defaultValue: 'session' })
+      try {
+        local.set('new local value')
+        await Promise.resolve()
+        expect(session.get()).toBe('session')
+        expect(window.sessionStorage.getItem(key)).toBe('"session"')
+      } finally {
+        local.dispose()
+        session.dispose()
+        window.localStorage.removeItem(key)
+        window.sessionStorage.removeItem(key)
+      }
+    })
+
+    test('should only sync custom stores when they specify the same namespace', async () => {
+      const first = storedProp({
+        key: 'shared-key',
+        defaultValue: 'first',
+        store: new MemoryStore(),
+        syncNamespace: 'first-store',
+      })
+      const second = storedProp({
+        key: 'shared-key',
+        defaultValue: 'second',
+        store: new MemoryStore(),
+        syncNamespace: 'second-store',
+      })
+      const unscoped = storedProp({
+        key: 'shared-key',
+        defaultValue: 'unscoped',
+        store: new MemoryStore(),
+      })
+      try {
+        first.set('new first value')
+        await Promise.resolve()
+        expect(second.get()).toBe('second')
+        expect(unscoped.get()).toBe('unscoped')
+      } finally {
+        first.dispose()
+        second.dispose()
+        unscoped.dispose()
+      }
+    })
+
     test('should sync updates across tabs when supported', async () => {
       const store = new MemoryStore()
       const propA = storedProp({
@@ -236,12 +285,14 @@ describe('storedProp', () => {
         defaultValue: 'first',
         store,
         syncTabs: true,
+        syncNamespace: 'shared-store',
       })
       const propB = storedProp({
         key: 'sync-key',
         defaultValue: 'second',
         store,
         syncTabs: true,
+        syncNamespace: 'shared-store',
       })
 
       propA.value = 'updated'
@@ -261,12 +312,14 @@ describe('storedProp', () => {
         defaultValue: 'value-a',
         store,
         syncTabs: false,
+        syncNamespace: 'disabled-store',
       })
       const propB = storedProp({
         key: 'no-sync',
         defaultValue: 'value-b',
         store,
         syncTabs: false,
+        syncNamespace: 'disabled-store',
       })
 
       propA.value = 'changed'
@@ -288,6 +341,7 @@ describe('storedProp', () => {
         defaultValue: 'value',
         store,
         syncTabs: true,
+        syncNamespace: 'unsupported-store',
       })
 
       expect(() => {
@@ -468,21 +522,17 @@ describe('storedProp', () => {
         defaultValue: 'default',
         store: mockStore,
         syncTabs: true,
+        syncNamespace: 'key-change-store',
       })
 
-      expect(MockBroadcastChannel.channels.has('tempo:storedProp:key1')).toBe(
-        true
-      )
+      const [originalChannel] = MockBroadcastChannel.channels.keys()
+      expect(originalChannel).toBeDefined()
 
       keySignal.value = 'key2'
       await sleep(10)
 
-      expect(MockBroadcastChannel.channels.has('tempo:storedProp:key1')).toBe(
-        false
-      )
-      expect(MockBroadcastChannel.channels.has('tempo:storedProp:key2')).toBe(
-        true
-      )
+      expect(MockBroadcastChannel.channels.has(originalChannel)).toBe(false)
+      expect(MockBroadcastChannel.channels.size).toBe(1)
 
       storedProp1.dispose()
       MockBroadcastChannel.reset()
