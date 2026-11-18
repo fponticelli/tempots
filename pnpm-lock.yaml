@@ -464,6 +464,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.2.0(jiti@2.6.1))
+      '@tempots/server':
+        specifier: workspace:*
+        version: link:../tempots-server
       '@types/node':
         specifier: ^25.2.3
         version: 25.6.0

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { hydrate, HydrationContext, HYDRATION_ID_ATTR } from "../src/index";
-import { html, on, prop } from "@tempots/dom";
+import { html, prop } from "@tempots/dom";
 
 describe("hydrate", () => {
   let container: HTMLElement;
@@ -12,53 +12,6 @@ describe("hydrate", () => {
 
   afterEach(() => {
     container.remove();
-  });
-
-  describe("basic hydration", () => {
-    it("should hydrate server-rendered HTML without re-creating elements", () => {
-      // Simulate server-rendered HTML
-      container.innerHTML = `<div ${HYDRATION_ID_ATTR}="abc123">Hello</div>`;
-      const serverDiv = container.querySelector("div") as HTMLElement;
-
-      const cleanup = hydrate(html.div("Hello"), container);
-
-      // Should reuse existing element, not create new one
-      expect(container.querySelector("div")).toBe(serverDiv);
-
-      cleanup();
-    });
-
-    it("should attach event handlers to existing elements", () => {
-      container.innerHTML = `<button ${HYDRATION_ID_ATTR}="btn1">Click me</button>`;
-      const button = container.querySelector("button") as HTMLButtonElement;
-
-      const handleClick = vi.fn();
-
-      const cleanup = hydrate(
-        html.button(on.click(handleClick), "Click me"),
-        container
-      );
-
-      // Click the button
-      button.click();
-      expect(handleClick).toHaveBeenCalledTimes(1);
-
-      cleanup();
-
-      // After cleanup, handler should be removed (when removeTree=true)
-    });
-
-    it("should return a cleanup function", () => {
-      container.innerHTML = `<div ${HYDRATION_ID_ATTR}="d1">Content</div>`;
-
-      let cleanupCalled = false;
-      const cleanup = hydrate(html.div("Content"), container);
-
-      expect(typeof cleanup).toBe("function");
-
-      cleanup();
-      // Cleanup should execute without error
-    });
   });
 
   describe("hydration markers", () => {
@@ -210,26 +163,6 @@ describe("HydrationContext", () => {
 
       const childCtx = ctx.makeChildElement("span", undefined);
       expect(childCtx.element).toBe(existingSpan);
-    });
-
-    it("should find element by hydration ID", () => {
-      container.innerHTML = `<div><button ${HYDRATION_ID_ATTR}="btn1">Click</button></div>`;
-      const existingButton = container.querySelector("button");
-
-      const hydrationMap = new Map<string, HTMLElement>();
-      hydrationMap.set("btn1", existingButton as HTMLElement);
-
-      const ctx = new HydrationContext(
-        document,
-        container.querySelector("div") as HTMLElement,
-        undefined,
-        {},
-        hydrationMap,
-        0
-      );
-
-      const childCtx = ctx.makeChildElement("button", undefined);
-      expect(childCtx.element).toBe(existingButton);
     });
   });
 

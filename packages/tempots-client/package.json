@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@tempots/server": "workspace:*",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",

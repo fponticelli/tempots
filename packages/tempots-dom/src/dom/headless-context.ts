@@ -7,8 +7,7 @@ import { DOMContext, HandlerOptions } from './dom-context'
 import { ProviderNotFoundError } from './errors'
 
 /**
- * Attribute name for hydration IDs.
- * Used to match server-rendered elements with client-side renderables during hydration.
+ * Attribute name for element IDs emitted with hydration placeholders.
  * @public
  */
 export const HYDRATION_ID_ATTR = 'data-tempo-id'
