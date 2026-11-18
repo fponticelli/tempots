@@ -2,8 +2,6 @@ name: Publish Docs
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 on:
   push:
@@ -38,12 +36,25 @@ jobs:
         run: pnpm run docs
       - name: Build Docs
         run: pnpm run build --filter=@tempos/docs
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
       - name: Upload artifact
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'apps/docs/dist'
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
