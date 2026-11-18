@@ -33,11 +33,11 @@ describe('IFrame', () => {
     })
 
     test('should create iframe with src attribute', () => {
-      const clear = render(IFrame({ src: 'https://example.com' }), container)
+      const clear = render(IFrame({ src: 'data:text/html,<p>Frame</p>' }), container)
 
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
       expect(iframe).toBeTruthy()
-      expect(iframe.src).toBe('https://example.com/')
+      expect(iframe.src).toBe('data:text/html,<p>Frame</p>')
 
       clear()
     })
@@ -123,7 +123,7 @@ describe('IFrame', () => {
     test('should create iframe with multiple attributes', () => {
       const clear = render(
         IFrame({
-          src: 'https://example.com',
+          src: 'data:text/html,<p>Frame</p>',
           name: 'test-frame',
           width: 800,
           height: 600,
@@ -135,7 +135,7 @@ describe('IFrame', () => {
 
       const iframe = container.querySelector('iframe') as HTMLIFrameElement
       expect(iframe).toBeTruthy()
-      expect(iframe.src).toBe('https://example.com/')
+      expect(iframe.src).toBe('data:text/html,<p>Frame</p>')
       expect(iframe.name).toBe('test-frame')
       expect(iframe.width).toBe('800')
       expect(iframe.height).toBe('600')

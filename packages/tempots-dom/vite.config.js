@@ -2,10 +2,10 @@ import { configDefaults } from 'vitest/config'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), dts({ include: ['src'], insertTypesEntry: true })],
+  resolve: { tsconfigPaths: true },
+  plugins: [dts({ include: ['src'], insertTypesEntry: true })],
   test: {
     ...configDefaults,
     environment: 'happy-dom',
@@ -18,9 +18,9 @@ export default defineConfig({
       happyDOM: {
         settings: {
           disableJavaScriptFileLoading: true,
-          disableJavaScriptEvaluation: false,
-          disableCSSFileLoading: true,
-          enableFileSystemHttpRequests: false,
+          enableJavaScriptEvaluation: false,
+          enableCSSFileLoading: false,
+          enableIframePageLoading: true,
         },
       },
     },
@@ -56,12 +56,12 @@ export default defineConfig({
     minify: true,
     copyPublicDir: false,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       name: '@tempots/dom',
       formats: ['es', 'cjs'],
       fileName: 'index',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ['@tempots/core', '@tempots/render'],
       output: {
         extend: true,

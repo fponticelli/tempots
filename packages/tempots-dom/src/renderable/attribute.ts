@@ -406,8 +406,7 @@ function _getOrCreateSelector<T>(
   equals?: (a: T, b: T) => boolean
 ): (key: T) => Signal<boolean> {
   let selector = _selectorCache.get(source as Signal<unknown>) as
-    | ((key: T) => Signal<boolean>)
-    | undefined
+    ((key: T) => Signal<boolean>) | undefined
   if (!selector) {
     selector = createSelector(source, equals)
     _selectorCache.set(

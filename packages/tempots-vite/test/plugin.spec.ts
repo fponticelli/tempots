@@ -1,6 +1,7 @@
 import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { build, createServer } from 'vite'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import {
@@ -87,6 +88,40 @@ describe('tempo plugin', () => {
     try {
       const rendered = await server.transformIndexHtml('/', template)
       expect(rendered.includes('tempo-devtools')).toBe(devtools)
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('serves nested component calls with HMR boundaries', async () => {
+    const root = await makeFixture({
+      'index.html': template,
+      'components.ts': `
+        export const Panel = (child: unknown) => child
+        export const Message = () => 'hello'
+      `,
+      'main.ts': `
+        import { Panel, Message } from './components'
+        export const app = Panel(Message())
+      `,
+    })
+    const server = await createServer({
+      configFile: false,
+      root,
+      logLevel: 'silent',
+      plugins: tempo(),
+      resolve: {
+        alias: {
+          '@tempots/dom': fileURLToPath(import.meta.resolve('@tempots/dom')),
+        },
+      },
+      server: { middlewareMode: true, watch: null, ws: false },
+    })
+
+    try {
+      const module = (await server.transformRequest('/main.ts'))?.code
+      expect(module).toMatch(/__componentBoundary.*Panel/)
+      expect(module).toMatch(/__componentBoundary.*Message/)
     } finally {
       await server.close()
     }

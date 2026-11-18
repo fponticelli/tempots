@@ -2,3 +2,20 @@ packages:
   - apps/*
   - demo/*
   - packages/*
+minimumReleaseAgeExclude:
+  - '@turbo/darwin-64@2.11.13'
+  - '@turbo/darwin-arm64@2.11.13'
+  - '@turbo/linux-64@2.11.13'
+  - '@turbo/linux-arm64@2.11.13'
+  - '@turbo/windows-64@2.11.13'
+  - '@turbo/windows-arm64@2.11.13'
+  - '@vitest/coverage-v8@5.1.1'
+  - '@vitest/mocker@5.1.1'
+  - '@vitest/spy@5.1.1'
+  - turbo@2.11.13
+  - vitest@5.1.1
+allowBuilds:
+  '@parcel/watcher@2.5.6': true
+  esbuild@0.28.2: true
+patchedDependencies:
+  todomvc-app-css@2.4.3: patches/todomvc-app-css@2.4.3.patch

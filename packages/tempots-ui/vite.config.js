@@ -2,10 +2,10 @@ import { configDefaults } from 'vitest/config'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), dts({ include: ['src'] })],
+  resolve: { tsconfigPaths: true },
+  plugins: [dts({ include: ['src'] })],
   test: {
     ...configDefaults,
     environment: 'happy-dom',
@@ -40,12 +40,12 @@ export default defineConfig({
     minify: true,
     copyPublicDir: false,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       name: '@tempots/ui',
       formats: ['es', 'cjs'],
       fileName: 'index',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ['@tempots/dom', '@tempots/std', '@floating-ui/dom'],
       output: {
         extend: true,

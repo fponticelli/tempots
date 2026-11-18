@@ -14,7 +14,7 @@
     "@tempots/native": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.3.8"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
   }
 }

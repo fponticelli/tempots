@@ -28,6 +28,6 @@
     "url": "git+https://github.com/fponticelli/tempots.git"
   },
   "peerDependencies": {
-    "eslint": "^8.0.0 || ^9.0.0"
+    "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0"
   }
 }

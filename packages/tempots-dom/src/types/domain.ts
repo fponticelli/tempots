@@ -216,11 +216,9 @@ export type NValue<T> =
 type TupleToUnion<T extends unknown[]> = T[number]
 
 export type SplitNValue<T> =
-  | (T extends unknown ? TupleToUnion<NValue<T>[]> : never)
-  | NValue<T>
+  (T extends unknown ? TupleToUnion<NValue<T>[]> : never) | NValue<T>
 
 export type SplitValue<T> =
-  | (T extends unknown ? TupleToUnion<Value<T>[]> : never)
-  | Value<T>
+  (T extends unknown ? TupleToUnion<Value<T>[]> : never) | Value<T>
 
 // ValueType, BaseValueType, ValueTypes, Values, RemoveSignals, and Nil are re-exported from @tempots/core

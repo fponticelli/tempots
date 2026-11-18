@@ -259,10 +259,7 @@ export const ISLAND_OPTIONS_ATTR = 'data-tempo-options'
  * @public
  */
 export type HydrationStrategy =
-  | 'immediate'
-  | 'idle'
-  | 'visible'
-  | { media: string }
+  'immediate' | 'idle' | 'visible' | { media: string }
 
 /**
  * Options for island hydration.

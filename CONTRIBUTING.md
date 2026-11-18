@@ -6,8 +6,8 @@ Thank you for your interest in contributing to Tempo! This guide will help you g
 
 ### Prerequisites
 
-- **Node.js**: Version 16 or higher
-- **pnpm**: Version 7 or higher (recommended package manager)
+- **Node.js**: 22.22.2 or newer in the 22.x line, 24.15.0 or newer in the 24.x line, or 26+. CI uses Node.js 26.
+- **pnpm**: Use the version pinned in the root `packageManager` field.
 - **Git**: For version control
 
 ### Installation
@@ -121,7 +121,7 @@ pnpm dev
 
 # Generate API documentation
 cd packages/tempots-dom
-pnpm docs
+pnpm run docs
 ```
 
 ## Making Changes
@@ -239,7 +239,7 @@ Keeping these terms consistent improves readability across the project.
 ### API Documentation
 
 - Generated automatically from JSDoc comments
-- Run `pnpm docs` to generate API docs
+- Run `pnpm run docs` to generate API docs
 - Review generated docs for completeness
 
 ## Release Process

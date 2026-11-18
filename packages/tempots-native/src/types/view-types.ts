@@ -19,12 +19,7 @@ export interface ViewStyle {
     | 'space-evenly'
   alignItems?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'
   alignSelf?:
-    | 'auto'
-    | 'flex-start'
-    | 'flex-end'
-    | 'center'
-    | 'stretch'
-    | 'baseline'
+    'auto' | 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'
   alignContent?:
     | 'flex-start'
     | 'flex-end'
@@ -146,10 +141,7 @@ export interface TextStyle extends ViewStyle {
   fontStyle?: 'normal' | 'italic'
   textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify'
   textDecorationLine?:
-    | 'none'
-    | 'underline'
-    | 'line-through'
-    | 'underline line-through'
+    'none' | 'underline' | 'line-through' | 'underline line-through'
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
   letterSpacing?: number
   lineHeight?: number
@@ -176,5 +168,4 @@ export interface ImageStyle extends ViewStyle {
  * @public
  */
 export type ImageSource =
-  | { uri: string; width?: number; height?: number }
-  | number // require('...') asset ID
+  { uri: string; width?: number; height?: number } | number // require('...') asset ID

@@ -17,14 +17,7 @@ export type AriaAttributes = {
   colspan: number
   controls: string
   current:
-    | 'page'
-    | 'step'
-    | 'location'
-    | 'date'
-    | 'time'
-    | 'true'
-    | 'false'
-    | string
+    'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false' | string
   describedby: string
   description: string
   details: string
@@ -35,14 +28,7 @@ export type AriaAttributes = {
   flowto: string
   grabbed: boolean
   haspopup:
-    | boolean
-    | 'false'
-    | 'true'
-    | 'menu'
-    | 'listbox'
-    | 'tree'
-    | 'grid'
-    | 'dialog'
+    boolean | 'false' | 'true' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'
   hidden: boolean | 'undefined'
   invalid: boolean | 'false' | 'true' | 'grammar' | 'spelling'
   keyshortcuts: string

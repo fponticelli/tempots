@@ -67,7 +67,7 @@ config/         # Shared tsconfig, eslint, api-extractor configs
 ### Workspace Layout
 
 - **pnpm workspaces** with Turborepo orchestration
-- Package manager: pnpm 9.15.9
+- Package manager version is pinned by `packageManager` in the root `package.json`.
 - Build: Vite 7.x with vite-plugin-dts for type generation
 - Output: ES modules and CommonJS
 
@@ -129,7 +129,7 @@ export type Provider<T, O = any> = BaseProvider<T, O, DOMContext>
 
 ## Testing
 
-- **Vitest 4.x** with v8 coverage provider
+- **Vitest 5.x** with v8 coverage provider
 - Test files in `packages/*/test/*.spec.ts`
 - DOM packages use **happy-dom** environment
 - Coverage thresholds: 97% statements, 98% branches, 98% functions, 97% lines
@@ -143,6 +143,7 @@ export type Provider<T, O = any> = BaseProvider<T, O, DOMContext>
 
 ## TypeScript
 
+- `tsc` runs TypeScript 7. Where tooling needs the JavaScript compiler API, `typescript-native` supplies `tsc` and the `typescript` alias supplies TypeScript 6 to ESLint and declaration tooling.
 - Base config: `config/tsconfig.base.json`
 - Target: ES2020, Module: ESNext
 - Strict mode enabled

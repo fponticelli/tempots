@@ -51,13 +51,7 @@ export type HTMLAttributes = {
   dropzone: string
   enctype: string
   enterkeyhint:
-    | 'enter'
-    | 'done'
-    | 'go'
-    | 'next'
-    | 'previous'
-    | 'search'
-    | 'send'
+    'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send'
   for: string
   form: string
   formaction: string
@@ -77,14 +71,7 @@ export type HTMLAttributes = {
   imagesizes: string
   imagesrcset: string
   inputmode:
-    | 'none'
-    | 'text'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url'
+    'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'
   integrity: string
   is: string
   ismap: string

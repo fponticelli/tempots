@@ -46,10 +46,7 @@ export type AsyncFailure<E> = {
  * @public
  */
 export type AsyncResult<V, E> =
-  | NotAsked
-  | Loading<V>
-  | AsyncSuccess<V>
-  | AsyncFailure<E>
+  NotAsked | Loading<V> | AsyncSuccess<V> | AsyncFailure<E>
 
 /**
  * Represents a settled state in an asynchronous result.

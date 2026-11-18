@@ -21,8 +21,11 @@
     "publish": "node scripts/publish-all.js"
   },
   "devDependencies": {
-    "inquirer": "^13.2.5",
-    "turbo": "2.8.9"
+    "inquirer": "^14.3.0",
+    "turbo": "2.11.13"
   },
-  "packageManager": "pnpm@9.15.9"
+  "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  }
 }

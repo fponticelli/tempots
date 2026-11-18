@@ -13,5 +13,20 @@ export default defineConfig({
   ],
   build: {
     sourcemap: true,
+    rolldownOptions: {
+      output: {
+        strictExecutionOrder: true,
+        codeSplitting: {
+          groups: [
+            {
+              name: "monaco",
+              test: /node_modules[\\/]monaco-editor[\\/]/,
+              maxSize: 1_000_000,
+              includeDependenciesRecursively: false,
+            },
+          ],
+        },
+      },
+    },
   },
 });

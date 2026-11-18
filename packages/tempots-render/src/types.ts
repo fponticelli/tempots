@@ -177,9 +177,7 @@ export type WithDispose<CTX extends BaseRenderContext = BaseRenderContext> = {
 }
 
 export type NillifyValue<T> =
-  | Value<T | null | undefined>
-  | Value<T | undefined>
-  | Value<T | null>
+  Value<T | null | undefined> | Value<T | undefined> | Value<T | null>
 
 export type Id<T> = {} & { [P in keyof T]: T[P] }
 export type Merge<A, B> = Id<A & B>

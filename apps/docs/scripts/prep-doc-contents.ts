@@ -4,7 +4,6 @@ import * as fse from 'fs-extra'
 import * as path from 'path'
 import fm from 'front-matter'
 import * as cheerio from 'cheerio'
-import type { AnyNode, Element as DomElement } from 'domhandler'
 import {
   ManglerOptions,
   markdownToHTML,
@@ -331,8 +330,8 @@ const BLOCK_TAGS = new Set([
   'h6',
 ])
 
-type HtmlNode = AnyNode
-type HtmlElement = DomElement
+type HtmlNode = ReturnType<cheerio.CheerioAPI>[number]
+type HtmlElement = Extract<HtmlNode, { tagName: string }>
 
 function normalizeMarkdownWhitespace(content: string) {
   const lines = content.replace(/\r/g, '').split('\n')

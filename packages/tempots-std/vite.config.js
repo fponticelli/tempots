@@ -4,7 +4,6 @@ import { configDefaults } from 'vitest/config'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 function updatePackageJSONExportsAndTypes(packageFile, names, prefix = null) {
   const exports = {
@@ -44,19 +43,20 @@ function writeExports(names) {
   updatePackageJSONExportsAndTypes(packageLibJson, names)
 }
 
-const names = fs.readdirSync(resolve(__dirname, 'src'))
+const names = fs.readdirSync(resolve(import.meta.dirname, 'src'))
   .filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'))
   .map((file) => file.replace(/\.ts$/, ''))
 
 writeExports(names)
 
 const files = [
-  resolve(__dirname, 'src', 'index.ts'),
-  ...names.map((file) => resolve(__dirname, 'src', `${file}.ts`))
+  resolve(import.meta.dirname, 'src', 'index.ts'),
+  ...names.map((file) => resolve(import.meta.dirname, 'src', `${file}.ts`))
 ]
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), dts({ include: ['src'] })],
+  resolve: { tsconfigPaths: true },
+  plugins: [dts({ include: ['src'] })],
   test: {
     ...configDefaults,
     globals: true,
@@ -80,7 +80,7 @@ export default defineConfig({
       name: '@tempots/std',
       formats: ['es', 'cjs'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         extend: true
       }

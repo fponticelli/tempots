@@ -46,12 +46,7 @@ export interface NotFoundRoute {
 }
 
 export type Route =
-  | RootRoute
-  | FeedsRoute
-  | ItemRoute
-  | UserRoute
-  | NotFoundRoute
-  | ExternalRoute
+  RootRoute | FeedsRoute | ItemRoute | UserRoute | NotFoundRoute | ExternalRoute
 
 export const Route = {
   root: { type: 'RootRoute' } as Route,

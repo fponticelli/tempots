@@ -1,0 +1,7 @@
+diff --git a/index.css b/index.css
+index 2c0b4b64c621b0b238e1f1bcc637bf44d5a35096..6a664af0ee1ade97528144dafd05f910fc566e62 100644
+--- a/index.css
++++ b/index.css
+@@ -62 +62 @@
+-.todoapp input::input-placeholder {
++.todoapp input::placeholder {

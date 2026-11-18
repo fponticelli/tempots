@@ -61,9 +61,7 @@ export type ValueTypes<T extends Value<unknown>[]> = {
  */
 export type Values<T extends unknown[]> = {
   [K in keyof T]: T[K] extends
-    | Signal<unknown>
-    | Computed<unknown>
-    | Prop<unknown>
+    Signal<unknown> | Computed<unknown> | Prop<unknown>
     ? T[K]
     : Value<T[K]>
 }

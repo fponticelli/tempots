@@ -216,11 +216,7 @@ export type SVGAttributes = {
   scale: number | string
   seed: number | string
   'shape-rendering':
-    | 'auto'
-    | 'optimizeSpeed'
-    | 'crispEdges'
-    | 'geometricPrecision'
-    | 'inherit'
+    'auto' | 'optimizeSpeed' | 'crispEdges' | 'geometricPrecision' | 'inherit'
   side: 'left' | 'right'
   slope: number | string
   spacing: 'auto' | 'exact'
@@ -256,12 +252,7 @@ export type SVGAttributes = {
   targetY: number | string
   'text-anchor': 'start' | 'middle' | 'end' | 'inherit'
   'text-decoration':
-    | 'none'
-    | 'underline'
-    | 'overline'
-    | 'line-through'
-    | 'blink'
-    | 'inherit'
+    'none' | 'underline' | 'overline' | 'line-through' | 'blink' | 'inherit'
   textLength: number | string
   'text-rendering':
     | 'auto'
@@ -323,13 +314,7 @@ export type SVGAttributes = {
   'xlink:show': 'new' | 'replace' | 'embed' | 'other' | 'none'
   'xlink:title': string
   'xlink:type':
-    | 'simple'
-    | 'extended'
-    | 'locator'
-    | 'arc'
-    | 'resource'
-    | 'title'
-    | 'none'
+    'simple' | 'extended' | 'locator' | 'arc' | 'resource' | 'title' | 'none'
   xlinkActuate: 'onLoad' | 'onRequest' | 'other' | 'none'
   xlinkArcrole: string
   xlinkHref: string
@@ -337,13 +322,7 @@ export type SVGAttributes = {
   xlinkShow: 'new' | 'replace' | 'embed' | 'other' | 'none'
   xlinkTitle: string
   xlinkType:
-    | 'simple'
-    | 'extended'
-    | 'locator'
-    | 'arc'
-    | 'resource'
-    | 'title'
-    | 'none'
+    'simple' | 'extended' | 'locator' | 'arc' | 'resource' | 'title' | 'none'
   'xml:base': string
   'xml:lang': string
   'xml:space': 'default' | 'preserve'

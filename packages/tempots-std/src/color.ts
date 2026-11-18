@@ -72,15 +72,7 @@ import {
  * @public
  */
 export type ColorSpace =
-  | 'rgb'
-  | 'rgb8'
-  | 'hsl'
-  | 'hsv'
-  | 'hwb'
-  | 'lab'
-  | 'lch'
-  | 'oklab'
-  | 'oklch'
+  'rgb' | 'rgb8' | 'hsl' | 'hsv' | 'hwb' | 'lab' | 'lch' | 'oklab' | 'oklch'
 
 /**
  * An RGBA color with channels `r` (0–1), `g` (0–1), `b` (0–1), and
@@ -214,15 +206,7 @@ export interface OKLCHA {
  * @public
  */
 export type Color =
-  | RGBA
-  | RGB8A
-  | HSLA
-  | HSVA
-  | HWBA
-  | LABA
-  | LCHA
-  | OKLABA
-  | OKLCHA
+  RGBA | RGB8A | HSLA | HSVA | HWBA | LABA | LCHA | OKLABA | OKLCHA
 
 // ---------------------------------------------------------------------------
 // Construction helpers
