@@ -14,6 +14,36 @@ describe('KeyedForEach', () => {
     document.body.innerHTML = ''
   })
 
+  test('clearing a list preserves sibling elements and neighboring lists', () => {
+    const first = prop(['first row'])
+    const second = prop(['second row'])
+    const clear = render(
+      html.main(
+        html.h2('heading'),
+        KeyedForEach(first, item => item, item => html.p(item)),
+        KeyedForEach(second, item => item, item => html.p(item)),
+        html.footer('footer')
+      ),
+      document.body
+    )
+
+    try {
+      const heading = document.querySelector('h2')
+      const firstRow = document.querySelector('p')
+      second.set([])
+      expect(document.querySelector('h2')).toBe(heading)
+      expect(document.querySelector('p')).toBe(firstRow)
+      expect(document.querySelector('main')?.textContent).toBe('headingfirst rowfooter')
+
+      second.set(['new row'])
+      expect(document.querySelector('main')?.textContent).toBe(
+        'headingfirst rownew rowfooter'
+      )
+    } finally {
+      clear()
+    }
+  })
+
   test('renders a static array of keyed items', () => {
     const clear = render(
       html.ul(

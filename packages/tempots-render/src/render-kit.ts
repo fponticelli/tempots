@@ -851,8 +851,9 @@ export function createRenderKit<
            */
           const removeAllEntries = () => {
             if (entries.length === 0) return
-            // 1. Remove all DOM nodes before the outer marker in one operation
-            ctx.removeAllBefore(outerRef)
+            const first = entries[0]
+            const last = entries[entries.length - 1]
+            ctx.removeRange(first.sepStartRef ?? first.startRef, last.endRef)
             // 2. Dispose all signals (skip DOM removal — nodes already removed)
             for (let i = 0; i < entries.length; i++) {
               removeEntry(entries[i], false)
