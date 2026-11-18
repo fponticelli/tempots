@@ -3,7 +3,7 @@
  *
  * This module provides enhanced random number generation, choice selection,
  * and other randomization utilities that go beyond Math.random().
- * All functions use Math.random() as the underlying source of randomness.
+ * Sampling uses Math.random(). Bytes, hexadecimal strings, and UUIDs use Web Crypto.
  *
  * @public
  */
@@ -132,60 +132,55 @@ export const randomChoices = <T>(array: readonly T[], count: number): T[] => {
 }
 
 /**
- * Generates a random UUID v4 string.
- *
- * This function creates a UUID (Universally Unique Identifier) using
- * random numbers. While not cryptographically secure, it's suitable
- * for most application needs.
+ * Generates a UUID v4 string using Web Crypto.
  *
  * @example
  * ```typescript
  * const id = randomUuid() // e.g., "f47ac10b-58cc-4372-a567-0e02b2c3d479"
- * const sessionId = randomUuid()
  * ```
  *
  * @returns A random UUID v4 string
+ * @throws Error if Web Crypto is unavailable
  * @public
  */
 export const randomUuid = (): string => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = (Math.random() * 16) | 0
-    const v = c === 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+  const bytes = randomBytes(16)
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = bytesToHex(bytes)
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
+const bytesToHex = (bytes: Uint8Array): string => {
+  let hex = ''
+  for (const byte of bytes) hex += byte.toString(16).padStart(2, '0')
+  return hex
 }
 
 /**
- * Generates a random hexadecimal string of specified length.
+ * Generates a random hexadecimal string using Web Crypto.
  *
- * This function creates a random string using hexadecimal characters (0-9, a-f).
- * Useful for generating tokens, IDs, or other random identifiers.
+ * Each hexadecimal digit supplies four bits of entropy. Choose the length
+ * according to the required entropy for the token or identifier.
  *
  * @example
  * ```typescript
- * const token = randomHex(16) // e.g., "a1b2c3d4e5f67890"
+ * const token = randomHex(32) // 128 bits of entropy
  * const color = '#' + randomHex(6) // Random hex color
  * ```
  *
  * @param length - The length of the hex string to generate
  * @returns A random hexadecimal string
+ * @throws Error if Web Crypto is unavailable and the requested length is positive
  * @public
  */
 export const randomHex = (length: number): string => {
-  if (length <= 0) {
-    return ''
-  }
-
-  const chars = '0123456789abcdef'
-  let result = ''
-  for (let i = 0; i < length; i++) {
-    result += chars[randomInt(0, chars.length - 1)]
-  }
-  return result
+  const digits = Math.ceil(length)
+  return bytesToHex(randomBytes(Math.ceil(digits / 2))).slice(0, digits)
 }
 
 /**
- * Generates random bytes as a Uint8Array.
+ * Generates cryptographically random bytes using Web Crypto.
  *
  * This function creates an array of random bytes, useful for
  * cryptographic operations or when you need raw random data.
@@ -198,6 +193,7 @@ export const randomHex = (length: number): string => {
  *
  * @param length - The number of bytes to generate
  * @returns A Uint8Array containing random bytes
+ * @throws Error if Web Crypto is unavailable and the requested length is positive
  * @public
  */
 export const randomBytes = (length: number): Uint8Array => {
@@ -205,9 +201,15 @@ export const randomBytes = (length: number): Uint8Array => {
     return new Uint8Array(0)
   }
 
+  const crypto = globalThis.crypto
+  if (typeof crypto?.getRandomValues !== 'function') {
+    throw new Error('Web Crypto is required to generate secure random values')
+  }
+
   const bytes = new Uint8Array(length)
-  for (let i = 0; i < length; i++) {
-    bytes[i] = randomInt(0, 255)
+  const maxChunkSize = 65_536
+  for (let offset = 0; offset < bytes.length; offset += maxChunkSize) {
+    crypto.getRandomValues(bytes.subarray(offset, offset + maxChunkSize))
   }
   return bytes
 }

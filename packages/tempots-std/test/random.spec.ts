@@ -13,6 +13,46 @@ import {
 } from '../src/random'
 
 describe('Random utilities', () => {
+  describe('secure random utilities', () => {
+    test('uses Web Crypto for bytes, hex, and UUIDs', () => {
+      const getRandomValues = vi.fn((bytes: Uint8Array) => bytes.fill(0xab))
+      vi.stubGlobal('crypto', { getRandomValues })
+      try {
+        expect(randomBytes(2)).toEqual(Uint8Array.of(0xab, 0xab))
+        expect(randomHex(5)).toBe('ababa')
+        expect(randomUuid()).toBe('abababab-abab-4bab-abab-abababababab')
+        expect(getRandomValues).toHaveBeenCalledTimes(3)
+      } finally {
+        vi.unstubAllGlobals()
+      }
+    })
+
+    test('splits large byte requests at the Web Crypto limit', () => {
+      const getRandomValues = vi.fn((bytes: Uint8Array) => bytes.fill(0xab))
+      vi.stubGlobal('crypto', { getRandomValues })
+      try {
+        const bytes = randomBytes(65_537)
+        expect(getRandomValues.mock.calls.map(([chunk]) => chunk.length)).toEqual([
+          65_536, 1,
+        ])
+        expect(bytes[65_536]).toBe(0xab)
+      } finally {
+        vi.unstubAllGlobals()
+      }
+    })
+
+    test('rejects security-sensitive requests when Web Crypto is missing', () => {
+      vi.stubGlobal('crypto', undefined)
+      try {
+        expect(() => randomBytes(1)).toThrow(/Web Crypto/)
+        expect(() => randomHex(1)).toThrow(/Web Crypto/)
+        expect(() => randomUuid()).toThrow(/Web Crypto/)
+      } finally {
+        vi.unstubAllGlobals()
+      }
+    })
+  })
+
   describe('randomInt', () => {
     test('generates integers within range', () => {
       for (let i = 0; i < 100; i++) {
