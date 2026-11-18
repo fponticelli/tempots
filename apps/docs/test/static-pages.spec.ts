@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import { load } from 'cheerio'
 import { expect, test } from 'vitest'
 import type { Toc } from '../src/model/domain'
@@ -41,4 +41,20 @@ test('the shared TOC contains metadata while library routes render their own ove
     expect(article.text(), output).toBe(overview.root().text())
     expect(article.text().trim().length, output).toBeGreaterThan(0)
   }
+})
+
+test('the editor bundles DOMPurify from the package manager', async () => {
+  const assets = await readdir(new URL('../dist/assets', import.meta.url))
+  const maps = await Promise.all(
+    assets
+      .filter(file => file.endsWith('.js.map'))
+      .map(file => readDist(`assets/${file}`))
+  )
+  const sources: string[] = maps.flatMap(map => JSON.parse(map).sources)
+  expect(
+    sources.some(path => path.endsWith('/dompurify/dist/purify.es.mjs'))
+  ).toBe(true)
+  expect(
+    sources.some(path => path.endsWith('/base/browser/dompurify/dompurify.js'))
+  ).toBe(false)
 })

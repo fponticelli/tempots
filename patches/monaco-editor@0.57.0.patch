@@ -1,0 +1,6 @@
+diff --git a/esm/vs/base/browser/domSanitize.js b/esm/vs/base/browser/domSanitize.js
+--- a/esm/vs/base/browser/domSanitize.js
++++ b/esm/vs/base/browser/domSanitize.js
+@@ -4 +4 @@
+-import purify from './dompurify/dompurify.js';
++import purify from 'dompurify';
