@@ -1,6 +1,6 @@
 import { type Plugin, type ResolvedConfig, build } from 'vite'
 import { renderToString, renderToStaticMarkup } from '@tempots/server'
-import type { Renderable } from '@tempots/dom'
+import { domRenderable, type Renderable } from '@tempots/dom'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -90,7 +90,7 @@ export interface TempoViteOptions {
 
   /**
    * Path to the server entry file for SSR/SSG.
-   * Should export `render(url)` function or `App` component.
+   * Should export `render(url)` or an app component as `App` or the default export.
    * @default "src/entry-server.ts"
    */
   ssrEntry?: string
@@ -235,6 +235,84 @@ async function crawlRoutes(
   return Array.from(discovered)
 }
 
+type ServerApp = (options: { url: string }) => Renderable
+type ServerEntry = {
+  render?: (url: string) => string | Promise<string>
+  App?: ServerApp
+  default?: ServerApp
+}
+
+function adaptServerEntry(
+  entry: ServerEntry,
+  {
+    container,
+    hydrate,
+    origin = 'https://example.com',
+  }: {
+    container: string
+    hydrate: boolean
+    origin?: string
+  }
+): (url: string) => Promise<string> {
+  if (typeof entry.render === 'function') {
+    const render = entry.render
+    return async url => {
+      const html = await render(url)
+      if (typeof html !== 'string')
+        throw new TypeError('Expected rendered HTML')
+      return html
+    }
+  }
+
+  const App = typeof entry.App === 'function' ? entry.App : entry.default
+  if (typeof App !== 'function') {
+    throw new Error(
+      "[tempo] SSR entry must export 'render' or an App component"
+    )
+  }
+
+  return url =>
+    renderToString(
+      domRenderable(ctx => App({ url }).render(ctx)),
+      {
+        url: new URL(url, origin).href,
+        selector: container,
+        generatePlaceholders: hydrate,
+      }
+    )
+}
+
+function devOrigin(
+  config: ResolvedConfig,
+  host: string | undefined
+): string | undefined {
+  if (config.server.origin) return config.server.origin
+  return host === undefined
+    ? undefined
+    : `${config.server.https ? 'https:' : 'http:'}//${host}`
+}
+
+function makeTemplateInjector(templateHtml: string, container: string) {
+  const containerId = container
+    .replace(/^#/, '')
+    .replace(/[.*+?^$(){}|[\]\\]/g, '\\$&')
+  const containerRegex = new RegExp(
+    `(<([a-z][\\w:-]*)\\b[^>]*\\s+id=(["'])${containerId}\\3[^>]*>)[\\s\\S]*?(<\\/\\2\\s*>)`,
+    'i'
+  )
+  if (!containerRegex.test(templateHtml)) {
+    throw new Error(
+      `[tempo] HTML template must contain the container ${container}`
+    )
+  }
+  return (appHtml: string) =>
+    templateHtml.replace(
+      containerRegex,
+      (_match, start: string, _tag, _quote, end: string) =>
+        start + appHtml + end
+    )
+}
+
 /**
  * Creates the Tempo Vite plugin.
  *
@@ -300,18 +378,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
         )
       }
       const templateHtml = fs.readFileSync(builtTemplatePath, 'utf-8')
-      const containerId = container
-        .replace(/^#/, '')
-        .replace(/[.*+?^$(){}|[\]\\]/g, '\\$&')
-      const containerRegex = new RegExp(
-        `(<([a-z][\\w:-]*)\\b[^>]*\\s+id=(["'])${containerId}\\3[^>]*>)[\\s\\S]*?(<\\/\\2\\s*>)`,
-        'i'
-      )
-      if (!containerRegex.test(templateHtml)) {
-        throw new Error(
-          `[tempo] Built template must contain the container ${container}`
-        )
-      }
+      const inject = makeTemplateInjector(templateHtml, container)
 
       const ssrEntryPath = path.resolve(config.root, ssrEntry)
       if (!fs.existsSync(ssrEntryPath)) {
@@ -361,10 +428,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
         const ssrModuleUrl = pathToFileURL(
           path.join(ssrOutDir, 'entry-server.mjs')
         ).href
-        let ssrModule: {
-          render?: (url: string) => Promise<string>
-          App?: (options: { url?: string }) => Renderable
-        }
+        let ssrModule: ServerEntry
 
         try {
           ssrModule = await import(ssrModuleUrl)
@@ -372,30 +436,10 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
           throw new SsgBuildError('[tempo] Failed to load SSR module', error)
         }
 
-        let renderFn: (url: string) => Promise<string>
-        if (typeof ssrModule.render === 'function') {
-          renderFn = ssrModule.render
-        } else if (typeof ssrModule.App === 'function') {
-          const App = ssrModule.App
-          renderFn = async (url: string) => {
-            const renderable = App({ url })
-            if (hydrate) {
-              return renderToString(renderable, { generatePlaceholders: true })
-            }
-            return renderToStaticMarkup(renderable)
-          }
-        } else {
-          throw new Error(
-            "[tempo] SSR entry must export 'render' function or 'App' component"
-          )
-        }
-
+        const renderFn = adaptServerEntry(ssrModule, { container, hydrate })
         const renderRequired = async (url: string) => {
           try {
-            const html = await renderFn(url)
-            if (typeof html !== 'string')
-              throw new TypeError('Expected rendered HTML')
-            return html
+            return await renderFn(url)
           } catch (error) {
             throw new SsgBuildError(`[tempo] Failed to render ${url}`, error)
           }
@@ -414,12 +458,7 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
 
         for (const route of routes) {
           const appHtml = await renderRequired(route.path)
-          const html = templateHtml.replace(
-            containerRegex,
-            (_match, start: string, _tag, _quote, end: string) =>
-              start + appHtml + end
-          )
-          output.stage(route, html)
+          output.stage(route, inject(appHtml))
         }
         output.publish()
         for (const route of routes) console.log(`  ✓ ${route.path}`)
@@ -444,12 +483,16 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url
 
-        // Skip static assets and Vite internal requests
+        if (!url) return next()
+        const pathname = url.split('?')[0]
+        const extension = path.extname(pathname)
+
+        // Page URLs can end in .html. Other assets and Vite internals pass through.
         if (
-          !url ||
-          url.startsWith('/@') ||
-          url.startsWith('/__') ||
-          url.includes('.')
+          pathname.startsWith('/@') ||
+          pathname.startsWith('/__') ||
+          url.includes('?html-proxy') ||
+          (extension !== '' && extension !== '.html')
         ) {
           return next()
         }
@@ -467,35 +510,13 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
             path.resolve(config.root, ssrEntry)
           )
 
-          // Get the render function - support both patterns
-          let appHtml: string
-
-          if (typeof ssrModule.render === 'function') {
-            // Pattern 1: createRenderer() style - exports { render }
-            appHtml = await ssrModule.render(url)
-          } else {
-            // Pattern 2: Direct App export
-            const App = ssrModule.default || ssrModule.App
-
-            if (typeof App !== 'function') {
-              console.warn(
-                "[tempo] SSR entry must export 'render' function or 'App' component"
-              )
-              return next()
-            }
-
-            appHtml = await renderToString(App({ url }) as Renderable, {
-              generatePlaceholders: hydrate,
-            })
-          }
-
-          // Inject the rendered HTML into the template
-          const html = templateHtml.replace(
-            new RegExp(
-              `(<[^>]*id="${container.replace('#', '')}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`
-            ),
-            `$1${appHtml}$3`
-          )
+          const render = adaptServerEntry(ssrModule, {
+            container,
+            hydrate,
+            origin: devOrigin(config, req.headers.host),
+          })
+          const appHtml = await render(url)
+          const html = makeTemplateInjector(templateHtml, container)(appHtml)
 
           res.statusCode = 200
           res.setHeader('Content-Type', 'text/html')

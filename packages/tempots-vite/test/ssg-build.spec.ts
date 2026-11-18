@@ -115,3 +115,47 @@ test('islands mode renders the same markers through the dev server', async () =>
     await server.close()
   }
 })
+
+const routeAwareApp = `
+  export default function App({ url }) {
+    return { render(ctx) {
+      ctx.makeChildElement('p').makeChildText(url);
+      ctx.makeChildElement('strong').makeChildText(
+        new URL(ctx.container.currentURL.value).pathname
+      );
+      return () => {};
+    } };
+  }
+`
+
+test('SSG accepts a default App and initializes the headless route URL', async () => {
+  const root = await makeSite(routeAwareApp)
+  await buildSite(root, { routes: ['/guide.html'] })
+  const html = await readFile(join(root, 'dist', 'guide.html'), 'utf8')
+  expect(html).toContain('<p>/guide.html</p><strong>/guide.html</strong>')
+})
+
+test('Vite development passes page URLs and query strings to the same App contract', async () => {
+  const root = await makeSite(routeAwareApp)
+  const server = await createServer({
+    root,
+    configFile: false,
+    logLevel: 'silent',
+    plugins: tempo({ mode: 'ssr', ssrEntry: 'server.mjs', hydrate: false, hmr: false }),
+    server: { host: '127.0.0.1', port: 0, watch: null, ws: false },
+  })
+  try {
+    await server.listen()
+    const address = server.httpServer?.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('Expected a Vite HTTP server address')
+    }
+    const response = await fetch(`http://127.0.0.1:${address.port}/guide.html?format=a.b`)
+    expect(response.status).toBe(200)
+    expect(await response.text()).toContain(
+      '<p>/guide.html?format=a.b</p><strong>/guide.html</strong>'
+    )
+  } finally {
+    await server.close()
+  }
+})

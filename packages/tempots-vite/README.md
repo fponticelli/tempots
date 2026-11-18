@@ -114,8 +114,10 @@ import { Counter } from './islands'
 startClient({ islands: { Counter } })
 ```
 
-Export `App` or `render(url)` from the server entry. A custom `render` controls
-its own full-tree hydration markers. The islands registry uses
+Export `render(url)` or an app component from the server entry. Vite accepts both
+named `App` and default app exports. App components receive the route as
+`{ url }`, and the headless context uses that route for navigation. A custom
+`render` controls its full-tree hydration markers. The islands registry uses
 `data-tempo-island` attributes independently.
 
 ## HMR (Hot Module Replacement)
@@ -155,7 +157,7 @@ tempo({ hmr: false })
 | `routes` | `string[] \| RouteConfig[] \| (() => Promise<...>) \| 'crawl'` | `'crawl'` | Routes to pre-render (SSG) |
 | `seedRoutes` | `string[]` | `['/']` | Seed routes for crawl mode |
 | `entry` | `string` | `'src/entry-client.ts'` | Client entry file |
-| `ssrEntry` | `string` | `'src/entry-server.ts'` | Server entry file (exports `render` or `App`) |
+| `ssrEntry` | `string` | `'src/entry-server.ts'` | Server entry file (exports `render`, `App`, or a default app component) |
 | `template` | `string` | `'index.html'` | HTML template file |
 | `container` | `string` | `'#app'` | App container selector |
 | `hydrate` | `boolean` | `true` for SSR | Generate full-tree hydration markers for an `App` export |
