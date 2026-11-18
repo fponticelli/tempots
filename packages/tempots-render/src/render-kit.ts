@@ -20,6 +20,8 @@ import {
   popScope,
   Prop,
   AnySignal,
+  getRenderRollbacks,
+  withRenderRollback,
 } from '@tempots/core'
 import type { BaseRenderContext } from './context'
 import type { TemplateEngine } from './template-engine'
@@ -730,6 +732,9 @@ export function createRenderKit<
               track: _scopeTrack,
               onDispose: _scopeOnDispose,
             }
+            getRenderRollbacks()?.push(() =>
+              disposeTracked(entry.tracked, entry.disposeCallbacks)
+            )
             pushScope(entry as unknown as Scope)
             try {
               const renderable = renderableOfTNode(item(valueProp, position!))
@@ -796,6 +801,12 @@ export function createRenderKit<
               track: _scopeTrack,
               onDispose: _scopeOnDispose,
             }
+            getRenderRollbacks()?.push(() =>
+              disposeTracked(
+                sepScopeHolder.tracked,
+                sepScopeHolder.disposeCallbacks
+              )
+            )
             pushScope(sepScopeHolder as unknown as Scope)
             let sepClear: Clear
             try {
@@ -1463,55 +1474,80 @@ export function createRenderKit<
   ): Renderable<CTX, TType> => {
     const normalized = renderableOfTNode(children)
     return create((ctx: CTX) => {
-      const markerCtx = ctx.makeMarker() as CTX
+      const boundary = ctx.makeMarker() as CTX
       let currentClear: Clear = () => {}
-      let currentScope: DisposalScope | null = null
       let errorSignal: Prop<Error> | null = null
+      let rendering = false
+      let disposed = false
 
-      const renderChildren = () => {
-        // Dispose previous content
-        currentScope?.dispose()
-        currentClear(true)
-
-        // Attempt children render
-        currentScope = new DisposalScope()
+      const mount = (build: () => Renderable<CTX, TType>): Clear => {
+        const start = boundary.makeMarker()
+        const end = boundary.makeMarker() as CTX
+        const scope = new DisposalScope()
         try {
-          currentClear = withScope(currentScope, () =>
-            normalized.render(markerCtx)
+          const clear = withRenderRollback(() =>
+            withScope(scope, () => build().render(end))
           )
-        } catch (e) {
-          // Dispose the failed scope (cleans up any partial render)
-          currentScope.dispose()
-          currentClear(true)
-
-          const error = e instanceof Error ? e : new Error(String(e))
-
-          // Render fallback
-          currentScope = new DisposalScope()
-
-          if (errorSignal == null) {
-            errorSignal = prop(error)
-          } else {
-            errorSignal.set(error)
+          return (removeTree: boolean) => {
+            try {
+              scope.dispose()
+              clear(removeTree)
+            } finally {
+              if (removeTree) ctx.removeRange(start, end)
+            }
           }
-
-          const fallbackRenderable = renderableOfTNode(
-            fallback(errorSignal, renderChildren)
-          )
-          currentClear = withScope(currentScope, () =>
-            fallbackRenderable.render(markerCtx)
-          )
+        } catch (error) {
+          try {
+            scope.dispose()
+          } finally {
+            ctx.removeRange(start, end)
+          }
+          throw error
         }
       }
 
-      renderChildren()
+      const renderChildren = () => {
+        if (rendering || disposed) return
+        rendering = true
+        try {
+          const previous = currentClear
+          currentClear = () => {}
+          previous(true)
 
-      return (removeTree: boolean) => {
-        currentScope?.dispose()
-        currentClear(removeTree)
-        errorSignal?.dispose()
-        markerCtx.clear(removeTree)
+          try {
+            currentClear = mount(() => normalized)
+          } catch (cause) {
+            const error =
+              cause instanceof Error ? cause : new Error(String(cause))
+            if (errorSignal === null) errorSignal = prop(error)
+            else errorSignal.set(error)
+            currentClear = mount(() =>
+              renderableOfTNode(fallback(errorSignal!, renderChildren))
+            )
+          }
+        } finally {
+          rendering = false
+        }
       }
+
+      const clearBoundary = (removeTree: boolean) => {
+        if (disposed) return
+        disposed = true
+        try {
+          currentClear(removeTree)
+        } finally {
+          errorSignal?.dispose()
+          boundary.clear(removeTree)
+        }
+      }
+
+      try {
+        renderChildren()
+      } catch (error) {
+        clearBoundary(true)
+        throw error
+      }
+      return clearBoundary
     })
   }
 

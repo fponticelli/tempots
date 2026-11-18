@@ -28,6 +28,7 @@ export { makeProviderMark } from './types'
 
 // Renderable factory
 export { createRenderable } from './renderable'
+export { getRenderRollbacks, withRenderRollback } from './render-rollback'
 
 // Signal system
 export type { AnySignal, AtGetter, ListenerOptions } from './signal'

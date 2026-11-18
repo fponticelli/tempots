@@ -5,6 +5,7 @@ import { untracked, withScope } from './scope-stack'
 import type { Value } from './value'
 import { computedOf, effectOf } from './value'
 import { ValueTypes } from './types'
+import { getRenderRollbacks } from './render-rollback'
 
 /**
  * A DisposalScope tracks signals created during its lifetime and disposes them when the scope ends.
@@ -16,6 +17,10 @@ export class DisposalScope implements Scope {
   private _signals: AnySignal[] | null = null
   private _callbacks: Array<() => void> | null = null
   private _disposed: boolean = false
+
+  constructor() {
+    getRenderRollbacks()?.push(() => this.dispose())
+  }
 
   /**
    * Register a signal with this scope for automatic disposal.

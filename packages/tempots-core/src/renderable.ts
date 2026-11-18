@@ -1,4 +1,5 @@
 import type { Clear, Renderable, RenderContext } from './types'
+import { getRenderRollbacks } from './render-rollback'
 
 /**
  * Creates a renderable object from a render function and type symbol.
@@ -38,6 +39,16 @@ export function createRenderable<
 >(type: TType, renderFn: (ctx: CTX) => Clear): Renderable<CTX, TType> {
   return {
     type,
-    render: renderFn,
+    render(ctx) {
+      const rollbacks = getRenderRollbacks()
+      if (rollbacks === undefined) return renderFn.call(this, ctx)
+
+      const checkpoint = rollbacks.length
+      const clear = renderFn.call(this, ctx)
+      // On success, this renderable's clear owns its completed children.
+      rollbacks.length = checkpoint
+      rollbacks.push(() => clear(true))
+      return clear
+    },
   }
 }

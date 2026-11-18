@@ -1,5 +1,6 @@
 import type { CompiledTemplate, DynamicTextSlot, RenderableSlot } from './types'
 import type { Clear } from '@tempots/core'
+import { getRenderRollbacks } from '@tempots/core'
 import type { DOMContext } from '../dom/dom-context'
 import { BrowserContext } from '../dom/browser-context'
 
@@ -53,6 +54,9 @@ export function hydrateClone(
 
   // Insert clone into live DOM (moves all children from fragment)
   bc.appendOrInsert(clone)
+  getRenderRollbacks()?.push(() => {
+    for (const node of topNodes) node.parentNode?.removeChild(node)
+  })
 
   // Single-pass hydration (after insertion — opaque slots need live DOM parent)
   const clears = new Array<Clear>(numSlots)

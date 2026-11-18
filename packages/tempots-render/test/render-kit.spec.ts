@@ -800,6 +800,54 @@ describe('createRenderKit', () => {
       clear(true)
       expect(disposeSpy).toHaveBeenCalled()
     })
+
+    it('rolls back partial children and nested scopes before showing the fallback', () => {
+      const { ctx, element } = createRoot()
+      const source = prop(1)
+      const cleaned = vi.fn()
+      let fail = true
+      let retry!: () => void
+      ctx.makeChildText('before')
+      const clear = kit.Catch([
+        'first',
+        kit.OnDispose(cleaned),
+        kit.WithScope(() => mockRenderable(child => {
+          source.onChange(() => {})
+          const partial = child.makeChildText('partial')
+          if (fail) throw new Error('failed')
+          return remove => partial.clear(remove)
+        })),
+      ], (_error, attempt) => {
+        retry = attempt
+        return 'fallback'
+      }).render(ctx)
+      ctx.makeChildText('after')
+
+      expect(getTexts(element)).toEqual(['before', 'fallback', 'after'])
+      expect(cleaned).toHaveBeenCalledOnce()
+      expect(source.hasListeners()).toBe(false)
+      fail = false
+      retry()
+      expect(getTexts(element)).toEqual(['before', 'first', 'partial', 'after'])
+      expect(source.hasListeners()).toBe(true)
+      clear(true)
+      retry()
+      expect(getTexts(element)).toEqual(['before', 'after'])
+      expect(cleaned).toHaveBeenCalledTimes(2)
+      expect(source.hasListeners()).toBe(false)
+    })
+
+    it('removes a partial fallback when it also throws', () => {
+      const { ctx, element } = createRoot()
+      const failing = (label: string) => mockRenderable(child => {
+        child.makeChildText(label)
+        throw new Error(label)
+      })
+      expect(() => kit.Catch(failing('child error'), () =>
+        failing('fallback error')
+      ).render(ctx)).toThrow('fallback error')
+      expect(element.children).toHaveLength(0)
+    })
   })
 
   describe('Conjunction', () => {

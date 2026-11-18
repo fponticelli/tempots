@@ -1,5 +1,6 @@
 import type { Clear, ProviderMark, Providers } from '../types/domain'
 import type { Primitive } from '@tempots/core'
+import { getRenderRollbacks } from '@tempots/core'
 import { _makeGetter, _makeSetter } from './attr'
 import { DOMContext, HandlerOptions } from './dom-context'
 import { _removeDOMNode } from './dom-utils'
@@ -136,6 +137,7 @@ export class BrowserContext implements DOMContext {
   makeChildElement(tagName: string, namespace: string | undefined): DOMContext {
     const element = this.createElement(tagName, namespace) as HTMLElement
     this.appendOrInsert(element)
+    getRenderRollbacks()?.push(() => element.remove())
     return this.withElement(element)
   }
 
@@ -156,6 +158,7 @@ export class BrowserContext implements DOMContext {
   makeChildText(text: Primitive): DOMContext {
     const textNode = this.createText(text)
     this.appendOrInsert(textNode)
+    getRenderRollbacks()?.push(() => textNode.remove())
     return this.withReference(textNode)
   }
 
@@ -183,6 +186,7 @@ export class BrowserContext implements DOMContext {
   makeRef(): DOMContext {
     const ref = this.document.createComment('')
     this.appendOrInsert(ref)
+    getRenderRollbacks()?.push(() => ref.remove())
     return this.withReference(ref)
   }
 
