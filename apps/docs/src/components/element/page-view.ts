@@ -1,15 +1,24 @@
 import { attr, html, Signal } from '@tempots/dom'
 import { Page } from '../../model/domain'
-import { fetchPage } from '../../services/page-service'
+import { fetchPage, type PageSnapshot } from '../../services/page-service'
 import { EmbedHTMLPage } from './embed-html-page'
 import { HTMLTitle } from '@tempots/ui'
 import { OpenGraph } from './open-graph'
 
-export function PageView(page: Signal<Page>) {
+export function PageView(page: Signal<Page>, initialPage?: PageSnapshot) {
   const editPath = page.map(p => {
     const value = `${p.path}.md`
     return `https://github.com/fponticelli/tempots/edit/main/apps/docs/pages/${value}`
   })
+  const path = page.$.path
+  const content = path.mapAsync(
+    (path, { abortSignal }) =>
+      initialPage?.path === path
+        ? Promise.resolve(initialPage.html)
+        : fetchPage(path, abortSignal),
+    initialPage?.path === path.value ? initialPage.html : 'loading...',
+    () => 'Unable to load this page.'
+  )
   return html.div(
     attr.class('p-4'),
     HTMLTitle(page.$.title.map(t => `Tempo • ${t}`)),
@@ -28,6 +37,6 @@ export function PageView(page: Signal<Page>) {
         'edit this page'
       )
     ),
-    EmbedHTMLPage(page.$.path.mapAsync(fetchPage, 'loading...'))
+    EmbedHTMLPage(content, path)
   )
 }

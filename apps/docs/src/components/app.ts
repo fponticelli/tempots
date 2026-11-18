@@ -3,6 +3,7 @@ import { PageLayout } from './layout/page-layout'
 import { DemoView } from './element/demo-view'
 import { HtmlToTempo } from './html-to-tempo'
 import { Library, Toc } from '../model/domain'
+import { pagePathFromRoute, type PageSnapshot } from '../services/page-service'
 import { tocAsMap } from '../services/toc-service'
 import { SideBar } from './layout/sidebar'
 import { LibraryView } from './element/library-view'
@@ -11,7 +12,7 @@ import { ToolsView } from './element/tools-view'
 import { LibrariesView } from './element/libraries-view'
 import { DemosView } from './element/demos-view'
 import { HomeView } from './element/home-view'
-import { Fragment, OnDispose, Provide, Use } from '@tempots/dom'
+import { Ensure, Fragment, OnDispose, Provide, Use } from '@tempots/dom'
 import { NavigationService } from '@tempots/ui'
 
 function mapPathToLibraryPageURL(path: string) {
@@ -30,14 +31,18 @@ function mapPathToLibraryPageURL(path: string) {
   return [lib, sub]
 }
 
-export const AppRouter = (toc: Toc) => {
+export const AppRouter = (toc: Toc, initialPage?: PageSnapshot) => {
   const map = tocAsMap(toc)
   return RootRouter({
-    '/': () => HomeView(map.pages.get('index')!),
+    '/': () => HomeView(map.pages.get('index')!, initialPage),
     '/tools.html': () => ToolsView(),
     '/tool/html-to-tempo.html': () => HtmlToTempo(),
     '/page/:id': info =>
-      PageView(info.$.params.$.id.map(id => map.pages.get(id.slice(0, -5))!)),
+      Ensure(
+        info.$.path.map(path => map.pages.get(pagePathFromRoute(path) ?? '')),
+        page => PageView(page, initialPage),
+        () => '404 Not Found'
+      ),
     '/libraries.html': () => LibrariesView(toc.libraries),
     '/library/:id': info => {
       const url = info.$.path.map(mapPathToLibraryPageURL)
@@ -59,14 +64,14 @@ export const AppRouter = (toc: Toc) => {
   })
 }
 
-export function App(toc: Toc) {
+export function App(toc: Toc, initialPage?: PageSnapshot) {
   return Provide(Location, {}, () =>
     Use(Location, handle => {
       return Fragment(
         OnDispose(NavigationService.attach(handle)),
         PageLayout({
           sidebar: SideBar(toc),
-          main: AppRouter(toc),
+          main: AppRouter(toc, initialPage),
         })
       )
     })

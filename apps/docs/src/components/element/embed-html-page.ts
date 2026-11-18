@@ -1,5 +1,6 @@
 import {
   attr,
+  DataAttr,
   ForEach,
   html,
   prop,
@@ -13,6 +14,7 @@ import {
 import { Location, type LocationHandle, handleAnchorClick } from '@tempots/ui'
 import { Styles } from '../styles'
 import { navigateTo } from '../../utils/scroll-to'
+import { pageSnapshotKey } from '../../services/page-service'
 
 const updateAnchors = (location: LocationHandle, el: HTMLElement) => {
   const anchors = el.querySelectorAll('a')
@@ -117,7 +119,10 @@ const makeTOC = (el: HTMLElement): TOCItem[] => {
   return []
 }
 
-export function EmbedHTMLPage(content: Value<string>) {
+export function EmbedHTMLPage(
+  content: Value<string>,
+  pagePath?: Value<string>
+) {
   const htmlSignal = Value.toSignal(content)
   const toc = prop<TOCItem[]>([])
   return Use(Location, location => {
@@ -134,6 +139,7 @@ export function EmbedHTMLPage(content: Value<string>) {
       ),
       html.div(
         attr.class(Styles.prose),
+        pagePath === undefined ? null : DataAttr(pageSnapshotKey, pagePath),
         attr.innerHTML(htmlSignal),
         WithElement(el => {
           element = el as HTMLElement

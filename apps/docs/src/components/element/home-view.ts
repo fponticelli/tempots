@@ -3,8 +3,9 @@ import { CommitsShield } from './commits-shield'
 import { PageView } from './page-view'
 import { Page } from '../../model/domain'
 import { GithubStars } from './github-stars'
+import type { PageSnapshot } from '../../services/page-service'
 
-export function HomeView(page: Page) {
+export function HomeView(page: Page, initialPage?: PageSnapshot) {
   return html.div(
     attr.class('relative h-full overflow-auto'),
     html.div(
@@ -12,6 +13,6 @@ export function HomeView(page: Page) {
       GithubStars('fponticelli', 'tempots'),
       CommitsShield('fponticelli', 'tempots')
     ),
-    PageView(signal(page))
+    PageView(signal(page), initialPage)
   )
 }

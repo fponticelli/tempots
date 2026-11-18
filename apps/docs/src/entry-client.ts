@@ -4,6 +4,7 @@ import 'highlight.js/styles/atom-one-dark-reasonable.css'
 import { render } from '@tempots/dom'
 import { App } from './components/app'
 import { fetchToc } from './services/toc-service'
+import { readPageSnapshot } from './services/page-service'
 
 async function main() {
   const toc = await fetchToc()
@@ -14,10 +15,8 @@ async function main() {
     return
   }
 
-  // Clear any SSR content and render fresh
-  // SSG provides fast initial HTML for SEO, client takes over for interactivity
-  container.innerHTML = ''
-  render(App(toc), container)
+  const initialPage = readPageSnapshot(container)
+  render(App(toc, initialPage), container)
 }
 
 main()
