@@ -190,49 +190,59 @@ function extractInternalLinks(html: string): string[] {
   return Array.from(links)
 }
 
-/**
- * Crawls routes starting from seed URLs, discovering new routes by
- * following internal links in rendered HTML.
- */
-async function crawlRoutes(
+type CrawlLogger = { log: (msg: string) => void }
+
+async function* crawlRenderedRoutes(
   renderFn: (url: string) => Promise<string>,
   seedRoutes: string[],
-  logger: { log: (msg: string) => void },
-  failOnError = false
-): Promise<string[]> {
-  const discovered = new Set<string>()
-  const queue = [...seedRoutes]
-  const failed = new Set<string>()
-
+  logger: CrawlLogger,
+  failOnError: boolean
+): AsyncGenerator<{ path: string; html: string }> {
+  const queued = new Set(seedRoutes)
+  const queue = Array.from(queued)
+  let discovered = 0
   logger.log(`[tempo] Crawling routes starting from: ${seedRoutes.join(', ')}`)
 
-  while (queue.length > 0) {
-    const url = queue.shift()!
+  for (let i = 0; i < queue.length; i++) {
+    const url = queue[i]
     validateSsgRoutePath(url)
-
-    if (discovered.has(url) || failed.has(url)) {
-      continue
-    }
-
+    let html: string
     try {
-      const html = await renderFn(url)
-      discovered.add(url)
-
-      const links = extractInternalLinks(html)
-      for (const link of links) {
-        if (!discovered.has(link) && !failed.has(link)) {
-          queue.push(link)
-        }
+      html = await renderFn(url)
+      for (const link of extractInternalLinks(html)) {
+        if (queued.has(link)) continue
+        queued.add(link)
+        queue.push(link)
       }
     } catch (error) {
       if (failOnError) throw error
-      failed.add(url)
       logger.log(`  ⚠ Failed to render ${url}: ${error}`)
+      continue
     }
+    discovered++
+    yield { path: url, html }
   }
 
-  logger.log(`[tempo] Discovered ${discovered.size} routes`)
-  return Array.from(discovered)
+  logger.log(`[tempo] Discovered ${discovered} routes`)
+}
+
+/** Crawls rendered links and returns the discovered route paths. */
+async function crawlRoutes(
+  renderFn: (url: string) => Promise<string>,
+  seedRoutes: string[],
+  logger: CrawlLogger,
+  failOnError = false
+): Promise<string[]> {
+  const routes: string[] = []
+  for await (const route of crawlRenderedRoutes(
+    renderFn,
+    seedRoutes,
+    logger,
+    failOnError
+  )) {
+    routes.push(route.path)
+  }
+  return routes
 }
 
 type ServerApp = (options: { url: string }) => Renderable
@@ -444,24 +454,34 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
             throw new SsgBuildError(`[tempo] Failed to render ${url}`, error)
           }
         }
-        const routes =
-          typeof routesOption === 'function'
-            ? normalizeRoutes(await routesOption())
-            : Array.isArray(routesOption)
-              ? normalizeRoutes(routesOption)
-              : (
-                  await crawlRoutes(renderRequired, seedRoutes, console, true)
-                ).map(path => ({ path }))
-
-        for (const route of routes) getSsgOutputPath(route, outputRoot)
-        console.log(`[tempo] Generating ${routes.length} static pages...`)
-
-        for (const route of routes) {
-          const appHtml = await renderRequired(route.path)
-          output.stage(route, inject(appHtml))
+        const stagedRoutes: string[] = []
+        const stage = (route: RouteConfig, html: string) => {
+          output.stage(route, inject(html))
+          stagedRoutes.push(route.path)
         }
+        if (routesOption === 'crawl') {
+          for await (const { path, html } of crawlRenderedRoutes(
+            renderRequired,
+            seedRoutes,
+            console,
+            true
+          )) {
+            stage({ path }, html)
+          }
+        } else {
+          const routes = normalizeRoutes(
+            typeof routesOption === 'function'
+              ? await routesOption()
+              : routesOption
+          )
+          for (const route of routes) getSsgOutputPath(route, outputRoot)
+          for (const route of routes)
+            stage(route, await renderRequired(route.path))
+        }
+
+        console.log(`[tempo] Publishing ${stagedRoutes.length} static pages...`)
         output.publish()
-        for (const route of routes) console.log(`  ✓ ${route.path}`)
+        for (const route of stagedRoutes) console.log(`  ✓ ${route}`)
       } catch (error) {
         preserveStaging = error instanceof SsgRecoveryError
         throw error

@@ -159,3 +159,20 @@ test('Vite development passes page URLs and query strings to the same App contra
     await server.close()
   }
 })
+
+test('publishes the HTML from each route’s first and only crawl render', async () => {
+  const root = await makeSite(`
+    const visited = new Set();
+    export function render(route) {
+      if (visited.has(route)) throw new Error('rendered twice');
+      visited.add(route);
+      return route === '/'
+        ? '<a href="/guide.html">Open guide</a><a href="/guide.html#section">Section</a>'
+        : '<h1>Guide</h1><a href="/">Back</a>';
+    }
+  `)
+
+  await buildSite(root)
+  expect(await readFile(join(root, 'dist', 'index.html'), 'utf8')).toContain('Open guide')
+  expect(await readFile(join(root, 'dist', 'guide.html'), 'utf8')).toContain('<h1>Guide</h1>')
+})
