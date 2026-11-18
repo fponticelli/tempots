@@ -1,182 +1,191 @@
-import { describe, it, expect, vi } from "vitest";
-import { tempo, renderApp, extractInternalLinks, crawlRoutes } from "../src/index";
-import { html } from "@tempots/dom";
+import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { build, createServer } from 'vite'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import {
+  tempo,
+  renderApp,
+  extractInternalLinks,
+  crawlRoutes,
+  type TempoMode,
+  type TempoViteOptions,
+} from '../src/index'
+import { html } from '@tempots/dom'
 
-describe("tempo plugin", () => {
-  describe("tempo()", () => {
-    it("should return an array of plugins", () => {
-      const plugins = tempo();
+const template = '<!doctype html><html><body><div id="app"></div></body></html>'
+const serverEntry = `
+  export function render(url) {
+    const link = url === '/' ? '<a href="/about">About</a>' : ''
+    return '<main>' + url + link + '</main>'
+  }
+`
 
-      expect(Array.isArray(plugins)).toBe(true);
-      expect(plugins.length).toBe(4);
-    });
+async function makeFixture(files: Record<string, string>): Promise<string> {
+  const root = await mkdtemp(join(await realpath(tmpdir()), 'tempo-vite-'))
+  onTestFinished(() => rm(root, { recursive: true, force: true }))
+  await Promise.all(
+    Object.entries(files).map(([name, contents]) =>
+      writeFile(join(root, name), contents)
+    )
+  )
+  return root
+}
 
-    it("should have correct plugin names", () => {
-      const plugins = tempo();
+describe('tempo plugin', () => {
+  it('defaults to SPA and enables HMR', () => {
+    expect(tempo().map(plugin => plugin.name)).toEqual(['tempo', 'tempo:hmr'])
+  })
 
-      expect(plugins[0].name).toBe("tempo");
-      expect(plugins[1].name).toBe("tempo:ssg");
-      expect(plugins[2].name).toBe("tempo:ssr-dev");
-      expect(plugins[3].name).toBe("tempo:hmr");
-    });
+  const modes: { mode: TempoMode; plugins: string[] }[] = [
+    { mode: 'spa', plugins: ['tempo', 'tempo:hmr'] },
+    { mode: 'ssg', plugins: ['tempo', 'tempo:ssg', 'tempo:hmr'] },
+    { mode: 'ssr', plugins: ['tempo', 'tempo:ssr-dev', 'tempo:hmr'] },
+    {
+      mode: 'islands',
+      plugins: ['tempo', 'tempo:ssg', 'tempo:ssr-dev', 'tempo:hmr'],
+    },
+    {
+      mode: 'hybrid',
+      plugins: ['tempo', 'tempo:ssg', 'tempo:ssr-dev', 'tempo:hmr'],
+    },
+  ]
 
-    it("should accept mode option", () => {
-      const ssgPlugins = tempo({ mode: "ssg" });
-      const ssrPlugins = tempo({ mode: "ssr" });
-      const islandsPlugins = tempo({ mode: "islands" });
-      const hybridPlugins = tempo({ mode: "hybrid" });
+  it.each(modes)('registers the plugins for mode $mode', ({ mode, plugins }) => {
+    expect(tempo({ mode }).map(plugin => plugin.name)).toEqual(plugins)
+  })
 
-      expect(ssgPlugins.length).toBe(4);
-      expect(ssrPlugins.length).toBe(4);
-      expect(islandsPlugins.length).toBe(4);
-      expect(hybridPlugins.length).toBe(4);
-    });
+  it('uses the build phase for SSG and the serve phase for SSR and HMR', () => {
+    const plugins = tempo({ mode: 'hybrid' })
+    const phases = Object.fromEntries(
+      plugins.map(plugin => [plugin.name, plugin.apply])
+    )
+    expect(phases['tempo:ssg']).toBe('build')
+    expect(phases['tempo:ssr-dev']).toBe('serve')
+    expect(phases['tempo:hmr']).toBe('serve')
+  })
 
-    describe("HMR plugin", () => {
-      it("should include HMR plugin in returned array by default", () => {
-        const plugins = tempo();
-        expect(plugins.length).toBe(4);
-        expect(plugins[3].name).toBe("tempo:hmr");
-      });
+  it.each([true, false, { errorBoundary: false }])(
+    'honors the HMR option %j',
+    hmr => {
+      const names = tempo({ hmr }).map(plugin => plugin.name)
+      expect(names.includes('tempo:hmr')).toBe(hmr !== false)
+    }
+  )
 
-      it("should include HMR plugin when hmr is true", () => {
-        const plugins = tempo({ hmr: true });
-        expect(plugins.some((p) => p.name === "tempo:hmr")).toBe(true);
-      });
+  it.each([true, false])('honors the devtools option %s', async devtools => {
+    const root = await makeFixture({ 'index.html': template })
+    const server = await createServer({
+      configFile: false,
+      root,
+      logLevel: 'silent',
+      plugins: tempo({ devtools }),
+      server: { middlewareMode: true, watch: null, ws: false },
+    })
 
-      it("should not include HMR plugin when hmr is false", () => {
-        const plugins = tempo({ hmr: false });
-        expect(plugins.some((p) => p.name === "tempo:hmr")).toBe(false);
-      });
+    try {
+      const rendered = await server.transformIndexHtml('/', template)
+      expect(rendered.includes('tempo-devtools')).toBe(devtools)
+    } finally {
+      await server.close()
+    }
+  })
 
-      it("should include HMR plugin when hmr is an options object", () => {
-        const plugins = tempo({ hmr: { errorBoundary: false } });
-        expect(plugins.some((p) => p.name === "tempo:hmr")).toBe(true);
-      });
-    });
+  const routeCases: {
+    label: string
+    options: Pick<TempoViteOptions, 'routes' | 'seedRoutes'>
+    pages: Record<string, string>
+  }[] = [
+    {
+      label: 'explicit route paths',
+      options: { routes: ['/', '/about'] },
+      pages: { 'index.html': '<main>/', 'about/index.html': '<main>/about' },
+    },
+    {
+      label: 'a custom route output',
+      options: { routes: [{ path: '/about', output: 'pages/about.html' }] },
+      pages: { 'pages/about.html': '<main>/about' },
+    },
+    {
+      label: 'an async route provider',
+      options: { routes: async () => ['/dynamic'] },
+      pages: { 'dynamic/index.html': '<main>/dynamic' },
+    },
+    {
+      label: 'default route crawling',
+      options: {},
+      pages: { 'index.html': '<main>/', 'about/index.html': '<main>/about' },
+    },
+    {
+      label: 'route crawling with custom seeds',
+      options: { routes: 'crawl', seedRoutes: ['/seed'] },
+      pages: { 'seed/index.html': '<main>/seed' },
+    },
+  ]
 
-    describe("devtools option", () => {
-      it("should accept devtools: true", () => {
-        const plugins = tempo({ devtools: true });
-        expect(plugins.length).toBe(4);
-      });
+  it.each(routeCases)(
+    'builds static pages from $label',
+    async ({ options, pages }) => {
+      const root = await makeFixture({
+        'index.html': template,
+        'server.mjs': serverEntry,
+      })
+      const outDir = 'site'
+      await build({
+        configFile: false,
+        root,
+        logLevel: 'silent',
+        plugins: tempo({ mode: 'ssg', ssrEntry: 'server.mjs', outDir, ...options }),
+        build: { outDir },
+      })
 
-      it("should accept devtools: false", () => {
-        const plugins = tempo({ devtools: false });
-        expect(plugins.length).toBe(4);
-      });
-    });
+      for (const [filename, content] of Object.entries(pages)) {
+        const page = await readFile(join(root, outDir, filename), 'utf8')
+        expect(page).toContain(`<div id="app">${content}`)
+      }
+    }
+  )
 
-    it("should accept routes as string array", () => {
-      const plugins = tempo({
-        routes: ["/", "/about", "/contact"],
-      });
+  it('serves a rendered route through Vite with a custom template and container', async () => {
+    const root = await makeFixture({
+      'page.html': template.replace('id="app"', 'id="content"'),
+      'server.mjs': serverEntry,
+    })
+    const server = await createServer({
+      configFile: false,
+      root,
+      logLevel: 'silent',
+      plugins: tempo({
+        mode: 'ssr',
+        ssrEntry: 'server.mjs',
+        template: 'page.html',
+        container: '#content',
+      }),
+      server: {
+        host: '127.0.0.1',
+        port: 0,
+        strictPort: true,
+        watch: null,
+        ws: false,
+      },
+    })
 
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept routes as RouteConfig array", () => {
-      const plugins = tempo({
-        routes: [
-          { path: "/" },
-          { path: "/about", output: "about.html" },
-        ],
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept routes as async function", () => {
-      const plugins = tempo({
-        routes: async () => ["/", "/about"],
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept custom entry path", () => {
-      const plugins = tempo({
-        entry: "src/main.ts",
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept custom template path", () => {
-      const plugins = tempo({
-        template: "public/index.html",
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept custom container selector", () => {
-      const plugins = tempo({
-        container: "#root",
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept hydrate option", () => {
-      const plugins = tempo({
-        hydrate: true,
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept custom outDir", () => {
-      const plugins = tempo({
-        outDir: "build",
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept routes as 'crawl' string", () => {
-      const plugins = tempo({
-        routes: "crawl",
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should accept seedRoutes option", () => {
-      const plugins = tempo({
-        routes: "crawl",
-        seedRoutes: ["/", "/api"],
-      });
-
-      expect(plugins.length).toBe(4);
-    });
-
-    it("should default routes to 'crawl'", () => {
-      const plugins = tempo({});
-
-      // Just verify it doesn't throw - actual crawling happens at build time
-      expect(plugins.length).toBe(4);
-    });
-  });
-
-  describe("ssg plugin", () => {
-    it("should apply to build only", () => {
-      const plugins = tempo({ mode: "ssg" });
-      const ssgPlugin = plugins[1];
-
-      expect(ssgPlugin.apply).toBe("build");
-    });
-  });
-
-  describe("ssr-dev plugin", () => {
-    it("should apply to serve only", () => {
-      const plugins = tempo({ mode: "ssr" });
-      const ssrDevPlugin = plugins[2];
-
-      expect(ssrDevPlugin.apply).toBe("serve");
-    });
-  });
-});
+    try {
+      await server.listen()
+      const address = server.httpServer?.address()
+      if (address == null || typeof address === 'string') {
+        throw new Error('Expected a Vite HTTP server address')
+      }
+      const response = await fetch(`http://127.0.0.1:${address.port}/about`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain(
+        '<div id="content"><main>/about</main></div>'
+      )
+    } finally {
+      await server.close()
+    }
+  })
+})
 
 describe("renderApp", () => {
   it("should render app to HTML string with hydration markers", async () => {
