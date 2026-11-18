@@ -1,3 +1,5 @@
+import { once } from 'node:events'
+import { setImmediate } from 'node:timers/promises'
 import { describe, expect, test, vi } from 'vitest'
 import { renderToStream, renderToString, renderToStaticMarkup, createRenderer } from '../src/index'
 import {
@@ -486,5 +488,60 @@ describe('createRenderer', () => {
     const brokenHTML = createRenderer(() => html.style(source.map(value => value)))
     await expect(brokenHTML.render('/')).rejects.toThrow('trusted innerHTML')
     expect(source.hasListeners()).toBe(false)
+  })
+})
+
+describe('stream backpressure and cancellation', () => {
+  test('does not buffer the whole response while the reader is paused', async () => {
+    const text = 'x'.repeat(1024)
+    const rows = Array.from({ length: 200 }, () => html.p(text))
+    const onAllReady = vi.fn()
+    const stream = renderToStream(html.div(rows), { onAllReady })
+
+    stream.read(0)
+    await setImmediate()
+    expect(stream.readableLength).toBeLessThanOrEqual(stream.readableHighWaterMark + text.length)
+    expect(onAllReady).not.toHaveBeenCalled()
+
+    let length = 0
+    for await (const chunk of stream) length += chunk.length
+    expect(length).toBe(rows.length * (text.length + '<p></p>'.length) + '<div></div>'.length)
+    expect(onAllReady).toHaveBeenCalledOnce()
+  })
+
+  test('destroying a paused stream releases its render scope', async () => {
+    const source = prop('x'.repeat(1024))
+    const { renderStream } = createRenderer(() => {
+      const value = source.map(text => text)
+      return html.div(Array.from({ length: 200 }, () => html.p(value)))
+    }, { hydrate: false, getData: async () => ({}) })
+    const stream = renderStream('/')
+    stream.read(0)
+    await setImmediate()
+    expect(source.hasListeners()).toBe(true)
+
+    const closed = once(stream, 'close')
+    stream.destroy()
+    await closed
+    expect(source.hasListeners()).toBe(false)
+  })
+
+  test('closes while getData is pending without mounting after cancellation', async () => {
+    let resolveData!: (value: {}) => void
+    const data = new Promise<{}>(resolve => { resolveData = resolve })
+    const getData = vi.fn(() => data)
+    const app = vi.fn(() => html.div('unneeded'))
+    const { renderStream } = createRenderer(app, { getData })
+    const stream = renderStream('/')
+    stream.read(0)
+    await setImmediate()
+    expect(getData).toHaveBeenCalledOnce()
+
+    const closed = once(stream, 'close')
+    stream.destroy()
+    await closed
+    resolveData({})
+    await setImmediate()
+    expect(app).not.toHaveBeenCalled()
   })
 })

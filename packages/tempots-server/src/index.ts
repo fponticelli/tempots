@@ -95,11 +95,11 @@ export function renderToStream(
   renderable: Renderable,
   options: RenderOptions = {}
 ): Readable {
-  return renderFactoryToStream(() => renderable, options)
+  return renderFactoryToStream(() => () => renderable, options)
 }
 
 function renderFactoryToStream(
-  factory: () => Renderable,
+  prepareFactory: () => (() => Renderable) | Promise<() => Renderable>,
   options: RenderOptions
 ): Readable {
   const {
@@ -112,64 +112,43 @@ function renderFactoryToStream(
     onError,
   } = options
 
-  const streamOptions: StreamOptions = { generatePlaceholders }
-
-  // Track render result (deferred to first read)
-  let renderResult: {
-    root: HeadlessPortal
-    clear: (removeTree?: boolean) => void
-  } | null = null
-  let renderError: Error | null = null
-
-  // Try to render synchronously, but capture any errors for the stream
-  try {
-    renderResult = runHeadless(factory, {
-      startUrl: url,
-      selector,
-      providers,
-    })
-  } catch (error) {
-    renderError = error instanceof Error ? error : new Error(String(error))
-  }
-
-  // Create a readable stream that yields HTML chunks
-  const stream = new Readable({
-    async read() {
-      try {
-        // If rendering failed, emit the error to the stream
-        if (renderError) {
-          throw renderError
-        }
-
-        if (!renderResult) {
-          throw new Error('Render result is null')
-        }
-
-        const { root, clear } = renderResult
-
-        // Notify shell is ready (opening tags and initial content)
-        onShellReady?.()
-
-        // Stream all portal content
-        for await (const chunk of streamPortalContent(root, streamOptions)) {
-          this.push(chunk)
-        }
-
-        // Signal completion
-        onAllReady?.()
-        this.push(null)
-
-        // Cleanup
-        clear(false)
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error))
-        onError?.(err)
-        this.destroy(err)
-        renderResult?.clear(false)
-      }
-    },
+  let cancelPreparation!: () => void
+  const cancelled = new Promise<undefined>(resolve => {
+    cancelPreparation = () => resolve(undefined)
   })
 
+  async function* renderChunks(): AsyncGenerator<string> {
+    try {
+      const factory = await Promise.race([prepareFactory(), cancelled])
+      if (factory === undefined || stream.destroyed) return
+
+      const { root, clear } = runHeadless(factory, {
+        startUrl: url,
+        selector,
+        providers,
+      })
+      try {
+        onShellReady?.()
+        yield* streamPortalContent(root, { generatePlaceholders })
+        if (!stream.destroyed) onAllReady?.()
+      } finally {
+        clear(false)
+      }
+    } catch (error) {
+      const failure = error instanceof Error ? error : new Error(String(error))
+      if (!stream.destroyed) onError?.(failure)
+      throw failure
+    }
+  }
+
+  const stream = Readable.from(renderChunks(), {
+    objectMode: false,
+    highWaterMark: 16 * 1024,
+    destroy(error, callback) {
+      cancelPreparation()
+      callback(error)
+    },
+  })
   return stream
 }
 
@@ -429,43 +408,13 @@ export function createRenderer<O extends Record<string, unknown>>(
    * Renders the app to a Node.js Readable stream.
    */
   function renderStreamFn(url: string): Readable {
-    // For streaming, we need to handle async getData
-    // We'll create a wrapper stream that waits for data first
-    if (getData) {
-      const passThrough = new Readable({
-        read() {},
-      })
-
-      // Start async data fetch, then pipe the real stream
-      Promise.resolve(getData(url))
-        .then(data => {
-          const realStream = renderFactoryToStream(() => App(data), {
-            url,
-            selector,
-            providers,
-            generatePlaceholders: hydrate,
-          })
-
-          realStream.on('data', chunk => passThrough.push(chunk))
-          realStream.on('end', () => passThrough.push(null))
-          realStream.on('error', err => passThrough.destroy(err))
-        })
-        .catch(err => {
-          passThrough.destroy(
-            err instanceof Error ? err : new Error(String(err))
-          )
-        })
-
-      return passThrough
-    }
-
-    // No getData, render synchronously
-    return renderFactoryToStream(() => App({} as O), {
-      url,
-      selector,
-      providers,
-      generatePlaceholders: hydrate,
-    })
+    return renderFactoryToStream(
+      async () => {
+        const data = getData ? await getData(url) : ({} as O)
+        return () => App(data)
+      },
+      { url, selector, providers, generatePlaceholders: hydrate }
+    )
   }
 
   return {
