@@ -38,6 +38,11 @@ export type ListenerOptions = {
   noAutoDispose?: boolean
 }
 
+type ValueListener<T> = {
+  notify: (value: T, previousValue: T | undefined) => void
+  active: boolean
+}
+
 /**
  * Represents a read-only signal that holds a value of type T.
  *
@@ -182,9 +187,7 @@ export class Signal<T> implements ReadSignal<T> {
   /**
    * @internal
    */
-  protected _onValueListeners: Array<
-    (value: T, previousValue: T | undefined) => void
-  > | null = null
+  protected _onValueListeners: ValueListener<T>[] | null = null
   /**
    * @internal
    */
@@ -266,19 +269,25 @@ export class Signal<T> implements ReadSignal<T> {
     if (!options.skipInitial) {
       listener(this.get(), undefined)
     }
-    const actualListener = options.once
-      ? (value: T, previousValue: T | undefined) => {
-          clear()
-          listener(value, previousValue)
-        }
-      : listener
+    const registration: ValueListener<T> = {
+      active: true,
+      notify: options.once
+        ? (value, previousValue) => {
+            clear()
+            listener(value, previousValue)
+          }
+        : listener,
+    }
     if (this._onValueListeners === null) this._onValueListeners = []
-    this._onValueListeners.push(actualListener)
+    this._onValueListeners.push(registration)
     const clear = () => {
-      if (this._onValueListeners === null) return
-      const index = this._onValueListeners.indexOf(actualListener)
-      if (index !== -1) {
-        this._onValueListeners.splice(index, 1)
+      if (!registration.active) return
+      registration.active = false
+      if (this._onValueListeners !== null) {
+        // Preserve the indices of any dispatch currently reading this array.
+        this._onValueListeners = this._onValueListeners.filter(
+          entry => entry !== registration
+        )
       }
       if (options.abortSignal != null) {
         options.abortSignal.removeEventListener('abort', clear)
@@ -333,8 +342,11 @@ export class Signal<T> implements ReadSignal<T> {
       }
       const listeners = this._onValueListeners
       if (listeners !== null) {
-        for (let i = 0; i < listeners.length; i++)
-          listeners[i](newV, currentValue)
+        const end = listeners.length
+        for (let i = 0; i < end && !this._disposed; i++) {
+          const entry = listeners[i]
+          if (entry.active) entry.notify(newV, currentValue)
+        }
       }
     }
   }

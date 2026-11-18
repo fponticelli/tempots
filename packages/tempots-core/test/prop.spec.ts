@@ -32,6 +32,52 @@ describe("Prop", () => {
     expect(spy).toHaveBeenCalledWith(2, 1);
     expect(p.value).toStrictEqual(2);
   });
+  test('a once listener can remove itself without skipping the next listener', () => {
+    const p = prop(0);
+    const once = vi.fn();
+    const following = vi.fn();
+    p.onChange(once, { once: true });
+    p.onChange(following);
+
+    p.set(1);
+    p.set(2);
+
+    expect(once.mock.calls).toEqual([[1, 0]]);
+    expect(following.mock.calls).toEqual([[1, 0], [2, 1]]);
+  });
+  test('changes to subscriptions during dispatch take effect without skipping active listeners', () => {
+    const p = prop(0);
+    const removed = vi.fn();
+    const following = vi.fn();
+    const added = vi.fn();
+    const clear = p.onChange(() => {
+      clear();
+      clearRemoved();
+      p.onChange(added);
+    });
+    const clearRemoved = p.onChange(removed);
+    p.onChange(following);
+
+    p.set(1);
+    expect(removed).not.toHaveBeenCalled();
+    expect(added).not.toHaveBeenCalled();
+    p.set(2);
+
+    expect(following.mock.calls).toEqual([[1, 0], [2, 1]]);
+    expect(added.mock.calls).toEqual([[2, 1]]);
+  });
+  test('each registration of the same listener has its own idempotent disposer', () => {
+    const p = prop(0);
+    const listener = vi.fn();
+    const clear = p.onChange(listener);
+    p.onChange(listener);
+    clear();
+    clear();
+
+    p.set(1);
+
+    expect(listener.mock.calls).toEqual([[1, 0]]);
+  });
   test('reducer will set value and call listeners', () => {
     const p = prop(1);
     const spy = vi.fn();
