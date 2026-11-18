@@ -1,5 +1,6 @@
 import { prop, Signal } from '@tempots/dom'
 import { AsyncResult, NonLoading } from '@tempots/std'
+import { makeResourceRunner } from './resource-runner'
 
 /**
  * A write-side wrapper for async state around POST/PUT/PATCH/DELETE.
@@ -86,7 +87,6 @@ export const makeMutationResource = <Req, Res, E>({
   onError?: (error: E, req: Req) => void
   onSettled?: (result: AsyncResult<Res, E>, req: Req) => void
 }): MutationResource<Req, Res, E> => {
-  let abortController: AbortController | undefined
   const status = prop<AsyncResult<Res, E>>(AsyncResult.notAsked)
   const value = status.map(r =>
     AsyncResult.isSuccess(r) ? r.value : undefined
@@ -95,54 +95,24 @@ export const makeMutationResource = <Req, Res, E>({
     AsyncResult.isFailure(r) ? r.error : undefined
   )
   const pending = status.map(r => AsyncResult.isLoading(r))
-  const abort = () => {
-    /* c8 ignore next */
-    abortController?.abort()
-    abortController = undefined
-  }
-  const cancel = (newState?: NonLoading<Res, E>) => {
-    abort()
-    status.set(newState ?? AsyncResult.notAsked)
-  }
-
-  const execute = async (
+  const { run, cancel } = makeResourceRunner({
+    status,
+    load: mutate,
+    convertError,
+    onSuccess,
+    onError,
+    onSettled,
+  })
+  const execute = (
     request: Req,
     options?: MutationResourceExecuteOptions<Req, Res>
-  ) => {
-    abort()
-    abortController = new AbortController()
-    const abortSignal = abortController.signal
-    const previous = status.get()
-    const optimisticValue =
-      options?.optimisticValue ??
-      (options?.optimisticFromRequest != null
-        ? options.optimisticFromRequest(request)
-        : undefined)
-    if (optimisticValue != null) {
-      status.set(AsyncResult.loading(optimisticValue))
-    } else {
-      status.set(AsyncResult.loading(AsyncResult.getOrUndefined(previous)))
-    }
-    try {
-      const result = await mutate({ request, abortSignal, previous, cancel })
-      abortController = undefined
-      status.set(AsyncResult.success(result))
-      onSuccess?.(result, request)
-    } catch (error) {
-      abortController = undefined
-      const converted = convertError(error)
-      status.set(AsyncResult.failure(converted))
-      onError?.(converted, request)
-    }
-    onSettled?.(status.get(), request)
-  }
-
-  const dispose = () => {
-    /* c8 ignore next */
-    abortController?.abort()
-    abortController = undefined
-    status.dispose()
-  }
+  ) =>
+    run(
+      request,
+      () =>
+        options?.optimisticValue ?? options?.optimisticFromRequest?.(request)
+    )
+  const dispose = () => status.dispose()
 
   return {
     status,

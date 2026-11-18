@@ -1,5 +1,6 @@
 import { prop, Signal, Value } from '@tempots/dom'
 import { AsyncResult, NonLoading } from '@tempots/std'
+import { makeResourceRunner } from './resource-runner'
 
 /**
  * Represents an asynchronous query with its current status, value, error, and loading state.
@@ -73,7 +74,6 @@ export const makeQueryResource = <Req, Res, E>({
   onError?: (error: E, req: Req) => void
   onSettled?: (result: AsyncResult<Res, E>, req: Req) => void
 }): QueryResource<Res, E> => {
-  let abortController: AbortController | undefined
   const status = prop<AsyncResult<Res, E>>(AsyncResult.notAsked)
   const value = status.map(r =>
     AsyncResult.isSuccess(r) ? r.value : undefined
@@ -82,62 +82,19 @@ export const makeQueryResource = <Req, Res, E>({
     AsyncResult.isFailure(r) ? r.error : undefined
   )
   const loading = status.map(r => AsyncResult.isLoading(r))
-  const abort = () => {
-    /* c8 ignore next */
-    abortController?.abort()
-    abortController = undefined
-  }
-  const cancel = (newState?: NonLoading<Res, E>) => {
-    abort()
-    status.set(newState ?? AsyncResult.notAsked)
-  }
+  const { run, cancel } = makeResourceRunner({
+    status,
+    load,
+    convertError,
+    onSuccess,
+    onError,
+    onSettled,
+    deferSuccess: true,
+  })
+  const reload = () => run(Value.get(request))
+  const dispose = () => status.dispose()
 
-  /**
-   * Runs the load function with the given request, updating the status accordingly.
-   *
-   * @param {Req} req - The request to load the query.
-   * @public
-   */
-  const runLoad = async (req: Req) => {
-    abort()
-    abortController = new AbortController()
-    const abortSignal = abortController.signal
-    const previous = status.get()
-    status.set(AsyncResult.loading(AsyncResult.getOrUndefined(previous)))
-    try {
-      const result = await load({
-        request: req,
-        abortSignal,
-        previous,
-        cancel,
-      })
-      // Forces a microtask boundary when load resolves synchronously,
-      // ensuring the Loading status propagates before being replaced by Success.
-      await Promise.resolve()
-      abortController = undefined
-      status.set(AsyncResult.success(result))
-      onSuccess?.(result, req)
-    } catch (error) {
-      abortController = undefined
-      const converted = convertError(error)
-      status.set(AsyncResult.failure(converted))
-      onError?.(converted, req)
-    }
-    onSettled?.(status.get(), req)
-  }
-
-  /** Reloads the query using the current request. */
-  const reload = () => runLoad(Value.get(request))
-
-  /** Disposes of the query, aborting any ongoing requests and cleaning up. */
-  const dispose = () => {
-    /* c8 ignore next */
-    abortController?.abort()
-    abortController = undefined
-    status.dispose()
-  }
-
-  status.onDispose(Value.on(request, runLoad))
+  status.onDispose(Value.on(request, req => run(req)))
 
   return {
     status,
