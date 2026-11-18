@@ -43,6 +43,8 @@ type ValueListener<T> = {
   active: boolean
 }
 
+type Derivative = Pick<Computed<unknown>, 'setDirty' | 'dispose'>
+
 /**
  * Represents a read-only signal that holds a value of type T.
  *
@@ -183,7 +185,7 @@ export class Signal<T> implements ReadSignal<T> {
   /**
    * @internal
    */
-  protected _derivatives: Array<Computed<unknown>> | null = null
+  protected _derivatives: Derivative[] | null = null
   /**
    * @internal
    */
@@ -397,12 +399,12 @@ export class Signal<T> implements ReadSignal<T> {
 
   /**
    * Removes a computed from this signal's derivatives list.
-   * Called by Computed.dispose() to clean up the parent→child link.
+   * Called during disposal or when a dynamic dependency changes.
    * @internal
    */
-  _removeDerivative(computed: Computed<unknown>) {
+  _removeDerivative(derivative: Derivative) {
     if (this._derivatives !== null) {
-      const idx = this._derivatives.indexOf(computed)
+      const idx = this._derivatives.indexOf(derivative)
       if (idx !== -1) this._derivatives.splice(idx, 1)
     }
   }
@@ -496,15 +498,45 @@ export class Signal<T> implements ReadSignal<T> {
     fn: (value: T) => Signal<O>,
     equals: (a: O, b: O) => boolean = strictEquals
   ) {
+    let selected: Signal<O> | undefined
+    let needsSelection = true
     const computed = new Computed(() => {
       try {
-        return fn(this.get()).get()
+        if (needsSelection) {
+          needsSelection = false
+          const next = fn(this.get())
+          if (selected !== next) {
+            selected?._removeDerivative(innerDependency)
+            selected = next
+            if (next !== (this as unknown) && !next.isDisposed()) {
+              next._addDerivative(innerDependency)
+            }
+          }
+        }
+        return selected!.get()
       } catch (error) {
         console.error('Error in Signal.flatMap:', error)
         throw error
       }
     }, equals)
-    this.setDerivative(computed)
+    const outerDependency: Derivative = {
+      setDirty: () => {
+        needsSelection = true
+        computed.setDirty()
+      },
+      dispose: () => computed.dispose(),
+    }
+    const innerDependency: Derivative = {
+      setDirty: () => computed.setDirty(),
+      // The selection borrows the inner signal. It can switch after the inner
+      // signal is disposed.
+      dispose() {},
+    }
+    this._addDerivative(outerDependency)
+    computed.onDispose(() => {
+      this._removeDerivative(outerDependency)
+      selected?._removeDerivative(innerDependency)
+    })
     return computed
   }
 
@@ -792,9 +824,13 @@ export class Signal<T> implements ReadSignal<T> {
    * @param computed - The computed value to add as a derivative.
    */
   setDerivative<O>(computed: Computed<O>) {
-    if (this._derivatives === null) this._derivatives = []
-    this._derivatives.push(computed as Computed<unknown>)
+    this._addDerivative(computed)
     computed._addParent(this as Signal<unknown>)
+  }
+
+  private _addDerivative(derivative: Derivative) {
+    if (this._derivatives === null) this._derivatives = []
+    this._derivatives.push(derivative)
   }
 }
 
