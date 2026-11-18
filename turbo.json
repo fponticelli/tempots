@@ -46,9 +46,14 @@
         "^build"
       ]
     },
-    "test": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
     "test:watch": {},
-    "test:coverage": {},
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
     "npm:publish": {
       "dependsOn": [
         "^npm:publish"
