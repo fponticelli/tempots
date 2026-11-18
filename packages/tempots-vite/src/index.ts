@@ -6,6 +6,7 @@ import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { tempoHmrPlugin } from './hmr/plugin'
 import { getSsgOutputPath, validateSsgRoutePath } from './ssg-path'
+import { makeSsgOutput, SsgBuildError, SsgRecoveryError } from './ssg-output'
 
 /**
  * Rendering mode for the Tempo Vite plugin.
@@ -195,7 +196,8 @@ function extractInternalLinks(html: string): string[] {
 async function crawlRoutes(
   renderFn: (url: string) => Promise<string>,
   seedRoutes: string[],
-  logger: { log: (msg: string) => void }
+  logger: { log: (msg: string) => void },
+  failOnError = false
 ): Promise<string[]> {
   const discovered = new Set<string>()
   const queue = [...seedRoutes]
@@ -222,6 +224,7 @@ async function crawlRoutes(
         }
       }
     } catch (error) {
+      if (failOnError) throw error
       failed.add(url)
       logger.log(`  ⚠ Failed to render ${url}: ${error}`)
     }
@@ -292,175 +295,143 @@ export function tempo(options: TempoViteOptions = {}): Plugin[] {
         return
       }
 
-      // Read from the built output (has Vite-processed script tags)
-      const builtTemplatePath = path.resolve(config.root, outDir, 'index.html')
+      const outPath = path.resolve(config.root, outDir)
+      const builtTemplatePath = path.join(outPath, 'index.html')
       if (!fs.existsSync(builtTemplatePath)) {
-        console.error(`[tempo] Built template not found: ${builtTemplatePath}`)
-        return
+        throw new Error(
+          `[tempo] Built template not found: ${builtTemplatePath}`
+        )
       }
       const templateHtml = fs.readFileSync(builtTemplatePath, 'utf-8')
-
-      const ssrOutDir = path.resolve(config.root, outDir, '.ssr-temp')
-      const ssrEntryPath = path.resolve(config.root, ssrEntry)
-
-      // Check if SSR entry exists
-      if (!fs.existsSync(ssrEntryPath)) {
-        console.error(
-          `\n[tempo] SSR entry not found: ${ssrEntry}\n` +
-            `  Create an entry-server.ts that exports { render } or { App }`
+      const containerId = container
+        .replace(/^#/, '')
+        .replace(/[.*+?^$(){}|[\]\\]/g, '\\$&')
+      const containerRegex = new RegExp(
+        `(<([a-z][\\w:-]*)\\b[^>]*\\s+id=(["'])${containerId}\\3[^>]*>)[\\s\\S]*?(<\\/\\2\\s*>)`,
+        'i'
+      )
+      if (!containerRegex.test(templateHtml)) {
+        throw new Error(
+          `[tempo] Built template must contain the container ${container}`
         )
-        return
       }
 
-      console.log(`\n[tempo] Building SSR module...`)
+      const ssrEntryPath = path.resolve(config.root, ssrEntry)
+      if (!fs.existsSync(ssrEntryPath)) {
+        throw new Error(`[tempo] SSR entry not found: ${ssrEntry}`)
+      }
+      const outputRoot = fs.realpathSync(outPath)
+      const staging = fs.mkdtempSync(path.join(outputRoot, '.tempo-ssg-'))
+      const ssrOutDir = path.join(staging, 'server')
+      const output = makeSsgOutput(outputRoot, staging)
 
-      // Build the SSR entry module
+      let preserveStaging = false
       try {
-        await build({
-          configFile: false,
-          root: config.root,
-          logLevel: 'warn',
-          build: {
-            ssr: ssrEntryPath,
-            outDir: ssrOutDir,
-            emptyOutDir: true,
-            rollupOptions: {
-              output: {
-                format: 'esm',
-                entryFileNames: 'entry-server.mjs',
+        console.log(`\n[tempo] Building SSR module...`)
+        try {
+          await build({
+            configFile: false,
+            root: config.root,
+            logLevel: 'warn',
+            build: {
+              ssr: ssrEntryPath,
+              outDir: ssrOutDir,
+              emptyOutDir: true,
+              copyPublicDir: false,
+              rollupOptions: {
+                output: {
+                  format: 'esm',
+                  entryFileNames: 'entry-server.mjs',
+                },
               },
             },
-          },
-          // Suppress console output during SSR build
-          customLogger: {
-            ...config.logger,
-            info: () => {},
-            warn: config.logger.warn,
-            error: config.logger.error,
-            warnOnce: config.logger.warnOnce,
-            hasWarned: config.logger.hasWarned,
-            clearScreen: () => {},
-            hasErrorLogged: config.logger.hasErrorLogged,
-          },
-        })
-      } catch (error) {
-        console.error(`[tempo] SSR build failed:`, error)
-        return
-      }
+            // Suppress console output during SSR build
+            customLogger: {
+              ...config.logger,
+              info: () => {},
+              warn: config.logger.warn,
+              error: config.logger.error,
+              warnOnce: config.logger.warnOnce,
+              hasWarned: config.logger.hasWarned,
+              clearScreen: () => {},
+              hasErrorLogged: config.logger.hasErrorLogged,
+            },
+          })
+        } catch (error) {
+          throw new SsgBuildError('[tempo] SSR build failed', error)
+        }
 
-      // Import the built SSR module
-      const ssrModulePath = path.join(ssrOutDir, 'entry-server.mjs')
-      const ssrModuleUrl = pathToFileURL(ssrModulePath).href
+        const ssrModuleUrl = pathToFileURL(
+          path.join(ssrOutDir, 'entry-server.mjs')
+        ).href
+        let ssrModule: {
+          render?: (url: string) => Promise<string>
+          App?: (options: { url?: string }) => Renderable
+        }
 
-      let ssrModule: {
-        render?: (url: string) => Promise<string>
-        App?: (options: { url?: string }) => Renderable
-      }
+        try {
+          ssrModule = await import(ssrModuleUrl)
+        } catch (error) {
+          throw new SsgBuildError('[tempo] Failed to load SSR module', error)
+        }
 
-      try {
-        // Add cache-busting query to avoid module caching issues
-        ssrModule = await import(`${ssrModuleUrl}?t=${Date.now()}`)
-      } catch (error) {
-        console.error(`[tempo] Failed to load SSR module:`, error)
-        return
-      }
-
-      // Get the render function - support both patterns
-      let renderFn: (url: string) => Promise<string>
-
-      if (typeof ssrModule.render === 'function') {
-        // Pattern 1: createRenderer() style - exports { render }
-        renderFn = ssrModule.render
-      } else if (typeof ssrModule.App === 'function') {
-        // Pattern 2: Direct App export - wrap with renderToString
-        const App = ssrModule.App
-        renderFn = async (url: string) => {
-          const renderable = App({ url })
-          if (hydrate) {
-            return renderToString(renderable, { generatePlaceholders: true })
+        let renderFn: (url: string) => Promise<string>
+        if (typeof ssrModule.render === 'function') {
+          renderFn = ssrModule.render
+        } else if (typeof ssrModule.App === 'function') {
+          const App = ssrModule.App
+          renderFn = async (url: string) => {
+            const renderable = App({ url })
+            if (hydrate) {
+              return renderToString(renderable, { generatePlaceholders: true })
+            }
+            return renderToStaticMarkup(renderable)
           }
-          return renderToStaticMarkup(renderable)
-        }
-      } else {
-        console.error(
-          `[tempo] SSR entry must export 'render' function or 'App' component`
-        )
-        return
-      }
-
-      try {
-        // Resolve routes - support crawl mode, explicit arrays, and async functions
-        let routes: RouteConfig[]
-        const logger = { log: console.log }
-
-        if (routesOption === 'crawl') {
-          // Crawl mode: discover routes by following links
-          const discoveredPaths = await crawlRoutes(
-            renderFn,
-            seedRoutes,
-            logger
-          )
-          routes = discoveredPaths.map(p => ({ path: p }))
-        } else if (typeof routesOption === 'function') {
-          // Async function mode
-          const resolvedRoutes = await routesOption()
-          routes = normalizeRoutes(resolvedRoutes)
-        } else if (Array.isArray(routesOption)) {
-          // Explicit array mode
-          routes = normalizeRoutes(routesOption)
         } else {
-          // Fallback to crawl if no routes specified
-          const discoveredPaths = await crawlRoutes(
-            renderFn,
-            seedRoutes,
-            logger
+          throw new Error(
+            "[tempo] SSR entry must export 'render' function or 'App' component"
           )
-          routes = discoveredPaths.map(p => ({ path: p }))
         }
 
-        const outputRoot = fs.realpathSync(path.resolve(config.root, outDir))
-        for (const route of routes) getSsgOutputPath(route, outputRoot)
+        const renderRequired = async (url: string) => {
+          try {
+            const html = await renderFn(url)
+            if (typeof html !== 'string')
+              throw new TypeError('Expected rendered HTML')
+            return html
+          } catch (error) {
+            throw new SsgBuildError(`[tempo] Failed to render ${url}`, error)
+          }
+        }
+        const routes =
+          typeof routesOption === 'function'
+            ? normalizeRoutes(await routesOption())
+            : Array.isArray(routesOption)
+              ? normalizeRoutes(routesOption)
+              : (
+                  await crawlRoutes(renderRequired, seedRoutes, console, true)
+                ).map(path => ({ path }))
 
+        for (const route of routes) getSsgOutputPath(route, outputRoot)
         console.log(`[tempo] Generating ${routes.length} static pages...`)
 
-        // Extract container ID for injection
-        const containerId = container.replace('#', '')
-        const containerRegex = new RegExp(
-          `(<[^>]*id="${containerId}"[^>]*>)([\\s\\S]*?)(<\\/[^>]+>)`
-        )
-
         for (const route of routes) {
-          let appHtml: string
-          try {
-            appHtml = await renderFn(route.path)
-          } catch (error) {
-            console.error(`  ✗ ${route.path}:`, error)
-            continue
-          }
-
-          // Recheck after rendering in case the filesystem changed during the await.
-          const outputPath = getSsgOutputPath(route, outputRoot)
-          try {
-            // Inject rendered HTML into template
-            const html = templateHtml.replace(containerRegex, `$1${appHtml}$3`)
-
-            const outputDir = path.dirname(outputPath)
-            if (!fs.existsSync(outputDir)) {
-              fs.mkdirSync(outputDir, { recursive: true })
-            }
-
-            fs.writeFileSync(outputPath, html)
-            console.log(`  ✓ ${route.path}`)
-          } catch (error) {
-            console.error(`  ✗ ${route.path}:`, error)
-          }
+          const appHtml = await renderRequired(route.path)
+          const html = templateHtml.replace(
+            containerRegex,
+            (_match, start: string, _tag, _quote, end: string) =>
+              start + appHtml + end
+          )
+          output.stage(route, html)
         }
+        output.publish()
+        for (const route of routes) console.log(`  ✓ ${route.path}`)
+      } catch (error) {
+        preserveStaging = error instanceof SsgRecoveryError
+        throw error
       } finally {
-        try {
-          fs.rmSync(ssrOutDir, { recursive: true, force: true })
-        } catch {
-          // Ignore cleanup errors
-        }
+        if (!preserveStaging)
+          fs.rmSync(staging, { recursive: true, force: true })
       }
 
       console.log(`[tempo] SSG complete!\n`)
