@@ -82,6 +82,7 @@ export const deepEqual = <A>(a: A, b: A): boolean => {
     while (true) {
       const curr = it.next()
       if (curr.done ?? false) break
+      if (!bMap.has(curr.value)) return false
       if (!deepEqual(aMap.get(curr.value), bMap.get(curr.value))) return false
     }
     return true

@@ -140,6 +140,15 @@ describe('equals', () => {
     expect(deepEqual(get(), get2())).toBe(false)
   })
 
+  test('deepEqual distinguishes missing Map keys from undefined values', () => {
+    const first = new Map([['first', undefined]])
+    const other = new Map([['other', undefined]])
+
+    expect(deepEqual(first, new Map(first))).toBe(true)
+    expect(deepEqual(first, other)).toBe(false)
+    expect(deepEqual(other, first)).toBe(false)
+  })
+
   test('looseEqual matches expectations', () => {
     expect(looseEqual(1, 1)).toBe(true)
     expect(looseEqual(1, 0)).toBe(false)
