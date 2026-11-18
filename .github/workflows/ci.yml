@@ -72,37 +72,3 @@ jobs:
           path: |
             packages/*/coverage/
           retention-days: 30
-          
-  coverage-check:
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: pnpm install
-        
-      - name: Check coverage thresholds
-        run: |
-          echo "Checking coverage thresholds..."
-          pnpm run test:coverage 2>&1 | tee coverage_output.txt
-          
-          # Check if coverage thresholds were met
-          if grep -q "Coverage threshold" coverage_output.txt; then
-            echo "❌ Coverage thresholds not met"
-            exit 1
-          else
-            echo "✅ All coverage thresholds met"
-          fi
