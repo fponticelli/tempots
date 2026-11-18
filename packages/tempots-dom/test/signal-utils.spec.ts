@@ -305,6 +305,33 @@ describe('storedProp', () => {
       propB.dispose()
     })
 
+    test('should converge on the current stored value after overlapping updates', async () => {
+      const store = new MemoryStore()
+      const setItem = vi.spyOn(store, 'setItem')
+      const options = {
+        key: 'overlapping-updates',
+        defaultValue: 'initial',
+        store,
+        syncNamespace: 'overlap-store',
+      }
+      const first = storedProp(options)
+      const second = storedProp(options)
+      setItem.mockClear()
+
+      try {
+        first.set('first change')
+        second.set('second change')
+        await Promise.resolve()
+        expect(first.get()).toBe('second change')
+        expect(second.get()).toBe('second change')
+        expect(store.getItem(options.key)).toBe('"second change"')
+        expect(setItem).toHaveBeenCalledTimes(2)
+      } finally {
+        first.dispose()
+        second.dispose()
+      }
+    })
+
     test('should not sync when flag is disabled', async () => {
       const store = new MemoryStore()
       const propA = storedProp({

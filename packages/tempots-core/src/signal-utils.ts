@@ -105,7 +105,8 @@ export type StoredPropOptions<T> = {
   syncTabs?: boolean
   /**
    * Identifies a custom backing store and schema for cross-tab synchronization.
-   * Use the same namespace only for props that are intended to share values.
+   * A message tells peers to reload their value from the shared store, so props
+   * using the same namespace must read and write the same backing data.
    */
   syncNamespace?: string
   /**
@@ -167,38 +168,20 @@ const createStoredProp = <T>(
     typeof windowRef?.BroadcastChannel === 'function'
   let syncingFromChannel = false
   let channel: BroadcastChannel | null = null
-  let instanceId: string | null = null
 
   const createChannel = (channelKey: string) => {
     if (!shouldSyncTabs) return null
 
     const channelName = `tempo:storedProp:${JSON.stringify([channelNamespace, channelKey])}`
     const newChannel = new windowRef!.BroadcastChannel!(channelName)
-    const newInstanceId = `${Date.now().toString(36)}-${Math.random()
-      .toString(36)
-      .slice(2)}`
 
-    const handleMessage = (
-      event: MessageEvent<{
-        key: string
-        value: string
-        sourceId?: string
-      }>
-    ) => {
-      const data = event.data
-      if (
-        data == null ||
-        typeof data !== 'object' ||
-        data.key !== channelKey ||
-        typeof data.value !== 'string' ||
-        (data.sourceId != null && data.sourceId === newInstanceId)
-      ) {
-        return
-      }
-
+    newChannel.addEventListener('message', (event: MessageEvent<unknown>) => {
+      if (channel !== newChannel || event.data !== channelKey) return
       try {
+        const storedValue = store.getItem(channelKey)
+        if (storedValue === null) return
+        const nextValue = onLoad(deserialize(storedValue))
         syncingFromChannel = true
-        const nextValue = onLoad(deserialize(data.value))
         prop.set(nextValue)
       } catch (error) {
         console.warn(
@@ -208,22 +191,15 @@ const createStoredProp = <T>(
       } finally {
         syncingFromChannel = false
       }
-    }
-
-    newChannel.addEventListener('message', handleMessage)
-    prop.onDispose(() => {
-      newChannel?.removeEventListener('message', handleMessage)
-      newChannel?.close()
     })
-
-    return { channel: newChannel, instanceId: newInstanceId, handleMessage }
+    return newChannel
   }
 
-  const channelData = createChannel(currentKey)
-  if (channelData) {
-    channel = channelData.channel
-    instanceId = channelData.instanceId
-  }
+  channel = createChannel(currentKey)
+  prop.onDispose(() => {
+    channel?.close()
+    channel = null
+  })
 
   const handleKeyChange = (newKey: string) => {
     const oldKey = currentKey
@@ -235,11 +211,8 @@ const createStoredProp = <T>(
     store.setItem(oldKey, serialized)
 
     // Close old channel
-    if (channel != null) {
-      channel.close()
-      channel = null
-      instanceId = null
-    }
+    channel?.close()
+    channel = null
 
     // Update current key
     currentKey = newKey
@@ -269,11 +242,7 @@ const createStoredProp = <T>(
     // 'keep' does nothing - current value stays, no load from new key
 
     // Create new channel for new key
-    const newChannelData = createChannel(newKey)
-    if (newChannelData) {
-      channel = newChannelData.channel
-      instanceId = newChannelData.instanceId
-    }
+    channel = createChannel(currentKey)
   }
 
   // Watch for key changes if key is a signal
@@ -281,22 +250,18 @@ const createStoredProp = <T>(
     prop.onDispose(key.on(handleKeyChange))
   }
 
-  prop.on((value, previousValue) => {
-    const serialized = serialize(value)
-    store.setItem(currentKey, serialized)
-    if (
-      channel != null &&
-      !syncingFromChannel &&
-      previousValue !== undefined &&
-      instanceId != null
-    ) {
-      channel.postMessage({
-        key: currentKey,
-        value: serialized,
-        sourceId: instanceId,
-      })
-    }
-  })
+  store.setItem(currentKey, serialize(prop.get()))
+  prop.on(
+    value => {
+      if (syncingFromChannel) {
+        syncingFromChannel = false
+        return
+      }
+      store.setItem(currentKey, serialize(value))
+      channel?.postMessage(currentKey)
+    },
+    { skipInitial: true }
+  )
 
   return prop
 }
