@@ -4,6 +4,9 @@ import {
   render,
   html,
   Repeat,
+  KeyedForEach,
+  ElNS,
+  WithCtx,
   attr,
   dataAttr,
   aria,
@@ -15,6 +18,78 @@ import { sleep } from './helper'
 describe('Template-context attributes (Repeat cloning path)', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
+  })
+
+  test('checks every repeated row before cloning its template', () => {
+    const count = prop(3)
+    const clear = render(
+      Repeat(count, pos =>
+        pos.index === 2 ? html.em('third') : html.span('same')
+      ),
+      document.body
+    )
+    try {
+      expect(document.querySelectorAll('span')).toHaveLength(2)
+      expect(document.querySelector('em')?.textContent).toBe('third')
+    } finally {
+      clear()
+    }
+  })
+
+  test('keeps valid boundaries when a later keyed row cannot use the template', () => {
+    const rows = prop(['first', 'second', 'third'])
+    const clear = render(
+      KeyedForEach(rows, value => value, value =>
+        value.get() === 'third'
+          ? WithCtx(() => html.em('third'))
+          : html.span('same')
+      ),
+      document.body
+    )
+    try {
+      const third = document.querySelector('em')
+      expect(third?.textContent).toBe('third')
+      rows.set(['third', 'second', 'first'])
+      expect(document.body.firstElementChild).toBe(third)
+      rows.set([])
+      expect(document.body.children).toHaveLength(0)
+    } finally {
+      clear()
+    }
+  })
+
+  test('distinguishes templates for the same tag in different namespaces', () => {
+    const count = prop(2)
+    const namespace = 'http://www.w3.org/2000/svg'
+    const clear = render(
+      Repeat(count, pos =>
+        pos.index === 0 ? html.a('same') : ElNS('a', namespace, 'same')
+      ),
+      document.body
+    )
+    try {
+      expect(document.querySelectorAll('a')[1].namespaceURI).toBe(namespace)
+    } finally {
+      clear()
+    }
+  })
+
+  test('binds dynamic attributes even when declared after dynamic text', () => {
+    const count = prop(2)
+    const title = prop('caption')
+    const body = prop('body')
+    const clear = render(
+      Repeat(count, () => html.span(body, attr.title(title))),
+      document.body
+    )
+    try {
+      for (const node of document.querySelectorAll('span')) {
+        expect(node.title).toBe('caption')
+        expect(node.textContent).toBe('body')
+      }
+    } finally {
+      clear()
+    }
   })
 
   describe('Static attributes in template rows', () => {

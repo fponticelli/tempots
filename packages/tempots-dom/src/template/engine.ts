@@ -20,25 +20,25 @@ type R = Renderable<DOMContext, typeof DOM_RENDERABLE_TYPE>
  * Returns null if the tree contains an unknown kind.
  */
 function computeFingerprint(r: TemplateNode): string | null {
-  const parts: string[] = []
+  const parts: (string | null)[] = []
 
   function walk(r: TemplateNode): boolean {
     switch (r.kind) {
       case 'element': {
-        const { tag, children } = r as ElementNode
-        parts.push(`E:${tag}`)
+        const { tag, ns, children } = r as ElementNode
+        parts.push('E', tag, ns ?? null)
         for (const c of children) if (!walk(c)) return false
         parts.push('/E')
         break
       }
       case 'static-attr':
-        parts.push(`SA:${r.name}=${r.value}`)
+        parts.push('SA', r.name, r.value)
         break
       case 'dynamic-attr':
         parts.push('DA')
         break
       case 'static-text':
-        parts.push(`ST:${r.text}`)
+        parts.push('ST', r.text)
         break
       case 'dynamic-text':
         parts.push('DT')
@@ -60,7 +60,7 @@ function computeFingerprint(r: TemplateNode): string | null {
     return true
   }
 
-  return walk(r) ? parts.join('|') : null
+  return walk(r) ? JSON.stringify(parts) : null
 }
 
 /**
@@ -75,12 +75,12 @@ function extractSlotsFromTree(r: TemplateNode): R[] {
       case 'element': {
         const { children } = r as ElementNode
         for (const c of children) {
-          if (c.kind === 'static-attr') continue
-          if (c.kind === 'dynamic-attr') {
-            slots.push(c as unknown as R)
-            continue
+          if (c.kind === 'dynamic-attr') slots.push(c as unknown as R)
+        }
+        for (const c of children) {
+          if (c.kind !== 'static-attr' && c.kind !== 'dynamic-attr') {
+            walk(c)
           }
-          walk(c)
         }
         break
       }

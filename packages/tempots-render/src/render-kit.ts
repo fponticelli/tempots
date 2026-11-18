@@ -479,6 +479,36 @@ export function createRenderKit<
       otherwise
     )
 
+  const makeRepeatedRenderer = () => {
+    const engine = config.templateEngine
+    let template: { fingerprint: string; compiled: unknown } | null = null
+    let canClone = true
+
+    return (renderable: Renderable<CTX, TType>, ctx: CTX): Clear => {
+      if (engine == null || !canClone) return renderable.render(ctx)
+
+      const fingerprint = engine.fingerprint(renderable)
+      if (fingerprint == null) return renderable.render(ctx)
+
+      if (template === null) {
+        const compiled = engine.build(renderable, ctx)
+        if (compiled == null) {
+          canClone = false
+          return renderable.render(ctx)
+        }
+        template = { fingerprint, compiled }
+      }
+
+      return fingerprint === template.fingerprint
+        ? engine.cloneAndHydrate(
+            template.compiled,
+            ctx,
+            engine.extractSlots(renderable)
+          ).clear
+        : renderable.render(ctx)
+    }
+  }
+
   const Repeat = (
     times: Value<number>,
     element: (index: ElementPosition) => TNode<CTX, TType>,
@@ -507,14 +537,7 @@ export function createRenderKit<
           const clears: Clear[] = []
           const scopes: DisposalScope[] = []
 
-          // Template cache for cloneNode optimization
-          const rEngine = config.templateEngine
-          let rTmplCache: {
-            compiled: unknown
-            fp: string
-            verified: boolean
-          } | null = null
-          let rTmplDisabled = !rEngine
+          const renderRow = makeRepeatedRenderer()
 
           length.on(newLength => {
             const toRemove = clears.splice(newLength)
@@ -536,42 +559,7 @@ export function createRenderKit<
               clears.push(
                 withScope(scope, () => {
                   const renderable = renderableOfTNode(element(pos))
-                  if (rTmplDisabled) return renderable.render(newCtx)
-
-                  if (rTmplCache === null) {
-                    const fp = rEngine!.fingerprint(renderable)
-                    if (fp === null) {
-                      rTmplDisabled = true
-                      return renderable.render(newCtx)
-                    }
-                    const compiled = rEngine!.build(renderable, newCtx)
-                    if (!compiled) {
-                      rTmplDisabled = true
-                      return renderable.render(newCtx)
-                    }
-                    rTmplCache = { compiled, fp, verified: false }
-                    return rEngine!.cloneAndHydrate(
-                      compiled,
-                      newCtx,
-                      rEngine!.extractSlots(renderable)
-                    ).clear
-                  }
-
-                  if (!rTmplCache.verified) {
-                    const fp = rEngine!.fingerprint(renderable)
-                    if (fp !== rTmplCache.fp) {
-                      rTmplDisabled = true
-                      rTmplCache = null
-                      return renderable.render(newCtx)
-                    }
-                    rTmplCache.verified = true
-                  }
-
-                  return rEngine!.cloneAndHydrate(
-                    rTmplCache.compiled,
-                    newCtx,
-                    rEngine!.extractSlots(renderable)
-                  ).clear
+                  return renderRow(renderable, newCtx)
                 })
               )
             }
@@ -707,62 +695,7 @@ export function createRenderKit<
           const keyToEntry = new Map<K, KeyedEntry>()
           const positionUsed = item.length >= 2 || separator != null
 
-          // Template cache for cloneNode optimization
-          const engine = config.templateEngine
-          let tmplCache: {
-            compiled: unknown
-            fp: string
-            verified: boolean
-          } | null = null
-          let tmplDisabled = !engine
-
-          const renderMaybeTemplate = (
-            renderable: Renderable<CTX, TType>,
-            renderCtx: CTX
-          ): { clear: Clear; startCtx: CTX | null } => {
-            if (tmplDisabled)
-              return { clear: renderable.render(renderCtx), startCtx: null }
-
-            if (tmplCache === null) {
-              // First item: build template
-              const fp = engine!.fingerprint(renderable)
-              if (fp === null) {
-                tmplDisabled = true
-                return { clear: renderable.render(renderCtx), startCtx: null }
-              }
-              const compiled = engine!.build(renderable, renderCtx)
-              if (!compiled) {
-                tmplDisabled = true
-                return { clear: renderable.render(renderCtx), startCtx: null }
-              }
-              tmplCache = { compiled, fp, verified: false }
-              const result = engine!.cloneAndHydrate(
-                compiled,
-                renderCtx,
-                engine!.extractSlots(renderable)
-              )
-              return { clear: result.clear, startCtx: result.startCtx as CTX }
-            }
-
-            if (!tmplCache.verified) {
-              // Second item: fingerprint guard
-              const fp = engine!.fingerprint(renderable)
-              if (fp !== tmplCache.fp) {
-                tmplDisabled = true
-                tmplCache = null
-                return { clear: renderable.render(renderCtx), startCtx: null }
-              }
-              tmplCache.verified = true
-            }
-
-            // Verified: clone
-            const result = engine!.cloneAndHydrate(
-              tmplCache.compiled,
-              renderCtx,
-              engine!.extractSlots(renderable)
-            )
-            return { clear: result.clear, startCtx: result.startCtx as CTX }
-          }
+          const renderRow = makeRepeatedRenderer()
 
           const createEntry = (
             value: T,
@@ -775,16 +708,8 @@ export function createRenderKit<
               ? new KeyedPosition(index, totalProp)
               : null
 
-            // Skip creating a separate Comment start marker when template
-            // cloning is verified (items 3+). Items 1-2 still need the marker
-            // because we don't know if template cloning will succeed yet.
-            const tmplVerified =
-              !tmplDisabled && tmplCache !== null && tmplCache.verified
-            let startRef: CTX | undefined
-            if (!tmplVerified) {
-              startRef = ctx.makeMarker() as CTX
-              ctx.moveRangeBefore(startRef, startRef, insertBefore)
-            }
+            const startRef = ctx.makeMarker() as CTX
+            ctx.moveRangeBefore(startRef, startRef, insertBefore)
 
             // Create end marker
             const endRef = ctx.makeMarker() as CTX
@@ -800,7 +725,7 @@ export function createRenderKit<
               tracked: null,
               disposeCallbacks: null,
               clear: undefined!,
-              startRef: startRef!,
+              startRef,
               endRef,
               track: _scopeTrack,
               onDispose: _scopeOnDispose,
@@ -808,17 +733,7 @@ export function createRenderKit<
             pushScope(entry as unknown as Scope)
             try {
               const renderable = renderableOfTNode(item(valueProp, position!))
-              const result = renderMaybeTemplate(renderable, endRef)
-              entry.clear = result.clear
-              if (result.startCtx) {
-                // Template-cloned: use first content node as startRef
-                if (startRef) {
-                  // Items 1-2: remove the now-unnecessary comment marker
-                  startRef.clear(true)
-                }
-                entry.startRef = result.startCtx
-              }
-              // else: non-template, startRef is already the comment marker
+              entry.clear = renderRow(renderable, endRef)
             } finally {
               popScope()
             }
